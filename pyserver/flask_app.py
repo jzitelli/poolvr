@@ -1,11 +1,6 @@
 """Flask based server for poolvr.
 
 This server is more minimal than tornado_app.py (which piggybacks on the functionality of this module).
-
-Run the script from the poolvr root directory, i.e. ::
-
-    [ ... poolvr]$ python pyserver/flask_app.py
-
 """
 
 import os
@@ -59,8 +54,8 @@ def js_suffix():
 @app.route('/poolvr')
 def poolvr():
     """Serves the app HTML (dynamically generated version)"""
-    if (app.debug or app.testing) and app.config.get('ALWAYS_GRUNT'):
-        subprocess.call("grunt quick", shell=True)
+    # if (app.debug or app.testing) and app.config.get('ALWAYS_GRUNT'):
+    #     subprocess.call("grunt quick", shell=True)
     scene = request.args.get('scene', 'pool_hall')
     return render_template('poolvr.html',
         json_config=Markup(r"""<script>
