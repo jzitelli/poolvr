@@ -1,4 +1,6 @@
-/* global WebVRApplication, CrapLoader, THREE, CANNON, URL_PARAMS, JSON_SCENE */
+window.WebVRConfig = {
+    FORCE_DISTORTION: true
+};
 
 var application;
 var options = {
@@ -11,6 +13,12 @@ var scene = CrapLoader.parse(JSON_SCENE);
 var avatar = new THREE.Object3D();
 avatar.position.y = 1.2;
 avatar.position.z = 2;
+
+function setupMenu() {
+    "use strict";
+    var menu = new THREE.Object3D();
+    return menu;
+}
 
 function onLoad() {
     "use strict";
@@ -29,18 +37,12 @@ function onLoad() {
     // ##### Desktop mode: #####
     // # no plugin: tool ok, hands no
     // # plugin: hands ok, tool no
-    addTool(avatar, application.world);
-    // addTool(avatar, application.world, true, {vr: 'desktop'});
+    // addTool(avatar, application.world);
+    // addTool(avatar, application.world, {useTransform: true, transformOptions: {vr: 'desktop'}});
 
     // ##### HMD mode: #####
     // # plugin: hands ok, tool no - need to modify leap.transform.js
-    // addTool(avatar, application.world, true, {vr: true, effectiveParent: application.camera});
+    addTool(avatar, application.world, {useTransform: true, transformOptions: {vr: true, effectiveParent: application.camera}});
 
     application.start();
-}
-
-function setupMenu() {
-    "use strict";
-    var menu = new THREE.Object3D();
-    return menu;
 }

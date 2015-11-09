@@ -1,42 +1,48 @@
-function addTool(parent, world, useTransform, transformOptions, onFrame) {
+function addTool(parent, world, options) {
     "use strict";
-    var leapController = new Leap.Controller({frameEventName: 'animationFrame'});
+    options = options || {};
+
+    var minConfidence = options.minConfidence || 0.25;
+    var toolTime = options.toolTime || 0.05;
+    var toolOffset = options.toolOffset || new THREE.Vector3(0, -0.3, -0.4);
+
     // tool:
     var toolRoot = new THREE.Object3D();
     // arms/hands don't necessarily correspond the left / right labels, but doesn't matter to me, they are indistinguishable in my case
     var leftRoot = new THREE.Object3D(),
         rightRoot = new THREE.Object3D();
+    var handRoots = [leftRoot, rightRoot];
 
-    var scale = 1;
-    var minConfidence = 0.666 / 2;
-    var toolTime = 0.1;
-    transformOptions = transformOptions || {};
+
+    var useTransform = options.useTransform;
+    var transformOptions = options.transformOptions || {};
+
     if (transformOptions.vr === true) {
-        toolTime = 0.2; // i guess this could help with vr tracking zaniness?
-        // im assuming reported hand.confidence already factors VR effects in (don't know)
+        toolTime *= 2; // i guess this could help with vr tracking zaniness?
+                       // im assuming reported hand.confidence already factors VR effects in (don't know)
     } else {
         leftRoot.position.y = rightRoot.position.y = -0.25;
         leftRoot.position.z = rightRoot.position.z = -0.4;
     }
 
-    var toolOffset = new THREE.Vector3(0, -0.3, -0.4);
-
+    var leapController = new Leap.Controller({frameEventName: 'animationFrame'});
+    var scale = 1;
     if (useTransform) {
-        console.log("using LeapMotion plugin 'transform'");
+        console.log("using 'transform' plugin");
+        console.log("'transform' options:");
         console.log(transformOptions);
         leapController.use('transform', transformOptions).connect();
     }
     else {
-        console.log("not using LeapMotion plugin 'transform'");
-        leapController.connect();
+        console.log("not using 'transform' plugin");
         scale = 0.001;
+        leapController.connect();
         toolRoot.scale.set(scale, scale, scale);
         leftRoot.scale.set(scale, scale, scale);
         rightRoot.scale.set(scale, scale, scale);
     }
 
-    onFrame = onFrame || (function () {
-
+    var onFrame = (function () {
         // setup tool: #########################
         parent.add(toolRoot);
 
@@ -68,8 +74,8 @@ function addTool(parent, world, useTransform, transformOptions, onFrame) {
         var handRoots = [leftRoot, rightRoot];
 
         var handMaterial = new THREE.MeshLambertMaterial({color: 0x113399, side: THREE.DoubleSide});
-        radius = 0.032 / scale;
-        length = 0.23 / scale;
+        radius = 0.03 / scale;
+        length = 0.26 / scale;
         var armGeom = new THREE.CylinderGeometry(radius, radius, length);
         var armMesh = new THREE.Mesh(armGeom, handMaterial);
         var arms = [armMesh, armMesh.clone()];
@@ -109,12 +115,12 @@ function addTool(parent, world, useTransform, transformOptions, onFrame) {
         rightRoot.add(joint2s[1][0], joint2s[1][1], joint2s[1][2], joint2s[1][3], joint2s[1][4]);
 
 
-        // onFrame: ########################################
         var UP = new THREE.Vector3(0, 1, 0);
         var direction = new THREE.Vector3();
         var position = new THREE.Vector3();
         var velocity = new THREE.Vector3();
 
+        // onFrame: ########################################
         return function (frame) {
             toolRoot.visible = false;
             if (frame.tools.length === 1) {

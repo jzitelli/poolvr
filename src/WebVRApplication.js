@@ -5,6 +5,7 @@ WebVRApplication = ( function () {
         this.name = name;
         this.avatar = avatar;
         this.scene = scene;
+
         // default keyboard controls:
         var keyboardCommands = {
             turnLeft: {buttons: [-Primrose.Input.Keyboard.LEFTARROW]},
@@ -26,6 +27,7 @@ WebVRApplication = ( function () {
         options.keyboardCommands = Object.keys(options.keyboardCommands).map(function (k) {
             return combineDefaults({name: k}, options.keyboardCommands[k]);
         });
+
         // default gamepad controls:
         var gamepadCommands = {
             strafe: {axes: [Primrose.Input.Gamepad.LSX], deadzone: 0.15},
@@ -45,10 +47,11 @@ WebVRApplication = ( function () {
         options.gamepadCommands = Object.keys(options.gamepadCommands).map(function (k) {
             return combineDefaults({name: k}, options.gamepadCommands[k]);
         });
+
         options = combineDefaults(options, {
             gravity: 0,
             backgroundColor: 0x000000,
-            moveSpeed: 1,
+            moveSpeed: 0.5,
             mousePointerColor: 0xff3322,
             showMousePointerOnLock: false
         });
@@ -94,16 +97,12 @@ WebVRApplication = ( function () {
 
         this.audioContext = new AudioContext();
 
-        this.log = function(msg) {
-            console.log(msg);
-        };
-
         this.listeners = {'update': []};
 
         var world = new CANNON.World();
         world.gravity.set( 0, -options.gravity, 0 );
         world.broadphase = new CANNON.SAPBroadphase( world );
-        //world.broadphase = new CANNON.NaiveBroadphase( world );
+        // world.broadphase = new CANNON.NaiveBroadphase( world );
         world.defaultContactMaterial.contactEquationStiffness = 1e8;
         world.defaultContactMaterial.frictionEquationStiffness = 1e7;
         world.defaultContactMaterial.contactEquationRelaxation = 3;
@@ -154,6 +153,7 @@ WebVRApplication = ( function () {
         loadingScene.add(loadingMesh);
         var loadingCamera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
         var lt = 0;
+
         // TODO: don't poll
         this.start = function() {
             function waitForResources(t) {
@@ -288,33 +288,26 @@ WebVRApplication = ( function () {
             // TODO: resolve CANNON issues w/ initial low framerate
             this.world.step(1/60);
 
-            if (this.avatar.body) {
-
-                this.avatar.body.quaternion.setFromAxisAngle(UP, heading);
-                this.avatar.body.quaternion.mult(pitchQuat, this.avatar.body.quaternion);
-                this.avatar.body.velocity.x = this.avatar.body.velocity.x * 0.9 +
-                    0.1 * (strafe * cosHeading + drive * sinHeading * cosPitch);
-                this.avatar.body.velocity.z = this.avatar.body.velocity.z * 0.9 +
-                    0.1 * ((drive * cosHeading  * cosPitch - strafe * sinHeading));
-                this.avatar.body.velocity.y = this.avatar.body.velocity.y * 0.9 +
-                    0.08 * floatUp + 0.1 * drive * (-sinPitch);
-
-            } else {
-
+            // if (this.avatar.body) {
+            //     this.avatar.body.quaternion.setFromAxisAngle(UP, heading);
+            //     this.avatar.body.quaternion.mult(pitchQuat, this.avatar.body.quaternion);
+            //     this.avatar.body.velocity.x = this.avatar.body.velocity.x * 0.9 +
+            //         0.1 * (strafe * cosHeading + drive * sinHeading * cosPitch);
+            //     this.avatar.body.velocity.z = this.avatar.body.velocity.z * 0.9 +
+            //         0.1 * ((drive * cosHeading  * cosPitch - strafe * sinHeading));
+            //     this.avatar.body.velocity.y = this.avatar.body.velocity.y * 0.9 +
+            //         0.08 * floatUp + 0.1 * drive * (-sinPitch);
+            // } else {
                 this.avatar.quaternion.setFromAxisAngle(UP, heading);
                 this.avatar.quaternion.multiply(pitchQuat);
                 this.avatar.position.x += dt * (strafe * cosHeading + drive * sinHeading);
                 this.avatar.position.z += dt * (drive * cosHeading - strafe * sinHeading);
                 this.avatar.position.y += dt * floatUp;
-
-            }
+            // }
 
             for (var j = 0; j < this.world.bodies.length; ++j) {
                 var body = this.world.bodies[j];
                 if (body.mesh && body.type !== CANNON.Body.STATIC) {
-                    // bodyPosition.copy(body.position);
-                    // body.mesh.position.copy(body.mesh.worldToLocal(bodyPosition));
-                    // TODO: quaternion local/world concerns?
                     body.mesh.position.copy(body.position);
                     body.mesh.quaternion.copy(body.quaternion);
                 }

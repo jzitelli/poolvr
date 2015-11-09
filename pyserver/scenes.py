@@ -13,10 +13,10 @@ square = RectangleBufferGeometry(vertices=[[-0.5, 0, -0.5], [-0.5, 0, 0.5], [0.5
 def pool_hall():
     scene = Scene()
     L, W = 7, 7
-    scene.add(PointLight(color=0x225522, position=[6, 2, 0.5], intensity=0.5))
+    scene.add(PointLight(color=0x775532, position=[6, 2, 0.5], intensity=0.7, distance=40))
     floor = Mesh(name="floor", geometry=square,
                  material=MeshBasicMaterial(color=0xffffff,
-                                            map=Texture(image=Image(url="images/parque64.png"), repeat=[L, W], wrap=[RepeatWrapping, RepeatWrapping])),
+                                            map=Texture(image=Image(url="images/parque64.png"), repeat=[4*L, 4*W], wrap=[RepeatWrapping, RepeatWrapping])),
                  position=[0, 0, 0],
                  scale=[L,1,W])
     scene.add(floor)
@@ -50,10 +50,12 @@ def pool_hall():
     ball03 = Mesh(geometry=sphere, material=MeshPhongMaterial(color=0xddee00),
                   position=[1.17 / 3, y_table + radius + 0.001, 0], castShadow=True, userData=userData)
     scene.add(ball03)
-    # if ShaderLib is not None:
-    #     shader = deepcopy(ShaderLib['cube'])
-    #     shader['uniforms']['tCube']['value'] = ["images/skybox/%s.jpg" % pos
-    #                                             for pos in ('px', 'nx', 'py', 'ny', 'pz', 'nz')]
-    #     scene.add(Mesh(geometry=BoxGeometry(900, 900, 900),
-    #                    material=ShaderMaterial(side=BackSide, **shader)))
+    if ShaderLib is not None:
+        shader = deepcopy(ShaderLib['cube'])
+        # shader['uniforms']['tCube']['value'] = ["images/skybox/%s.jpg" % pos
+        #                                         for pos in ('px', 'nx', 'py', 'ny', 'pz', 'nz')]
+        shader['uniforms']['tCube']['value'] = ["images/SwedishRoyalCastle/%s.jpg" % pos
+                                                for pos in ('px', 'nx', 'py', 'ny', 'pz', 'nz')]
+        scene.add(Mesh(geometry=BoxGeometry(900, 900, 900),
+                       material=ShaderMaterial(side=BackSide, **shader)))
     return scene.export()
