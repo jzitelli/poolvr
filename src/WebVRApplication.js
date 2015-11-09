@@ -350,10 +350,10 @@ WebVRApplication = ( function () {
     var wireframeMaterial = new THREE.MeshBasicMaterial({color: 0xeeddaa, wireframe: true});
     WebVRApplication.prototype.toggleWireframe = function () {
         if (this.scene.overrideMaterial) {
-            this.log("wireframe: off");
+            console.log("wireframe: off");
             this.scene.overrideMaterial = null;
         } else {
-            this.log("wireframe: on");
+            console.log("wireframe: on");
             this.scene.overrideMaterial = wireframeMaterial;
         }
     };

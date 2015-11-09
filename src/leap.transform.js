@@ -1,5 +1,4 @@
-// modified by jzitelli
-// TODO: tool support
+// modified from the standard plugin to support a single tool in addition to hands
 (function() {
   Leap.plugin('transform', function(scope) {
     var noop, transformDirections, transformMat4Implicit0, transformPositions, transformWithMatrices, _directionTransform;
@@ -32,6 +31,7 @@
         return noop;
       }
     };
+
     transformPositions = function(matrix, vec3s) {
       var vec3, _i, _len, _results;
       _results = [];
@@ -86,6 +86,13 @@
       scalarScale = (scale[0] + scale[1] + scale[2]) / 3;
       return hand.arm.width *= scalarScale;
     };
+
+    transformToolWithMatrices = function(tool, transform, scale) {
+      transformDirections(transform, [tool.direction, tool.tipVelocity]);
+      Leap.glMatrix.mat4.scale(transform, transform, scale);
+      transformPositions(transform, [tool.tipPosition, tool.stabilizedTipPosition]);
+    };
+
     var _ones = [1, 1, 1];
     return {
       frame: function(frame) {
@@ -119,6 +126,15 @@
           Leap.vec3.sub(len, hand.arm.prevJoint, hand.arm.nextJoint);
           _results.push(hand.arm.length = Leap.vec3.length(len));
         }
+
+        if (frame.tools.length == 1) {
+          var tool = frame.tools[0];
+          transformToolWithMatrices(tool, _directionTransform.elements, _scale);
+          if (scope.effectiveParent) {
+             transformToolWithMatrices(tool, scope.effectiveParent.matrix.elements, _ones);
+          }
+        }
+
         return _results;
       }
     };
