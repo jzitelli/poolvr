@@ -29,6 +29,7 @@ handlers = websocket_handlers + [(r'.*', FallbackHandler, dict(fallback=WSGICont
 def main():
     app.config['WEBSOCKETS'] = [wh[0] for wh in websocket_handlers]
     tornado_app = Application(handlers, debug=app.debug)
+    print('#######')
     _logger.info("flask_app.config:\n%s\n" % str(app.config))
     _logger.info("tornado_app.settings:\n%s\n" % str(tornado_app.settings))
     if app.debug:
@@ -48,5 +49,5 @@ def main():
 
 if __name__ == "__main__":
     logging.basicConfig(level=(logging.DEBUG if app.debug else logging.INFO),
-                        format="%(asctime)s: %(levelname)s %(name)s %(funcName)s %(lineno)d:  %(message)s")
+                        format="%(levelname)s %(name)s %(funcName)s %(lineno)d:  %(message)s")
     main()

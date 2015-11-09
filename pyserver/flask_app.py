@@ -121,10 +121,11 @@ def read():
 
 def main():
     app.config['WEBSOCKETS'] = []
-    _logger.info("server's local IP:  %s" % socket.gethostbyname(socket.gethostname()))
+    print('#######')
     _logger.info("flask_app.config:\n%s\n" % str(app.config))
     _logger.info("STATIC_FOLDER = %s" % STATIC_FOLDER)
     _logger.info("TEMPLATE_FOLDER = %s" % TEMPLATE_FOLDER)
+    _logger.info("server's local IP:  %s" % socket.gethostbyname(socket.gethostname()))
     if app.debug:
         port = 5000
     else:
