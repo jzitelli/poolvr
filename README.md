@@ -1,5 +1,7 @@
 # poolvr
 
+Play pool / billiards in VR with your LeapMotion device, in a web browser!
+
 
 ## How to run locally (tested under (64 bit) Windows 7, Windows 10, Ubuntu 14, Fedora 22):
 
@@ -29,7 +31,7 @@
 For method B, I recommend using the Anaconda Python Distribution, which will let you easily install all the Python dependencies.
 
 
-## Acknowledgements
+## Acknowledgements:
 
 The following amazing open source projects have helped make poolvr possible:
 
@@ -39,6 +41,7 @@ The following amazing open source projects have helped make poolvr possible:
   - Cannon.js
   - Primrose
   - webvr-boilerplate
+
 
   Python packages:
 
