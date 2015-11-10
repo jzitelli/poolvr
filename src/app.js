@@ -1,3 +1,23 @@
+var URL_PARAMS = (function () {
+    "use strict";
+    var params = {};
+    location.search.substr(1).split("&").forEach(function(item) {
+        var k = item.split("=")[0],
+            v = decodeURIComponent(item.split("=")[1]);
+        if (k in params) {
+            params[k].push(v);
+        } else {
+            params[k] = [v];
+        }
+    });
+    for (var k in params) {
+        if (params[k].length == 1) {
+            params[k] = params[k][0];
+        }
+    }
+    return params;
+})();
+
 WebVRConfig = {
   // Forces cardboard distortion in VR mode.
   FORCE_DISTORTION: true // Default: false.
@@ -34,21 +54,13 @@ function onLoad() {
     application.scene.add(avatar);
 
     // ##### VR mode: #####
-    addTool(avatar, application.world, {useTransform: true, transformOptions: {vr: true, effectiveParent: application.camera}});
-
+    if (URL_PARAMS.vr) {
+      addTool(avatar, application.world, {useTransform: true, transformOptions: {vr: true, effectiveParent: application.camera}});
+    }
     // ##### Desktop mode: #####
-    // addTool(avatar, application.world);
-    // addTool(avatar, application.world, {useTransform: true, transformOptions: {vr: 'desktop'}});
-
-    var fullscreenButton = document.getElementById('goRegular');
-    fullscreenButton.addEventListener('click', function (evt) {
-      application.vrManager.enterImmersive();
-    });
-
-    var vrButton = document.getElementById('goVR');
-    vrButton.addEventListener('click', function (evt) {
-      application.vrManager.enterVR();
-    });
+    else {
+      addTool(avatar, application.world, {useTransform: true, transformOptions: {vr: 'desktop'}});
+    }
 
     application.start();
 }

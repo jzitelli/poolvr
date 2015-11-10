@@ -1,4 +1,4 @@
-"""Collection of functions which generate three.js scenes.
+"""Collection of functions which define three.js scenes.
 
 http://www.wpa-pool.com/web/WPA_Tournament_Table_Equipment_Specifications:
 
@@ -181,27 +181,27 @@ import numpy as np
 
 from three import *
 
-square = RectangleBufferGeometry(vertices=[[-0.5, 0, -0.5], [-0.5, 0, 0.5], [0.5, 0, 0.5], [0.5, 0, -0.5]],
-                                 uvs=[(0,1), (0,0), (1,0), (1,1)])
+def pool_hall():
+    square = RectangleBufferGeometry(vertices=[[-0.5, 0, -0.5], [-0.5, 0, 0.5], [0.5, 0, 0.5], [0.5, 0, -0.5]],
+                                     uvs=[(0,1), (0,0), (1,0), (1,1)])
 
-white  = 0xeeeeee
-yellow = 0xeeee00
-blue   = 0x0000ee
-red    = 0xee0000
-purple = 0xee00ee,
-orange = 0xee7700
-green  = 0x00ee00
-maroon = 0xee0077
-black  = 0x111111
+    white  = 0xeeeeee
+    yellow = 0xeeee00
+    blue   = 0x0000ee
+    red    = 0xee0000
+    purple = 0xee00ee,
+    orange = 0xee7700
+    green  = 0x00ee00
+    maroon = 0xee0077
+    black  = 0x111111
 
-def pool_hall(cubemap=None):
     scene = Scene()
 
     # room:
     L_room, W_room = 7, 7
     floor = Mesh(name="floor", geometry=square,
                  material=MeshBasicMaterial(color=0xffffff,
-                                            map=Texture(image=Image(url="images/parque64.png"),
+                                            map=Texture(image=Image(url="images/deck.png"),
                                                         repeat=[4*L_room, 4*W_room], wrap=[RepeatWrapping, RepeatWrapping])),
                  position=[0, 0, 0],
                  scale=[L_room, 1, W_room])
