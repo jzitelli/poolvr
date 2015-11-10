@@ -96,21 +96,6 @@ var CrapLoader = ( function () {
                     node.geometry.computeBoundingSphere();
                     node.geometry.computeBoundingBox();
                 }
-                // else if (node instanceof THREE.SpotLight && node.castShadow) {
-                //     var lightJSON = findInJSON(json.object, node.uuid);
-                //     if (lightJSON.shadowCameraNear !== undefined) {
-                //         console.log(lightJSON.shadowCameraNear);
-                //         console.log(node.shadowCameraNear);
-                //         node.shadowCameraNear = lightJSON.shadowCameraNear;
-                //         console.log(lightJSON.shadowCameraNear);
-                //         console.log(node.shadowCameraNear);
-                //     }
-                //     if (lightJSON.shadowCameraFar !== undefined) node.shadowCameraFar = lightJSON.shadowCameraFar;
-                //     if (lightJSON.shadowCameraFov !== undefined) node.shadowCameraFov = lightJSON.shadowCameraFov;
-                //     if (lightJSON.shadowMapWidth !== undefined) node.shadowMapWidth = lightJSON.shadowMapWidth;
-                //     if (lightJSON.shadowMapHeight !== undefined) node.shadowMapHeight = lightJSON.shadowMapHeight;
-                //     // console.log(node);
-                // }
             });
             loadHeightfields(obj);
         }
@@ -268,6 +253,11 @@ var CrapLoader = ( function () {
                             node.geometry.parameters.radiusBottom,
                             node.geometry.parameters.height,
                             node.geometry.parameters.radialSegments);
+                        break;
+                    case 'TriMesh':
+                        var vertices = node.geometry.getAttribute('position').array;
+                        var indices = node.geometry.getAttribute('index').array;
+                        shape = new CANNON.TriMesh(vertices, faces);
                         break;
                     default:
                         console.log("unknown shape type: " + e);

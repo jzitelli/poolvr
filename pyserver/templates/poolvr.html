@@ -10,6 +10,7 @@
 
     <title>poolvr</title>
 
+    <!-- TODO: better CSS styling -->
     <style>
         html, body {
           position: absolute;
@@ -39,10 +40,6 @@
           padding: 10px;
           font-weight: bold;
           width: 95%;
-/*
-          margin-left: auto;
-          margin-right: auto;
-*/
         }
         .button > small{
           font-weight: normal;
@@ -66,16 +63,6 @@
 
   <body onload="onLoad()">
 
-    <article>
-      <a class="primary button" id="goVR">
-        <div id="fullScreenMsg">Go VR!</div>
-        <small>hit ESC to exit.</small>
-      </a>
-      <a class="primary button" id="goRegular">
-        Go full-screen<br>
-        <small>hit ESC to exit.</small>
-      </a>
-    </article>
 
     <script src="{{ url_for('static', filename='lib/three-r73'      + js_suffix) }}"></script>
     <script src="{{ url_for('static', filename='lib/TextGeometry'   + js_suffix) }}"></script>
@@ -106,6 +93,18 @@
     <script src="{{ url_for('static', filename='src/WebVRApplication.js') }}"></script>
     <script src="{{ url_for('static', filename='src/CrapLoader.js') }}"></script>
     <script src="{{ url_for('static', filename='src/app.js') }}"></script>
+
+    <article>
+      <a class="primary button" id="goVR">
+        <div id="fullScreenMsg">Start game (VR mode)</div>
+        <small>hit ESC to exit.</small>
+      </a>
+
+      <a class="primary button" id="goRegular">
+        <div id="fullScreenMsg">Start game (fullscreen mode)</div>
+        <small>hit ESC to exit.</small>
+      </a>
+    </article>
 
   </body>
 </html>
