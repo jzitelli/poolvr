@@ -20,12 +20,6 @@ var avatar = new THREE.Object3D();
 avatar.position.y = 1.2;
 avatar.position.z = 2;
 
-function setupMenu() {
-    "use strict";
-    var menu = new THREE.Object3D();
-    return menu;
-}
-
 function onLoad() {
     "use strict";
     var spotLight = new THREE.SpotLight(0xffffff);
