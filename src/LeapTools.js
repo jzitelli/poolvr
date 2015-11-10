@@ -6,7 +6,7 @@ function addTool(parent, world, options) {
     var toolRadius = options.toolLength || 0.016;
     var toolTime = options.toolTime || 0.03;
     var toolOffset = options.toolOffset || new THREE.Vector3(0, -0.3, -toolLength);
-    var toolOffsetVR = options.toolOffsetVR || new THREE.Vector3(0, 0, -toolLength);
+    var toolOffsetVR = options.toolOffsetVR || new THREE.Vector3(0, 0, 0);
 
     var minConfidence = options.minConfidence || 0.25;
     var handOffset = options.handOffset || new THREE.Vector3(0, -0.25, -0.4);
