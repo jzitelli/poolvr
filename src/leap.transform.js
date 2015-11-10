@@ -129,7 +129,8 @@
 
         if (frame.tools.length == 1) {
           var tool = frame.tools[0];
-          transformToolWithMatrices(tool, _directionTransform.elements, _scale);
+          // TODO: optimize
+          transformToolWithMatrices(tool, scope.getTransform(hand), _scale);
           if (scope.effectiveParent) {
              transformToolWithMatrices(tool, scope.effectiveParent.matrix.elements, _ones);
           }
