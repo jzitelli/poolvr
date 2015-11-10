@@ -2,61 +2,67 @@ function addTool(parent, world, options) {
     "use strict";
     options = options || {};
 
-    var minConfidence = options.minConfidence || 0.25;
-    var toolTime = options.toolTime || 0.05;
-    var toolOffset = options.toolOffset || new THREE.Vector3(0, -0.3, -0.4);
+    var toolTime = options.toolTime || 0.03;
+    var toolOffset = options.toolOffset || new THREE.Vector3(0, -0.3, -0.7);
+    var toolOffsetVR = options.toolOffsetVR || new THREE.Vector3(0, 0, 0);
 
-    // tool:
-    var toolRoot = new THREE.Object3D();
-    // arms/hands don't necessarily correspond the left / right labels, but doesn't matter to me, they are indistinguishable in my case
-    var leftRoot = new THREE.Object3D(),
-        rightRoot = new THREE.Object3D();
-    var handRoots = [leftRoot, rightRoot];
-
+    var minConfidence = options.minConfidence || 0.1;
+    var handOffset = options.handOffset || new THREE.Vector3(0, -0.25, -0.4);
+    var handOffsetVR = options.handOffsetVR || new THREE.Vector3(0, 0, 0);
 
     var useTransform = options.useTransform;
     var transformOptions = options.transformOptions || {};
 
-    if (transformOptions.vr === true) {
-        toolTime *= 2; // i guess this could help with vr tracking zaniness?
-                       // im assuming reported hand.confidence already factors VR effects in (don't know)
-    } else {
-        leftRoot.position.y = rightRoot.position.y = -0.25;
-        leftRoot.position.z = rightRoot.position.z = -0.4;
-    }
+    // tool:
+    var toolRoot = new THREE.Object3D();
+    toolRoot.position.copy(toolOffset);
+    parent.add(toolRoot);
+
+    // hands don't necessarily correspond the left / right labels, but doesn't matter to me because they look indistinguishable
+    var leftRoot = new THREE.Object3D(),
+        rightRoot = new THREE.Object3D();
+    leftRoot.position.copy(handOffset);
+    rightRoot.position.copy(handOffset);
+    var handRoots = [leftRoot, rightRoot];
+    parent.add(leftRoot);
+    parent.add(rightRoot);
 
     var leapController = new Leap.Controller({frameEventName: 'animationFrame'});
+
     var scale = 1;
     if (useTransform) {
         console.log("using 'transform' plugin");
+        if (transformOptions.vr === true) {
+            toolTime *= 2; // i guess this could help with vr tracking zaniness? im assuming reported hand.confidence already factors VR effects in (don't know)
+            toolRoot.position.copy(toolOffsetVR);
+            leftRoot.position.copy(handOffsetVR);
+            rightRoot.position.copy(handOffsetVR);
+        }
         console.log("'transform' options:");
         console.log(transformOptions);
+
         leapController.use('transform', transformOptions).connect();
-    }
-    else {
+    } else {
         console.log("not using 'transform' plugin");
         scale = 0.001;
-        leapController.connect();
         toolRoot.scale.set(scale, scale, scale);
         leftRoot.scale.set(scale, scale, scale);
         rightRoot.scale.set(scale, scale, scale);
+
+        leapController.connect();
     }
 
     var onFrame = (function () {
         // setup tool: #########################
-        parent.add(toolRoot);
-
         var radius = 0.016 / scale;
         var length = 0.5 / scale;
-        toolRoot.position.x = toolOffset.x;
-        toolRoot.position.y = toolOffset.y;
-        toolRoot.position.z = -length / 2 * scale + toolOffset.z;
 
         var stickGeom = new THREE.CylinderGeometry(radius, radius, length, 10, 1, false, 0, 2*Math.PI);
         stickGeom.translate(0, -length / 2, 0);
         var stickMaterial = new THREE.MeshLambertMaterial({color: 0xeebb99, side: THREE.DoubleSide});
         var stickMesh = new THREE.Mesh(stickGeom, stickMaterial);
         stickMesh.castShadow = true;
+
         toolRoot.add(stickMesh);
 
         var tipMaterial = new THREE.MeshLambertMaterial({color: 0x004488});
@@ -64,16 +70,13 @@ function addTool(parent, world, options) {
         tipMesh.castShadow = true;
         stickMesh.add(tipMesh);
 
+        // TODO: mass
         var tipBody = new CANNON.Body({mass: 0.2, type: CANNON.Body.KINEMATIC});
         tipBody.addShape(new CANNON.Sphere(radius * scale));
         world.addBody(tipBody);
 
         // setup hands: ############################
-        parent.add(leftRoot);
-        parent.add(rightRoot);
-        var handRoots = [leftRoot, rightRoot];
-
-        var handMaterial = new THREE.MeshLambertMaterial({color: 0x113399, side: THREE.DoubleSide});
+        var handMaterial = new THREE.MeshLambertMaterial({color: 0x113399});
         radius = 0.03 / scale;
         length = 0.26 / scale;
         var armGeom = new THREE.CylinderGeometry(radius, radius, length);
@@ -83,7 +86,7 @@ function addTool(parent, world, options) {
         rightRoot.add(arms[1]);
 
         radius = 0.025 / scale;
-        var palmGeom = new THREE.SphereBufferGeometry(radius, 18, 9).scale(1, 0.5, 1);
+        var palmGeom = new THREE.SphereBufferGeometry(radius, 16, 8).scale(1, 0.5, 1);
         var palmMesh = new THREE.Mesh(palmGeom, handMaterial);
         palmMesh.castShadow = true;
         var palms = [palmMesh, palmMesh.clone()];
@@ -125,10 +128,11 @@ function addTool(parent, world, options) {
             toolRoot.visible = false;
             if (frame.tools.length === 1) {
                 var tool = frame.tools[0];
-                if (tool.timeVisible > 0.2) {
+                if (tool.timeVisible > toolTime) {
                     toolRoot.visible = true;
-                    // stickMesh.position.set(tool.tipPosition[0], tool.tipPosition[1], tool.tipPosition[2]);
-                    stickMesh.position.set(tool.stabilizedTipPosition[0], tool.stabilizedTipPosition[1], tool.stabilizedTipPosition[2]);
+                    // TODO: option to toggle stabilized or not
+                    stickMesh.position.set(tool.tipPosition[0], tool.tipPosition[1], tool.tipPosition[2]);
+                    // stickMesh.position.set(tool.stabilizedTipPosition[0], tool.stabilizedTipPosition[1], tool.stabilizedTipPosition[2]);
                     direction.set(tool.direction[0], tool.direction[1], tool.direction[2]);
                     stickMesh.quaternion.setFromUnitVectors(UP, direction);
 
@@ -161,9 +165,6 @@ function addTool(parent, world, options) {
                         joints[i][j].position.set(finger.bones[1].nextJoint[0], finger.bones[1].nextJoint[1], finger.bones[1].nextJoint[2]);
                         joint2s[i][j].position.set(finger.bones[2].nextJoint[0], finger.bones[2].nextJoint[1], finger.bones[2].nextJoint[2]);
                     });
-                }
-                else {
-                    handRoots[i].visible = false;
                 }
             });
         };

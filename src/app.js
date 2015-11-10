@@ -1,5 +1,11 @@
-window.WebVRConfig = {
-    FORCE_DISTORTION: true
+// webvr-boilerplate:
+WebVRConfig = {
+  // Forces cardboard distortion in VR mode.
+  FORCE_DISTORTION: true, // Default: false.
+  // Prevents cardboard distortion in VR mode
+  //PREVENT_DISTORTION: true, // Default: false.
+  // Override the cardboard distortion background color.
+  //DISTORTION_BGCOLOR: {x: 1, y: 0, z: 0, w: 1}, // Default: (0,0,0,1).
 };
 
 var application;
@@ -34,15 +40,13 @@ function onLoad() {
     avatar.add(application.camera);
     application.scene.add(avatar);
 
+    // ##### VR mode: #####
+    addTool(avatar, application.world, {useTransform: true, transformOptions: {vr: true, effectiveParent: application.camera}});
+
     // ##### Desktop mode: #####
     // # no plugin: tool ok, hands no
-    // # plugin: hands ok, tool no
     // addTool(avatar, application.world);
     // addTool(avatar, application.world, {useTransform: true, transformOptions: {vr: 'desktop'}});
-
-    // ##### HMD mode: #####
-    // # plugin: hands ok, tool no - need to modify leap.transform.js
-    addTool(avatar, application.world, {useTransform: true, transformOptions: {vr: true, effectiveParent: application.camera}});
 
     application.start();
 }
