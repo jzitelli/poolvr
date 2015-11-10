@@ -196,7 +196,7 @@ green  = 0x00ee00
 maroon = 0xee0077
 black  = 0x111111
 
-def pool_hall():
+def pool_hall(cubemap=None):
     scene = Scene()
 
     # room:
@@ -213,14 +213,15 @@ def pool_hall():
     # spotLight = SpotLight(color=0xffffff, intensity=2, distance=6, position=[0, 3*y_table, 0],
     #                       castShadow=True, shadowCameraNear=0.2, shadowCameraFar=2*y_table, shadowCameraFov=80)
     # scene.add(spotLight)
-    if ShaderLib is not None:
-        shader = deepcopy(ShaderLib['cube'])
-        # shader['uniforms']['tCube']['value'] = ["images/skybox/%s.jpg" % pos
-        #                                         for pos in ('px', 'nx', 'py', 'ny', 'pz', 'nz')]
-        shader['uniforms']['tCube']['value'] = ["images/SwedishRoyalCastle/%s.jpg" % pos
-                                                for pos in ('px', 'nx', 'py', 'ny', 'pz', 'nz')]
-        scene.add(Mesh(geometry=BoxGeometry(900, 900, 900),
-                       material=ShaderMaterial(side=BackSide, **shader)))
+    if cubemap:
+        if ShaderLib is not None:
+            shader = deepcopy(ShaderLib['cube'])
+            # shader['uniforms']['tCube']['value'] = ["images/skybox/%s.jpg" % pos
+            #                                         for pos in ('px', 'nx', 'py', 'ny', 'pz', 'nz')]
+            shader['uniforms']['tCube']['value'] = ["images/SwedishRoyalCastle/%s.jpg" % pos
+                                                    for pos in ('px', 'nx', 'py', 'ny', 'pz', 'nz')]
+            scene.add(Mesh(geometry=BoxGeometry(900, 900, 900),
+                           material=ShaderMaterial(side=BackSide, **shader)))
 
     # table:
     y_table = .74295
