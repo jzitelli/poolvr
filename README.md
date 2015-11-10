@@ -14,32 +14,26 @@ Play pool / billiards in VR with your LeapMotion device, in a web browser!
 
 ### Method A (serving the static file `index.html`):
 
-  1. Start a Python HTTP server in the root directory:
+1. Start a Python HTTP server in the root directory:
     - using Python 2:
-
-```
-[ ... poolvr]$ python -m SimpleHTTPServer
-```
+      ```
+[ ... poolvr]$ python -m SimpleHTTPServer```
     - using Python 3:
+      ```
+[ ... poolvr]$ python -m http.server```
 
-```
-[ ... poolvr]$ python -m http.server
-```
-
-  2. Point your browser to http://localhost:8000
+2. Point your browser to `http://localhost:8000`
 
 
 ### Method B (serving dynamically generated HTML):
 
 This method requires several Python packages.  I recommend using the [Anaconda Python distribution](https://www.continuum.io/downloads), which will let you easily install all the dependencies.
 
-  1. Run the Python script `pyserver/flask_app.py`:
+1. Run the Python script `pyserver/flask_app.py`:
+  ```
+[ ... poolvr]$ python pyserver/flask_app.py```
 
-```
-[ ... poolvr]$ python pyserver/flask_app.py
-```
-
-  2. Point your browser to http://127.0.0.1:5000
+2. Point your browser to `http://127.0.0.1:5000`
 
 
 
@@ -54,5 +48,6 @@ JavaScript libraries:
   - [webvr-boilerplate](https://github.com/borismus/webvr-boilerplate)
 
 Python packages:
-  - Tornado
-  - Flask
+  - [Tornado](http://www.tornadoweb.org/en/stable/#)
+  - [Flask](http://flask.pocoo.org/)
+  - [NumPy](http://www.numpy.org)
