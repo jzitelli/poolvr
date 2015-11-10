@@ -1,6 +1,6 @@
 WebVRConfig = {
   // Forces cardboard distortion in VR mode.
-  FORCE_DISTORTION: true, // Default: false.
+  FORCE_DISTORTION: true // Default: false.
   // Prevents cardboard distortion in VR mode
   //PREVENT_DISTORTION: true, // Default: false.
   // Override the cardboard distortion background color.
@@ -14,6 +14,14 @@ var options = {
 };
 
 var scene = CrapLoader.parse(JSON_SCENE);
+// would rather add the spot light via three.py generated JSON_SCENE, but I'm having problems:
+var spotLight = new THREE.SpotLight(0xffffff);
+spotLight.position.set(0, 3, 0);
+spotLight.castShadow = true;
+spotLight.shadowCameraNear = 0.02;
+spotLight.shadowCameraFar = 4;
+spotLight.shadowCameraFov = 90;
+scene.add(spotLight);
 
 var avatar = new THREE.Object3D();
 avatar.position.y = 1.2;
@@ -21,14 +29,6 @@ avatar.position.z = 2;
 
 function onLoad() {
     "use strict";
-    var spotLight = new THREE.SpotLight(0xffffff);
-    spotLight.position.set(0, 3, 0);
-    spotLight.castShadow = true;
-    spotLight.shadowCameraNear = 0.02;
-    spotLight.shadowCameraFar = 4;
-    spotLight.shadowCameraFov = 90;
-    scene.add(spotLight);
-
     application = new WebVRApplication("poolvr", avatar, scene, options);
     avatar.add(application.camera);
     application.scene.add(avatar);
@@ -37,7 +37,6 @@ function onLoad() {
     addTool(avatar, application.world, {useTransform: true, transformOptions: {vr: true, effectiveParent: application.camera}});
 
     // ##### Desktop mode: #####
-    // # no plugin: tool ok, hands no
     // addTool(avatar, application.world);
     // addTool(avatar, application.world, {useTransform: true, transformOptions: {vr: 'desktop'}});
 

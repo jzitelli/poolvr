@@ -1,4 +1,6 @@
-// modified from the standard plugin to support a single tool in addition to hands
+// modified from the original plugin to support a single tool in addition to hands:
+// http://leapmotion.github.io/leapjs-plugins/main/transform/
+
 (function() {
   Leap.plugin('transform', function(scope) {
     var noop, transformDirections, transformMat4Implicit0, transformPositions, transformWithMatrices, _directionTransform;
