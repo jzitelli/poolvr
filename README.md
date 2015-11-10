@@ -31,10 +31,10 @@ This method requires several Python packages.  I recommend using the [Anaconda P
 The following amazing open source projects have helped make **poolvr** possible:
 
   JavaScript libraries:
-  - three.js
-  - Cannon.js
-  - Primrose
-  - webvr-boilerplate
+    - three.js
+    - Cannon.js
+    - Primrose
+    - webvr-boilerplate
   Python packages:
-  - Tornado
-  - Flask
+    - Tornado
+    - Flask
