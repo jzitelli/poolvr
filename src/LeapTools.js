@@ -2,11 +2,13 @@ function addTool(parent, world, options) {
     "use strict";
     options = options || {};
 
+    var toolLength = options.toolLength || 0.5;
+    var toolRadius = options.toolLength || 0.016;
     var toolTime = options.toolTime || 0.03;
-    var toolOffset = options.toolOffset || new THREE.Vector3(0, -0.3, -0.7);
-    var toolOffsetVR = options.toolOffsetVR || new THREE.Vector3(0, 0, 0);
+    var toolOffset = options.toolOffset || new THREE.Vector3(0, -0.3, -toolLength);
+    var toolOffsetVR = options.toolOffsetVR || new THREE.Vector3(0, 0, -toolLength);
 
-    var minConfidence = options.minConfidence || 0.1;
+    var minConfidence = options.minConfidence || 0.25;
     var handOffset = options.handOffset || new THREE.Vector3(0, -0.25, -0.4);
     var handOffsetVR = options.handOffsetVR || new THREE.Vector3(0, 0, 0);
 
@@ -54,8 +56,8 @@ function addTool(parent, world, options) {
 
     var onFrame = (function () {
         // setup tool: #########################
-        var radius = 0.016 / scale;
-        var length = 0.5 / scale;
+        var radius = toolRadius / scale;
+        var length = toolLength / scale;
 
         var stickGeom = new THREE.CylinderGeometry(radius, radius, length, 10, 1, false, 0, 2*Math.PI);
         stickGeom.translate(0, -length / 2, 0);
@@ -127,12 +129,13 @@ function addTool(parent, world, options) {
         return function (frame) {
             toolRoot.visible = false;
             if (frame.tools.length === 1) {
+                toolRoot.visible = true;
                 var tool = frame.tools[0];
                 if (tool.timeVisible > toolTime) {
-                    toolRoot.visible = true;
                     // TODO: option to toggle stabilized or not
-                    stickMesh.position.set(tool.tipPosition[0], tool.tipPosition[1], tool.tipPosition[2]);
-                    // stickMesh.position.set(tool.stabilizedTipPosition[0], tool.stabilizedTipPosition[1], tool.stabilizedTipPosition[2]);
+                    // stickMesh.position.set(tool.tipPosition[0], tool.tipPosition[1], tool.tipPosition[2]);
+                    stickMesh.position.set(tool.stabilizedTipPosition[0], tool.stabilizedTipPosition[1], tool.stabilizedTipPosition[2]);
+
                     direction.set(tool.direction[0], tool.direction[1], tool.direction[2]);
                     stickMesh.quaternion.setFromUnitVectors(UP, direction);
 

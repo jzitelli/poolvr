@@ -266,24 +266,24 @@ WebVRApplication = ( function () {
                 drive = 0;
             }
 
-            if (mousePointer.visible && picking) {
-                origin.set(0, 0, 0);
-                direction.set(0, 0, 0);
-                direction.subVectors(mousePointer.localToWorld(direction), camera.localToWorld(origin)).normalize();
-                raycaster.set(origin, direction);
-                var intersects = raycaster.intersectObjects(pickables);
-                if (intersects.length > 0) {
-                    if (this.picked != intersects[0].object) {
-                        if (this.picked) this.picked.material.color.setHex(this.picked.currentHex);
-                        this.picked = intersects[0].object;
-                        this.picked.currentHex = this.picked.material.color.getHex();
-                        this.picked.material.color.setHex(0xff4444); //0x44ff44);
-                    }
-                } else {
-                    if (this.picked) this.picked.material.color.setHex(this.picked.currentHex);
-                    this.picked = null;
-                }
-            }
+            // if (mousePointer.visible && picking) {
+            //     origin.set(0, 0, 0);
+            //     direction.set(0, 0, 0);
+            //     direction.subVectors(mousePointer.localToWorld(direction), camera.localToWorld(origin)).normalize();
+            //     raycaster.set(origin, direction);
+            //     var intersects = raycaster.intersectObjects(pickables);
+            //     if (intersects.length > 0) {
+            //         if (this.picked != intersects[0].object) {
+            //             if (this.picked) this.picked.material.color.setHex(this.picked.currentHex);
+            //             this.picked = intersects[0].object;
+            //             this.picked.currentHex = this.picked.material.color.getHex();
+            //             this.picked.material.color.setHex(0xff4444); //0x44ff44);
+            //         }
+            //     } else {
+            //         if (this.picked) this.picked.material.color.setHex(this.picked.currentHex);
+            //         this.picked = null;
+            //     }
+            // }
 
             // TODO: resolve CANNON issues w/ initial low framerate
             this.world.step(1/60);
