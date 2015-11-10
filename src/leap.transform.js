@@ -87,7 +87,7 @@
       return hand.arm.width *= scalarScale;
     };
 
-    transformToolWithMatrices = function(tool, transform, scale) {
+    var transformToolWithMatrices = function(tool, transform, scale) {
       transformDirections(transform, [tool.direction, tool.tipVelocity]);
       Leap.glMatrix.mat4.scale(transform, transform, scale);
       transformPositions(transform, [tool.tipPosition, tool.stabilizedTipPosition]);
