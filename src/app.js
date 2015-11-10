@@ -1,4 +1,3 @@
-// webvr-boilerplate:
 WebVRConfig = {
   // Forces cardboard distortion in VR mode.
   FORCE_DISTORTION: true, // Default: false.
@@ -41,6 +40,16 @@ function onLoad() {
     // # no plugin: tool ok, hands no
     // addTool(avatar, application.world);
     // addTool(avatar, application.world, {useTransform: true, transformOptions: {vr: 'desktop'}});
+
+    var fullscreenButton = document.getElementById('goRegular');
+    fullscreenButton.addEventListener('click', function (evt) {
+      application.vrManager.enterImmersive();
+    });
+
+    var vrButton = document.getElementById('goVR');
+    vrButton.addEventListener('click', function (evt) {
+      application.vrManager.enterVR();
+    });
 
     application.start();
 }
