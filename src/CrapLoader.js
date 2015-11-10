@@ -254,10 +254,26 @@ var CrapLoader = ( function () {
                             node.geometry.parameters.height,
                             node.geometry.parameters.radialSegments);
                         break;
-                    case 'TriMesh':
-                        var vertices = node.geometry.getAttribute('position').array;
-                        var indices = node.geometry.getAttribute('index').array;
-                        shape = new CANNON.TriMesh(vertices, faces);
+                    case 'Trimesh':
+                        var vertices;
+                        var indices;
+                        if (node.geometry instanceof THREE.BufferGeometry) {
+                            vertices = node.geometry.getAttribute('position').array;
+                            indices = node.geometry.getAttribute('index').array;
+                        } else {
+                            vertices = [];
+                            for (var iv = 0; iv < node.geometry.vertices.length; iv++) {
+                                var vert = node.geometry.vertices[iv];
+                                vertices.push(vert.x, vert.y, vert.z);
+                            }
+                            indices = [];
+                            for (var iface = 0; iface < node.geometry.faces.length; iface++) {
+                                var face = node.geometry.faces[iface];
+                                indices.push(face.a, face.b, face.c);
+                            }
+                        }
+                        shape = new CANNON.Trimesh(vertices, indices);
+                        console.log(shape);
                         break;
                     default:
                         console.log("unknown shape type: " + e);
