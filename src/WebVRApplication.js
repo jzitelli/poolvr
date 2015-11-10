@@ -1,10 +1,34 @@
-/* global Primrose, THREE, WebVRManager, combineDefaults */
-
 WebVRApplication = ( function () {
     function WebVRApplication(name, avatar, scene, options) {
         this.name = name;
         this.avatar = avatar;
         this.scene = scene;
+
+        this.toggleVRControls = function () {
+            if (this.vrControls.enabled) {
+                this.vrControls.enabled = false;
+                this.camera.position.set(0, 0, 0);
+                this.camera.quaternion.set(0, 0, 0, 1);
+            } else {
+                this.vrControls.enabled = true;
+                this.vrControls.update();
+            }
+        }.bind(this);
+
+        this.resetVRSensor = function () {
+            this.vrControls.resetSensor();
+        }.bind(this);
+
+        var wireframeMaterial = new THREE.MeshBasicMaterial({color: 0xeeddaa, wireframe: true});
+        this.toggleWireframe = function () {
+            if (this.scene.overrideMaterial) {
+                console.log("wireframe: off");
+                this.scene.overrideMaterial = null;
+            } else {
+                console.log("wireframe: on");
+                this.scene.overrideMaterial = wireframeMaterial;
+            }
+        }.bind(this);
 
         // default keyboard controls:
         var keyboardCommands = {
@@ -57,11 +81,6 @@ WebVRApplication = ( function () {
         });
 
         this.keyboard = new Primrose.Input.Keyboard("keyboard", window, options.keyboardCommands);
-        // window.addEventListener("keydown", function (evt) {
-        //     if (evt.keyCode === Primrose.Text.Keys.F) {
-        //         this.vrManager.enterImmersive();
-        //     }
-        // }.bind(this));
 
         this.gamepad = new Primrose.Input.Gamepad("gamepad", options.gamepadCommands);
         this.gamepad.addEventListener("gamepadconnected", function(id) {
@@ -102,7 +121,6 @@ WebVRApplication = ( function () {
         var world = new CANNON.World();
         world.gravity.set( 0, -options.gravity, 0 );
         world.broadphase = new CANNON.SAPBroadphase( world );
-        // world.broadphase = new CANNON.NaiveBroadphase( world );
         world.defaultContactMaterial.contactEquationStiffness = 1e8;
         world.defaultContactMaterial.frictionEquationStiffness = 1e7;
         world.defaultContactMaterial.contactEquationRelaxation = 3;
@@ -154,11 +172,11 @@ WebVRApplication = ( function () {
         var loadingCamera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
         var lt = 0;
 
-        // TODO: don't poll
         this.start = function() {
             function waitForResources(t) {
                 if (CrapLoader.isLoaded()) {
                     CrapLoader.CANNONize(scene, world);
+                    // to let physics settle down first with small time steps:
                     for (var i = 0; i < 240*2; i++) {
                         world.step(1/240);
                     }
@@ -195,18 +213,6 @@ WebVRApplication = ( function () {
         };
         this.picked = null;
 
-        this.addEventListener = function ( event, thunk ) {
-            if ( this.listeners[event] ) {
-                this.listeners[event].push( thunk );
-            }
-        }.bind(this);
-
-        this.fire = function ( name, dt ) {
-            for ( var i = 0; i < this.listeners[name].length; ++i ) {
-                this.listeners[name][i]( dt );
-            }
-        }.bind(this);
-
         var UP = new THREE.Vector3(0, 1, 0),
             RIGHT = new THREE.Vector3(1, 0, 0),
             heading = 0,
@@ -218,8 +224,7 @@ WebVRApplication = ( function () {
             kbheading = 0,
             kbpitch = 0,
             walkSpeed = options.moveSpeed,
-            floatSpeed = 0.9 * options.moveSpeed,
-            bodyPosition = new THREE.Vector3();
+            floatSpeed = 0.9 * options.moveSpeed;
         var animate = function (t) {
             requestAnimationFrame(animate);
             var dt = (t - lt) * 0.001;
@@ -266,44 +271,33 @@ WebVRApplication = ( function () {
                 drive = 0;
             }
 
-            // if (mousePointer.visible && picking) {
-            //     origin.set(0, 0, 0);
-            //     direction.set(0, 0, 0);
-            //     direction.subVectors(mousePointer.localToWorld(direction), camera.localToWorld(origin)).normalize();
-            //     raycaster.set(origin, direction);
-            //     var intersects = raycaster.intersectObjects(pickables);
-            //     if (intersects.length > 0) {
-            //         if (this.picked != intersects[0].object) {
-            //             if (this.picked) this.picked.material.color.setHex(this.picked.currentHex);
-            //             this.picked = intersects[0].object;
-            //             this.picked.currentHex = this.picked.material.color.getHex();
-            //             this.picked.material.color.setHex(0xff4444); //0x44ff44);
-            //         }
-            //     } else {
-            //         if (this.picked) this.picked.material.color.setHex(this.picked.currentHex);
-            //         this.picked = null;
-            //     }
-            // }
+            if (mousePointer.visible && picking) {
+                origin.set(0, 0, 0);
+                direction.set(0, 0, 0);
+                direction.subVectors(mousePointer.localToWorld(direction), camera.localToWorld(origin)).normalize();
+                raycaster.set(origin, direction);
+                var intersects = raycaster.intersectObjects(pickables);
+                if (intersects.length > 0) {
+                    if (this.picked != intersects[0].object) {
+                        if (this.picked) this.picked.material.color.setHex(this.picked.currentHex);
+                        this.picked = intersects[0].object;
+                        this.picked.currentHex = this.picked.material.color.getHex();
+                        this.picked.material.color.setHex(0xff4444); //0x44ff44);
+                    }
+                } else {
+                    if (this.picked) this.picked.material.color.setHex(this.picked.currentHex);
+                    this.picked = null;
+                }
+            }
 
             // TODO: resolve CANNON issues w/ initial low framerate
             this.world.step(1/60);
 
-            // if (this.avatar.body) {
-            //     this.avatar.body.quaternion.setFromAxisAngle(UP, heading);
-            //     this.avatar.body.quaternion.mult(pitchQuat, this.avatar.body.quaternion);
-            //     this.avatar.body.velocity.x = this.avatar.body.velocity.x * 0.9 +
-            //         0.1 * (strafe * cosHeading + drive * sinHeading * cosPitch);
-            //     this.avatar.body.velocity.z = this.avatar.body.velocity.z * 0.9 +
-            //         0.1 * ((drive * cosHeading  * cosPitch - strafe * sinHeading));
-            //     this.avatar.body.velocity.y = this.avatar.body.velocity.y * 0.9 +
-            //         0.08 * floatUp + 0.1 * drive * (-sinPitch);
-            // } else {
-                this.avatar.quaternion.setFromAxisAngle(UP, heading);
-                this.avatar.quaternion.multiply(pitchQuat);
-                this.avatar.position.x += dt * (strafe * cosHeading + drive * sinHeading);
-                this.avatar.position.z += dt * (drive * cosHeading - strafe * sinHeading);
-                this.avatar.position.y += dt * floatUp;
-            // }
+            this.avatar.quaternion.setFromAxisAngle(UP, heading);
+            this.avatar.quaternion.multiply(pitchQuat);
+            this.avatar.position.x += dt * (strafe * cosHeading + drive * sinHeading);
+            this.avatar.position.z += dt * (drive * cosHeading - strafe * sinHeading);
+            this.avatar.position.y += dt * floatUp;
 
             for (var j = 0; j < this.world.bodies.length; ++j) {
                 var body = this.world.bodies[j];
@@ -312,14 +306,6 @@ WebVRApplication = ( function () {
                     body.mesh.quaternion.copy(body.quaternion);
                 }
             }
-
-            this.fire('update', dt);
-
-            // if (this.particleGroups) {
-            //     this.particleGroups.forEach(function (group) {
-            //         group.tick(dt);
-            //     });
-            // }
 
         }.bind(this);
 
@@ -345,35 +331,6 @@ WebVRApplication = ( function () {
         };
 
     }
-
-
-    var wireframeMaterial = new THREE.MeshBasicMaterial({color: 0xeeddaa, wireframe: true});
-    WebVRApplication.prototype.toggleWireframe = function () {
-        if (this.scene.overrideMaterial) {
-            console.log("wireframe: off");
-            this.scene.overrideMaterial = null;
-        } else {
-            console.log("wireframe: on");
-            this.scene.overrideMaterial = wireframeMaterial;
-        }
-    };
-
-
-    WebVRApplication.prototype.toggleVRControls = function () {
-        if (this.vrControls.enabled) {
-            this.vrControls.enabled = false;
-            this.camera.position.set(0, 0, 0);
-            this.camera.quaternion.set(0, 0, 0, 1);
-        } else {
-            this.vrControls.enabled = true;
-            this.vrControls.update();
-        }
-    };
-
-
-    WebVRApplication.prototype.resetVRSensor = function () {
-        this.vrControls.resetSensor();
-    };
 
     return WebVRApplication;
 } )();

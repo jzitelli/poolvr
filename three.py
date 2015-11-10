@@ -1,24 +1,13 @@
-"""Define three.js entities from Python with this module.
+"""Define three.js objects from Python with this module.
 
 These Python classes support JSON serializions which can be loaded by THREE.ObjectLoader.
 """
 
 import sys
-import os
 import json
 import uuid
 from collections import defaultdict
 import numpy as np
-
-# TODO: http://stackoverflow.com/questions/10935127/way-to-access-resource-files-in-python
-# TODO: automate generation of ShaderLib.json
-SHADERLIB_PATH = os.path.join(os.path.split(__file__)[0], 'ShaderLib.json')
-try:
-    with open(SHADERLIB_PATH) as f:
-        ShaderLib = json.loads(f.read())
-except Exception as err:
-    print("%s could not be loaded: %s" % (SHADERLIB_PATH, err))
-    ShaderLib = None
 
 DEG2RAD = np.pi / 180
 

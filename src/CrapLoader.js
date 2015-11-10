@@ -15,6 +15,17 @@ var CrapLoader = ( function () {
     }
 
     function parse(json) {
+        function onLoad(obj) {
+            obj.traverse( function (node) {
+                if (node instanceof THREE.Mesh) {
+                    node.geometry.computeBoundingSphere();
+                    node.geometry.computeBoundingBox();
+                    if (node.userData && node.userData.visible === false) {
+                        node.visible = false;
+                    }
+                }
+            } );
+        }
         if (json.materials) {
             json.materials.forEach( function (mat) {
                 if (mat.type.endsWith("ShaderMaterial") && mat.uniforms) {
@@ -37,17 +48,9 @@ var CrapLoader = ( function () {
                 }
             } );
         }
-        function onLoad(obj) {
-            obj.traverse( function (node) {
-                if (node instanceof THREE.Mesh) {
-                    node.geometry.computeBoundingSphere();
-                    node.geometry.computeBoundingBox();
-                    if (node.userData && node.userData.visible === false) {
-                        node.visible = false;
-                    }
-                }
-            } );
-        }
+        var geometries = objectLoader.parseGeometries(json.geometries.filter(function (geom) {
+            return geom.type != "TextGeometry";
+        }));
         var images = objectLoader.parseImages(json.images, function () {
             onLoad(object);
         });

@@ -57,30 +57,29 @@
         }
     </style>
 
+<!-- three.js scene definition is embedded here -->
 {{ json_config if json_config else "" }}
 
   </head>
 
   <body onload="onLoad()">
 
-    <script src="{{ url_for('static', filename='lib/three-r73'      + js_suffix) }}"></script>
-    <script src="{{ url_for('static', filename='lib/TextGeometry'   + js_suffix) }}"></script>
-    <script src="{{ url_for('static', filename='lib/FontUtils'      + js_suffix) }}"></script>
-    <script src="{{ url_for('static', filename='lib/ColladaLoader'  + js_suffix) }}"></script>
-    <script src="{{ url_for('static', filename='lib/VREffect'       + js_suffix) }}"></script>
-    <script src="{{ url_for('static', filename='lib/VRControls'     + js_suffix) }}"></script>
-    <script src="{{ url_for('static', filename='lib/webvr-polyfill' + js_suffix) }}"></script>
-    <script src="{{ url_for('static', filename='lib/webvr-manager'  + js_suffix) }}"></script>
+    <script src="{{ url_for('static', filename='lib/three-r73.js') }}"></script>
+    <script src="{{ url_for('static', filename='lib/TextGeometry.js') }}"></script>
+    <script src="{{ url_for('static', filename='lib/FontUtils.js') }}"></script>
+    <script src="{{ url_for('static', filename='lib/VREffect.js') }}"></script>
+    <script src="{{ url_for('static', filename='lib/VRControls.js') }}"></script>
+    <script src="{{ url_for('static', filename='lib/webvr-polyfill.js') }}"></script>
+    <script src="{{ url_for('static', filename='lib/webvr-manager.js') }}"></script>
+    <script src="{{ url_for('static', filename='lib/ColladaLoader.js') }}"></script>
 
-    <script src="{{ url_for('static', filename='lib/socket.io'      + js_suffix) }}"></script>
-    <script src="{{ url_for('static', filename='lib/cannon'         + js_suffix) }}"></script>
-    <script src="{{ url_for('static', filename='lib/leap-0.6.4'     + js_suffix) }}"></script>
+    <script src="{{ url_for('static', filename='lib/socket.io.js') }}"></script>
+    <script src="{{ url_for('static', filename='lib/cannon.js') }}"></script>
+    <script src="{{ url_for('static', filename='lib/leap-0.6.4.js') }}"></script>
 
-    <script src="{{ url_for('static', filename='lib/Primrose'       + js_suffix) }}"></script>
+    <script src="{{ url_for('static', filename='lib/Primrose.js') }}"></script>
 
     <script src="{{ url_for('static', filename='fonts/helvetiker_regular.typeface.js') }}"></script>
-    <script src="{{ url_for('static', filename='fonts/helvetiker_bold.typeface.js') }}"></script>
-    <script src="{{ url_for('static', filename='fonts/Anonymous Pro_Regular.js') }}"></script>
 
     <!-- enhanced version w/ tool tracking: -->
     <script src="{{ url_for('static', filename='src/leap.transform.js') }}"></script>

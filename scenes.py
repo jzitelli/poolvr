@@ -181,9 +181,6 @@ import numpy as np
 
 from three import *
 
-FT2METERS = 0.3048
-IN2METERS = 0.0254
-
 square = RectangleBufferGeometry(vertices=[[-0.5, 0, -0.5], [-0.5, 0, 0.5], [0.5, 0, 0.5], [0.5, 0, -0.5]],
                                  uvs=[(0,1), (0,0), (1,0), (1,1)])
 
@@ -214,15 +211,6 @@ def pool_hall(cubemap=None):
     # spotLight = SpotLight(color=0xffffff, intensity=2, distance=6, position=[0, 3*y_table, 0],
     #                       castShadow=True, shadowCameraNear=0.2, shadowCameraFar=2*y_table, shadowCameraFov=80)
     # scene.add(spotLight)
-    if cubemap:
-        if ShaderLib is not None:
-            shader = deepcopy(ShaderLib['cube'])
-            # shader['uniforms']['tCube']['value'] = ["images/skybox/%s.jpg" % pos
-            #                                         for pos in ('px', 'nx', 'py', 'ny', 'pz', 'nz')]
-            shader['uniforms']['tCube']['value'] = ["images/SwedishRoyalCastle/%s.jpg" % pos
-                                                    for pos in ('px', 'nx', 'py', 'ny', 'pz', 'nz')]
-            scene.add(Mesh(geometry=BoxGeometry(900, 900, 900),
-                           material=ShaderMaterial(side=BackSide, **shader)))
 
     # table:
     y_table = .74295
