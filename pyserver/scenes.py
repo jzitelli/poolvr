@@ -232,16 +232,53 @@ def pool_hall():
                           #                      'shapes': ['Box'],
                           #                      'position': [0, y_table / 2, 0],
                           #                      'scale': [W_table, y_table, L_table]}})
+    feltMaterial = MeshPhongMaterial(color=0x00aa00, shininess=5)
     pool_table = Mesh(geometry=BoxGeometry(W_table, y_table, L_table),
-                      material=MeshPhongMaterial(color=0x00aa00, shininess=5), #MeshLambertMaterial(color=0x00aa00),
+                      material=feltMaterial, #MeshLambertMaterial(color=0x00aa00),
                       position=[0, y_table / 2, 0],
                       receiveShadow=True,
                       userData={'cannonData': {'mass': 0,
                                                'shapes': ['Box']}})
     scene.add(pool_table)
 
+    W_bumper = 0.1016
+    ball_radius = 0.05715 / 2
+    H_bumper = 0.635 * 2 * ball_radius
+    front_bumper = Mesh(geometry=BoxGeometry(W_table, H_bumper, W_bumper),
+                        material=feltMaterial,
+                        position=[0, y_table + H_bumper / 2, L_table / 2 + W_bumper / 2],
+                        receiveShadow=True,
+                        userData={'cannonData': {'mass': 0,
+                                               'shapes': ['Box']}})
+    scene.add(front_bumper)
+    back_bumper = Mesh(geometry=BoxGeometry(W_table, H_bumper, W_bumper),
+                        material=feltMaterial,
+                        position=[0, y_table + H_bumper / 2, -(L_table / 2 + W_bumper / 2)],
+                        receiveShadow=True,
+                        userData={'cannonData': {'mass': 0,
+                                               'shapes': ['Box']}})
+    scene.add(back_bumper)
+    left_bumper = Mesh(geometry=BoxGeometry(W_bumper, H_bumper, L_table),
+                       material=feltMaterial,
+                       position=[-(W_table / 2 + W_bumper / 2),
+                                 y_table + H_bumper / 2,
+                                 0],
+                       receiveShadow=True,
+                       userData={'cannonData': {'mass': 0,
+                                                'shapes': ['Box']}})
+    scene.add(left_bumper)
+    right_bumper = Mesh(geometry=BoxGeometry(W_bumper, H_bumper, L_table),
+                        material=feltMaterial,
+                        position=[(W_table / 2 + W_bumper / 2),
+                                  y_table + H_bumper / 2,
+                                  0],
+                        receiveShadow=True,
+                        userData={'cannonData': {'mass': 0,
+                                                 'shapes': ['Box']}})
+    scene.add(right_bumper)
+
     # balls:
-    radius = 0.05715 / 2
+    radius = ball_radius
     sphere = SphereBufferGeometry(radius=radius, widthSegments=8, heightSegments=16)
     ballData = {'cannonData': {'mass': 0.17, 'shapes': ['Sphere']}}
     y_position = y_table + radius + 0.001 # epsilon distance which the ball will fall from initial position
