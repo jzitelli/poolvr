@@ -57,11 +57,11 @@ WebVRApplication = ( function () {
         });
 
         this.keyboard = new Primrose.Input.Keyboard("keyboard", window, options.keyboardCommands);
-        window.addEventListener("keydown", function (evt) {
-            if (evt.keyCode === Primrose.Text.Keys.F) {
-                this.vrManager.enterImmersive();
-            }
-        }.bind(this));
+        // window.addEventListener("keydown", function (evt) {
+        //     if (evt.keyCode === Primrose.Text.Keys.F) {
+        //         this.vrManager.enterImmersive();
+        //     }
+        // }.bind(this));
 
         this.gamepad = new Primrose.Input.Gamepad("gamepad", options.gamepadCommands);
         this.gamepad.addEventListener("gamepadconnected", function(id) {
