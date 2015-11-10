@@ -83,10 +83,8 @@
     <script src="{{ url_for('static', filename='fonts/helvetiker_bold.typeface.js') }}"></script>
     <script src="{{ url_for('static', filename='fonts/Anonymous Pro_Regular.js') }}"></script>
 
-    <!-- enhanced version: -->
+    <!-- enhanced version w/ tool tracking: -->
     <script src="{{ url_for('static', filename='src/leap.transform.js') }}"></script>
-    <!-- original version: -->
-    <!-- <script src="{{ url_for('static', filename='lib/leap.transform.js') }}"></script> -->
 
     <script src="{{ url_for('static', filename='src/LeapTools.js') }}"></script>
     <script src="{{ url_for('static', filename='src/pyserver.js') }}"></script>
@@ -94,7 +92,7 @@
     <script src="{{ url_for('static', filename='src/CrapLoader.js') }}"></script>
     <script src="{{ url_for('static', filename='src/app.js') }}"></script>
 
-    <article>
+    <article id='mainMenu'>
       <a class="primary button" id="goVR">
         <div id="fullScreenMsg">Start game (VR mode)</div>
         <small>hit ESC to exit.</small>

@@ -46,6 +46,7 @@ http://www.wpa-pool.com/web/WPA_Tournament_Table_Equipment_Specifications:
     level cue and firm stroke, the ball must travel a minimum of 4 to
     4 ½ lengths of the table without jumping.
 
+    (not done)
     9. Pocket Openings and Measurements Only rubber facings of minimum
     1/16 [1.5875 mm] to maximum ¼ inch [6.35 mm] thick may be used at
     pocket jaws. The WPA-preferred maximum thickness for facings is
@@ -227,7 +228,7 @@ def pool_hall(cubemap=None):
     y_table = .74295
     L_table = 2.3368
     W_table = L_table / 2
-    # TODO:
+    # TODO: improve table model
     # scale=[W_table, 1, L_table], position=[0, y_table, 0],
                           # userData={'cannonData': {'mass': 0,
                           #                      'shapes': ['Box'],
@@ -277,6 +278,69 @@ def pool_hall(cubemap=None):
                         userData={'cannonData': {'mass': 0,
                                                  'shapes': ['Box']}})
     scene.add(right_bumper)
+
+    # pockets (shitty hacked in)
+    pocket_radius = 3 * ball_radius
+    pocket_height = 3 * pocket_radius
+    pocketPhysicsGeom = CylinderGeometry(radiusTop=pocket_radius,
+                                         radiusBottom=pocket_radius,
+                                         height=pocket_height,
+                                         radialSegments=16,
+                                         openEnded=True)
+    pocketGeom = CylinderGeometry(radiusTop=pocket_radius,
+                                  radiusBottom=pocket_radius,
+                                  height=0.02,
+                                  radialSegments=16)
+    y_physics = y_table - pocket_height / 2
+    y_mesh = y_table - 0.009
+    pocketPhysicsMesh = Mesh(name='pocketPhysicsMesh',
+                             geometry=pocketPhysicsGeom,
+                             material=MeshBasicMaterial(color=0xffff00),
+                             position=[0, y_physics, 0],
+                             userData={'visible': False, 'cannonData': {'mass': 0, 'shapes': ['Trimesh']}})
+    pocketMesh = Mesh(geometry=pocketGeom,
+                      material=MeshBasicMaterial(color=0x000000),
+                      position=[0, y_mesh, 0])
+    # left center:
+    pocketPhysicsMesh.position[0], pocketMesh.position[0] = 2 * [-W_table / 2]
+    pocketPhysicsMesh.position[2], pocketMesh.position[2] = 2 * [0]
+    scene.add(deepcopy(pocketPhysicsMesh))
+    scene.add(deepcopy(pocketMesh))
+    # right center:
+    pocketPhysicsMesh.position[0], pocketMesh.position[0] = 2 * [W_table / 2]
+    pocketPhysicsMesh.position[2], pocketMesh.position[2] = 2 * [0]
+    scene.add(deepcopy(pocketPhysicsMesh))
+    scene.add(deepcopy(pocketMesh))
+    # front center:
+    pocketPhysicsMesh.position[0], pocketMesh.position[0] = 2 * [0]
+    pocketPhysicsMesh.position[2], pocketMesh.position[2] = 2 * [L_table / 2]
+    scene.add(deepcopy(pocketPhysicsMesh))
+    scene.add(deepcopy(pocketMesh))
+    # back center:
+    pocketPhysicsMesh.position[0], pocketMesh.position[0] = 2 * [0]
+    pocketPhysicsMesh.position[2], pocketMesh.position[2] = 2 * [-L_table / 2]
+    scene.add(deepcopy(pocketPhysicsMesh))
+    scene.add(deepcopy(pocketMesh))
+    # back left:
+    pocketPhysicsMesh.position[0], pocketMesh.position[0] = 2 * [-W_table / 2]
+    pocketPhysicsMesh.position[2], pocketMesh.position[2] = 2 * [-L_table / 2]
+    scene.add(deepcopy(pocketPhysicsMesh))
+    scene.add(deepcopy(pocketMesh))
+    # back right:
+    pocketPhysicsMesh.position[0], pocketMesh.position[0] = 2 * [W_table / 2]
+    pocketPhysicsMesh.position[2], pocketMesh.position[2] = 2 * [-L_table / 2]
+    scene.add(deepcopy(pocketPhysicsMesh))
+    scene.add(deepcopy(pocketMesh))
+    # front left:
+    pocketPhysicsMesh.position[0], pocketMesh.position[0] = 2 * [-W_table / 2]
+    pocketPhysicsMesh.position[2], pocketMesh.position[2] = 2 * [L_table / 2]
+    scene.add(deepcopy(pocketPhysicsMesh))
+    scene.add(deepcopy(pocketMesh))
+    # front right:
+    pocketPhysicsMesh.position[0], pocketMesh.position[0] = 2 * [W_table / 2]
+    pocketPhysicsMesh.position[2], pocketMesh.position[2] = 2 * [L_table / 2]
+    scene.add(deepcopy(pocketPhysicsMesh))
+    scene.add(deepcopy(pocketMesh))
 
     # balls:
     radius = ball_radius

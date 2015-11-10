@@ -345,6 +345,32 @@ class Geometry(Three):
         return BufferGeometry(name=self.name, vertices=self.vertices, indices=self.indices, normals=self.normals, uvs=self.uvs)
 
 
+class BoxGeometry(Geometry):
+    def __init__(self, width=1, height=1, depth=1, widthSegments=1, heightSegments=1, depthSegments=1, **kwargs):
+        Three.__init__(self, **kwargs)
+        self.width = width
+        self.height = height
+        self.depth = depth
+        self.widthSegments = widthSegments
+        self.heightSegments = heightSegments
+        self.depthSegments = depthSegments
+
+
+class CylinderGeometry(Geometry):
+    def __init__(self, radiusTop=20, radiusBottom=20, height=100,
+                 radialSegments=8, heightSegments=1,
+                 openEnded=False, thetaStart=0, thetaLength=2*np.pi, **kwargs):
+        Three.__init__(self)
+        self.radiusTop = radiusTop
+        self.radiusBottom = radiusBottom
+        self.height = height
+        self.radialSegments = radialSegments
+        self.heightSegments = heightSegments
+        self.openEnded = openEnded
+        self.thetaStart = thetaStart
+        self.thetaLength = thetaLength
+
+
 class BufferGeometry(Three):
     def __init__(self, name=None, vertices=None, indices=None, normals=None, uvs=None):
         Three.__init__(self, name)
@@ -385,20 +411,6 @@ class BufferGeometry(Three):
         return d
 
 
-class CylinderGeometry(Geometry):
-    def __init__(self, radiusTop=20, radiusBottom=20, height=100, radiusSegments=8, heightSegments=1,
-        openEnded=False, thetaStart=0, thetaLength=2*np.pi, **kwargs):
-        Three.__init__(self)
-        self.radiusTop = radiusTop
-        self.radiusBottom = radiusBottom
-        self.height = height
-        self.radiusSegments = radiusSegments
-        self.heightSegments = heightSegments
-        self.openEnded = openEnded
-        self.thetaStart = thetaStart
-        self.thetaLength = thetaLength
-
-
 class DodecahedronGeometry(Geometry):
     def __init__(self, radius=1, detail=0, **kwargs):
         Geometry.__init__(self)
@@ -415,17 +427,6 @@ class RectangleBufferGeometry(BufferGeometry):
     """Defines two triangles representing a rectangle - indices are (0,1,2), (0,2,3)"""
     def __init__(self, vertices, uvs=None, **kwargs):
         BufferGeometry.__init__(self, vertices=vertices, uvs=uvs, indices=_tri_faces([0,1,2,3]), **kwargs)
-
-
-class BoxGeometry(Geometry):
-    def __init__(self, width=1, height=1, depth=1, widthSegments=1, heightSegments=1, depthSegments=1, **kwargs):
-        Three.__init__(self, **kwargs)
-        self.width = width
-        self.height = height
-        self.depth = depth
-        self.widthSegments = widthSegments
-        self.heightSegments = heightSegments
-        self.depthSegments = depthSegments
 
 
 class BoxBufferGeometry(BufferGeometry):

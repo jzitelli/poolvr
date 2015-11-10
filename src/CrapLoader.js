@@ -68,7 +68,9 @@ var CrapLoader = ( function () {
                 }
             } );
         }
-        var geometries = objectLoader.parseGeometries(json.geometries.filter(function (geom) { return geom.type != "TextGeometry";}));
+        var geometries = objectLoader.parseGeometries(json.geometries.filter(function (geom) {
+            return geom.type != "TextGeometry";
+        }));
         json.geometries.forEach( function (geom) {
             if (geom.type == "TextGeometry") {
                 var geometry = new THREE.TextGeometry(geom.text, geom.parameters);
@@ -78,27 +80,36 @@ var CrapLoader = ( function () {
             }
         } );
         function onLoad(obj) {
-            function findInJSON(object, uuid) {
-                if (object.uuid == uuid) {
-                    return object;
-                }
-                else {
-                    for (var i = 0; i < object.children.length; i++) {
-                        var child = object.children[i];
-                        var found = findInJSON(child, uuid);
-                        if (found) return found;
-                    }
-                    return null;
-                }
-            }
+            // function findInJSON(object, uuid) {
+            //     if (object.uuid == uuid) {
+            //         return object;
+            //     }
+            //     else {
+            //         for (var i = 0; i < object.children.length; i++) {
+            //             var child = object.children[i];
+            //             var found = findInJSON(child, uuid);
+            //             if (found) return found;
+            //         }
+            //         return null;
+            //     }
+            // }
             obj.traverse( function (node) {
                 if (node instanceof THREE.Mesh) {
                     node.geometry.computeBoundingSphere();
                     node.geometry.computeBoundingBox();
                 }
             });
+
             loadHeightfields(obj);
+
+            obj.traverse(function (node) {
+                if (node.userData && node.userData.visible === false) {
+                    node.visible = false;
+                    console.log(node);
+                }
+            });
         }
+
         var images = objectLoader.parseImages(json.images, function () {
             onLoad(object);
         });
