@@ -3,6 +3,12 @@
 Play pool / billiards with your LeapMotion device in VR (or fullscreen mode), in a web browser!
 
 
+## About:
+
+**poolvr** uses [three.js](https://github.com/mrdoob/three.js) to provide WebGL graphics and [Cannon.js](https://github.com/schteppe/cannon.js) to provide realtime physics.
+
+If you use a WebVR-enabled browser, you can play in VR!  This feature uses [webvr-boilerplate](https://github.com/borismus/webvr-boilerplate).
+
 
 ## Obtaining the latest WebVR-enabled browsers:
 
