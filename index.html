@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="UTF-8">
+    <title>poolvr by jzitelli</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="stylesheets/normalize.css" media="screen">
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
+  </head>
+  <body>
+    <section class="page-header">
+      <h1 class="project-name">poolvr</h1>
+      <h2 class="project-tagline">Play pool / billiards in VR with your LeapMotion device, in a web browser!</h2>
+      <a href="https://github.com/jzitelli/poolvr" class="btn">View on GitHub</a>
+      <a href="https://github.com/jzitelli/poolvr/zipball/master" class="btn">Download .zip</a>
+      <a href="https://github.com/jzitelli/poolvr/tarball/master" class="btn">Download .tar.gz</a>
+    </section>
+
+    <section class="main-content">
+      <h2>
+<a id="obtaining-the-latest-webvr-enabled-browsers" class="anchor" href="#obtaining-the-latest-webvr-enabled-browsers" aria-hidden="true"><span class="octicon octicon-link"></span></a>Obtaining the latest WebVR-enabled browsers:</h2>
+
+<ul>
+<li><p>Mozilla Firefox supports WebVR in its nightly builds, <a href="http://mozvr.com">see MozVR for more info</a></p></li>
+<li><p><a href="http://blog.tojicode.com/2014/07/bringing-vr-to-chrome.html">WebVR-enabled builds of Chrome / Chromium</a></p></li>
+</ul>
+
+<h2>
+<a id="how-to-run-locally-tested-under-64-bit-windows-7-windows-10-ubuntu-14-fedora-22" class="anchor" href="#how-to-run-locally-tested-under-64-bit-windows-7-windows-10-ubuntu-14-fedora-22" aria-hidden="true"><span class="octicon octicon-link"></span></a>How to run locally (tested under (64 bit) Windows 7, Windows 10, Ubuntu 14, Fedora 22):</h2>
+
+<h3>
+<a id="method-a-serving-the-static-file-indexhtml" class="anchor" href="#method-a-serving-the-static-file-indexhtml" aria-hidden="true"><span class="octicon octicon-link"></span></a>Method A (serving the static file <code>index.html</code>):</h3>
+
+<ol>
+<li>Start a Python HTTP server in the root directory:
+
+<ul>
+<li>using Python 2: <code>python -m SimpleHTTPServer</code>
+</li>
+<li>using Python 3: <code>python -m http.server</code>
+</li>
+</ul>
+</li>
+<li>Point your browser to <code>http://localhost:8000</code> (desktop tracking) or <code>http://localhost:8000?vr=1</code> (VR tracking)</li>
+</ol>
+
+<h3>
+<a id="method-b-flask-application-serving-dynamically-generated-html" class="anchor" href="#method-b-flask-application-serving-dynamically-generated-html" aria-hidden="true"><span class="octicon octicon-link"></span></a>Method B (Flask application serving dynamically generated HTML):</h3>
+
+<p>This method requires some extra Python packages.  I recommend using the <a href="http://conda.pydata.org/miniconda.html">Miniconda Python distribution</a>, which will let you easily install the Python dependencies.</p>
+
+<ol>
+<li>Run the Python script <code>flask_app.py</code>: <code>python flask_app.py</code>
+</li>
+<li>Point your browser to <code>http://127.0.0.1:5000</code> (desktop tracking) or <code>http://127.0.0.1:5000?vr=1</code> (VR tracking)</li>
+</ol>
+
+<p>The Flask application is configured to also serve any file within the project tree (nice for local development, but probably a bad idea to deploy to an actual web server).
+For instance, you can access the static <code>index.html</code> that you would obtain with method A via <code>http://127.0.0.1:5000/index.html</code>.</p>
+
+<h2>
+<a id="desktop-and-vr-tracking-modes" class="anchor" href="#desktop-and-vr-tracking-modes" aria-hidden="true"><span class="octicon octicon-link"></span></a>Desktop and VR tracking modes:</h2>
+
+<p>The default stick tracking mode (aka 'desktop') assumes that the LeapMotion sensor is stationary, facing up.</p>
+
+<p>The VR stick tracking mode assumes that the sensor is <a href="https://developer.leapmotion.com/vr-setup">mounted to your HMD</a>.
+Currently this mode is selected using a <code>vr</code> URL parameter, e.g. you would point your browser to <code>http://127.0.0.1:5000?vr=1</code>.</p>
+
+<h2>
+<a id="todo-list" class="anchor" href="#todo-list" aria-hidden="true"><span class="octicon octicon-link"></span></a>TODO list:</h2>
+
+<ul>
+<li>Cannon.js model for the pockets, not sure what the best approach is</li>
+<li>Run-time tracking mode toggling</li>
+<li>Ball labels, more balls</li>
+<li>Select friction, collision response physics parameters</li>
+<li>Hand interactions</li>
+</ul>
+
+<h2>
+<a id="acknowledgements" class="anchor" href="#acknowledgements" aria-hidden="true"><span class="octicon octicon-link"></span></a>Acknowledgements:</h2>
+
+<p>The following amazing open-source projects have helped make <strong>poolvr</strong> possible:</p>
+
+<p>JavaScript libraries:</p>
+
+<ul>
+<li><a href="https://github.com/mrdoob/three.js">three.js</a></li>
+<li><a href="https://github.com/schteppe/cannon.js">Cannon.js</a></li>
+<li><a href="https://github.com/capnmidnight/Primrose">Primrose</a></li>
+<li><a href="https://github.com/borismus/webvr-boilerplate">webvr-boilerplate</a></li>
+</ul>
+
+<p>Python packages:</p>
+
+<ul>
+<li><a href="http://flask.pocoo.org/">Flask</a></li>
+<li><a href="http://www.numpy.org">NumPy</a></li>
+</ul>
+
+      <footer class="site-footer">
+        <span class="site-footer-owner"><a href="https://github.com/jzitelli/poolvr">poolvr</a> is maintained by <a href="https://github.com/jzitelli">jzitelli</a>.</span>
+
+        <span class="site-footer-credits">This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the <a href="https://github.com/jasonlong/cayman-theme">Cayman theme</a> by <a href="https://twitter.com/jasonlong">Jason Long</a>.</span>
+      </footer>
+
+    </section>
+
+  
+  </body>
+</html>
