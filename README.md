@@ -23,7 +23,7 @@ Play pool / billiards with your LeapMotion device in VR (or fullscreen mode), in
 
 ### Method B (Flask application serving dynamically generated HTML):
 
-This method requires some extra Python packages.  I recommend using the [Anaconda Python distribution](https://www.continuum.io/downloads), which will let you easily install the Python dependencies.
+This method requires some extra Python packages.  I recommend using the [Miniconda Python distribution](http://conda.pydata.org/miniconda.html), which will let you easily install the Python dependencies.
 
 1. Run the Python script `flask_app.py`: `python flask_app.py`
 2. Point your browser to `http://127.0.0.1:5000` (desktop tracking) or `http://127.0.0.1:5000?vr=1` (VR tracking)
