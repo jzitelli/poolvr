@@ -7,26 +7,26 @@ var centerSpotLight = new THREE.SpotLight(0xffffee);
 centerSpotLight.position.set(0, 2, 0);
 centerSpotLight.castShadow = true;
 centerSpotLight.shadowCameraNear = 0.01;
-centerSpotLight.shadowCameraFar = 4;
-centerSpotLight.shadowCameraFov = 90;
+centerSpotLight.shadowCameraFar = 3;
+centerSpotLight.shadowCameraFov = 70;
 scene.add(centerSpotLight);
 var centerSpotLightHelper = new THREE.SpotLightHelper(centerSpotLight);
 scene.add(centerSpotLightHelper);
 centerSpotLightHelper.visible = false;
 
-var spotLight = new THREE.SpotLight(0xddffdd,
-                                    0.7, // intensity
-                                    10); // distance
-spotLight.position.set(-5/2, 3/2, 4/2);
-spotLight.castShadow = true;
-spotLight.shadowCameraNear = 0.01;
-spotLight.shadowCameraFar = 10;
-spotLight.shadowCameraFov = 50;
-spotLight.shadowDarkness = 0.4;
-scene.add(spotLight);
-var spotLightHelper = new THREE.SpotLightHelper(spotLight);
-scene.add(spotLightHelper);
-spotLightHelper.visible = false;
+// var spotLight = new THREE.SpotLight(0xddffdd,
+//                                     0.7, // intensity
+//                                     10); // distance
+// spotLight.position.set(-5/2, 3/2, 4/2);
+// spotLight.castShadow = true;
+// spotLight.shadowCameraNear = 0.01;
+// spotLight.shadowCameraFar = 10;
+// spotLight.shadowCameraFov = 50;
+// spotLight.shadowDarkness = 0.4;
+// scene.add(spotLight);
+// var spotLightHelper = new THREE.SpotLightHelper(spotLight);
+// scene.add(spotLightHelper);
+// spotLightHelper.visible = false;
 
 var avatar = new THREE.Object3D();
 avatar.position.y = 1.2;
