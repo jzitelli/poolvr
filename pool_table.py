@@ -44,9 +44,9 @@ def pool_hall():
     W_table = L_table / 2
     y_table = .74295 # 0.835
 
-    feltMaterial = MeshPhongMaterial(color=0x00aa00, shininess=5)
+    feltMaterial = MeshPhongMaterial(color=0x00aa00, shininess=5)  #MeshLambertMaterial(color=0x00aa00),
     pool_table = Mesh(geometry=BoxGeometry(W_table, y_table, L_table),
-                      material=feltMaterial, #MeshLambertMaterial(color=0x00aa00),
+                      material=feltMaterial,
                       position=[0, y_table / 2, 0],
                       receiveShadow=True,
                       userData={'cannonData': {'mass': 0,

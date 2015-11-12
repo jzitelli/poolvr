@@ -19,15 +19,21 @@ var URL_PARAMS = (function () {
 })();
 
 WebVRConfig = {
+
   // Forces cardboard distortion in VR mode.
-  FORCE_DISTORTION: true // Default: false.
+  //FORCE_DISTORTION: true // Default: false.
+  
   // Prevents cardboard distortion in VR mode
-  //PREVENT_DISTORTION: true, // Default: false.
+  //PREVENT_DISTORTION: true // Default: false.
+  
   // Override the cardboard distortion background color.
-  //DISTORTION_BGCOLOR: {x: 1, y: 0, z: 0, w: 1}, // Default: (0,0,0,1).
+  //DISTORTION_BGCOLOR: {x: 1, y: 0, z: 0, w: 1} // Default: (0,0,0,1).
+
 };
 
 var options = {
     gravity: 9.8,
-    shadowMap: true
+    shadowMap: true,
+    leapDisabled: URL_PARAMS.leapDisabled,
+    mouseControls: URL_PARAMS.mouseControls
 };

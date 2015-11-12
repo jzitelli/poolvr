@@ -33,6 +33,7 @@ function addTool(parent, world, options) {
     tipBody.addShape(new CANNON.Sphere(toolRadius));
     world.addBody(tipBody);
 
+    // setup hands: ############################
     // hands don't necessarily correspond the left / right labels, but doesn't matter to me because they look indistinguishable
     var leftRoot = new THREE.Object3D(),
         rightRoot = new THREE.Object3D();
@@ -42,63 +43,58 @@ function addTool(parent, world, options) {
     parent.add(leftRoot);
     parent.add(rightRoot);
     leftRoot.visible = rightRoot.visible = false;
+    var radius, length;
+    var handMaterial = new THREE.MeshLambertMaterial({color: 0x113399, transparent: true, opacity: 0});
+    radius = 0.03;
+    length = 0.26;
+    // arms:
+    var armGeom = new THREE.CylinderGeometry(radius, radius, length);
+    var armMesh = new THREE.Mesh(armGeom, handMaterial);
+    var arms = [armMesh, armMesh.clone()];
+    leftRoot.add(arms[0]);
+    rightRoot.add(arms[1]);
+    // palms:
+    radius = 0.025;
+    var palmGeom = new THREE.SphereBufferGeometry(radius, 16, 8).scale(1, 0.5, 1);
+    var palmMesh = new THREE.Mesh(palmGeom, handMaterial);
+    palmMesh.castShadow = true;
+    var palms = [palmMesh, palmMesh.clone()];
+    leftRoot.add(palms[0]);
+    rightRoot.add(palms[1]);
+    // fingertips:
+    radius = 0.005;
+    var fingerTipGeom = new THREE.SphereBufferGeometry(radius);
+    var fingerTipMesh = new THREE.Mesh(fingerTipGeom, handMaterial);
+    var fingerTips = [[fingerTipMesh, fingerTipMesh.clone(), fingerTipMesh.clone(), fingerTipMesh.clone(), fingerTipMesh.clone()],
+                      [fingerTipMesh.clone(), fingerTipMesh.clone(), fingerTipMesh.clone(), fingerTipMesh.clone(), fingerTipMesh.clone()]];
+    leftRoot.add(fingerTips[0][0], fingerTips[0][1], fingerTips[0][2], fingerTips[0][3], fingerTips[0][4]);
+    rightRoot.add(fingerTips[1][0], fingerTips[1][1], fingerTips[1][2], fingerTips[1][3], fingerTips[1][4]);
+    // finger joints:
+    var jointMesh = fingerTipMesh.clone();
+    jointMesh.scale.set(7/5, 7/5, 7/5);
+    var joints = [[jointMesh, jointMesh.clone(), jointMesh.clone(), jointMesh.clone(), jointMesh.clone()],
+                  [jointMesh.clone(), jointMesh.clone(), jointMesh.clone(), jointMesh.clone(), jointMesh.clone()]];
+    leftRoot.add(joints[0][0], joints[0][1], joints[0][2], joints[0][3], joints[0][4]);
+    rightRoot.add(joints[1][0], joints[1][1], joints[1][2], joints[1][3], joints[1][4]);
+    // TODO: use the anatomical names
+    // TODO: reduce fractions
+    var joint2Mesh = fingerTipMesh.clone();
+    joint2Mesh.scale.set(55/50, 55/50, 55/50);
+    var joint2s = [[joint2Mesh, joint2Mesh.clone(), joint2Mesh.clone(), joint2Mesh.clone(), joint2Mesh.clone()],
+                  [joint2Mesh.clone(), joint2Mesh.clone(), joint2Mesh.clone(), joint2Mesh.clone(), joint2Mesh.clone()]];
+    leftRoot.add(joint2s[0][0], joint2s[0][1], joint2s[0][2], joint2s[0][3], joint2s[0][4]);
+    rightRoot.add(joint2s[1][0], joint2s[1][1], joint2s[1][2], joint2s[1][3], joint2s[1][4]);
     
-    var leapController = new Leap.Controller({frameEventName: 'animationFrame'});
+    if (!options.leapDisabled) {
 
-    console.log("using 'transform' plugin");
+    var leapController = new Leap.Controller({frameEventName: 'animationFrame'});
     if (transformOptions.vr === true) {
         toolTime *= 2; // i guess this could help with vr tracking zaniness? im assuming reported hand.confidence already factors VR effects in (don't know)
     }
     console.log("'transform' options:");
     console.log(transformOptions);
-
     leapController.use('transform', transformOptions).connect();
-
     var onFrame = (function () {
-        // setup hands: ############################
-        var radius, length;
-        var handMaterial = new THREE.MeshLambertMaterial({color: 0x113399, transparent: true, opacity: 0});
-        radius = 0.03;
-        length = 0.26;
-        var armGeom = new THREE.CylinderGeometry(radius, radius, length);
-        var armMesh = new THREE.Mesh(armGeom, handMaterial);
-        var arms = [armMesh, armMesh.clone()];
-        leftRoot.add(arms[0]);
-        rightRoot.add(arms[1]);
-
-        radius = 0.025;
-        var palmGeom = new THREE.SphereBufferGeometry(radius, 16, 8).scale(1, 0.5, 1);
-        var palmMesh = new THREE.Mesh(palmGeom, handMaterial);
-        palmMesh.castShadow = true;
-        var palms = [palmMesh, palmMesh.clone()];
-        leftRoot.add(palms[0]);
-        rightRoot.add(palms[1]);
-
-        radius = 0.005;
-        var fingerTipGeom = new THREE.SphereBufferGeometry(radius);
-        var fingerTipMesh = new THREE.Mesh(fingerTipGeom, handMaterial);
-        var fingerTips = [[fingerTipMesh, fingerTipMesh.clone(), fingerTipMesh.clone(), fingerTipMesh.clone(), fingerTipMesh.clone()],
-                          [fingerTipMesh.clone(), fingerTipMesh.clone(), fingerTipMesh.clone(), fingerTipMesh.clone(), fingerTipMesh.clone()]];
-        leftRoot.add(fingerTips[0][0], fingerTips[0][1], fingerTips[0][2], fingerTips[0][3], fingerTips[0][4]);
-        rightRoot.add(fingerTips[1][0], fingerTips[1][1], fingerTips[1][2], fingerTips[1][3], fingerTips[1][4]);
-
-        var jointMesh = fingerTipMesh.clone();
-        jointMesh.scale.set(7/5, 7/5, 7/5);
-        var joints = [[jointMesh, jointMesh.clone(), jointMesh.clone(), jointMesh.clone(), jointMesh.clone()],
-                      [jointMesh.clone(), jointMesh.clone(), jointMesh.clone(), jointMesh.clone(), jointMesh.clone()]];
-        leftRoot.add(joints[0][0], joints[0][1], joints[0][2], joints[0][3], joints[0][4]);
-        rightRoot.add(joints[1][0], joints[1][1], joints[1][2], joints[1][3], joints[1][4]);
-
-        // TODO: use the anatomical names
-        // TODO: reduce fractions
-        var joint2Mesh = fingerTipMesh.clone();
-        joint2Mesh.scale.set(55/50, 55/50, 55/50);
-        var joint2s = [[joint2Mesh, joint2Mesh.clone(), joint2Mesh.clone(), joint2Mesh.clone(), joint2Mesh.clone()],
-                      [joint2Mesh.clone(), joint2Mesh.clone(), joint2Mesh.clone(), joint2Mesh.clone(), joint2Mesh.clone()]];
-        leftRoot.add(joint2s[0][0], joint2s[0][1], joint2s[0][2], joint2s[0][3], joint2s[0][4]);
-        rightRoot.add(joint2s[1][0], joint2s[1][1], joint2s[1][2], joint2s[1][3], joint2s[1][4]);
-
-
         var UP = new THREE.Vector3(0, 1, 0);
         var direction = new THREE.Vector3();
         var position = new THREE.Vector3();
@@ -152,10 +148,10 @@ function addTool(parent, world, options) {
                 }                
             });
         };
-
     })();
+        leapController.on('frame', onFrame);
 
-    leapController.on('frame', onFrame);
+    }
 
-    return stickMesh;
+    return [stickMesh, tipBody];
 }
