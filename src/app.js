@@ -25,6 +25,12 @@ function logVars() {
     console.log(stickMesh.position);
 }
 
+var ballMaterial = new CANNON.Material();
+var feltMaterial = new CANNON.Material();
+var cushionMaterial = new CANNON.Material();
+
+var ballBallContactMaterial = new CANNON.ContactMaterial(ballMaterial, ballMaterial, {restitution: 0.9});
+
 function onLoad() {
     "use strict";
     app = new WebVRApplication("poolvr", avatar, scene, options);

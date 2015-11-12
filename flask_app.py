@@ -12,7 +12,7 @@ app = Flask(__name__,
             template_folder=TEMPLATE_FOLDER,
             static_url_path='')
 
-import scenes
+from pool_table import pool_hall
 
 
 @app.route('/')
@@ -22,7 +22,7 @@ def poolvr():
     return render_template('poolvr.html',
                            json_config=Markup(r"""<script>
 var JSON_SCENE = %s;
-</script>""" % json.dumps(getattr(scenes, scene)(),
+</script>""" % json.dumps(pool_hall(),
                           indent=(2 if app.debug else None))))
 
 
