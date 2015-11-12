@@ -8,20 +8,22 @@ from three import *
 
 INCH2METER = 0.0254
 
+square = QuadBufferGeometry(vertices=[[-0.5, 0, -0.5], [-0.5, 0, 0.5], [0.5, 0, 0.5], [0.5, 0, -0.5]],
+                            uvs=[(0,1), (0,0), (1,0), (1,1)])
+
+# ball colors:
+ball_colors = []
+white  = 0xeeeeee; ball_colors.append(white)
+yellow = 0xeeee00; ball_colors.append(yellow)
+blue   = 0x0000ee; ball_colors.append(blue)
+red    = 0xee0000; ball_colors.append(red)
+purple = 0xee00ee; ball_colors.append(purple)
+green  = 0x00ee00; ball_colors.append(green)
+orange = 0xee7700; ball_colors.append(orange)
+maroon = 0xee0077; ball_colors.append(maroon)
+black  = 0x111111; ball_colors.append(black)
+
 def pool_hall():
-    square = RectangleBufferGeometry(vertices=[[-0.5, 0, -0.5], [-0.5, 0, 0.5], [0.5, 0, 0.5], [0.5, 0, -0.5]],
-                                     uvs=[(0,1), (0,0), (1,0), (1,1)])
-
-    white  = 0xeeeeee
-    yellow = 0xeeee00
-    blue   = 0x0000ee
-    red    = 0xee0000
-    purple = 0xee00ee,
-    orange = 0xee7700
-    green  = 0x00ee00
-    maroon = 0xee0077
-    black  = 0x111111
-
     scene = Scene()
 
     # room:
@@ -156,11 +158,10 @@ def pool_hall():
     ballData = {'cannonData': {'mass': 0.17, 'shapes': ['Sphere']}}
     y_position = y_table + radius + 0.001 # epsilon distance which the ball will fall from initial position
 
-    colors = [white, yellow, blue, red, purple, orange, green, maroon, black]
-    num_balls = len(colors)
+    num_balls = len(ball_colors)
     z_positions = 0.8 * np.linspace(-L_table / 2, L_table / 2, num_balls)
     x_positions = 0.5 * z_positions
-    for i, color in enumerate(colors):
+    for i, color in enumerate(ball_colors):
         ball = Mesh(geometry=sphere,
                     material=MeshPhongMaterial(color=color),
                     position=[x_positions[i], y_position, z_positions[i]],

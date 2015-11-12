@@ -412,8 +412,9 @@ def _tri_faces(rect_face):
     return [[rect_face[0], rect_face[1], rect_face[2]], [rect_face[0], rect_face[2], rect_face[3]]]
 
 
-class RectangleBufferGeometry(BufferGeometry):
-    """Defines two triangles representing a rectangle - indices are (0,1,2), (0,2,3)"""
+class QuadBufferGeometry(BufferGeometry):
+    """Defines two triangles representing a quadrilateral (assuming they are coplanar).
+    The indices are (0,1,2), (0,2,3)"""
     def __init__(self, vertices, uvs=None, **kwargs):
         BufferGeometry.__init__(self, vertices=vertices, uvs=uvs, indices=_tri_faces([0,1,2,3]), **kwargs)
 
