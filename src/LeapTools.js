@@ -6,7 +6,7 @@ function addTool(parent, world, options) {
     var toolRadius = options.toolRadius || 0.016;
     var toolOffset = options.toolOffset || new THREE.Vector3(0, -0.3, -toolLength - 0.1);
     
-    var toolTime = options.toolTime || 0.03;
+    var toolTime = options.toolTime || 0.02;
 
     var handOffset = options.handOffset || new THREE.Vector3(0, -0.25, -0.4);
 
@@ -25,7 +25,7 @@ function addTool(parent, world, options) {
     stickMesh.castShadow = true;
     toolRoot.add(stickMesh);
     var tipMaterial = new THREE.MeshLambertMaterial({color: 0x004488});
-    var tipMesh = new THREE.Mesh(new THREE.SphereBufferGeometry(radius), tipMaterial);
+    var tipMesh = new THREE.Mesh(new THREE.SphereBufferGeometry(toolRadius), tipMaterial);
     tipMesh.castShadow = true;
     stickMesh.add(tipMesh);
     // TODO: mass
@@ -54,13 +54,9 @@ function addTool(parent, world, options) {
 
     leapController.use('transform', transformOptions).connect();
 
-    var radius;
-    var length;
-
     var onFrame = (function () {
-        // setup tool: #########################
-
         // setup hands: ############################
+        var radius, length;
         var handMaterial = new THREE.MeshLambertMaterial({color: 0x113399, transparent: true, opacity: 0});
         radius = 0.03;
         length = 0.26;
@@ -131,7 +127,9 @@ function addTool(parent, world, options) {
                     tipBody.velocity.copy(velocity);
                 }
             }
-
+            else if (frame.tools.length === 2) {
+                console.log('TWO TOOLS OMG');
+            }
             // leftRoot.visible = rightRoot.visible = false;
             frame.hands.forEach(function (hand, i) {
                 if (hand.confidence > minConfidence) {
