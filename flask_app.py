@@ -27,6 +27,21 @@ var JSON_SCENE = %s;
 
 
 def main():
+    # update static index.html:
+    # TODO: fix uuids so this don't always update
+    with app.test_request_context('/'):
+        static_html = render_template('poolvr.html',
+                                      json_config=Markup(r"""<script>
+var JSON_SCENE = %s;
+</script>""" % json.dumps(pool_hall(),
+                          indent=(2 if app.debug else None))))
+        static_html = static_html.replace('/src', 'src').replace('/lib', 'lib').replace('/images', 'images').replace('/fonts', 'fonts').replace('/favicon.ico', 'favicon.ico')
+        with open('index.html', 'r') as f:
+            current_index_html = f.read()
+        if current_index_html != static_html:
+            with open('index.html', 'w') as f:
+                f.write(static_html)
+                _logger.info('updated index.html')
     _logger.info("press CTRL-C to terminate the server")
     app.run(host='0.0.0.0')
 
