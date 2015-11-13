@@ -161,10 +161,6 @@ class Mesh(Object3D):
         return d
 
 
-class Points(Object3D):
-    pass
-
-
 class Light(Object3D):
     def __init__(self, color=0xffffff, intensity=None, distance=None, shadowCameraNear=None, shadowCameraFar=None, shadowCameraFov=None, **kwargs):
         Object3D.__init__(self, **kwargs)
@@ -199,11 +195,6 @@ class SpotLight(Light):
         self.exponent = exponent
         self.decay = decay
         self.target = target
-
-
-class HemisphereLight(Light):
-    # TODO
-    pass
 
 
 class PerspectiveCamera(Object3D):
@@ -275,7 +266,7 @@ class ShaderMaterial(Material):
         self.uniforms = uniforms
 
 
-class RawShaderMaterial(Material):
+class RawShaderMaterial(ShaderMaterial):
     pass
 
 
@@ -360,6 +351,13 @@ class CylinderGeometry(Geometry):
         self.thetaLength = thetaLength
 
 
+class DodecahedronGeometry(Geometry):
+    def __init__(self, radius=1, detail=0, **kwargs):
+        Geometry.__init__(self)
+        self.radius = radius
+        self.detail = detail
+
+
 class BufferGeometry(Three):
     def __init__(self, name=None, vertices=None, indices=None, normals=None, uvs=None):
         Three.__init__(self, name)
@@ -400,13 +398,6 @@ class BufferGeometry(Three):
         return d
 
 
-class DodecahedronGeometry(Geometry):
-    def __init__(self, radius=1, detail=0, **kwargs):
-        Geometry.__init__(self)
-        self.radius = radius
-        self.detail = detail
-
-
 def _tri_faces(rect_face):
     "Return indices for two triangles comprising the rectangle"
     return [[rect_face[0], rect_face[1], rect_face[2]], [rect_face[0], rect_face[2], rect_face[3]]]
@@ -422,11 +413,11 @@ class QuadBufferGeometry(BufferGeometry):
 class BoxBufferGeometry(BufferGeometry):
     def __init__(self, vertices, inward_normals=False, **kwargs):
         rects = [[0,1,2,3], # bottom
-            [4,7,6,5], # top
-            [0,4,5,1], # back
-            [2,1,5,6], # right
-            [3,2,6,7], # front
-            [0,3,7,4]] # left
+                 [4,7,6,5], # top
+                 [0,4,5,1], # back
+                 [2,1,5,6], # right
+                 [3,2,6,7], # front
+                 [0,3,7,4]] # left
         if inward_normals:
             rects = [r[::-1] for r in rects]
         BufferGeometry.__init__(self, vertices=vertices,
@@ -434,12 +425,21 @@ class BoxBufferGeometry(BufferGeometry):
             **kwargs)
 
 
+class PrismBufferGeometry(BufferGeometry):
+    def __init__(self, vertices, **kwargs):
+        indices = [[0,1,2], [3,4,5]]
+        for rect in [[0,1,4,3], [1,2,5,4], [2,0,3,5]]:
+            indices += _tri_faces(rect[::-1])
+        BufferGeometry.__init__(self, vertices=vertices,
+                                indices=indices, **kwargs)
+
+
 class TetrahedronBufferGeometry(BufferGeometry):
     def __init__(self, vertices, **kwargs):
         indices = [[0,1,2],
-            [0,3,1],
-            [0,2,3],
-            [3,2,1]]
+                   [0,3,1],
+                   [0,2,3],
+                   [3,2,1]]
         BufferGeometry.__init__(self, vertices=vertices, indices=indices, **kwargs)
 
 

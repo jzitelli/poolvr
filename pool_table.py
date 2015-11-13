@@ -30,7 +30,7 @@ def pool_table(L_table=2.3368, W_table=None, H_table=0.74295,
                W_cushion=2*IN2METER,
                H_cushion=None):
     if W_table is None:
-        W_table = L_table / 2
+        W_table = 0.5*L_table
     if L_playable is None:
         L_playable = L_table - 2*W_cushion
     if W_playable is None:
@@ -38,34 +38,41 @@ def pool_table(L_table=2.3368, W_table=None, H_table=0.74295,
     if H_cushion is None:
         H_cushion = 0.635 * ball_diameter
     poolTable = Object3D(name="poolTable")
+    #feltMaterial = MeshPhongMaterial(color=0x00aa00, shininess=5, side=DoubleSide)
+    feltMaterial = MeshLambertMaterial(color=0xaaaa00)
+
     playableAreaGeom = BoxGeometry(W_playable, H_table, L_playable)
-    feltMaterial = MeshPhongMaterial(color=0x00aa00, shininess=5) #MeshLambertMaterial(color=0x00aa00),
     playableAreaMesh = Mesh(geometry=playableAreaGeom,
                             material=feltMaterial,
-                            position=[0, H_table / 2, 0],
+                            position=[0, 0.5*H_table, 0],
                             receiveShadow=True,
                             userData={'cannonData': {'mass': 0,
                                                      'shapes': ['Box']}})
     poolTable.add(playableAreaMesh)
-    headCushionGeom = BoxGeometry(W_table, H_cushion, W_cushion)
+
+    cushionMaterial = feltMaterial #MeshBasicMaterial(color=0xeeee00, side=DoubleSide)
+    headCushionGeom = PrismBufferGeometry(vertices=[[0.5*W_playable,                     0,         0],
+                                                    [0.5*W_playable,                     H_cushion, 0],
+                                                    [0.5*W_playable - 0.5*1.4*W_cushion, H_cushion, -W_cushion],
+                                                    [-0.5*W_playable,                     0,         0],
+                                                    [-0.5*W_playable,                     H_cushion, 0],
+                                                    [-0.5*W_playable + 0.5*1.4*W_cushion, H_cushion, -W_cushion]])
     headCushionMesh = Mesh(geometry=headCushionGeom,
-                           material=feltMaterial,
-                           position=[0, H_table + H_cushion / 2,
-                                     L_playable / 2 + W_cushion / 2],
+                           material=cushionMaterial,
+                           position=[0, H_table, 0.5*L_table],
                            receiveShadow=True,
                            userData={'cannonData': {'mass': 0,
                                                     'shapes': ['Box']}})
     poolTable.add(headCushionMesh)
     footCushionMesh = Mesh(geometry=headCushionGeom,
-                           material=feltMaterial,
-                           position=[0, H_table + H_cushion / 2,
-                                     -(L_playable / 2 + W_cushion / 2)],
+                           material=cushionMaterial,
+                           position=[0, H_table, -0.5*L_table],
                            rotation=[0, np.pi, 0],
                            receiveShadow=True,
                            userData={'cannonData': {'mass': 0,
                                                     'shapes': ['Box']}})
     poolTable.add(footCushionMesh)
-    # scene.add(foot_rail)
+
     # left_rail = Mesh(geometry=BoxGeometry(W_cushion, H_cushion, L_table),
     #                    material=feltMaterial,
     #                    position=[-(W_table / 2 + W_cushion / 2),
@@ -86,7 +93,7 @@ def pool_table(L_table=2.3368, W_table=None, H_table=0.74295,
     # scene.add(right_rail)
     # pockets (shitty hacked in)
     ball_radius = ball_diameter / 2
-    pocket_radius = 3 * ball_radius
+    pocket_radius = 2.5 * ball_radius
     pocket_height = 3 * pocket_radius
     pocketGeom = CylinderGeometry(radiusTop=pocket_radius,
                                   radiusBottom=pocket_radius,
@@ -104,19 +111,19 @@ def pool_table(L_table=2.3368, W_table=None, H_table=0.74295,
     pocketMesh.position[0] = W_table / 2
     pocketMesh.position[2] = 0
     poolTable.add(deepcopy(pocketMesh))
-    # back left:
+    # head left:
     pocketMesh.position[0] = -W_table / 2
     pocketMesh.position[2] = -L_table / 2
     poolTable.add(deepcopy(pocketMesh))
-    # back right:
+    # head right:
     pocketMesh.position[0] = W_table / 2
     pocketMesh.position[2] = -L_table / 2
     poolTable.add(deepcopy(pocketMesh))
-    # front left:
+    # foot left:
     pocketMesh.position[0] = -W_table / 2
     pocketMesh.position[2] = L_table / 2
     poolTable.add(deepcopy(pocketMesh))
-    # front right:
+    # foot right:
     pocketMesh.position[0] = W_table / 2
     pocketMesh.position[2] = L_table / 2
     poolTable.add(deepcopy(pocketMesh))
@@ -136,7 +143,7 @@ def pool_hall():
                  userData={'cannonData': {'mass': 0,
                                           'shapes': ['Plane']}})
     scene.add(floor)
-    scene.add(PointLight(color=0x775532, position=[4, 2, -2.5], intensity=0.7, distance=40))
+    scene.add(PointLight(color=0xaa8866, position=[4, 2, -2.5], intensity=1, distance=40))
 
     ball_diameter = 2.25 * IN2METER
     L_table = 2.3368
