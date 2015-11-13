@@ -432,7 +432,7 @@ class PrismBufferGeometry(BufferGeometry):
     def __init__(self, vertices, **kwargs):
         indices = [[0,1,2], [3,4,5][::-1]]
         for rect in [[0,1,4,3], [1,2,5,4], [2,0,3,5]]:
-            indices += _tri_faces(rect)
+            indices += _tri_faces(rect[::-1])
         BufferGeometry.__init__(self, vertices=vertices,
                                 indices=indices, **kwargs)
 
