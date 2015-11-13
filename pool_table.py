@@ -8,30 +8,25 @@ from three import *
 
 INCH2METER = 0.0254
 
-square = RectangleBufferGeometry(vertices=[[-0.5, 0, -0.5], [-0.5, 0, 0.5], [0.5, 0, 0.5], [0.5, 0, -0.5]],
-                                 uvs=[(0,1), (0,0), (1,0), (1,1)])
+square = QuadBufferGeometry(vertices=[[-0.5, 0, -0.5], [-0.5, 0, 0.5], [0.5, 0, 0.5], [0.5, 0, -0.5]],
+                            uvs=[(0,1), (0,0), (1,0), (1,1)])
 
-white  = 0xeeeeee
-yellow = 0xeeee00
-blue   = 0x0000ee
-red    = 0xee0000
-purple = 0xee00ee,
-orange = 0xee7700
-green  = 0x00ee00
-maroon = 0xee0077
-black  = 0x111111
+# ball colors:
+ball_colors = []
+white  = 0xeeeeee; ball_colors.append(white)
+yellow = 0xeeee00; ball_colors.append(yellow)
+blue   = 0x0000ee; ball_colors.append(blue)
+red    = 0xee0000; ball_colors.append(red)
+purple = 0xee00ee; ball_colors.append(purple)
+green  = 0x00ee00; ball_colors.append(green)
+orange = 0xee7700; ball_colors.append(orange)
+maroon = 0xee0077; ball_colors.append(maroon)
+black  = 0x111111; ball_colors.append(black)
 
-ball_colors = [white, yellow, blue, red, purple, orange, green, maroon, black]
-
-
-def pool_table(L_table=2.3368, W_table=None, H_table=0.74295,
-               W_cushion=0.051):
-    if W_table is None:
-        W_table = L_table / 2
-    playableAreaMesh = Mesh(geometry=RectangleBufferGeometry(width=W_table, depth=L_table))
-
-def pool_room(L_room=10, W_room=10):
+def pool_hall():
     scene = Scene()
+    # room:
+    L_room, W_room = 10, 10
     floor = Mesh(name="floor", geometry=square,
                  material=MeshBasicMaterial(color=0xffffff,
                                             map=Texture(image=Image(url="images/deck.png"),
@@ -43,10 +38,14 @@ def pool_room(L_room=10, W_room=10):
     scene.add(floor)
     scene.add(PointLight(color=0x775532, position=[4, 2, -2.5], intensity=0.7, distance=40))
 
-    feltMaterial = MeshPhongMaterial(color=0x00aa00, shininess=5)
+    feltMaterial = MeshPhongMaterial(color=0x00aa00, shininess=5)  #MeshLambertMaterial(color=0x00aa00),
+    # 8 ft. table:
+    L_table = 2.3368
+    W_table = L_table / 2
+    H_table = .74295 # 0.835
     pool_table = Mesh(geometry=BoxGeometry(W_table, H_table, L_table),
-                      material=feltMaterial, #MeshLambertMaterial(color=0x00aa00),
-                      position=[0, H_table / 2, 0],
+                      material=feltMaterial,
+                      position=[0, y_table / 2, 0],
                       receiveShadow=True,
                       userData={'cannonData': {'mass': 0,
                                                'shapes': ['Box']}})
@@ -90,64 +89,37 @@ def pool_room(L_room=10, W_room=10):
     # pockets (shitty hacked in)
     pocket_radius = 3 * ball_radius
     pocket_height = 3 * pocket_radius
-    pocketPhysicsGeom = CylinderGeometry(radiusTop=pocket_radius,
-                                         radiusBottom=pocket_radius,
-                                         height=pocket_height,
-                                         radialSegments=16,
-                                         openEnded=True)
     pocketGeom = CylinderGeometry(radiusTop=pocket_radius,
                                   radiusBottom=pocket_radius,
-                                  height=0.02,
+                                  height=0.001,
                                   radialSegments=16)
-    y_physics = H_table - pocket_height / 2
-    y_mesh = H_table - 0.009
-    pocketPhysicsMesh = Mesh(name='pocketPhysicsMesh',
-                             geometry=pocketPhysicsGeom,
-                             material=MeshBasicMaterial(color=0xffff00),
-                             position=[0, y_physics, 0],
-                             userData={'visible': False, 'cannonData': {'mass': 0, 'shapes': ['Trimesh']}})
+    y_mesh = y_table
     pocketMesh = Mesh(geometry=pocketGeom,
                       material=MeshBasicMaterial(color=0x000000),
                       position=[0, y_mesh, 0])
     # left center:
-    pocketPhysicsMesh.position[0], pocketMesh.position[0] = 2 * [-W_table / 2]
-    pocketPhysicsMesh.position[2], pocketMesh.position[2] = 2 * [0]
-    scene.add(deepcopy(pocketPhysicsMesh))
+    pocketMesh.position[0] = -W_table / 2
+    pocketMesh.position[2] = 0
     scene.add(deepcopy(pocketMesh))
     # right center:
-    pocketPhysicsMesh.position[0], pocketMesh.position[0] = 2 * [W_table / 2]
-    pocketPhysicsMesh.position[2], pocketMesh.position[2] = 2 * [0]
-    scene.add(deepcopy(pocketPhysicsMesh))
-    scene.add(deepcopy(pocketMesh))
-    # front center:
-    pocketPhysicsMesh.position[0], pocketMesh.position[0] = 2 * [0]
-    pocketPhysicsMesh.position[2], pocketMesh.position[2] = 2 * [L_table / 2]
-    scene.add(deepcopy(pocketPhysicsMesh))
-    scene.add(deepcopy(pocketMesh))
-    # back center:
-    pocketPhysicsMesh.position[0], pocketMesh.position[0] = 2 * [0]
-    pocketPhysicsMesh.position[2], pocketMesh.position[2] = 2 * [-L_table / 2]
-    scene.add(deepcopy(pocketPhysicsMesh))
+    pocketMesh.position[0] = W_table / 2
+    pocketMesh.position[2] = 0
     scene.add(deepcopy(pocketMesh))
     # back left:
-    pocketPhysicsMesh.position[0], pocketMesh.position[0] = 2 * [-W_table / 2]
-    pocketPhysicsMesh.position[2], pocketMesh.position[2] = 2 * [-L_table / 2]
-    scene.add(deepcopy(pocketPhysicsMesh))
+    pocketMesh.position[0] = -W_table / 2
+    pocketMesh.position[2] = -L_table / 2
     scene.add(deepcopy(pocketMesh))
     # back right:
-    pocketPhysicsMesh.position[0], pocketMesh.position[0] = 2 * [W_table / 2]
-    pocketPhysicsMesh.position[2], pocketMesh.position[2] = 2 * [-L_table / 2]
-    scene.add(deepcopy(pocketPhysicsMesh))
+    pocketMesh.position[0] = W_table / 2
+    pocketMesh.position[2] = -L_table / 2
     scene.add(deepcopy(pocketMesh))
     # front left:
-    pocketPhysicsMesh.position[0], pocketMesh.position[0] = 2 * [-W_table / 2]
-    pocketPhysicsMesh.position[2], pocketMesh.position[2] = 2 * [L_table / 2]
-    scene.add(deepcopy(pocketPhysicsMesh))
+    pocketMesh.position[0] = -W_table / 2
+    pocketMesh.position[2] = L_table / 2
     scene.add(deepcopy(pocketMesh))
     # front right:
-    pocketPhysicsMesh.position[0], pocketMesh.position[0] = 2 * [W_table / 2]
-    pocketPhysicsMesh.position[2], pocketMesh.position[2] = 2 * [L_table / 2]
-    scene.add(deepcopy(pocketPhysicsMesh))
+    pocketMesh.position[0] = W_table / 2
+    pocketMesh.position[2] = L_table / 2
     scene.add(deepcopy(pocketMesh))
 
     # balls:
@@ -156,15 +128,18 @@ def pool_room(L_room=10, W_room=10):
     ballData = {'cannonData': {'mass': 0.17, 'shapes': ['Sphere']}}
     y_position = H_table + radius + 0.001 # epsilon distance which the ball will fall from initial position
 
-    num_balls = len(colors)
-    z_positions = 0.8 * np.linspace(-L_table / 2, L_table / 2, num_balls)
+    num_balls = len(ball_colors)
+    z_positions = 0.8 * np.linspace(-L_table / 2, L_table / 2, num_balls - 1)
     x_positions = 0.5 * z_positions
-    for i, color in enumerate(colors):
-        ball = Mesh(geometry=sphere,
-                    material=MeshPhongMaterial(color=color),
-                    position=[x_positions[i], y_position, z_positions[i]],
-                    castShadow=True,
-                    userData=ballData)
-        scene.add(ball)
+    z_positions = [L_table / 4] + list(z_positions)
+    x_positions = [0] + list(x_positions)
+    for i, color in enumerate(ball_colors):
+        ballMesh = Mesh(name="ball %d" % i,
+                        geometry=sphere,
+                        material=MeshPhongMaterial(color=color),
+                        position=[x_positions[i], y_position, z_positions[i]],
+                        castShadow=True,
+                        userData=ballData)
+        scene.add(ballMesh)
 
     return scene.export()
