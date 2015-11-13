@@ -8,7 +8,7 @@ centerSpotLight.position.set(0, 2, 0);
 centerSpotLight.castShadow = true;
 centerSpotLight.shadowCameraNear = 0.01;
 centerSpotLight.shadowCameraFar = 3;
-centerSpotLight.shadowCameraFov = 70;
+centerSpotLight.shadowCameraFov = 90;
 scene.add(centerSpotLight);
 var centerSpotLightHelper = new THREE.SpotLightHelper(centerSpotLight);
 scene.add(centerSpotLightHelper);
@@ -35,9 +35,11 @@ avatar.position.z = 2;
 options.keyboardCommands = {logVars: {buttons: [Primrose.Input.Keyboard.Q],
                                       commandDown: logVars}};
 
-var stickMesh;
+var stickMesh, tipBody;
+
 function logVars() {
-    console.log(stickMesh.position);
+    "use strict";
+    console.log(tipBody.position);
 }
 
 var ballMaterial = new CANNON.Material();
@@ -52,13 +54,36 @@ function onLoad() {
     avatar.add(app.camera);
     app.scene.add(avatar);
 
+    // ##### Desktop mode (default): #####
+    var toolOptions = {transformOptions: {vr: 'desktop'},
+                       leapDisabled    : options.leapDisabled};
+
     // ##### VR mode: #####
     if (URL_PARAMS.vr) {
-        stickMesh = addTool(avatar, app.world, {useTransform: true, transformOptions: {vr: true, effectiveParent: app.camera}});
+        toolOptions.transformOptions = {vr: true, effectiveParent: app.camera};
     }
-    // ##### Desktop mode: #####
-    else {
-        stickMesh = addTool(avatar, app.world, {useTransform: true, transformOptions: {vr: 'desktop'}});
+
+    console.log(toolOptions);
+    var toolStuff;
+    toolStuff = addTool(avatar, app.world, toolOptions);
+    stickMesh = toolStuff[0];
+    tipBody   = toolStuff[1];
+
+    if (options.mouseControls) {
+        var mousePointer = stickMesh;
+        //mousePointer.position.y = 0.74295 + 0.05715 / 2 + 0.0001;
+        mousePointer.position.y -= 0.01;
+        tipBody.position[1] -= 0.01;
+        window.addEventListener("mousemove", function (evt) {
+            var dx = evt.movementX,
+                dy = evt.movementY;
+            mousePointer.position.x += 0.001*dx;
+            mousePointer.position.x = Math.max(Math.min(mousePointer.position.x, 2.25), -2.25);
+            mousePointer.position.z += 0.001*dy;
+            mousePointer.position.z = Math.max(Math.min(mousePointer.position.z, 1.5), -1);
+            tipBody.position[0] = mousePointer.position.x;
+            tipBody.position[2] = mousePointer.position.z;
+        });
     }
 
     app.start();
