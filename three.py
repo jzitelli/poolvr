@@ -411,25 +411,28 @@ class QuadBufferGeometry(BufferGeometry):
 
 
 class BoxBufferGeometry(BufferGeometry):
-    def __init__(self, vertices, inward_normals=False, **kwargs):
+    def __init__(self, vertices, **kwargs):
         rects = [[0,1,2,3], # bottom
                  [4,7,6,5], # top
                  [0,4,5,1], # back
                  [2,1,5,6], # right
                  [3,2,6,7], # front
                  [0,3,7,4]] # left
-        if inward_normals:
-            rects = [r[::-1] for r in rects]
         BufferGeometry.__init__(self, vertices=vertices,
             indices=[_tri_faces(rect) for rect in rects],
             **kwargs)
 
 
 class PrismBufferGeometry(BufferGeometry):
+    """Vertex enumeration:
+    0,1,2 - bottom triangle
+    3,4,5 - top triangle
+    The prism has edges (0,3), (1,4), (2,5)
+    """
     def __init__(self, vertices, **kwargs):
-        indices = [[0,1,2], [3,4,5]]
+        indices = [[0,1,2], [3,4,5][::-1]]
         for rect in [[0,1,4,3], [1,2,5,4], [2,0,3,5]]:
-            indices += _tri_faces(rect[::-1])
+            indices += _tri_faces(rect)
         BufferGeometry.__init__(self, vertices=vertices,
                                 indices=indices, **kwargs)
 

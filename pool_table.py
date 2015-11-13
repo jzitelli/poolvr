@@ -38,8 +38,7 @@ def pool_table(L_table=2.3368, W_table=None, H_table=0.74295,
     if H_cushion is None:
         H_cushion = 0.635 * ball_diameter
     poolTable = Object3D(name="poolTable")
-    #feltMaterial = MeshPhongMaterial(color=0x00aa00, shininess=5, side=DoubleSide)
-    feltMaterial = MeshLambertMaterial(color=0xaaaa00)
+    feltMaterial = MeshPhongMaterial(color=0x00aa00, shininess=5)
 
     playableAreaGeom = BoxGeometry(W_playable, H_table, L_playable)
     playableAreaMesh = Mesh(geometry=playableAreaGeom,
@@ -50,17 +49,16 @@ def pool_table(L_table=2.3368, W_table=None, H_table=0.74295,
                                                      'shapes': ['Box']}})
     poolTable.add(playableAreaMesh)
 
-    cushionMaterial = feltMaterial #MeshBasicMaterial(color=0xeeee00, side=DoubleSide)
-    headCushionGeom = PrismBufferGeometry(vertices=[[0.5*W_playable,                     0,         0],
-                                                    [0.5*W_playable,                     H_cushion, 0],
-                                                    [0.5*W_playable - 0.5*1.4*W_cushion, H_cushion, -W_cushion],
-                                                    [-0.5*W_playable,                     0,         0],
+    cushionMaterial = MeshPhongMaterial(color=0x00aa00, shininess=5, side=DoubleSide, shading=FlatShading)
+    headCushionGeom = PrismBufferGeometry(vertices=[[-0.5*W_playable,                     0,         0],
                                                     [-0.5*W_playable,                     H_cushion, 0],
-                                                    [-0.5*W_playable + 0.5*1.4*W_cushion, H_cushion, -W_cushion]])
+                                                    [-0.5*(W_playable - 1.4*W_cushion), H_cushion, -W_cushion],
+                                                    [0.5*W_playable,                     0,         0],
+                                                    [0.5*W_playable,                     H_cushion, 0],
+                                                    [0.5*(W_playable - 1.4*W_cushion), H_cushion, -W_cushion]])
     headCushionMesh = Mesh(geometry=headCushionGeom,
                            material=cushionMaterial,
                            position=[0, H_table, 0.5*L_table],
-                           receiveShadow=True,
                            userData={'cannonData': {'mass': 0,
                                                     'shapes': ['Box']}})
     poolTable.add(headCushionMesh)
@@ -68,10 +66,15 @@ def pool_table(L_table=2.3368, W_table=None, H_table=0.74295,
                            material=cushionMaterial,
                            position=[0, H_table, -0.5*L_table],
                            rotation=[0, np.pi, 0],
-                           receiveShadow=True,
                            userData={'cannonData': {'mass': 0,
                                                     'shapes': ['Box']}})
     poolTable.add(footCushionMesh)
+    leftCushionGeom = Mesh(geometry=headCushionGeom,
+                           material=cushionMaterial,
+                           position=[-0.5*W_table, H_table, 0.25*L_table],
+                           rotation=[0, -np.pi/2, 0],
+                           userData={'cannonData': {'mass': 0, 'shapes': ['Box']}})
+    poolTable.add(leftCushionGeom)
 
     # left_rail = Mesh(geometry=BoxGeometry(W_cushion, H_cushion, L_table),
     #                    material=feltMaterial,
