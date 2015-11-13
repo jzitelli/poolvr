@@ -121,16 +121,6 @@ def pool_hall():
     pocketPhysicsMesh.position[2], pocketMesh.position[2] = 2 * [0]
     scene.add(deepcopy(pocketPhysicsMesh))
     scene.add(deepcopy(pocketMesh))
-    # front center:
-    pocketPhysicsMesh.position[0], pocketMesh.position[0] = 2 * [0]
-    pocketPhysicsMesh.position[2], pocketMesh.position[2] = 2 * [L_table / 2]
-    scene.add(deepcopy(pocketPhysicsMesh))
-    scene.add(deepcopy(pocketMesh))
-    # back center:
-    pocketPhysicsMesh.position[0], pocketMesh.position[0] = 2 * [0]
-    pocketPhysicsMesh.position[2], pocketMesh.position[2] = 2 * [-L_table / 2]
-    scene.add(deepcopy(pocketPhysicsMesh))
-    scene.add(deepcopy(pocketMesh))
     # back left:
     pocketPhysicsMesh.position[0], pocketMesh.position[0] = 2 * [-W_table / 2]
     pocketPhysicsMesh.position[2], pocketMesh.position[2] = 2 * [-L_table / 2]
