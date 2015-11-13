@@ -25,7 +25,6 @@ black  = 0x111111; ball_colors.append(black)
 
 def pool_hall():
     scene = Scene()
-
     # room:
     L_room, W_room = 10, 10
     floor = Mesh(name="floor", geometry=square,
@@ -92,54 +91,37 @@ def pool_hall():
     # pockets (shitty hacked in)
     pocket_radius = 3 * ball_radius
     pocket_height = 3 * pocket_radius
-    pocketPhysicsGeom = CylinderGeometry(radiusTop=pocket_radius,
-                                         radiusBottom=pocket_radius,
-                                         height=pocket_height,
-                                         radialSegments=16,
-                                         openEnded=True)
     pocketGeom = CylinderGeometry(radiusTop=pocket_radius,
                                   radiusBottom=pocket_radius,
-                                  height=0.02,
+                                  height=0.001,
                                   radialSegments=16)
-    y_physics = y_table - pocket_height / 2
-    y_mesh = y_table - 0.009
-    pocketPhysicsMesh = Mesh(name='pocketPhysicsMesh',
-                             geometry=pocketPhysicsGeom,
-                             material=MeshBasicMaterial(color=0xffff00),
-                             position=[0, y_physics, 0],
-                             userData={'visible': False, 'cannonData': {'mass': 0, 'shapes': ['Trimesh']}})
+    y_mesh = y_table
     pocketMesh = Mesh(geometry=pocketGeom,
                       material=MeshBasicMaterial(color=0x000000),
                       position=[0, y_mesh, 0])
     # left center:
-    pocketPhysicsMesh.position[0], pocketMesh.position[0] = 2 * [-W_table / 2]
-    pocketPhysicsMesh.position[2], pocketMesh.position[2] = 2 * [0]
-    scene.add(deepcopy(pocketPhysicsMesh))
+    pocketMesh.position[0] = -W_table / 2
+    pocketMesh.position[2] = 0
     scene.add(deepcopy(pocketMesh))
     # right center:
-    pocketPhysicsMesh.position[0], pocketMesh.position[0] = 2 * [W_table / 2]
-    pocketPhysicsMesh.position[2], pocketMesh.position[2] = 2 * [0]
-    scene.add(deepcopy(pocketPhysicsMesh))
+    pocketMesh.position[0] = W_table / 2
+    pocketMesh.position[2] = 0
     scene.add(deepcopy(pocketMesh))
     # back left:
-    pocketPhysicsMesh.position[0], pocketMesh.position[0] = 2 * [-W_table / 2]
-    pocketPhysicsMesh.position[2], pocketMesh.position[2] = 2 * [-L_table / 2]
-    scene.add(deepcopy(pocketPhysicsMesh))
+    pocketMesh.position[0] = -W_table / 2
+    pocketMesh.position[2] = -L_table / 2
     scene.add(deepcopy(pocketMesh))
     # back right:
-    pocketPhysicsMesh.position[0], pocketMesh.position[0] = 2 * [W_table / 2]
-    pocketPhysicsMesh.position[2], pocketMesh.position[2] = 2 * [-L_table / 2]
-    scene.add(deepcopy(pocketPhysicsMesh))
+    pocketMesh.position[0] = W_table / 2
+    pocketMesh.position[2] = -L_table / 2
     scene.add(deepcopy(pocketMesh))
     # front left:
-    pocketPhysicsMesh.position[0], pocketMesh.position[0] = 2 * [-W_table / 2]
-    pocketPhysicsMesh.position[2], pocketMesh.position[2] = 2 * [L_table / 2]
-    scene.add(deepcopy(pocketPhysicsMesh))
+    pocketMesh.position[0] = -W_table / 2
+    pocketMesh.position[2] = L_table / 2
     scene.add(deepcopy(pocketMesh))
     # front right:
-    pocketPhysicsMesh.position[0], pocketMesh.position[0] = 2 * [W_table / 2]
-    pocketPhysicsMesh.position[2], pocketMesh.position[2] = 2 * [L_table / 2]
-    scene.add(deepcopy(pocketPhysicsMesh))
+    pocketMesh.position[0] = W_table / 2
+    pocketMesh.position[2] = L_table / 2
     scene.add(deepcopy(pocketMesh))
 
     # balls:
@@ -149,14 +131,17 @@ def pool_hall():
     y_position = y_table + radius + 0.001 # epsilon distance which the ball will fall from initial position
 
     num_balls = len(ball_colors)
-    z_positions = 0.8 * np.linspace(-L_table / 2, L_table / 2, num_balls)
+    z_positions = 0.8 * np.linspace(-L_table / 2, L_table / 2, num_balls - 1)
     x_positions = 0.5 * z_positions
+    z_positions = [L_table / 4] + list(z_positions)
+    x_positions = [0] + list(x_positions)
     for i, color in enumerate(ball_colors):
-        ball = Mesh(geometry=sphere,
-                    material=MeshPhongMaterial(color=color),
-                    position=[x_positions[i], y_position, z_positions[i]],
-                    castShadow=True,
-                    userData=ballData)
-        scene.add(ball)
+        ballMesh = Mesh(name="ball %d" % i,
+                        geometry=sphere,
+                        material=MeshPhongMaterial(color=color),
+                        position=[x_positions[i], y_position, z_positions[i]],
+                        castShadow=True,
+                        userData=ballData)
+        scene.add(ballMesh)
 
     return scene.export()

@@ -8,7 +8,7 @@ centerSpotLight.position.set(0, 2, 0);
 centerSpotLight.castShadow = true;
 centerSpotLight.shadowCameraNear = 0.01;
 centerSpotLight.shadowCameraFar = 3;
-centerSpotLight.shadowCameraFov = 70;
+centerSpotLight.shadowCameraFov = 90;
 scene.add(centerSpotLight);
 var centerSpotLightHelper = new THREE.SpotLightHelper(centerSpotLight);
 scene.add(centerSpotLightHelper);
