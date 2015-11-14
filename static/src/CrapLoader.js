@@ -23,8 +23,10 @@ var CrapLoader = ( function () {
                     if (node.userData && node.userData.visible === false) {
                         node.visible = false;
                     }
-                    node.geometry.computeVertexNormals();
-                    node.geometry.computeFaceNormals();
+                    if (node.material.shading === THREE.SmoothShading)
+                        node.geometry.computeVertexNormals();
+                    else if (node.material.shading === THREE.FlatShading)
+                        node.geometry.computeFaceNormals();
                 }
             } );
         }

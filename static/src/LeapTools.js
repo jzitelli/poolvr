@@ -4,8 +4,8 @@ function addTool(parent, world, options) {
 
     var toolLength = options.toolLength || 0.5;
     var toolRadius = options.toolRadius || 0.016;
-    var toolOffset = options.toolOffset || new THREE.Vector3(0, -0.3, -toolLength - 0.1);
-    
+    var toolOffset = options.toolOffset || new THREE.Vector3(0, -0.48, -toolLength - 0.15);
+
     var toolTime = options.toolTime || 0.02;
 
     var handOffset = options.handOffset || new THREE.Vector3(0, -0.25, -0.4);
@@ -84,7 +84,7 @@ function addTool(parent, world, options) {
                   [joint2Mesh.clone(), joint2Mesh.clone(), joint2Mesh.clone(), joint2Mesh.clone(), joint2Mesh.clone()]];
     leftRoot.add(joint2s[0][0], joint2s[0][1], joint2s[0][2], joint2s[0][3], joint2s[0][4]);
     rightRoot.add(joint2s[1][0], joint2s[1][1], joint2s[1][2], joint2s[1][3], joint2s[1][4]);
-    
+
     if (!options.leapDisabled) {
 
     var leapController = new Leap.Controller({frameEventName: 'animationFrame'});
@@ -145,7 +145,7 @@ function addTool(parent, world, options) {
                         joints[i][j].position.set(finger.bones[1].nextJoint[0], finger.bones[1].nextJoint[1], finger.bones[1].nextJoint[2]);
                         joint2s[i][j].position.set(finger.bones[2].nextJoint[0], finger.bones[2].nextJoint[1], finger.bones[2].nextJoint[2]);
                     });
-                }                
+                }
             });
         };
     })();
@@ -153,5 +153,5 @@ function addTool(parent, world, options) {
 
     }
 
-    return [stickMesh, tipBody];
+    return [stickMesh, tipBody, toolRoot];
 }
