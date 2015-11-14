@@ -33,16 +33,11 @@ avatar.position.y = 1.2;
 avatar.position.z = 2;
 
 options.keyboardCommands = {logVars: {buttons: [Primrose.Input.Keyboard.Q],
-                                      commandDown: logVars} };
-
-                            // , moveToolOffsetForward: {buttons: [Primrose.Input.Keyboard.I],
-                            //                         commandDown: moveToolOffsetForward},
-                            // moveToolOffsetForward: {buttons: [Primrose.Input.Keyboard.I],
-                            //                         commandDown: moveToolOffsetForward},
-                            // moveToolOffsetForward: {buttons: [Primrose.Input.Keyboard.I],
-                            //                         commandDown: moveToolOffsetForward},
-                            // moveToolOffsetForward: {buttons: [Primrose.Input.Keyboard.I],
-                            //                         commandDown: moveToolOffsetForward}};
+                                      commandDown: logVars},
+                            moveToolForwards: {buttons: [Primrose.Input.Keyboard.I]},
+                            moveToolBackwards: {buttons: [Primrose.Input.Keyboard.K]},
+                            moveToolLeft: {buttons: [Primrose.Input.Keyboard.J]},
+                            moveToolRight: {buttons: [Primrose.Input.Keyboard.L]}};
 
 var stickMesh, tipBody, toolRoot;
 
@@ -77,6 +72,7 @@ function onLoad() {
     toolStuff = addTool(avatar, app.world, toolOptions);
     stickMesh = toolStuff[0];
     tipBody   = toolStuff[1];
+    toolRoot  = toolStuff[2];
 
     if (options.mouseControls) {
         var mousePointer = stickMesh;
@@ -111,7 +107,8 @@ var UP = new THREE.Vector3(0, 1, 0),
     kbheading = 0,
     kbpitch = 0,
     walkSpeed = 0.3,
-    floatSpeed = 0.1;
+    floatSpeed = 0.1,
+    toolDrive, toolStrafe;
 function animate(t) {
     "use strict";
     requestAnimationFrame(animate);
@@ -159,24 +156,28 @@ function animate(t) {
         drive = 0;
     }
 
-    if (app.mousePointer.visible && picking) {
-        origin.set(0, 0, 0);
-        direction.set(0, 0, 0);
-        direction.subVectors(mousePointer.localToWorld(direction), camera.localToWorld(origin)).normalize();
-        raycaster.set(origin, direction);
-        var intersects = raycaster.intersectObjects(pickables);
-        if (intersects.length > 0) {
-            if (app.picked != intersects[0].object) {
-                if (app.picked) app.picked.material.color.setHex(app.picked.currentHex);
-                app.picked = intersects[0].object;
-                app.picked.currentHex = app.picked.material.color.getHex();
-                app.picked.material.color.setHex(0xff4444); //0x44ff44);
-            }
-        } else {
-            if (app.picked) app.picked.material.color.setHex(app.picked.currentHex);
-            app.picked = null;
-        }
-    }
+    toolStrafe = app.keyboard.getValue("moveToolRight") -
+        app.keyboard.getValue("moveToolLeft");
+    toolDrive = app.keyboard.getValue("moveToolForwards") - app.keyboard.getValue("moveToolBackwards");
+
+    // if (app.mousePointer.visible && picking) {
+    //     origin.set(0, 0, 0);
+    //     direction.set(0, 0, 0);
+    //     direction.subVectors(mousePointer.localToWorld(direction), camera.localToWorld(origin)).normalize();
+    //     raycaster.set(origin, direction);
+    //     var intersects = raycaster.intersectObjects(pickables);
+    //     if (intersects.length > 0) {
+    //         if (app.picked != intersects[0].object) {
+    //             if (app.picked) app.picked.material.color.setHex(app.picked.currentHex);
+    //             app.picked = intersects[0].object;
+    //             app.picked.currentHex = app.picked.material.color.getHex();
+    //             app.picked.material.color.setHex(0xff4444); //0x44ff44);
+    //         }
+    //     } else {
+    //         if (app.picked) app.picked.material.color.setHex(app.picked.currentHex);
+    //         app.picked = null;
+    //     }
+    // }
 
     // TODO: resolve CANNON issues w/ initial low framerate
     app.world.step(1/60);
@@ -186,6 +187,9 @@ function animate(t) {
     avatar.position.x += dt * (strafe * cosHeading + drive * sinHeading);
     avatar.position.z += dt * (drive * cosHeading - strafe * sinHeading);
     avatar.position.y += dt * floatUp;
+
+    toolRoot.position.x += dt * 0.25*(toolStrafe * cosHeading + toolDrive * sinHeading);
+    toolRoot.position.z += dt * 0.25*(-toolDrive * cosHeading + toolStrafe * sinHeading);
 
     for (var j = 0; j < app.world.bodies.length; ++j) {
         var body = app.world.bodies[j];
