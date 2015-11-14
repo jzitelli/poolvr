@@ -62,8 +62,11 @@ WebVRApplication = ( function () {
                     max: 0.5 * Math.PI, min: -0.5 * Math.PI},
             float: {axes: [-Primrose.Input.Gamepad.LSY], deadzone: 0.12},
             toggleFloatMode: {buttons: [Primrose.Input.Gamepad.XBOX_BUTTONS.leftStick],
-                              commandDown: function () { application.avatar.floatMode = true; },
-                              commandUp: function () { application.avatar.floatMode = false; } },
+                              commandDown: function () { avatar.floatMode = true; },
+                              commandUp: function () { avatar.floatMode = false; } },
+            toggleToolMode: {buttons: [Primrose.Input.Gamepad.XBOX_BUTTONS.rightStick],
+                             commandDown: function () { avatar.toolMode = true; },
+                             commandUp: function () { avatar.toolMode = false; } },
             resetVRSensor: {buttons: [Primrose.Input.Gamepad.XBOX_BUTTONS.back],
                             commandDown: function () { application.resetVRSensor(); }, dt: 0.25}
         };
@@ -72,7 +75,7 @@ WebVRApplication = ( function () {
             return combineDefaults({name: k}, options.gamepadCommands[k]);
         });
 
-        options = combineDefaults(options, {
+        this.options = combineDefaults(options, {
             gravity: 0,
             backgroundColor: 0x000000,
             moveSpeed: 0.5,
@@ -170,9 +173,9 @@ WebVRApplication = ( function () {
         loadingMesh.position.x = loadingMesh.position.z = -2;
         loadingScene.add(loadingMesh);
         var loadingCamera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        var lt = 0;
+        this.lt = 0;
 
-        this.start = function() {
+        this.start = function(animate) {
             function waitForResources(t) {
                 if (CrapLoader.isLoaded()) {
                     CrapLoader.CANNONize(scene, world);
@@ -180,7 +183,7 @@ WebVRApplication = ( function () {
                     for (var i = 0; i < 240*2; i++) {
                         world.step(1/240);
                     }
-                    lt = t;
+                    this.lt = t;
                     requestAnimationFrame(animate);
                 } else {
                     renderer.render(loadingScene, loadingCamera);
@@ -213,102 +216,6 @@ WebVRApplication = ( function () {
         };
         this.picked = null;
 
-        var UP = new THREE.Vector3(0, 1, 0),
-            RIGHT = new THREE.Vector3(1, 0, 0),
-            heading = 0,
-            pitch = 0,
-            pitchQuat = new THREE.Quaternion(),
-            strafe,
-            drive,
-            floatUp,
-            kbheading = 0,
-            kbpitch = 0,
-            walkSpeed = options.moveSpeed,
-            floatSpeed = 0.9 * options.moveSpeed;
-        var animate = function (t) {
-            requestAnimationFrame(animate);
-            var dt = (t - lt) * 0.001;
-            lt = t;
-
-            if (this.vrControls.enabled) {
-                this.vrControls.update();
-            }
-
-            this.vrManager.render(this.scene, this.camera, t);
-
-            this.keyboard.update(dt);
-            this.gamepad.update(dt);
-            kbheading += -0.8 * dt * (this.keyboard.getValue("turnLeft") +
-                this.keyboard.getValue("turnRight"));
-            heading = kbheading + this.gamepad.getValue("heading");
-            var cosHeading = Math.cos(heading),
-                sinHeading = Math.sin(heading);
-            if (!this.vrControls.enabled || options.vrPitching) {
-                kbpitch -= 0.8 * dt * (this.keyboard.getValue("pitchUp") + this.keyboard.getValue("pitchDown"));
-                pitch = -(this.gamepad.getValue("pitch") + kbpitch);
-                pitchQuat.setFromAxisAngle(RIGHT, pitch);
-            }
-            var cosPitch = Math.cos(pitch),
-                sinPitch = Math.sin(pitch);
-            strafe = this.keyboard.getValue("strafeRight") +
-                this.keyboard.getValue("strafeLeft") +
-                this.gamepad.getValue("strafe");
-            floatUp = this.keyboard.getValue("floatUp") + this.keyboard.getValue("floatDown");
-            drive = this.keyboard.getValue("driveBack") + this.keyboard.getValue("driveForward");
-            if (this.avatar.floatMode) {
-                floatUp += this.gamepad.getValue("float");
-            } else {
-                drive += this.gamepad.getValue("drive");
-            }
-            floatUp *= floatSpeed;
-            if (strafe || drive) {
-                var len = walkSpeed * Math.min(1, 1 / Math.sqrt(drive * drive +
-                    strafe * strafe));
-                strafe *= len;
-                drive *= len;
-            } else {
-                strafe = 0;
-                drive = 0;
-            }
-
-            if (mousePointer.visible && picking) {
-                origin.set(0, 0, 0);
-                direction.set(0, 0, 0);
-                direction.subVectors(mousePointer.localToWorld(direction), camera.localToWorld(origin)).normalize();
-                raycaster.set(origin, direction);
-                var intersects = raycaster.intersectObjects(pickables);
-                if (intersects.length > 0) {
-                    if (this.picked != intersects[0].object) {
-                        if (this.picked) this.picked.material.color.setHex(this.picked.currentHex);
-                        this.picked = intersects[0].object;
-                        this.picked.currentHex = this.picked.material.color.getHex();
-                        this.picked.material.color.setHex(0xff4444); //0x44ff44);
-                    }
-                } else {
-                    if (this.picked) this.picked.material.color.setHex(this.picked.currentHex);
-                    this.picked = null;
-                }
-            }
-
-            // TODO: resolve CANNON issues w/ initial low framerate
-            this.world.step(1/60);
-
-            this.avatar.quaternion.setFromAxisAngle(UP, heading);
-            this.avatar.quaternion.multiply(pitchQuat);
-            this.avatar.position.x += dt * (strafe * cosHeading + drive * sinHeading);
-            this.avatar.position.z += dt * (drive * cosHeading - strafe * sinHeading);
-            this.avatar.position.y += dt * floatUp;
-
-            for (var j = 0; j < this.world.bodies.length; ++j) {
-                var body = this.world.bodies[j];
-                if (body.mesh && body.type !== CANNON.Body.STATIC) {
-                    body.mesh.position.copy(body.position);
-                    body.mesh.quaternion.copy(body.quaternion);
-                }
-            }
-
-        }.bind(this);
-
         var audioContext = this.audioContext;
         var gainNode = audioContext.createGain();
         gainNode.connect(audioContext.destination);
@@ -329,7 +236,6 @@ WebVRApplication = ( function () {
             };
             request.send();
         };
-
     }
 
     return WebVRApplication;

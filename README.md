@@ -1,6 +1,6 @@
 # poolvr
 
-Play pool / billiards with your LeapMotion device in VR (or fullscreen mode), in a web browser!
+Play pool / billiards with your Leap Motion device in VR (or fullscreen mode), in a web browser!
 
 ![screenshot](http://jzitelli.github.io/poolvr/images/screenshot.png)
 
@@ -12,7 +12,7 @@ This project began as an experimental example that I introduced into my fork of 
 **poolvr** uses [three.js](https://github.com/mrdoob/three.js) to provide WebGL graphics and [Cannon.js](https://github.com/schteppe/cannon.js) to provide realtime physics.
 If you use a WebVR-enabled browser, you can play in VR!  This feature uses [webvr-boilerplate](https://github.com/borismus/webvr-boilerplate).
 
-The three.js pool table scene and Cannon.js world is defined procedurally in a Python script.
+The three.js pool table scene and Cannon.js world is defined procedurally via a Python script.
 
 
 
@@ -47,7 +47,7 @@ For instance, you can access the static `index.html` that you would obtain with 
 
 ## Desktop and VR tracking modes:
 
-The default stick tracking mode (aka 'desktop') assumes that the LeapMotion sensor is stationary, facing up.
+The default stick tracking mode (aka 'desktop') assumes that the Leap Motion sensor is stationary, facing up.
 
 The VR stick tracking mode assumes that the sensor is [mounted to your HMD](https://developer.leapmotion.com/vr-setup).
 Currently this mode is selected using a `vr` URL parameter, e.g. you would point your browser to `http://127.0.0.1:5000?vr=1`.
@@ -69,6 +69,8 @@ Currently this mode is selected using a `vr` URL parameter, e.g. you would point
 The following amazing open-source projects have helped make **poolvr** possible:
 
 JavaScript libraries:
+  - [Leap Motion JavaScript framework](https://github.com/leapmotion/leapjs)
+  - [LeapJS-Plugins](https://github.com/leapmotion/leapjs-plugins)
   - [three.js](https://github.com/mrdoob/three.js)
   - [Cannon.js](https://github.com/schteppe/cannon.js)
   - [Primrose](https://github.com/capnmidnight/Primrose)
