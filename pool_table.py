@@ -63,6 +63,7 @@ def pool_table(L_table=2.3368, W_table=None, H_table=0.74295,
     headCushionMesh = Mesh(geometry=headCushionGeom,
                            material=cushionMaterial,
                            position=[0, H_table, 0.5*L_table - 0.5*W_cushion],
+                           receiveShadow=True,
                            userData={'cannonData': {'mass': 0,
                                                     'shapes': ['Box']}})
     poolTable.add(headCushionMesh)
@@ -71,14 +72,15 @@ def pool_table(L_table=2.3368, W_table=None, H_table=0.74295,
                            material=cushionMaterial,
                            position=[0, H_table, -0.5*L_table + 0.5*W_cushion],
                            rotation=[0, np.pi, 0],
-                           userData={'cannonData': {'mass': 0,
-                                                    'shapes': ['Box']}})
+                           receiveShadow=True,
+                           userData={'cannonData': {'mass': 0, 'shapes': ['Box']}})
     poolTable.add(footCushionMesh)
     ###
     leftHeadCushionGeom = Mesh(geometry=headCushionGeom,
                                material=cushionMaterial,
                                position=[-0.5*W_table + 0.5*W_cushion, H_table, 0.25*L_table],
                                rotation=[0, -np.pi/2, 0],
+                               receiveShadow=True,
                                userData={'cannonData': {'mass': 0, 'shapes': ['Box']}})
     poolTable.add(leftHeadCushionGeom)
     ###
@@ -86,6 +88,7 @@ def pool_table(L_table=2.3368, W_table=None, H_table=0.74295,
                                material=cushionMaterial,
                                position=[-0.5*W_table + 0.5*W_cushion, H_table, -0.25*L_table],
                                rotation=[0, -np.pi/2, 0],
+                               receiveShadow=True,
                                userData={'cannonData': {'mass': 0, 'shapes': ['Box']}})
     poolTable.add(leftFootCushionGeom)
     ##
@@ -93,6 +96,7 @@ def pool_table(L_table=2.3368, W_table=None, H_table=0.74295,
                                material=cushionMaterial,
                                position=[0.5*W_table - 0.5*W_cushion, H_table, 0.25*L_table],
                                rotation=[0, np.pi/2, 0],
+                               receiveShadow=True,
                                userData={'cannonData': {'mass': 0, 'shapes': ['Box']}})
     poolTable.add(rightHeadCushionGeom)
     ###
@@ -100,6 +104,7 @@ def pool_table(L_table=2.3368, W_table=None, H_table=0.74295,
                                 material=cushionMaterial,
                                 position=[0.5*W_table - 0.5*W_cushion, H_table, -0.25*L_table],
                                 rotation=[0, np.pi/2, 0],
+                                receiveShadow=True,
                                 userData={'cannonData': {'mass': 0, 'shapes': ['Box']}})
     poolTable.add(rightFootCushionGeom)
 
@@ -121,42 +126,45 @@ def pool_table(L_table=2.3368, W_table=None, H_table=0.74295,
     #                     userData={'cannonData': {'mass': 0,
     #                                              'shapes': ['Box']}})
     # scene.add(right_rail)
-    # pockets (shitty hacked in)
+
     ball_radius = ball_diameter / 2
-    pocket_radius = 2.5 * ball_radius
-    pocket_height = 3 * pocket_radius
-    pocketGeom = CylinderGeometry(radiusTop=pocket_radius,
-                                  radiusBottom=pocket_radius,
-                                  height=0.001,
-                                  radialSegments=16)
-    y_mesh = H_table
-    pocketMesh = Mesh(geometry=pocketGeom,
-                      material=MeshBasicMaterial(color=0x000000),
-                      position=[0, y_mesh, 0])
-    # left center:
-    pocketMesh.position[0] = -W_table / 2
-    pocketMesh.position[2] = 0
-    poolTable.add(deepcopy(pocketMesh))
-    # right center:
-    pocketMesh.position[0] = W_table / 2
-    pocketMesh.position[2] = 0
-    poolTable.add(deepcopy(pocketMesh))
-    # head left:
-    pocketMesh.position[0] = -W_table / 2
-    pocketMesh.position[2] = -L_table / 2
-    poolTable.add(deepcopy(pocketMesh))
-    # head right:
-    pocketMesh.position[0] = W_table / 2
-    pocketMesh.position[2] = -L_table / 2
-    poolTable.add(deepcopy(pocketMesh))
-    # foot left:
-    pocketMesh.position[0] = -W_table / 2
-    pocketMesh.position[2] = L_table / 2
-    poolTable.add(deepcopy(pocketMesh))
-    # foot right:
-    pocketMesh.position[0] = W_table / 2
-    pocketMesh.position[2] = L_table / 2
-    poolTable.add(deepcopy(pocketMesh))
+
+    # # pockets (shitty hacked in)
+    # pocket_radius = 2.5 * ball_radius
+    # pocket_height = 3 * pocket_radius
+    # pocketGeom = CylinderGeometry(radiusTop=pocket_radius,
+    #                               radiusBottom=pocket_radius,
+    #                               height=0.001,
+    #                               radialSegments=16)
+    # y_mesh = H_table
+    # pocketMesh = Mesh(geometry=pocketGeom,
+    #                   material=MeshBasicMaterial(color=0x000000),
+    #                   position=[0, y_mesh, 0])
+    # # left center:
+    # pocketMesh.position[0] = -W_table / 2
+    # pocketMesh.position[2] = 0
+    # poolTable.add(deepcopy(pocketMesh))
+    # # right center:
+    # pocketMesh.position[0] = W_table / 2
+    # pocketMesh.position[2] = 0
+    # poolTable.add(deepcopy(pocketMesh))
+    # # head left:
+    # pocketMesh.position[0] = -W_table / 2
+    # pocketMesh.position[2] = -L_table / 2
+    # poolTable.add(deepcopy(pocketMesh))
+    # # head right:
+    # pocketMesh.position[0] = W_table / 2
+    # pocketMesh.position[2] = -L_table / 2
+    # poolTable.add(deepcopy(pocketMesh))
+    # # foot left:
+    # pocketMesh.position[0] = -W_table / 2
+    # pocketMesh.position[2] = L_table / 2
+    # poolTable.add(deepcopy(pocketMesh))
+    # # foot right:
+    # pocketMesh.position[0] = W_table / 2
+    # pocketMesh.position[2] = L_table / 2
+    # poolTable.add(deepcopy(pocketMesh))
+
     return poolTable
 
 
