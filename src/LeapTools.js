@@ -4,7 +4,7 @@ function addTool(parent, world, options) {
 
     var toolLength = options.toolLength || 0.5;
     var toolRadius = options.toolRadius || 0.016;
-    var toolOffset = options.toolOffset || new THREE.Vector3(0, -0.48, -toolLength - 0.15);
+    var toolOffset = options.toolOffset || new THREE.Vector3(0, -0.42, -toolLength - 0.15);
 
     var toolTime = options.toolTime || 0.02;
 

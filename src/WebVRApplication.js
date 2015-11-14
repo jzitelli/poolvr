@@ -42,7 +42,7 @@ WebVRApplication = ( function () {
             floatDown: {buttons: [-Primrose.Input.Keyboard.C]},
             toggleVRControls: {buttons: [Primrose.Input.Keyboard.V],
                                commandDown: this.toggleVRControls.bind(this), dt: 0.25},
-            toggleWireframe: {buttons: [Primrose.Input.Keyboard.U],
+            toggleWireframe: {buttons: [Primrose.Input.Keyboard.NUMBER0],
                               commandDown: this.toggleWireframe.bind(this), dt: 0.25},
             resetVRSensor: {buttons: [Primrose.Input.Keyboard.Z],
                             commandDown: this.resetVRSensor.bind(this), dt: 0.25}
@@ -57,18 +57,14 @@ WebVRApplication = ( function () {
             strafe: {axes: [Primrose.Input.Gamepad.LSX], deadzone: 0.15},
             drive: {axes: [Primrose.Input.Gamepad.LSY], deadzone: 0.15},
             heading: {axes: [-Primrose.Input.Gamepad.RSX], integrate: true, deadzone: 0.15},
-            dheading: {commands: ["heading"], delta: true},
             pitch: {axes: [Primrose.Input.Gamepad.RSY], integrate: true, deadzone: 0.15,
                     max: 0.5 * Math.PI, min: -0.5 * Math.PI},
             float: {axes: [-Primrose.Input.Gamepad.LSY], deadzone: 0.12},
             toggleFloatMode: {buttons: [Primrose.Input.Gamepad.XBOX_BUTTONS.leftStick],
                               commandDown: function () { avatar.floatMode = true; },
-                              commandUp: function () { avatar.floatMode = false; } },
-            toggleToolMode: {buttons: [Primrose.Input.Gamepad.XBOX_BUTTONS.rightStick],
-                             commandDown: function () { avatar.toolMode = true; },
-                             commandUp: function () { avatar.toolMode = false; } },
+                              commandUp: function () { avatar.floatMode = false; }},
             resetVRSensor: {buttons: [Primrose.Input.Gamepad.XBOX_BUTTONS.back],
-                            commandDown: function () { application.resetVRSensor(); }, dt: 0.25}
+                            commandDown: this.resetVRSensor.bind(this), dt: 0.25}
         };
         options.gamepadCommands = combineDefaults(options.gamepadCommands || {}, gamepadCommands);
         options.gamepadCommands = Object.keys(options.gamepadCommands).map(function (k) {
