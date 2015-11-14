@@ -53,19 +53,18 @@ def pool_table(L_table=2.3368, W_table=None, H_table=0.74295,
 
     cushionMaterial = MeshPhongMaterial(color=0x00aa00, shininess=5, shading=FlatShading)
     # centered as if it were BoxGeometry(W_playable, H_cushion, W_cushion):
-    headCushionGeom = PrismBufferGeometry(vertices=[[-0.5*W_playable,                     0,         0.5*W_cushion],
-                                                    [-0.5*W_playable,                     H_cushion, 0.5*W_cushion],
+    headCushionGeom = PrismBufferGeometry(vertices=[[-0.5*W_playable,                        0,          0.5*W_cushion],
+                                                    [-0.5*W_playable,                        H_cushion,  0.5*W_cushion],
                                                     [-0.5*W_playable + np.sqrt(2)*W_cushion, H_cushion, -0.5*W_cushion],
-                                                    [0.5*W_playable,                     0,         0.5*W_cushion],
-                                                    [0.5*W_playable,                     H_cushion, 0.5*W_cushion],
-                                                    [0.5*W_playable - np.sqrt(2)*W_cushion, H_cushion, -0.5*W_cushion]])
+                                                    [ 0.5*W_playable,                        0,          0.5*W_cushion],
+                                                    [ 0.5*W_playable,                        H_cushion,  0.5*W_cushion],
+                                                    [ 0.5*W_playable - np.sqrt(2)*W_cushion, H_cushion, -0.5*W_cushion]])
     ###
     headCushionMesh = Mesh(geometry=headCushionGeom,
                            material=cushionMaterial,
                            position=[0, H_table, 0.5*L_table - 0.5*W_cushion],
                            receiveShadow=True,
-                           userData={'cannonData': {'mass': 0,
-                                                    'shapes': ['Box']}})
+                           userData={'cannonData': {'mass': 0, 'shapes': ['ConvexPolyhedron']}})
     poolTable.add(headCushionMesh)
     ###
     footCushionMesh = Mesh(geometry=headCushionGeom,
@@ -73,7 +72,7 @@ def pool_table(L_table=2.3368, W_table=None, H_table=0.74295,
                            position=[0, H_table, -0.5*L_table + 0.5*W_cushion],
                            rotation=[0, np.pi, 0],
                            receiveShadow=True,
-                           userData={'cannonData': {'mass': 0, 'shapes': ['Box']}})
+                           userData={'cannonData': {'mass': 0, 'shapes': ['ConvexPolyhedron']}})
     poolTable.add(footCushionMesh)
     ###
     leftHeadCushionGeom = Mesh(geometry=headCushionGeom,
@@ -81,7 +80,7 @@ def pool_table(L_table=2.3368, W_table=None, H_table=0.74295,
                                position=[-0.5*W_table + 0.5*W_cushion, H_table, 0.25*L_table],
                                rotation=[0, -np.pi/2, 0],
                                receiveShadow=True,
-                               userData={'cannonData': {'mass': 0, 'shapes': ['Box']}})
+                               userData={'cannonData': {'mass': 0, 'shapes': ['ConvexPolyhedron']}})
     poolTable.add(leftHeadCushionGeom)
     ###
     leftFootCushionGeom = Mesh(geometry=headCushionGeom,
@@ -89,7 +88,7 @@ def pool_table(L_table=2.3368, W_table=None, H_table=0.74295,
                                position=[-0.5*W_table + 0.5*W_cushion, H_table, -0.25*L_table],
                                rotation=[0, -np.pi/2, 0],
                                receiveShadow=True,
-                               userData={'cannonData': {'mass': 0, 'shapes': ['Box']}})
+                               userData={'cannonData': {'mass': 0, 'shapes': ['ConvexPolyhedron']}})
     poolTable.add(leftFootCushionGeom)
     ##
     rightHeadCushionGeom = Mesh(geometry=headCushionGeom,
@@ -97,7 +96,7 @@ def pool_table(L_table=2.3368, W_table=None, H_table=0.74295,
                                position=[0.5*W_table - 0.5*W_cushion, H_table, 0.25*L_table],
                                rotation=[0, np.pi/2, 0],
                                receiveShadow=True,
-                               userData={'cannonData': {'mass': 0, 'shapes': ['Box']}})
+                               userData={'cannonData': {'mass': 0, 'shapes': ['ConvexPolyhedron']}})
     poolTable.add(rightHeadCushionGeom)
     ###
     rightFootCushionGeom = Mesh(geometry=headCushionGeom,
@@ -105,7 +104,7 @@ def pool_table(L_table=2.3368, W_table=None, H_table=0.74295,
                                 position=[0.5*W_table - 0.5*W_cushion, H_table, -0.25*L_table],
                                 rotation=[0, np.pi/2, 0],
                                 receiveShadow=True,
-                                userData={'cannonData': {'mass': 0, 'shapes': ['Box']}})
+                                userData={'cannonData': {'mass': 0, 'shapes': ['ConvexPolyhedron']}})
     poolTable.add(rightFootCushionGeom)
 
     # left_rail = Mesh(geometry=BoxGeometry(W_cushion, H_cushion, L_table),

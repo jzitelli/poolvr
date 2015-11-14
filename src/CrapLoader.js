@@ -110,21 +110,22 @@ var CrapLoader = ( function () {
                         shape = new CANNON.Sphere(node.geometry.boundingSphere.radius);
                         break;
                     case 'ConvexPolyhedron':
-                        var vertices = [];
-                        array = node.geometry.getAttribute('position').array;
-                        for (var i = 0; i < array.length; i += 3) {
-                            vertices.push(new CANNON.Vec3(array[i], array[i + 1], array[i + 2]));
-                        }
+                        var points = [];
                         var faces = [];
-                        array = node.geometry.getAttribute('index').array;
-                        for (i = 0; i < array.length; i += 3) {
-                            var face = [0, 0, 0];
-                            face[0] = array[i];
-                            face[1] = array[i + 1];
-                            face[2] = array[i + 2];
-                            faces.push(face);
+                        if (node.geometry instanceof THREE.BufferGeometry) {
+                            array = node.geometry.getAttribute('position').array;
+                            for (var i = 0; i < array.length; i += 3) {
+                                points.push(new CANNON.Vec3(array[i], array[i+1], array[i+2]));
+                            }
+                            array = node.geometry.index.array;
+                            for (i = 0; i < array.length; i += 3) {
+                                var face = [array[i], array[i+1], array[i+2]];
+                                faces.push(face);
+                            }
+                        } else if (node.geometry instanceof THREE.Geometry) {
+                            // TODO
                         }
-                        shape = new CANNON.ConvexPolyhedron(vertices, faces);
+                        shape = new CANNON.ConvexPolyhedron(points, faces);
                         break;
                     case 'Cylinder':
                         shape = new CANNON.Cylinder(node.geometry.parameters.radiusTop,
@@ -132,26 +133,26 @@ var CrapLoader = ( function () {
                             node.geometry.parameters.height,
                             node.geometry.parameters.radialSegments);
                         break;
-                    case 'Trimesh':
-                        var vertices;
-                        var indices;
-                        if (node.geometry instanceof THREE.BufferGeometry) {
-                            vertices = node.geometry.getAttribute('position').array;
-                            indices = node.geometry.getAttribute('index').array;
-                        } else {
-                            vertices = [];
-                            for (var iv = 0; iv < node.geometry.vertices.length; iv++) {
-                                var vert = node.geometry.vertices[iv];
-                                vertices.push(vert.x, vert.y, vert.z);
-                            }
-                            indices = [];
-                            for (var iface = 0; iface < node.geometry.faces.length; iface++) {
-                                var face = node.geometry.faces[iface];
-                                indices.push(face.a, face.b, face.c);
-                            }
-                        }
-                        shape = new CANNON.Trimesh(vertices, indices);
-                        break;
+                    // case 'Trimesh':
+                    //     var vertices;
+                    //     var indices;
+                    //     if (node.geometry instanceof THREE.BufferGeometry) {
+                    //         vertices = node.geometry.getAttribute('position').array;
+                    //         indices = node.geometry.getAttribute('index').array;
+                    //     } else {
+                    //         vertices = [];
+                    //         for (var iv = 0; iv < node.geometry.vertices.length; iv++) {
+                    //             var vert = node.geometry.vertices[iv];
+                    //             vertices.push(vert.x, vert.y, vert.z);
+                    //         }
+                    //         indices = [];
+                    //         for (var iface = 0; iface < node.geometry.faces.length; iface++) {
+                    //             var face = node.geometry.faces[iface];
+                    //             indices.push(face.a, face.b, face.c);
+                    //         }
+                    //     }
+                    //     shape = new CANNON.Trimesh(vertices, indices);
+                    //     break;
                     default:
                         console.log("unknown shape type: " + e);
                         break;
