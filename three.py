@@ -460,7 +460,7 @@ class PlaneBufferGeometry(Three):
 
 
 class SphereBufferGeometry(Three):
-    def __init__(self, name=None, radius=50, widthSegments=8, heightSegments=6, phiStart=0, phiLength=2*np.pi, thetaStart=0, thetaLength=2*np.pi):
+    def __init__(self, name=None, radius=50, widthSegments=8, heightSegments=6, phiStart=None, phiLength=None, thetaStart=None, thetaLength=None):
         Three.__init__(self, name)
         self.radius = radius
         self.widthSegments = widthSegments

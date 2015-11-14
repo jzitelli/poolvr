@@ -181,7 +181,7 @@ def pool_hall():
                  userData={'cannonData': {'mass': 0,
                                           'shapes': ['Plane']}})
     scene.add(floor)
-    scene.add(PointLight(color=0xaa8866, position=[4, 2, -2.5], intensity=1, distance=40))
+    scene.add(PointLight(color=0xaa8866, position=[4, 5, 2.5], intensity=0.8, distance=40))
 
     ball_diameter = 2.25 * IN2METER
     L_table = 2.3368
@@ -192,7 +192,7 @@ def pool_hall():
 
     # balls:
     ball_radius = ball_diameter / 2
-    sphere = SphereBufferGeometry(radius=ball_radius, widthSegments=8, heightSegments=16)
+    sphere = SphereBufferGeometry(radius=ball_radius, widthSegments=16, heightSegments=12)
     ballData = {'cannonData': {'mass': 0.17, 'shapes': ['Sphere']}}
     num_balls = len(ball_colors)
     y_position = H_table + ball_radius + 0.001 # epsilon distance which the ball will fall from initial position
@@ -203,7 +203,7 @@ def pool_hall():
     for i, color in enumerate(ball_colors):
         ballMesh = Mesh(name="ball %d" % i,
                         geometry=sphere,
-                        material=MeshPhongMaterial(color=color),
+                        material=MeshPhongMaterial(color=color, shading=SmoothShading),
                         position=[x_positions[i], y_position, z_positions[i]],
                         castShadow=True,
                         userData=ballData)
