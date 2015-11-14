@@ -149,7 +149,9 @@ def pool_hall():
                  userData={'cannonData': {'mass': 0,
                                           'shapes': ['Plane']}})
     scene.add(floor)
-    scene.add(PointLight(color=0xaa8866, position=[4, 5, 2.5], intensity=0.8, distance=40))
+
+    # pointLight = PointLight(color=0xaa8866, position=[4, 5, 2.5], intensity=0.8, distance=40)
+    # scene.add(pointLight)
 
     ball_diameter = 2.25 * IN2METER
     L_table = 2.3368
