@@ -1,6 +1,6 @@
 # poolvr
 
-Play pool / billiards with your Leap Motion device in VR (or fullscreen mode), in a web browser!
+Play pool / billiards with your [Leap Motion sensor](https://www.leapmotion.com) in VR (or fullscreen mode), in a web browser!
 
 ![screenshot](http://jzitelli.github.io/poolvr/images/screenshot.png)
 
