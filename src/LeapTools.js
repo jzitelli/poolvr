@@ -5,7 +5,7 @@ function addTool(parent, world, options) {
     var toolLength = options.toolLength || 0.5;
     var toolRadius = options.toolRadius || 0.016;
     var toolOffset = options.toolOffset || new THREE.Vector3(0, -0.42, -toolLength - 0.15);
-
+    var toolMass = options.toolMass || 0.09;
     var toolTime = options.toolTime || 0.02;
 
     var handOffset = options.handOffset || new THREE.Vector3(0, -0.25, -0.4);
@@ -31,7 +31,7 @@ function addTool(parent, world, options) {
     tipMesh.castShadow = true;
     stickMesh.add(tipMesh);
     // TODO: mass
-    var tipBody = new CANNON.Body({mass: 0.2, type: CANNON.Body.KINEMATIC});
+    var tipBody = new CANNON.Body({mass: toolMass, type: CANNON.Body.KINEMATIC});
     tipBody.addShape(new CANNON.Sphere(toolRadius));
     world.addBody(tipBody);
 
