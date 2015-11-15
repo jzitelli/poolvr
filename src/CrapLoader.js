@@ -67,100 +67,120 @@ var CrapLoader = ( function () {
         return object;
     }
 
+
+    var position = new THREE.Vector3();
+
     function CANNONize(obj, world) {
         obj.traverse(function(node) {
             if (node.userData && node.userData.cannonData) {
                 var body = makeCANNON(node, node.userData.cannonData);
                 if (world) {
-                    world.addBody(body);
+                    if (body instanceof CANNON.Body) {
+                        world.addBody(body);
+                    } else {
+                        // assumed to be array
+                        body.forEach(function (b) { world.addBody(b); });
+                    }
                 }
             }
         });
+
         function makeCANNON(node, cannonData) {
+            var body;
+            var bodies;
             if (node.body) {
                 return node.body;
             }
-            var body = new CANNON.Body({
-                mass: cannonData.mass,
-                position: node.position,
-                quaternion: node.quaternion
-            });
-            body.mesh = node;
-            cannonData.shapes.forEach(function(e) {
-                var shape,
-                    position,
-                    quaternion,
-                    array;
-                switch (e) {
-                    case 'Plane':
-                        shape = new CANNON.Plane();
-                        quaternion = new CANNON.Quaternion();
-                        quaternion.setFromEuler(-Math.PI / 2, 0, 0, 'XYZ');
-                        break;
-                    case 'Box':
-                        var halfExtents = new CANNON.Vec3();
-                        node.geometry.computeBoundingBox();
-                        halfExtents.x = node.scale.x * (node.geometry.boundingBox.max.x - node.geometry.boundingBox.min.x) / 2;
-                        halfExtents.y = node.scale.y * (node.geometry.boundingBox.max.y - node.geometry.boundingBox.min.y) / 2;
-                        halfExtents.z = node.scale.z * (node.geometry.boundingBox.max.z - node.geometry.boundingBox.min.z) / 2;
-                        shape = new CANNON.Box(halfExtents);
-                        break;
-                    case 'Sphere':
-                        node.geometry.computeBoundingSphere();
-                        shape = new CANNON.Sphere(node.geometry.boundingSphere.radius);
-                        break;
-                    case 'ConvexPolyhedron':
-                        var points = [];
-                        var faces = [];
-                        if (node.geometry instanceof THREE.BufferGeometry) {
-                            array = node.geometry.getAttribute('position').array;
-                            for (var i = 0; i < array.length; i += 3) {
-                                points.push(new CANNON.Vec3(array[i], array[i+1], array[i+2]));
+            if (node instanceof THREE.Mesh) {
+                position.copy(node.position);
+                body = new CANNON.Body({
+                    mass: cannonData.mass,
+                    position: node.localToWorld(position),
+                    quaternion: node.quaternion
+                });
+                body.mesh = node;
+                cannonData.shapes.forEach(function(e) {
+                    var shape,
+                        position,
+                        quaternion,
+                        array;
+                    switch (e) {
+                        case 'Plane':
+                            shape = new CANNON.Plane();
+                            quaternion = new CANNON.Quaternion();
+                            quaternion.setFromEuler(-Math.PI / 2, 0, 0, 'XYZ');
+                            break;
+                        case 'Box':
+                            var halfExtents = new CANNON.Vec3();
+                            node.geometry.computeBoundingBox();
+                            halfExtents.x = node.scale.x * (node.geometry.boundingBox.max.x - node.geometry.boundingBox.min.x) / 2;
+                            halfExtents.y = node.scale.y * (node.geometry.boundingBox.max.y - node.geometry.boundingBox.min.y) / 2;
+                            halfExtents.z = node.scale.z * (node.geometry.boundingBox.max.z - node.geometry.boundingBox.min.z) / 2;
+                            shape = new CANNON.Box(halfExtents);
+                            break;
+                        case 'Sphere':
+                            node.geometry.computeBoundingSphere();
+                            shape = new CANNON.Sphere(node.geometry.boundingSphere.radius);
+                            break;
+                        case 'ConvexPolyhedron':
+                            var points = [];
+                            var faces = [];
+                            if (node.geometry instanceof THREE.BufferGeometry) {
+                                array = node.geometry.getAttribute('position').array;
+                                for (var i = 0; i < array.length; i += 3) {
+                                    points.push(new CANNON.Vec3(array[i], array[i+1], array[i+2]));
+                                }
+                                array = node.geometry.index.array;
+                                for (i = 0; i < array.length; i += 3) {
+                                    var face = [array[i], array[i+1], array[i+2]];
+                                    faces.push(face);
+                                }
+                            } else if (node.geometry instanceof THREE.Geometry) {
+                                // TODO
                             }
-                            array = node.geometry.index.array;
-                            for (i = 0; i < array.length; i += 3) {
-                                var face = [array[i], array[i+1], array[i+2]];
-                                faces.push(face);
-                            }
-                        } else if (node.geometry instanceof THREE.Geometry) {
-                            // TODO
-                        }
-                        shape = new CANNON.ConvexPolyhedron(points, faces);
-                        break;
-                    case 'Cylinder':
-                        shape = new CANNON.Cylinder(node.geometry.parameters.radiusTop,
-                            node.geometry.parameters.radiusBottom,
-                            node.geometry.parameters.height,
-                            node.geometry.parameters.radialSegments);
-                        break;
-                    // case 'Trimesh':
-                    //     var vertices;
-                    //     var indices;
-                    //     if (node.geometry instanceof THREE.BufferGeometry) {
-                    //         vertices = node.geometry.getAttribute('position').array;
-                    //         indices = node.geometry.getAttribute('index').array;
-                    //     } else {
-                    //         vertices = [];
-                    //         for (var iv = 0; iv < node.geometry.vertices.length; iv++) {
-                    //             var vert = node.geometry.vertices[iv];
-                    //             vertices.push(vert.x, vert.y, vert.z);
-                    //         }
-                    //         indices = [];
-                    //         for (var iface = 0; iface < node.geometry.faces.length; iface++) {
-                    //             var face = node.geometry.faces[iface];
-                    //             indices.push(face.a, face.b, face.c);
-                    //         }
-                    //     }
-                    //     shape = new CANNON.Trimesh(vertices, indices);
-                    //     break;
-                    default:
-                        console.log("unknown shape type: " + e);
-                        break;
-                }
-                body.addShape(shape, position, quaternion);
-            });
-            node.body = body;
-            return body;
+                            shape = new CANNON.ConvexPolyhedron(points, faces);
+                            break;
+                        case 'Cylinder':
+                            shape = new CANNON.Cylinder(node.geometry.parameters.radiusTop,
+                                node.geometry.parameters.radiusBottom,
+                                node.geometry.parameters.height,
+                                node.geometry.parameters.radialSegments);
+                            break;
+                        // case 'Trimesh':
+                        //     var vertices;
+                        //     var indices;
+                        //     if (node.geometry instanceof THREE.BufferGeometry) {
+                        //         vertices = node.geometry.getAttribute('position').array;
+                        //         indices = node.geometry.getAttribute('index').array;
+                        //     } else {
+                        //         vertices = [];
+                        //         for (var iv = 0; iv < node.geometry.vertices.length; iv++) {
+                        //             var vert = node.geometry.vertices[iv];
+                        //             vertices.push(vert.x, vert.y, vert.z);
+                        //         }
+                        //         indices = [];
+                        //         for (var iface = 0; iface < node.geometry.faces.length; iface++) {
+                        //             var face = node.geometry.faces[iface];
+                        //             indices.push(face.a, face.b, face.c);
+                        //         }
+                        //     }
+                        //     shape = new CANNON.Trimesh(vertices, indices);
+                        //     break;
+                        default:
+                            console.log("unknown shape type: " + e);
+                            break;
+                    }
+                    body.addShape(shape, position, quaternion);
+                });
+                node.body = body;
+                return body;
+            } else if (node instanceof THREE.Object3D) {
+                bodies = [];
+                node.children.forEach(function (c) { bodies.push(makeCANNON(c, cannonData)); });
+                return bodies;
+            } else {
+                console.log("makeCANNON error");
+            }
         }
     }
 

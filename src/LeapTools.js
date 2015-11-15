@@ -20,11 +20,13 @@ function addTool(parent, world, options) {
     parent.add(toolRoot);
     var stickGeom = new THREE.CylinderGeometry(toolRadius, toolRadius, toolLength, 10, 1, false, 0, 2*Math.PI);
     stickGeom.translate(0, -toolLength / 2, 0);
-    var stickMaterial = new THREE.MeshLambertMaterial({color: 0xeebb99, side: THREE.DoubleSide});
+    //var stickMaterial = new THREE.MeshLambertMaterial({color: 0xeebb99, side: THREE.DoubleSide});
+    var stickMaterial = new THREE.MeshBasicMaterial({color: 0xeebb99, side: THREE.DoubleSide});
     var stickMesh = new THREE.Mesh(stickGeom, stickMaterial);
     stickMesh.castShadow = true;
     toolRoot.add(stickMesh);
-    var tipMaterial = new THREE.MeshLambertMaterial({color: 0x004488});
+    //var tipMaterial = new THREE.MeshLambertMaterial({color: 0x004488});
+    var tipMaterial = new THREE.MeshBasicMaterial({color: 0x004488});
     var tipMesh = new THREE.Mesh(new THREE.SphereBufferGeometry(toolRadius), tipMaterial);
     tipMesh.castShadow = true;
     stickMesh.add(tipMesh);
@@ -44,7 +46,8 @@ function addTool(parent, world, options) {
     parent.add(rightRoot);
     leftRoot.visible = rightRoot.visible = false;
     var radius, length;
-    var handMaterial = new THREE.MeshLambertMaterial({color: 0x113399, transparent: true, opacity: 0});
+    //var handMaterial = new THREE.MeshLambertMaterial({color: 0x113399, transparent: true, opacity: 0});
+    var handMaterial = new THREE.MeshBasicMaterial({color: 0x113399, transparent: true, opacity: 0});
     radius = 0.03;
     length = 0.26;
     // arms:
@@ -55,7 +58,7 @@ function addTool(parent, world, options) {
     rightRoot.add(arms[1]);
     // palms:
     radius = 0.025;
-    var palmGeom = new THREE.SphereBufferGeometry(radius, 16, 8).scale(1, 0.5, 1);
+    var palmGeom = new THREE.SphereBufferGeometry(radius).scale(1, 0.5, 1);
     var palmMesh = new THREE.Mesh(palmGeom, handMaterial);
     palmMesh.castShadow = true;
     var palms = [palmMesh, palmMesh.clone()];
@@ -149,7 +152,7 @@ function addTool(parent, world, options) {
             });
         };
     })();
-        leapController.on('frame', onFrame);
+    leapController.on('frame', onFrame);
 
     }
 
