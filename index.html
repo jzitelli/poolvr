@@ -16,21 +16,26 @@
     <header>
       <div class="container">
         <h1>poolvr</h1>
-        <h2>Play pool / billiards in VR with your LeapMotion device, in a web browser!</h2>
+        <h2>Play pool / billiards in VR with your <a href="https://www.leapmotion.com">Leap Motion sensor</a>, in a web browser!</h2>
 
-        <a href="http://jzitelli.github.io/poolvr/static/index.html" class="btn">CLICK TO PLAY NOW</a>
 
         <section id="downloads">
+          <a href="http://jzitelli.github.io/poolvr/static/index.html" class="btn">CLICK TO PLAY NOW</a>
           <a href="https://github.com/jzitelli/poolvr/zipball/master" class="btn">Download as .zip</a>
           <a href="https://github.com/jzitelli/poolvr/tarball/master" class="btn">Download as .tar.gz</a>
           <a href="https://github.com/jzitelli/poolvr" class="btn btn-github"><span class="icon"></span>View on GitHub</a>
-          <img src="http://jzitelli.github.io/poolvr/images/screenshot.png" style="max-width:100%;">
         </section>
+
       </div>
+
+      <img src="http://jzitelli.github.io/poolvr/images/screenshot2.png" style="max-width:100%;">
+      <img src="http://jzitelli.github.io/poolvr/images/screenshot.png" style="max-width:100%;">
+
     </header>
 
     <div class="container">
       <section id="main_content">
+
         <h2>
 <a id="obtaining-the-latest-webvr-enabled-browsers" class="anchor" href="#obtaining-the-latest-webvr-enabled-browsers" aria-hidden="true"><span class="octicon octicon-link"></span></a>Obtaining the latest WebVR-enabled browsers:</h2>
 
@@ -72,24 +77,6 @@
 <p>The Flask application is configured to also serve any file within the project tree (nice for local development, but probably a bad idea to deploy to an actual web server).
 For instance, you can access the static <code>index.html</code> that you would obtain with method A via <code>http://127.0.0.1:5000/index.html</code>.</p>
 
-<h2>
-<a id="desktop-and-vr-tracking-modes" class="anchor" href="#desktop-and-vr-tracking-modes" aria-hidden="true"><span class="octicon octicon-link"></span></a>Desktop and VR tracking modes:</h2>
-
-<p>The default stick tracking mode (aka 'desktop') assumes that the LeapMotion sensor is stationary, facing up.</p>
-
-<p>The VR stick tracking mode assumes that the sensor is <a href="https://developer.leapmotion.com/vr-setup">mounted to your HMD</a>.
-Currently this mode is selected using a <code>vr</code> URL parameter, e.g. you would point your browser to <code>http://127.0.0.1:5000?vr=1</code>.</p>
-
-<h2>
-<a id="todo-list" class="anchor" href="#todo-list" aria-hidden="true"><span class="octicon octicon-link"></span></a>TODO list:</h2>
-
-<ul>
-<li>Cannon.js model for the pockets, not sure what the best approach is</li>
-<li>Run-time tracking mode toggling</li>
-<li>Ball labels, more balls</li>
-<li>Select friction, collision response physics parameters</li>
-<li>Hand interactions</li>
-</ul>
 
 <h2>
 <a id="acknowledgements" class="anchor" href="#acknowledgements" aria-hidden="true"><span class="octicon octicon-link"></span></a>Acknowledgements:</h2>
@@ -99,6 +86,8 @@ Currently this mode is selected using a <code>vr</code> URL parameter, e.g. you 
 <p>JavaScript libraries:</p>
 
 <ul>
+<li><a href="https://github.com/leapmotion/leapjs">Leap Motion JavaScript framework</a></li>
+<li><a href="https://github.com/leapmotion/leapjs-plugins">LeapJS-Plugins</a></li>
 <li><a href="https://github.com/mrdoob/three.js">three.js</a></li>
 <li><a href="https://github.com/schteppe/cannon.js">Cannon.js</a></li>
 <li><a href="https://github.com/capnmidnight/Primrose">Primrose</a></li>
@@ -114,6 +103,6 @@ Currently this mode is selected using a <code>vr</code> URL parameter, e.g. you 
       </section>
     </div>
 
-    
+
   </body>
 </html>
