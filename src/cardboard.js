@@ -14,3 +14,10 @@ var pixelHeight = height * window.devicePixelRatio;
 
 pyserver.log("hello from cardboard.js");
 pyserver.log(userAgent);
+if (navigator.getVRDevices) {
+    navigator.getVRDevices().then(function (devices) {
+        devices.forEach(function (device, i) {
+            pyserver.log('VR device ' + i + ': ' + device.deviceName);
+        });
+    });
+}

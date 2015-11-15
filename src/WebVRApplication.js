@@ -15,8 +15,11 @@ WebVRApplication = ( function () {
             }
         }.bind(this);
 
+        this.avatar.heading = 0;
+
         this.resetVRSensor = function () {
             this.vrControls.resetSensor();
+            this.avatar.heading = 0;
         }.bind(this);
 
         var wireframeMaterial = new THREE.MeshBasicMaterial({color: 0xeeddaa, wireframe: true});
@@ -124,7 +127,7 @@ WebVRApplication = ( function () {
         world.defaultContactMaterial.frictionEquationStiffness = 1e7;
         world.defaultContactMaterial.contactEquationRelaxation = 3;
         world.defaultContactMaterial.frictionEquationRelaxation = 3;
-        world.solver.iterations = 5;
+        world.solver.iterations = 10;
         this.world = world;
 
         window.addEventListener("resize", function () {

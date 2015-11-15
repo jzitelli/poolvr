@@ -70,6 +70,9 @@ var stickMesh, tipBody, toolRoot;
 
 var stickShadow, stickShadowMesh;
 
+var ballMeshes       = [],
+    ballStripeMeshes = [];
+
 function logVars() {
     "use strict";
     console.log(tipBody.position);
@@ -97,9 +100,23 @@ function onLoad() {
     var ballMaterial = new CANNON.Material();
     var ballBallContactMaterial = new CANNON.ContactMaterial(ballMaterial, ballMaterial, {restitution: 0.9});
     app.world.addContactMaterial(ballBallContactMaterial);
+
+    var playableSurfaceMaterial = new CANNON.Material();
+    var ballPlayableSurfaceContactMaterial = new CANNON.ContactMaterial(ballMaterial, playableSurfaceMaterial, {restitution: 0.3, friction: 0.77});
+    //wwwapp.world.addContactMaterial(ballPlayableSurfaceContactMaterial);
+
     scene.traverse(function (node) {
         if (node.name.startsWith('ballMesh')) {
             node.body.material = ballMaterial;
+            console.log(node);
+            ballMeshes.push(node);
+        }
+        else if (node.name.startsWith('ballStripeMesh')) {
+            console.log(node);
+            ballStripeMeshes.push(node);
+        }
+        else if (node.name.startsWith('playableSurfaceMesh')) {
+            node.body.material = playableSurfaceMaterial;
             console.log(node);
         }
     });
@@ -149,13 +166,12 @@ function onLoad() {
 
 var UP = new THREE.Vector3(0, 1, 0),
     RIGHT = new THREE.Vector3(1, 0, 0),
-    heading = 0,
     pitch = 0,
     pitchQuat = new THREE.Quaternion(),
+    headingQuat = new THREE.Quaternion(),
     strafe,
     drive,
     floatUp,
-    kbheading = 0,
     kbpitch = 0,
     walkSpeed = 0.3,
     floatSpeed = 0.1,
@@ -178,17 +194,16 @@ function animate(t) {
     floatUp = app.keyboard.getValue("floatUp") + app.keyboard.getValue("floatDown");
     drive = app.keyboard.getValue("driveBack") + app.keyboard.getValue("driveForward");
     strafe = app.keyboard.getValue("strafeRight") + app.keyboard.getValue("strafeLeft");
-    kbheading += -0.8 * dt * (app.keyboard.getValue("turnLeft") + app.keyboard.getValue("turnRight"));
+    avatar.heading += -0.8 * dt * (app.keyboard.getValue("turnLeft") + app.keyboard.getValue("turnRight"));
     if (avatar.floatMode) {
         floatUp += app.gamepad.getValue("float");
         strafe += app.gamepad.getValue("strafe");
     } else {
         drive += app.gamepad.getValue("drive");
-        kbheading += 0.8 * dt * app.gamepad.getValue("dheading")
+        avatar.heading += 0.8 * dt * app.gamepad.getValue("dheading")
     }
-    heading = kbheading;
-    var cosHeading = Math.cos(heading),
-        sinHeading = Math.sin(heading);
+    var cosHeading = Math.cos(avatar.heading),
+        sinHeading = Math.sin(avatar.heading);
     if (!app.vrControls.enabled || options.vrPitching) {
         kbpitch -= 0.8 * dt * (app.keyboard.getValue("pitchUp") + app.keyboard.getValue("pitchDown"));
         pitch = kbpitch;
@@ -231,7 +246,11 @@ function animate(t) {
         }
     }
 
-    avatar.quaternion.setFromAxisAngle(UP, heading);
+    ballStripeMeshes.forEach(function (mesh) {
+        mesh.quaternion.copy(mesh.parent.body.quaternion);
+    });
+
+    avatar.quaternion.setFromAxisAngle(UP, avatar.heading);
     avatar.quaternion.multiply(pitchQuat);
     avatar.position.x += dt * (strafe * cosHeading + drive * sinHeading);
     avatar.position.z += dt * (drive * cosHeading - strafe * sinHeading);

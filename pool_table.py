@@ -13,16 +13,17 @@ square = QuadBufferGeometry(vertices=[[-0.5, 0, -0.5], [-0.5, 0, 0.5], [0.5, 0, 
                             uvs=[(0,1), (0,0), (1,0), (1,1)])
 
 ball_colors = []
-white  = 0xeeeeee; ball_colors.append(white)
+white  = 0xddddde; ball_colors.append(white)
 yellow = 0xeeee00; ball_colors.append(yellow)
 blue   = 0x0000ee; ball_colors.append(blue)
 red    = 0xee0000; ball_colors.append(red)
 purple = 0xee00ee; ball_colors.append(purple)
-green  = 0x00ee00; ball_colors.append(green)
 orange = 0xee7700; ball_colors.append(orange)
+green  = 0x00ee00; ball_colors.append(green)
 maroon = 0xee0077; ball_colors.append(maroon)
 black  = 0x111111; ball_colors.append(black)
 
+ball_colors = ball_colors + ball_colors[1:-1]
 
 def pool_table(L_table=2.3368, W_table=None, H_table=0.74295,
                L_playable=None, W_playable=None,
@@ -48,7 +49,8 @@ def pool_table(L_table=2.3368, W_table=None, H_table=0.74295,
     feltMaterial = MeshBasicMaterial(color=0x00aa00)
 
     playableSurfaceGeom = BoxGeometry(W_playable, H_table, L_playable)
-    playableSurfaceMesh = Mesh(geometry=playableSurfaceGeom,
+    playableSurfaceMesh = Mesh(name='playableSurfaceMesh',
+                               geometry=playableSurfaceGeom,
                                material=feltMaterial,
                                position=[0, 0.5*H_table, 0],
                                receiveShadow=True,
@@ -136,7 +138,6 @@ def pool_table(L_table=2.3368, W_table=None, H_table=0.74295,
                         userData={'cannonData': {'mass': 0, 'shapes': ['Box']}})
     poolTable.add(headRailMesh)
 
-
     return poolTable
 
 
@@ -170,52 +171,66 @@ def pool_hall():
     sphere = SphereBufferGeometry(radius=ball_radius,
                                   widthSegments=16,
                                   heightSegments=12)
+
     ball_materials = [MeshBasicMaterial(color=color) for color in ball_colors]
     #ball_materials = [MeshPhongMaterial(color=color, shading=SmoothShading) for color in ball_colors]
+
     shadowGeom = CircleBufferGeometry(name='shadowGeom',
                                       radius=ball_radius,
                                       segments=16)
     shadowMaterial = MeshBasicMaterial(color=0x004400)
 
+    stripeGeom = CylinderGeometry(radiusTop=1.04*ball_radius, radiusBottom=1.04*ball_radius, radialSegments=16, height=0.666*ball_radius, openEnded=True)
+
     ballData = {'cannonData': {'mass': 0.17, 'shapes': ['Sphere']}}
 
-    y_position = H_table + ball_radius + 0.001 # epsilon distance which the ball will fall from initial position
-    z_positions = 0.8 * np.linspace(-L_table / 2, L_table / 2, num_balls - 1)
-    x_positions = 0.5 * z_positions
-    z_positions = [L_table / 4] + list(z_positions)
-    x_positions = [0] + list(x_positions)
+    y_position = H_table + ball_radius + 0.0001 # epsilon distance which the ball will fall from initial position
 
-    for i, color in enumerate(ball_colors):
+    # z_positions = 0.8 * np.linspace(-L_table / 2, L_table / 2, num_balls - 1)
+    # x_positions = 0.5 * z_positions
+
+    tri_vertices = np.array([( 0,               -0.2*L_table + 4*ball_radius),
+                             (-4*2*ball_radius, -0.2*L_table + 4*ball_radius - 4*3*ball_radius),
+                             ( 4*2*ball_radius, -0.2*L_table + 4*ball_radius - 4*3*ball_radius)])
+
+    x_positions =  list(np.linspace(tri_vertices[0][0], tri_vertices[1][0], 5))
+    x_positions += list(np.linspace(tri_vertices[1][0], tri_vertices[2][0], 5)[1:])
+    x_positions += list(np.linspace(tri_vertices[2][0], tri_vertices[0][0], 5)[1:-1])
+    x_positions += [0, -4*ball_radius, 4*ball_radius]
+
+    z_positions =  list(np.linspace(tri_vertices[0][1], tri_vertices[1][1], 5))
+    z_positions += list(np.linspace(tri_vertices[1][1], tri_vertices[2][1], 5)[1:])
+    z_positions += list(np.linspace(tri_vertices[2][1], tri_vertices[0][1], 5)[1:-1])
+    z_positions += [-0.2*L_table + 4*ball_radius - 4*1*ball_radius,
+                    -0.2*L_table + 4*ball_radius - 4*2*ball_radius,
+                    -0.2*L_table + 4*ball_radius - 4*2*ball_radius]
+
+    x_positions = 0.8 * np.array([0] + list(x_positions))
+    z_positions = [L_table / 4] + list(0.8 * np.array(z_positions))
+
+    for i, material in enumerate(ball_materials[:-3]):
+        rotation = [0, 0, 0] #np.random.uniform()]
         ballMesh = Mesh(name="ballMesh %d" % i,
                         geometry=sphere,
                         position=[x_positions[i], y_position, z_positions[i]],
-                        material=ball_materials[i],
+                        rotation=rotation,
+                        material=material,
                         userData=ballData,
                         castShadow=True)
         scene.add(ballMesh)
+
+        if i > 8:
+            stripeMesh = Mesh(name="ballStripeMesh %d" % i,
+                              material=ball_materials[0],
+                              geometry=stripeGeom)
+            ballMesh.add(stripeMesh)
+
         ballShadowMesh = Mesh(name="ballShadowMesh %d" % i,
                               geometry=shadowGeom,
                               material=shadowMaterial,
                               position=[0, -ball_radius + 0.001, 0],
-                              rotation=[-0.5*np.pi, 0, 0])
+                              rotation=[-0.5*np.pi - rotation[0], -rotation[1], -rotation[2]])
         ballMesh.add(ballShadowMesh)
-
-        # shadowMesh = Mesh(name="ball %d shadow" % i,
-        #                   geometry=shadowGeom,
-        #                   material=shadowMaterial,
-        #                   position=[x_positions[i], y_position - ball_radius + 0.001, z_positions[i]],
-        #                   rotation=[-0.5*np.pi, 0, 0])
-        # scene.add(shadowMesh)
-        # ball = Object3D(name="ball %d" % i,
-        #                 position=[x_positions[i], y_position, z_positions[i]],
-        #                 userData=ballData)
-        # ballMesh = Mesh(name="ball %d mesh" % i,
-        #                 geometry=sphere,
-        #                 material=ball_materials[i],
-        #                 castShadow=True)
-        # ball.add(ballMesh)
-        # scene.add(ball)
-
 
 
     return scene.export()
