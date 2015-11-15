@@ -75,12 +75,6 @@ function logVars() {
     console.log(tipBody.position);
 }
 
-var ballMaterial = new CANNON.Material();
-var feltMaterial = new CANNON.Material();
-var cushionMaterial = new CANNON.Material();
-
-var ballBallContactMaterial = new CANNON.ContactMaterial(ballMaterial, ballMaterial, {restitution: 0.9});
-
 function onLoad() {
     "use strict";
     app = new WebVRApplication("poolvr", avatar, scene, options);
@@ -98,7 +92,22 @@ function onLoad() {
 
     console.log(toolOptions);
 
+    CrapLoader.CANNONize(scene, app.world);
+
+    var ballMaterial = new CANNON.Material();
+    var ballBallContactMaterial = new CANNON.ContactMaterial(ballMaterial, ballMaterial, {restitution: 0.9});
+    app.world.addContactMaterial(ballBallContactMaterial);
+    scene.traverse(function (node) {
+        if (node.name.startsWith('ballMesh')) {
+            node.body.material = ballMaterial;
+            console.log(node);
+        }
+    });
+    // var feltMaterial = new CANNON.Material();
+    // var cushionMaterial = new CANNON.Material();
+
     var toolStuff = addTool(avatar, app.world, toolOptions);
+
 
     stickMesh = toolStuff[0];
     tipBody   = toolStuff[1];

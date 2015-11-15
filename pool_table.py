@@ -186,27 +186,26 @@ def pool_hall():
     x_positions = [0] + list(x_positions)
 
     for i, color in enumerate(ball_colors):
-        ballMesh = Mesh(name="ball %d mesh" % i,
+        ballMesh = Mesh(name="ballMesh %d" % i,
                         geometry=sphere,
                         position=[x_positions[i], y_position, z_positions[i]],
                         material=ball_materials[i],
                         userData=ballData,
                         castShadow=True)
         scene.add(ballMesh)
+        ballShadowMesh = Mesh(name="ballShadowMesh %d" % i,
+                              geometry=shadowGeom,
+                              material=shadowMaterial,
+                              position=[0, -ball_radius + 0.001, 0],
+                              rotation=[-0.5*np.pi, 0, 0])
+        ballMesh.add(ballShadowMesh)
+
         # shadowMesh = Mesh(name="ball %d shadow" % i,
         #                   geometry=shadowGeom,
         #                   material=shadowMaterial,
         #                   position=[x_positions[i], y_position - ball_radius + 0.001, z_positions[i]],
         #                   rotation=[-0.5*np.pi, 0, 0])
         # scene.add(shadowMesh)
-
-        shadowMesh = Mesh(name="ball %d shadow" % i,
-                          geometry=shadowGeom,
-                          material=shadowMaterial,
-                          position=[0, -ball_radius + 0.001, 0],
-                          rotation=[-0.5*np.pi, 0, 0])
-        ballMesh.add(shadowMesh)
-
         # ball = Object3D(name="ball %d" % i,
         #                 position=[x_positions[i], y_position, z_positions[i]],
         #                 userData=ballData)
