@@ -84,8 +84,7 @@ class Object3D(Three):
         for c in self.children:
             if hasattr(c, 'geometry'):
                 geometries[c.geometry.uuid] = c.geometry
-            else:
-                c.find_geometries(geometries)
+            c.find_geometries(geometries)
         return geometries
     def find_materials(self, materials=None):
         if materials is None:
@@ -93,8 +92,7 @@ class Object3D(Three):
         for c in self.children:
             if hasattr(c, 'material'):
                 materials[c.material.uuid] = c.material
-            else:
-                c.find_materials(materials)
+            c.find_materials(materials)
         return materials
     def find_textures(self):
         textures = {}
@@ -400,7 +398,7 @@ class BufferGeometry(Three):
                     }
                   }})
         if self.indices:
-            d['data']['attributes']['index'] = {
+            d['data']['index'] = {
                 "itemSize": 1,
                 "type": "Uint32Array",
                 "array": np.array(self.indices).ravel().tolist()

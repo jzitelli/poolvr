@@ -198,7 +198,7 @@ function animate(t) {
         var body = app.world.bodies[j];
         if (body.mesh && body.type !== CANNON.Body.STATIC) {
             body.mesh.position.copy(body.position);
-            body.mesh.quaternion.copy(body.quaternion);
+            //body.mesh.quaternion.copy(body.quaternion);
         }
     }
 

@@ -43,7 +43,9 @@ def pool_table(L_table=2.3368, W_table=None, H_table=0.74295,
 
     poolTable = Object3D(name="poolTable")
 
-    feltMaterial = MeshPhongMaterial(color=0x00aa00, shininess=5, shading=FlatShading)
+    #feltMaterial = MeshPhongMaterial(color=0x00aa00, shininess=5, shading=FlatShading)
+    #feltMaterial = MeshLambertMaterial(color=0x00aa00, shading=FlatShading)
+    feltMaterial = MeshBasicMaterial(color=0x00aa00)
 
     playableSurfaceGeom = BoxGeometry(W_playable, H_table, L_playable)
     playableSurfaceMesh = Mesh(geometry=playableSurfaceGeom,
@@ -66,7 +68,8 @@ def pool_table(L_table=2.3368, W_table=None, H_table=0.74295,
                         receiveShadow=True)
     poolTable.add(headSpotMesh)
 
-    cushionMaterial = MeshPhongMaterial(color=0x00aa00, shininess=5, shading=FlatShading)
+    #cushionMaterial = MeshPhongMaterial(color=0x00aa00, shininess=5, shading=FlatShading)
+    cushionMaterial = feltMaterial
 
     # centered as if it were BoxGeometry(W_playable, H_cushion, W_cushion):
     headCushionGeom = PrismBufferGeometry(vertices=[[-0.5*W_playable,                        0,          0.5*W_cushion],
@@ -133,6 +136,7 @@ def pool_table(L_table=2.3368, W_table=None, H_table=0.74295,
                         userData={'cannonData': {'mass': 0, 'shapes': ['Box']}})
     poolTable.add(headRailMesh)
 
+
     return poolTable
 
 
@@ -161,22 +165,58 @@ def pool_hall():
     scene.add(poolTable)
 
     # balls:
-    ball_radius = ball_diameter / 2
-    sphere = SphereBufferGeometry(radius=ball_radius, widthSegments=16, heightSegments=12)
-    ballData = {'cannonData': {'mass': 0.17, 'shapes': ['Sphere']}}
     num_balls = len(ball_colors)
+    ball_radius = ball_diameter / 2
+    sphere = SphereBufferGeometry(radius=ball_radius,
+                                  widthSegments=16,
+                                  heightSegments=12)
+    ball_materials = [MeshBasicMaterial(color=color) for color in ball_colors]
+    #ball_materials = [MeshPhongMaterial(color=color, shading=SmoothShading) for color in ball_colors]
+    shadowGeom = CircleBufferGeometry(name='shadowGeom',
+                                      radius=ball_radius,
+                                      segments=16)
+    shadowMaterial = MeshBasicMaterial(color=0x004400)
+
+    ballData = {'cannonData': {'mass': 0.17, 'shapes': ['Sphere']}}
+
     y_position = H_table + ball_radius + 0.001 # epsilon distance which the ball will fall from initial position
     z_positions = 0.8 * np.linspace(-L_table / 2, L_table / 2, num_balls - 1)
     x_positions = 0.5 * z_positions
     z_positions = [L_table / 4] + list(z_positions)
     x_positions = [0] + list(x_positions)
+
     for i, color in enumerate(ball_colors):
-        ballMesh = Mesh(name="ball %d" % i,
+        ballMesh = Mesh(name="ball %d mesh" % i,
                         geometry=sphere,
-                        material=MeshPhongMaterial(color=color, shading=SmoothShading),
                         position=[x_positions[i], y_position, z_positions[i]],
-                        castShadow=True,
-                        userData=ballData)
+                        material=ball_materials[i],
+                        userData=ballData,
+                        castShadow=True)
         scene.add(ballMesh)
+        # shadowMesh = Mesh(name="ball %d shadow" % i,
+        #                   geometry=shadowGeom,
+        #                   material=shadowMaterial,
+        #                   position=[x_positions[i], y_position - ball_radius + 0.001, z_positions[i]],
+        #                   rotation=[-0.5*np.pi, 0, 0])
+        # scene.add(shadowMesh)
+
+        shadowMesh = Mesh(name="ball %d shadow" % i,
+                          geometry=shadowGeom,
+                          material=shadowMaterial,
+                          position=[0, -ball_radius + 0.001, 0],
+                          rotation=[-0.5*np.pi, 0, 0])
+        ballMesh.add(shadowMesh)
+
+        # ball = Object3D(name="ball %d" % i,
+        #                 position=[x_positions[i], y_position, z_positions[i]],
+        #                 userData=ballData)
+        # ballMesh = Mesh(name="ball %d mesh" % i,
+        #                 geometry=sphere,
+        #                 material=ball_materials[i],
+        #                 castShadow=True)
+        # ball.add(ballMesh)
+        # scene.add(ball)
+
+
 
     return scene.export()
