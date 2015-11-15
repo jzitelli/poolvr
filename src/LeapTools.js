@@ -129,7 +129,7 @@ function addTool(parent, world, options) {
             else if (frame.tools.length === 2) {
                 console.log('TWO TOOLS OMG');
             }
-            // leftRoot.visible = rightRoot.visible = false;
+            leftRoot.visible = rightRoot.visible = false;
             frame.hands.forEach(function (hand, i) {
                 if (hand.confidence > minConfidence) {
                     handRoots[i].visible = true;

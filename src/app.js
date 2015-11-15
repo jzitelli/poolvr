@@ -102,7 +102,7 @@ function onLoad() {
     app.world.addContactMaterial(ballBallContactMaterial);
 
     var playableSurfaceMaterial = new CANNON.Material();
-    var ballPlayableSurfaceContactMaterial = new CANNON.ContactMaterial(ballMaterial, playableSurfaceMaterial, {restitution: 0.3, friction: 0.77});
+    var ballPlayableSurfaceContactMaterial = new CANNON.ContactMaterial(ballMaterial, playableSurfaceMaterial, {restitution: 0.1, friction: 0.333});
     //wwwapp.world.addContactMaterial(ballPlayableSurfaceContactMaterial);
 
     scene.traverse(function (node) {
@@ -159,6 +159,7 @@ function onLoad() {
         });
     }
 
+    dynamicBodies = app.world.bodies.filter(function(body) { return body.mesh && body.type !== CANNON.Body.STATIC; });
     app.start(animate);
 }
 
@@ -176,6 +177,7 @@ var UP = new THREE.Vector3(0, 1, 0),
     walkSpeed = 0.3,
     floatSpeed = 0.1,
     toolDrive, toolStrafe, toolFloat;
+var dynamicBodies;
 function animate(t) {
     "use strict";
     requestAnimationFrame(animate);
@@ -238,12 +240,9 @@ function animate(t) {
     // TODO: resolve CANNON issues w/ initial low framerate
     app.world.step(1/60);
 
-    for (var j = 0; j < app.world.bodies.length; ++j) {
-        var body = app.world.bodies[j];
-        if (body.mesh && body.type !== CANNON.Body.STATIC) {
-            body.mesh.position.copy(body.position);
-            //body.mesh.quaternion.copy(body.quaternion);
-        }
+    for (var j = 0; j < dynamicBodies.length; ++j) {
+        var body = dynamicBodies[j];
+        body.mesh.position.copy(body.position);
     }
 
     ballStripeMeshes.forEach(function (mesh) {

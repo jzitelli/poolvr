@@ -180,7 +180,7 @@ def pool_hall():
                                       segments=16)
     shadowMaterial = MeshBasicMaterial(color=0x004400)
 
-    stripeGeom = CylinderGeometry(radiusTop=1.04*ball_radius, radiusBottom=1.04*ball_radius, radialSegments=16, height=0.666*ball_radius, openEnded=True)
+    stripeGeom = CylinderGeometry(radiusTop=1.04*ball_radius, radiusBottom=1.04*ball_radius, radialSegments=16, height=2*0.666*ball_radius, openEnded=True)
 
     ballData = {'cannonData': {'mass': 0.17, 'shapes': ['Sphere']}}
 
@@ -205,10 +205,10 @@ def pool_hall():
                     -0.2*L_table + 4*ball_radius - 4*2*ball_radius,
                     -0.2*L_table + 4*ball_radius - 4*2*ball_radius]
 
-    x_positions = 0.8 * np.array([0] + list(x_positions))
-    z_positions = [L_table / 4] + list(0.8 * np.array(z_positions))
+    x_positions = 0.6 * np.array([0] + list(x_positions))
+    z_positions = [L_table / 4] + list(0.6 * np.array(z_positions))
 
-    for i, material in enumerate(ball_materials[:-3]):
+    for i, material in enumerate(ball_materials[:8] + 4*[ball_materials[0]]):
         rotation = [0, 0, 0] #np.random.uniform()]
         ballMesh = Mesh(name="ballMesh %d" % i,
                         geometry=sphere,
@@ -221,7 +221,7 @@ def pool_hall():
 
         if i > 8:
             stripeMesh = Mesh(name="ballStripeMesh %d" % i,
-                              material=ball_materials[0],
+                              material=ball_materials[i-8],
                               geometry=stripeGeom)
             ballMesh.add(stripeMesh)
 
