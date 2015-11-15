@@ -53,15 +53,13 @@ The VR stick tracking mode assumes that the sensor is [mounted to your HMD](http
 Currently this mode is selected using a `vr` URL parameter, e.g. you would point your browser to `http://127.0.0.1:5000?vr=1`.
 
 
-
 ## TODO list:
 
-- Cannon.js model for the pockets, not sure what the best approach is
+- Finish the pool table
 - Run-time tracking mode toggling
 - Ball labels, more balls
 - Select friction, collision response physics parameters
 - Hand interactions
-
 
 
 ## Acknowledgements:
