@@ -2,17 +2,20 @@ var app;
 
 var scene = CrapLoader.parse(JSON_SCENE);
 
+var H_table = 0.74295; // TODO: coordinate w/ server
+
 // would rather add the spot lights via three.py generated JSON_SCENE, but I'm having problems getting shadows frm them:
-var centerSpotLight = new THREE.SpotLight(0xffffee, 1, 10, 90);
-centerSpotLight.position.set(0, 3, 0);
-centerSpotLight.castShadow = true;
-centerSpotLight.shadowCameraNear = 0.01;
-centerSpotLight.shadowCameraFar = 4;
-centerSpotLight.shadowCameraFov = 90;
-scene.add(centerSpotLight);
-var centerSpotLightHelper = new THREE.SpotLightHelper(centerSpotLight);
-scene.add(centerSpotLightHelper);
-centerSpotLightHelper.visible = false;
+// var centerSpotLight = new THREE.SpotLight(0xffffee, 1, 10, 90);
+// centerSpotLight.position.set(0, 3, 0);
+// centerSpotLight.castShadow = true;
+// centerSpotLight.shadowCameraNear = 0.01;
+// centerSpotLight.shadowCameraFar = 4;
+// centerSpotLight.shadowCameraFov = 90;
+// scene.add(centerSpotLight);
+// var centerSpotLightHelper = new THREE.SpotLightHelper(centerSpotLight);
+// scene.add(centerSpotLightHelper);
+// centerSpotLightHelper.visible = false;
+
 
 // var spotLight = new THREE.SpotLight(0xddffdd,
 //                                     0.7, // intensity
@@ -27,6 +30,7 @@ centerSpotLightHelper.visible = false;
 // var spotLightHelper = new THREE.SpotLightHelper(spotLight);
 // scene.add(spotLightHelper);
 // spotLightHelper.visible = false;
+
 
 var avatar = new THREE.Object3D();
 avatar.position.y = 1.2;
@@ -64,6 +68,8 @@ options.gamepadCommands = {
 
 var stickMesh, tipBody, toolRoot;
 
+var stickShadow, stickShadowMesh;
+
 function logVars() {
     "use strict";
     console.log(tipBody.position);
@@ -79,7 +85,7 @@ function onLoad() {
     "use strict";
     app = new WebVRApplication("poolvr", avatar, scene, options);
     avatar.add(app.camera);
-    app.scene.add(avatar);
+    scene.add(avatar);
 
     // ##### Desktop mode (default): #####
     var toolOptions = {transformOptions: {vr: 'desktop'},
@@ -91,11 +97,25 @@ function onLoad() {
     }
 
     console.log(toolOptions);
-    var toolStuff;
-    toolStuff = addTool(avatar, app.world, toolOptions);
+
+    var toolStuff = addTool(avatar, app.world, toolOptions);
+
     stickMesh = toolStuff[0];
     tipBody   = toolStuff[1];
     toolRoot  = toolStuff[2];
+
+    stickShadow = new THREE.Object3D();
+    stickShadow.position.y = -avatar.position.y - toolRoot.position.y + H_table + 0.001;
+    stickShadow.scale.set(1, 0.0001, 1);
+    toolRoot.add(stickShadow);
+
+    var stickShadowGeom = stickMesh.geometry.clone();
+    var toolLength = 0.5;
+    stickShadowGeom.translate(0, -toolLength / 2, 0); // have to do this again because not buffergeometry???
+    var stickShadowMaterial = new THREE.MeshBasicMaterial({color: 0x004400});
+    stickShadowMesh = new THREE.Mesh(stickShadowGeom, stickShadowMaterial);
+    stickShadowMesh.quaternion.copy(stickMesh.quaternion);
+    stickShadow.add(stickShadowMesh);
 
     if (options.mouseControls) {
         var mousePointer = stickMesh;
@@ -212,6 +232,11 @@ function animate(t) {
     toolRoot.position.z += -0.25 * dt * toolDrive;
     toolRoot.position.y += 0.25  * dt * toolFloat;
 
+    stickShadow.position.x = stickMesh.position.x;
+    stickShadow.position.z = stickMesh.position.z;
+    stickShadow.position.y = -avatar.position.y - toolRoot.position.y + H_table + 0.001;
+
+    stickShadowMesh.quaternion.copy(stickMesh.quaternion);
 }
 
 

@@ -13,3 +13,4 @@ var pixelWidth = width * window.devicePixelRatio;
 var pixelHeight = height * window.devicePixelRatio;
 
 pyserver.log("hello from cardboard.js");
+pyserver.log(userAgent);
