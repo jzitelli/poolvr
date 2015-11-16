@@ -76,6 +76,8 @@ var ballMeshes       = [],
 function logVars() {
     "use strict";
     console.log(tipBody.position);
+    console.log(toolRoot);
+    console.log(avatar);
 }
 
 function onLoad() {
@@ -103,21 +105,18 @@ function onLoad() {
 
     var playableSurfaceMaterial = new CANNON.Material();
     var ballPlayableSurfaceContactMaterial = new CANNON.ContactMaterial(ballMaterial, playableSurfaceMaterial, {restitution: 0.1, friction: 0.333});
-    //wwwapp.world.addContactMaterial(ballPlayableSurfaceContactMaterial);
+    //app.world.addContactMaterial(ballPlayableSurfaceContactMaterial);
 
     scene.traverse(function (node) {
         if (node.name.startsWith('ballMesh')) {
             node.body.material = ballMaterial;
-            console.log(node);
             ballMeshes.push(node);
         }
         else if (node.name.startsWith('ballStripeMesh')) {
-            console.log(node);
             ballStripeMeshes.push(node);
         }
         else if (node.name.startsWith('playableSurfaceMesh')) {
             node.body.material = playableSurfaceMaterial;
-            console.log(node);
         }
     });
     // var feltMaterial = new CANNON.Material();

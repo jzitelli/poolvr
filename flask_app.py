@@ -56,5 +56,5 @@ def main():
 if __name__ == "__main__":
     app.debug = True
     logging.basicConfig(level=logging.DEBUG,
-                        format="%(levelname)s %(name)s %(funcName)s %(lineno)d:  %(message)s")
+                        format="%(asctime)s %(levelname)s %(name)s %(funcName)s %(lineno)d:  %(message)s")
     main()
