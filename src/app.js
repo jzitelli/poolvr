@@ -202,7 +202,7 @@ function animate(t) {
         strafe += app.gamepad.getValue("strafe");
     } else {
         drive += app.gamepad.getValue("drive");
-        avatar.heading += 0.8 * dt * app.gamepad.getValue("dheading")
+        avatar.heading += 0.8 * dt * app.gamepad.getValue("dheading");
     }
     var cosHeading = Math.cos(avatar.heading),
         sinHeading = Math.sin(avatar.heading);
@@ -234,7 +234,7 @@ function animate(t) {
     if (avatar.toolMode) {
         toolFloat += app.gamepad.getValue("toolFloat");
     } else {
-        toolDrive -= app.gamepad.getValue("toolDrive")
+        toolDrive -= app.gamepad.getValue("toolDrive");
     }
 
     // TODO: resolve CANNON issues w/ initial low framerate

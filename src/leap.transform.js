@@ -4,14 +4,14 @@
 (function() {
   Leap.plugin('transform', function(scope) {
     var noop, transformDirections, transformMat4Implicit0, transformPositions, transformWithMatrices, _directionTransform;
-    if (scope == null) {
+    if (scope === null) {
       scope = {};
     }
     noop = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
-    _directionTransform = new THREE.Matrix4;
+    _directionTransform = new THREE.Matrix4();
     if (scope.vr === true) {
       this.setOptimizeHMD(true);
-      scope.quaternion = (new THREE.Quaternion).setFromRotationMatrix((new THREE.Matrix4).set(-1, 0, 0, 0, 0, 0, -1, 0, 0, -1, 0, 0, 0, 0, 0, 1));
+      scope.quaternion = (new THREE.Quaternion()).setFromRotationMatrix((new THREE.Matrix4()).set(-1, 0, 0, 0, 0, 0, -1, 0, 0, -1, 0, 0, 0, 0, 0, 1));
       scope.scale = 0.001;
       scope.position = new THREE.Vector3(0, 0, -0.06);
     }
