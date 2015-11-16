@@ -1,7 +1,3 @@
-WebVRConfig = {
-    //FORCE_ENABLE_VR: true,
-    FORCE_DISTORTION: true
-};
 
 // On iOS, use screen dimensions to determine iPhone/iPad model.
 var userAgent = navigator.userAgent || navigator.vendor || window.opera;
@@ -21,3 +17,8 @@ if (navigator.getVRDevices) {
         });
     });
 }
+
+WebVRConfig = {
+    //FORCE_ENABLE_VR: true,
+    FORCE_DISTORTION: true
+};

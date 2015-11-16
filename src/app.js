@@ -4,18 +4,19 @@ var scene = CrapLoader.parse(JSON_SCENE);
 
 var H_table = 0.74295; // TODO: coordinate w/ server
 
-// would rather add the spot lights via three.py generated JSON_SCENE, but I'm having problems getting shadows frm them:
-// var centerSpotLight = new THREE.SpotLight(0xffffee, 1, 10, 90);
-// centerSpotLight.position.set(0, 3, 0);
-// centerSpotLight.castShadow = true;
-// centerSpotLight.shadowCameraNear = 0.01;
-// centerSpotLight.shadowCameraFar = 4;
-// centerSpotLight.shadowCameraFov = 90;
-// scene.add(centerSpotLight);
-// var centerSpotLightHelper = new THREE.SpotLightHelper(centerSpotLight);
-// scene.add(centerSpotLightHelper);
-// centerSpotLightHelper.visible = false;
-
+if (!options.basicMaterials) {
+    // would rather add the spot lights via three.py generated JSON_SCENE, but I'm having problems getting shadows frm them:
+    var centerSpotLight = new THREE.SpotLight(0xffffee, 1, 10, 90);
+    centerSpotLight.position.set(0, 3, 0);
+    centerSpotLight.castShadow = true;
+    centerSpotLight.shadowCameraNear = 0.01;
+    centerSpotLight.shadowCameraFar = 4;
+    centerSpotLight.shadowCameraFov = 90;
+    scene.add(centerSpotLight);
+    var centerSpotLightHelper = new THREE.SpotLightHelper(centerSpotLight);
+    scene.add(centerSpotLightHelper);
+    centerSpotLightHelper.visible = false;
+}
 
 // var spotLight = new THREE.SpotLight(0xddffdd,
 //                                     0.7, // intensity

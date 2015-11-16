@@ -18,11 +18,11 @@ from pool_table import pool_hall
 @app.route('/')
 def poolvr():
     """Serves the app HTML (dynamically generated version)"""
-    scene = request.args.get('scene', 'pool_hall')
+    basicMaterials = request.args.get('basicMaterials', True)
     return render_template('poolvr.html',
                            json_config=Markup(r"""<script>
 var JSON_SCENE = %s;
-</script>""" % json.dumps(pool_hall(),
+</script>""" % json.dumps(pool_hall(basicMaterials=basicMaterials),
                           indent=(2 if app.debug else None))))
 
 
@@ -32,6 +32,7 @@ def log():
     _logger.info(msg)
     response = {'status': 0}
     return jsonify(response)
+
 
 def main():
     # update static index.html:
