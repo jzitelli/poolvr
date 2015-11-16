@@ -44,11 +44,22 @@ module.exports = function ( grunt ) {
   <%= pkg.repository.url %>\n\
 */\n",
         separator: ";",
-        footer: "poolvr.VERSION = \"v<%= pkg.version %>\";"
+        footer: "// poolvr.VERSION = \"v<%= pkg.version %>\";"
       },
       default: {
         files: {
-          "obj/poolvr.js": [ "src/*.js" ]
+          "obj/poolvr.js": [
+
+              "src/leap.transform.js",
+              "src/WebVRApplication.js",
+              "src/CrapLoader.js",
+              "src/LeapTools.js",
+              "src/pyserver.js",
+              "src/cardboard.js",
+              "src/options.js",
+              "src/app.js"
+          ]
+
         }
       }
     },
