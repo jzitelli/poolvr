@@ -180,35 +180,41 @@ def pool_hall():
                                       segments=16)
     shadowMaterial = MeshBasicMaterial(color=0x004400)
 
-    stripeGeom = CylinderGeometry(radiusTop=1.04*ball_radius, radiusBottom=1.04*ball_radius, radialSegments=16, height=2*0.666*ball_radius, openEnded=True)
+    stripeGeom = SphereBufferGeometry(radius=1.02*ball_radius,
+                                      widthSegments=16,
+                                      heightSegments=6,
+                                      thetaStart=np.pi/3,
+                                      thetaLength=np.pi/3)
 
     ballData = {'cannonData': {'mass': 0.17, 'shapes': ['Sphere']}}
 
     y_position = H_table + ball_radius + 0.0001 # epsilon distance which the ball will fall from initial position
 
-    # z_positions = 0.8 * np.linspace(-L_table / 2, L_table / 2, num_balls - 1)
-    # x_positions = 0.5 * z_positions
+    z_positions = 0.8 * np.linspace(-L_table / 2, L_table / 2, num_balls - 1)
+    x_positions = 0.5 * z_positions
+    x_positions = [0] + list(x_positions)
+    z_positions = [L_table / 4] + list(z_positions)
 
-    tri_vertices = np.array([( 0,               -0.2*L_table + 4*ball_radius),
-                             (-4*2*ball_radius, -0.2*L_table + 4*ball_radius - 4*3*ball_radius),
-                             ( 4*2*ball_radius, -0.2*L_table + 4*ball_radius - 4*3*ball_radius)])
+    # tri_vertices = np.array([( 0,               -0.2*L_table + 4*ball_radius),
+    #                          (-4*2*ball_radius, -0.2*L_table + 4*ball_radius - 4*3*ball_radius),
+    #                          ( 4*2*ball_radius, -0.2*L_table + 4*ball_radius - 4*3*ball_radius)])
 
-    x_positions =  list(np.linspace(tri_vertices[0][0], tri_vertices[1][0], 5))
-    x_positions += list(np.linspace(tri_vertices[1][0], tri_vertices[2][0], 5)[1:])
-    x_positions += list(np.linspace(tri_vertices[2][0], tri_vertices[0][0], 5)[1:-1])
-    x_positions += [0, -4*ball_radius, 4*ball_radius]
+    # x_positions =  list(np.linspace(tri_vertices[0][0], tri_vertices[1][0], 5))
+    # x_positions += list(np.linspace(tri_vertices[1][0], tri_vertices[2][0], 5)[1:])
+    # x_positions += list(np.linspace(tri_vertices[2][0], tri_vertices[0][0], 5)[1:-1])
+    # x_positions += [0, -4*ball_radius, 4*ball_radius]
 
-    z_positions =  list(np.linspace(tri_vertices[0][1], tri_vertices[1][1], 5))
-    z_positions += list(np.linspace(tri_vertices[1][1], tri_vertices[2][1], 5)[1:])
-    z_positions += list(np.linspace(tri_vertices[2][1], tri_vertices[0][1], 5)[1:-1])
-    z_positions += [-0.2*L_table + 4*ball_radius - 4*1*ball_radius,
-                    -0.2*L_table + 4*ball_radius - 4*2*ball_radius,
-                    -0.2*L_table + 4*ball_radius - 4*2*ball_radius]
+    # z_positions =  list(np.linspace(tri_vertices[0][1], tri_vertices[1][1], 5))
+    # z_positions += list(np.linspace(tri_vertices[1][1], tri_vertices[2][1], 5)[1:])
+    # z_positions += list(np.linspace(tri_vertices[2][1], tri_vertices[0][1], 5)[1:-1])
+    # z_positions += [-0.2*L_table + 4*ball_radius - 4*1*ball_radius,
+    #                 -0.2*L_table + 4*ball_radius - 4*2*ball_radius,
+    #                 -0.2*L_table + 4*ball_radius - 4*2*ball_radius]
 
-    x_positions = 0.6 * np.array([0] + list(x_positions))
-    z_positions = [L_table / 4] + list(0.6 * np.array(z_positions))
+    # x_positions = 0.6 * np.array([0] + list(x_positions))
+    # z_positions = [L_table / 4] + list(0.6 * np.array(z_positions))
 
-    for i, material in enumerate(ball_materials[:8] + 4*[ball_materials[0]]):
+    for i, material in enumerate(ball_materials[:9] + 7*[ball_materials[0]]):
         rotation = [0, 0, 0] #np.random.uniform()]
         ballMesh = Mesh(name="ballMesh %d" % i,
                         geometry=sphere,
