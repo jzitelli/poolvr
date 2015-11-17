@@ -30,7 +30,7 @@ def pool_table(L_table=2.3368, W_table=None, H_table=0.74295,
                ball_diameter=2.25*IN2METER,
                W_cushion=2*IN2METER,
                H_cushion=None,
-               W_rail=None):
+               W_rail=None, basicMaterials=False):
     if W_table is None:
         W_table = 0.5*L_table
     if L_playable is None:
@@ -44,9 +44,17 @@ def pool_table(L_table=2.3368, W_table=None, H_table=0.74295,
 
     poolTable = Object3D(name="poolTable")
 
-    #feltMaterial = MeshPhongMaterial(color=0x00aa00, shininess=5, shading=FlatShading)
-    #feltMaterial = MeshLambertMaterial(color=0x00aa00, shading=FlatShading)
-    feltMaterial = MeshBasicMaterial(color=0x00aa00)
+    if basicMaterials:
+        feltMaterial = MeshBasicMaterial(color=0x00aa00)
+        cushionMaterial = feltMaterial
+        spotMaterial = MeshBasicMaterial(color=0xaaaaaa)
+        railMaterial = MeshBasicMaterial(color=0xffff00)
+    else:
+        feltMaterial = MeshPhongMaterial(color=0x00aa00, shininess=5, shading=FlatShading)
+        #feltMaterial = MeshLambertMaterial(color=0x00aa00, shading=FlatShading)
+        cushionMaterial = MeshPhongMaterial(color=0x00aa00, shininess=5, shading=FlatShading)
+        spotMaterial = MeshLambertMaterial(color=0xaaaaaa)
+        railMaterial = MeshPhongMaterial(color=0xffaa00, shininess=10, shading=FlatShading)
 
     playableSurfaceGeom = BoxGeometry(W_playable, H_table, L_playable)
     playableSurfaceMesh = Mesh(name='playableSurfaceMesh',
@@ -60,8 +68,6 @@ def pool_table(L_table=2.3368, W_table=None, H_table=0.74295,
 
     ball_radius = ball_diameter / 2
 
-    spotMaterial = MeshLambertMaterial(color=0xaaaaaa)
-
     spotGeom = CircleBufferGeometry(name='spotGeom', radius=ball_radius)
     headSpotMesh = Mesh(geometry=spotGeom,
                         material=spotMaterial,
@@ -69,9 +75,6 @@ def pool_table(L_table=2.3368, W_table=None, H_table=0.74295,
                         rotation=[-np.pi/2, 0, 0],
                         receiveShadow=True)
     poolTable.add(headSpotMesh)
-
-    #cushionMaterial = MeshPhongMaterial(color=0x00aa00, shininess=5, shading=FlatShading)
-    cushionMaterial = feltMaterial
 
     # centered as if it were BoxGeometry(W_playable, H_cushion, W_cushion):
     headCushionGeom = PrismBufferGeometry(vertices=[[-0.5*W_playable,                        0,          0.5*W_cushion],
@@ -128,8 +131,6 @@ def pool_table(L_table=2.3368, W_table=None, H_table=0.74295,
                                 userData={'cannonData': {'mass': 0, 'shapes': ['ConvexPolyhedron']}})
     poolTable.add(rightFootCushionGeom)
 
-    railMaterial = MeshBasicMaterial(color=0xffff00)
-
     headRailGeom = BoxGeometry(W_playable, H_cushion, W_rail)
     headRailMesh = Mesh(geometry=headRailGeom,
                         material=railMaterial,
@@ -141,7 +142,7 @@ def pool_table(L_table=2.3368, W_table=None, H_table=0.74295,
     return poolTable
 
 
-def pool_hall():
+def pool_hall(basicMaterials=False):
     scene = Scene()
     # room:
     L_room, W_room = 10, 10
@@ -162,29 +163,30 @@ def pool_hall():
     L_table = 2.3368
     W_table = L_table / 2
     H_table = 0.74295
-    poolTable = pool_table(H_table=H_table, ball_diameter=ball_diameter)
+    poolTable = pool_table(H_table=H_table, ball_diameter=ball_diameter, basicMaterials=basicMaterials)
     scene.add(poolTable)
 
     # balls:
     num_balls = len(ball_colors)
     ball_radius = ball_diameter / 2
+
     sphere = SphereBufferGeometry(radius=ball_radius,
                                   widthSegments=16,
                                   heightSegments=12)
-
-    ball_materials = [MeshBasicMaterial(color=color) for color in ball_colors]
-    #ball_materials = [MeshPhongMaterial(color=color, shading=SmoothShading) for color in ball_colors]
-
-    shadowGeom = CircleBufferGeometry(name='shadowGeom',
-                                      radius=ball_radius,
-                                      segments=16)
-    shadowMaterial = MeshBasicMaterial(color=0x004400)
-
     stripeGeom = SphereBufferGeometry(radius=1.02*ball_radius,
                                       widthSegments=16,
                                       heightSegments=6,
                                       thetaStart=np.pi/3,
                                       thetaLength=np.pi/3)
+    shadowGeom = CircleBufferGeometry(name='shadowGeom',
+                                      radius=ball_radius,
+                                      segments=16)
+
+    if basicMaterials:
+        ball_materials = [MeshBasicMaterial(color=color) for color in ball_colors]
+    else:
+        ball_materials = [MeshPhongMaterial(color=color, shading=SmoothShading) for color in ball_colors]
+    shadowMaterial = MeshBasicMaterial(color=0x002200)
 
     ballData = {'cannonData': {'mass': 0.17, 'shapes': ['Sphere']}}
 
