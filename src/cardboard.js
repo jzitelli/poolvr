@@ -1,6 +1,6 @@
 WebVRConfig = {
     FORCE_ENABLE_VR: true,
-    FORCE_DISTORTION: true
+    FORCE_DISTORTION: false
 };
 
 var VR_DEVICES = [

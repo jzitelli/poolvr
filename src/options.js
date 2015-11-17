@@ -20,8 +20,8 @@ var URL_PARAMS = (function () {
 
 var options = {
     gravity: 9.8,
-    shadowMap: URL_PARAMS.shadowMap,
     leapDisabled: URL_PARAMS.leapDisabled,
     mouseControls: URL_PARAMS.mouseControls,
-    basicMaterials: URL_PARAMS.basicMaterials
+    basicMaterials: URL_PARAMS.basicMaterials,
+    shadowMap: URL_PARAMS.shadowMap
 };
