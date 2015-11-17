@@ -23,5 +23,5 @@ var options = {
     shadowMap: URL_PARAMS.shadowMap,
     leapDisabled: URL_PARAMS.leapDisabled,
     mouseControls: URL_PARAMS.mouseControls,
-    basicMaterials: URL_PARAMS.basicMaterials || true
+    basicMaterials: URL_PARAMS.basicMaterials
 };

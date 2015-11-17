@@ -13,7 +13,8 @@ var fs = require( "fs" ),
       "lib/cannon.js",
       "lib/leap-0.6.4.js",
       "lib/ColladaLoader.js",
-      "lib/Primrose.js"
+      "lib/Primrose.js",
+      "obj/poolvr.js"
     ],
     uglifyFiles = files.map( function ( s ) {
       return {
@@ -43,8 +44,8 @@ module.exports = function ( grunt ) {
   <%= pkg.homepage %>\n\
   <%= pkg.repository.url %>\n\
 */\n",
-        separator: ";",
-        footer: "// poolvr.VERSION = \"v<%= pkg.version %>\";"
+        separator: ";\n",
+        footer: "// ################## poolvr VERSION = \"v<%= pkg.version %>\";"
       },
       default: {
         files: {
@@ -58,6 +59,7 @@ module.exports = function ( grunt ) {
               "src/cardboard.js",
               "src/options.js",
               "src/app.js"
+
           ]
 
         }

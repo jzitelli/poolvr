@@ -142,13 +142,14 @@ def pool_table(L_table=2.3368, W_table=None, H_table=0.74295,
     return poolTable
 
 
-def pool_hall(basicMaterials=False):
+def pool_hall(basicMaterials=False,
+              url_prefix=""):
     scene = Scene()
     # room:
     L_room, W_room = 10, 10
     floor = Mesh(name="floor", geometry=square,
                  material=MeshBasicMaterial(color=0xffffff,
-                                            map=Texture(image=Image(url="images/deck.png"),
+                                            map=Texture(image=Image(url=url_prefix+"images/deck.png"),
                                                         repeat=[4*L_room, 4*W_room], wrap=[RepeatWrapping, RepeatWrapping])),
                  position=[0, 0, 0],
                  scale=[L_room, 1, W_room],

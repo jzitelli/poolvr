@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=0">
+
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+
+    <title>poolvr</title>
+
+    <style>
+      body {
+        background-color: #000;
+        color: #fff;
+        margin: 0px;
+        padding: 0;
+        overflow: hidden;
+      }
+    </style>
+
+<!-- three.js scene definition is embedded here -->
+{{ json_config if json_config else "" }}
+
+  </head>
+
+  <body onload="onLoad()">
+
+    <script src="lib/three-r73.js"></script>
+    <script src="lib/TextGeometry.js"></script>
+    <script src="lib/FontUtils.js"></script>
+
+    <script src="lib/VREffect.js"></script>
+    <script src="lib/VRControls.js"></script>
+
+    <script src="lib/webvr-polyfill.js"></script>
+    <script src="lib/webvr-manager.js"></script>
+
+    <script src="lib/socket.io.js"></script>
+    <script src="lib/cannon.js"></script>
+    <script src="lib/leap-0.6.4.js"></script>
+
+    <script src="lib/ColladaLoader.js"></script>
+    <script src="lib/Primrose.js"></script>
+
+    <script src="fonts/helvetiker_regular.typeface.js"></script>
+
+    <!-- enhanced version w/ tool tracking: -->
+    <script src="lib/leap.transform.js"></script>
+
+    <script src="obj/poolvr.js"></script>
+
+  </body>
+</html>
