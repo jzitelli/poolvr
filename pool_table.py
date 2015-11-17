@@ -164,7 +164,8 @@ def pool_hall(basicMaterials=False,
     L_table = 2.3368
     W_table = L_table / 2
     H_table = 0.74295
-    poolTable = pool_table(H_table=H_table, ball_diameter=ball_diameter, basicMaterials=basicMaterials)
+    poolTable = pool_table(H_table=H_table, ball_diameter=ball_diameter,
+                           basicMaterials=basicMaterials)
     scene.add(poolTable)
 
     # balls:
@@ -177,8 +178,8 @@ def pool_hall(basicMaterials=False,
     stripeGeom = SphereBufferGeometry(radius=1.02*ball_radius,
                                       widthSegments=16,
                                       heightSegments=6,
-                                      thetaStart=np.pi/3,
-                                      thetaLength=np.pi/3)
+                                      thetaStart=np.pi/4,
+                                      thetaLength=np.pi/2)
     shadowGeom = CircleBufferGeometry(name='shadowGeom',
                                       radius=ball_radius,
                                       segments=16)

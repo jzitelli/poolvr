@@ -38,6 +38,18 @@ def log():
     return jsonify(response)
 
 
+@app.route('/poolvr')
+def poolvr_release():
+    """Serves the app HTML (dynamically generated version)"""
+    version = request.args.get('version', '0.1.0')
+    basicMaterials = request.args.get('basicMaterials', True)
+    return render_template('poolvr.%s.html' % version,
+                           json_config=Markup(r"""<script>
+var JSON_SCENE = %s;
+</script>""" % json.dumps(pool_hall(basicMaterials=basicMaterials),
+                          indent=(2 if app.debug else None))))
+
+
 def main():
     _logger.info("press CTRL-C to terminate the server")
     app.run(host='0.0.0.0')

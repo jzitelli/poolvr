@@ -12,6 +12,7 @@ var fs = require( "fs" ),
       "lib/socket.io.js",
       "lib/cannon.js",
       "lib/leap-0.6.4.js",
+      "lib/leap.transform.js",
       "lib/ColladaLoader.js",
       "lib/Primrose.js",
       "obj/poolvr.js"
@@ -57,7 +58,7 @@ module.exports = function ( grunt ) {
               "src/LeapTools.js",
               "src/pyserver.js",
               "src/cardboard.js",
-              "src/options.js",
+              "src/settings.js",
               "src/app.js"
 
           ]
