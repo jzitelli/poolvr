@@ -13,15 +13,15 @@ square = QuadBufferGeometry(vertices=[[-0.5, 0, -0.5], [-0.5, 0, 0.5], [0.5, 0, 
                             uvs=[(0,1), (0,0), (1,0), (1,1)])
 
 ball_colors = []
-white  = 0xddddde; ball_colors.append(white)
-yellow = 0xeeee00; ball_colors.append(yellow)
-blue   = 0x0000ee; ball_colors.append(blue)
-red    = 0xee0000; ball_colors.append(red)
-purple = 0xee00ee; ball_colors.append(purple)
-orange = 0xee7700; ball_colors.append(orange)
-green  = 0x00ee00; ball_colors.append(green)
-maroon = 0xee0077; ball_colors.append(maroon)
-black  = 0x111111; ball_colors.append(black)
+ball_colors.append(0xddddde); white  = ball_colors[-1]
+ball_colors.append(0xeeee00); yellow = ball_colors[-1]
+ball_colors.append(0x0000ee); blue   = ball_colors[-1]
+ball_colors.append(0xee0000); red    = ball_colors[-1]
+ball_colors.append(0xee00ee); purple = ball_colors[-1]
+ball_colors.append(0xee7700); orange = ball_colors[-1]
+ball_colors.append(0x00ee00); green  = ball_colors[-1]
+ball_colors.append(0xbb2244); maroon = ball_colors[-1]
+ball_colors.append(0x111111); black  = ball_colors[-1]
 
 ball_colors = ball_colors + ball_colors[1:-1]
 

@@ -4,6 +4,7 @@ import os
 import logging
 _logger = logging.getLogger(__name__)
 import json
+
 from flask import Flask, render_template, request, Markup, jsonify
 STATIC_FOLDER = os.getcwd()
 TEMPLATE_FOLDER = os.path.join(os.getcwd(), 'templates')
@@ -11,6 +12,9 @@ app = Flask(__name__,
             static_folder=STATIC_FOLDER,
             template_folder=TEMPLATE_FOLDER,
             static_url_path='')
+import site_settings
+app.config.from_object(site_settings)
+
 
 from pool_table import pool_hall
 
