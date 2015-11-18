@@ -19,7 +19,6 @@ The three.js pool table scene and Cannon.js world is defined procedurally via a 
 ## Obtaining the latest WebVR-enabled browsers:
 
 - Mozilla Firefox supports WebVR in its nightly builds, [see MozVR for more info](http://mozvr.com)
-
 - [WebVR-enabled builds of Chrome / Chromium](http://blog.tojicode.com/2014/07/bringing-vr-to-chrome.html)
 
 
@@ -53,13 +52,30 @@ The VR stick tracking mode assumes that the sensor is [mounted to your HMD](http
 Currently this mode is selected using a `vr` URL parameter, e.g. you would point your browser to `http://127.0.0.1:5000?vr=1`.
 
 
+
+## Building:
+
+If you have [Node.js](https://nodejs.org) and [Grunt](http://www.gruntjs.com) installed, the included `Gruntfile.js` may be used to build packaged versions of `poolvr`.
+
+
+
 ## TODO list:
 
 - Finish the pool table
-- Run-time tracking mode toggling
-- Ball labels, more balls
-- Select friction, collision response physics parameters
-- Hand interactions
+  a. ball labels
+  b. initial positions
+  c. rails
+- sounds
+- menu / menus for options / settings:
+  a. toggle Leap Motion tracking mode
+  b. set keyboard controls
+  c. set mouse controls
+  d. set gamepad controls
+  e. volume controls
+- friction, collision response physics parameters
+- hand interactions
+- improve Leap Motion tracking robustness
+
 
 
 ## Acknowledgements:

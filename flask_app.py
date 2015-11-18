@@ -23,6 +23,8 @@ from pool_table import pool_hall
 def poolvr():
     """Serves the app HTML (dynamically generated version)"""
     basicMaterials = request.args.get('basicMaterials', True)
+    if basicMaterials == 'false':
+        basicMaterials = False
     return render_template('poolvr.html',
                            json_config=Markup(r"""<script>
 var JSON_SCENE = %s;
@@ -38,11 +40,13 @@ def log():
     return jsonify(response)
 
 
-@app.route('/poolvr')
+@app.route('/release')
 def poolvr_release():
     """Serves the app HTML (dynamically generated version)"""
-    version = request.args.get('version', '0.1.0')
     basicMaterials = request.args.get('basicMaterials', True)
+    if basicMaterials == 'false':
+        basicMaterials = False
+    version = request.args.get('version', '0.1.0')
     return render_template('poolvr.%s.html' % version,
                            json_config=Markup(r"""<script>
 var JSON_SCENE = %s;

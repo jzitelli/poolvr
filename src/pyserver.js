@@ -1,6 +1,6 @@
 var pyserver = {
 
-    log: function (msg, success, logger) {
+    log: function (msg, success) {
         "use strict";
         var xhr = new XMLHttpRequest();
         var data = new FormData();
@@ -8,11 +8,11 @@ var pyserver = {
         xhr.open("POST", '/log');
         xhr.onload = function() {
             var response = JSON.parse(xhr.responseText);
-            console.log(response);
             if (success) {
                 success(response);
             }
         };
+        console.log(msg);
         xhr.send(data);
     },
 

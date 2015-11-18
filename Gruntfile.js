@@ -51,8 +51,6 @@ module.exports = function ( grunt ) {
       default: {
         files: {
           "obj/poolvr.js": [
-
-              "src/leap.transform.js",
               "src/WebVRApplication.js",
               "src/CrapLoader.js",
               "src/LeapTools.js",
@@ -60,9 +58,7 @@ module.exports = function ( grunt ) {
               "src/cardboard.js",
               "src/settings.js",
               "src/app.js"
-
           ]
-
         }
       }
     },

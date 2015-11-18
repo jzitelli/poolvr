@@ -25,3 +25,6 @@ var options = {
     basicMaterials: URL_PARAMS.basicMaterials,
     shadowMap: URL_PARAMS.shadowMap
 };
+
+var POOLVR = POOLVR || {};
+POOLVR.settings = options;
