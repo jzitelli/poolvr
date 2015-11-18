@@ -51,12 +51,14 @@ var JSON_SCENE = %s;
 
 
 def main():
+    _logger.info("app.config:\n%s" % '\n'.join(['%s: %s' % (k, str(v))
+                                                for k, v in sorted(app.config.items(), key=lambda (k,v): k)]))
+
     _logger.info("press CTRL-C to terminate the server")
     app.run(host='0.0.0.0')
 
 
 if __name__ == "__main__":
-    app.debug = True
     logging.basicConfig(level=logging.DEBUG,
                         format="%(asctime)s %(levelname)s %(name)s %(funcName)s %(lineno)d:  %(message)s")
     main()
