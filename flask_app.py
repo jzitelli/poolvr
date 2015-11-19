@@ -5,6 +5,8 @@ import logging
 _logger = logging.getLogger(__name__)
 import json
 import operator
+from copy import deepcopy
+import sys
 
 from flask import Flask, render_template, request, Markup, jsonify
 STATIC_FOLDER = os.getcwd()
@@ -16,18 +18,19 @@ app = Flask(__name__,
 import site_settings
 app.config.from_object(site_settings)
 
+POOLVR_PYTHONPATH = os.environ.get('POOLVR_PYTHONPATH', os.path.pardir)
+sys.path.append(POOLVR_PYTHONPATH)
+import poolvr
+from poolvr.pool_table import pool_hall
 
-from pool_table import pool_hall
 
-
-# TODO: centralize poolvr args definitions, dynamically generated option portal page
+ARGS = {'useBasicMaterials'  : 'true',
+        'useLambertMaterials':   None,
+        'usePhongMaterials'  :   None,
+        'shadowMap'          :   None,
+        'oldBoilerplate'     :   None}
 def get_poolvr_args(max=None):
-    args = dict()
-    args['useBasicMaterials']   = request.args.get('useBasicMaterials', 'true')
-    args['useLambertMaterials'] = request.args.get('useLambertMaterials')
-    args['usePhongMaterials']   = request.args.get('usePhongMaterials')
-    args['shadowMap']           = request.args.get('shadowMap', 'false')
-    args['oldBoilerplate']      = request.args.get('oldBoilerplate')
+    args = deepcopy(ARGS)
     for k, v in args.items():
         if v == 'false':
             args[k] = False
@@ -45,6 +48,24 @@ def get_poolvr_args(max=None):
         if args['usePhongMaterials'] is None:
             args['usePhongMaterials'] = True
     return args
+
+
+
+@app.route('/config')
+def poolvr_config():
+    """Serves the app configuration menu HTML"""
+    args = get_poolvr_args()
+    _logger.info('\n****** POOLVR ARGS ******')
+    _logger.info('\n'.join(['%s: %s' % (k, v)
+                            for k, v in sorted(args.items(), key=operator.itemgetter(0))]))
+    return render_template('config.html',
+                           json_config=Markup(r"""<script>
+var JSON_SCENE = %s;
+var POOLVR = POOLVR || {};
+POOLVR.ARGS = POOLVR.ARGS || %s;
+</script>""" % (json.dumps(pool_hall(**args),
+                           indent=(2 if app.debug else None)),
+                json.dumps(args))), **args)
 
 
 
