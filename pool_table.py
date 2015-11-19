@@ -1,10 +1,12 @@
 """three.js/Cannon.js pool table definition
 """
-
 from copy import deepcopy
+import logging
 import numpy as np
 
 from three import *
+
+_logger = logging.getLogger(__name__)
 
 IN2METER = 0.0254
 FT2METER = IN2METER / 12
@@ -256,5 +258,14 @@ def pool_hall(basicMaterials=False,
                               rotation=[-0.5*np.pi - rotation[0], -rotation[1], -rotation[2]])
         ballMesh.add(ballShadowMesh)
 
+    textMaterial = MeshBasicMaterial(color=0xff2200)
+    text_size = 0.1
+    text_meshes = text_geom_alphabet(meshes=True, material=textMaterial,
+                                     height=0, size=text_size)
+    for i, mesh in enumerate(text_meshes):
+        mesh.position[0] = 1.3 * (i % 26) * text_size
+        mesh.position[1] = 2 - 2 * (i // 26) * text_size 
+        mesh.position[2] = -2
+        scene.add(mesh)
 
     return scene.export()

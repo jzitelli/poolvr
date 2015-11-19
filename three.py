@@ -64,9 +64,9 @@ class Object3D(Three):
     def __init__(self, name=None, position=(0,0,0), rotation=(0,0,0), scale=(1,1,1), visible=None, castShadow=None, receiveShadow=None, userData=None, **kwargs):
         # TODO: use kwargs, don't convert to ndarray?
         Three.__init__(self, name)
-        self.position = position #np.array(position)
-        self.rotation = rotation #np.array(rotation)
-        self.scale = scale #np.array(scale)
+        self.position = np.array(position, dtype=np.float64)
+        self.rotation = np.array(rotation, dtype=np.float64)
+        self.scale = np.array(scale, dtype=np.float64)
         self.children = []
         if visible is not None:
             self.visible = visible
@@ -122,7 +122,7 @@ class Object3D(Three):
         S = np.diag(list(self.scale) + [1])
         I = np.eye(4)
         T = I.copy()
-        T[:3,-1] = self.position
+        T[:3,-1] = self.position.ravel()
         # TODO: never checked this rigorously:
         Rx = I.copy()
         s, c = np.sin(self.rotation[0]), np.cos(self.rotation[0])
@@ -351,17 +351,6 @@ class TorusGeometry(Three):
         self.arc = arc
 
 
-class TextGeometry(Three):
-    def __init__(self, name=None, text=None, parameters=None):
-        Three.__init__(self, name)
-        self.text = text
-        self.parameters = parameters
-    def json(self):
-        d = Three.json(self)
-        d.update({k: v for k, v in self.__dict__.items() if k not in d and v is not None})
-        return d
-
-
 class OctahedronGeometry(Three):
     def __init__(self, name=None, radius=1, detail=0):
         Three.__init__(self, name)
@@ -506,3 +495,31 @@ class CircleBufferGeometry(Three):
         d = Three.json(self)
         d.update({k: v for k, v in self.__dict__.items() if k not in d and v is not None})
         return d
+
+
+class TextGeometry(Three):
+    def __init__(self, name=None, text=None, parameters=None):
+        Three.__init__(self, name)
+        self.text = text
+        self.parameters = parameters
+    def json(self):
+        d = Three.json(self)
+        d.update({k: v for k, v in self.__dict__.items() if k not in d and v is not None})
+        return d
+
+
+def text_geom_alphabet(meshes=True, material=None, **kwargs):
+    alphas  = "abcdefghijklmnopqrstuvwxyz"
+    alphas += alphas.upper()
+    digits  = '0123456789'
+    symbols = r""",./;'[]\-=<>?:"{}|_+~!@#$%^&*()"""
+    characters = alphas + digits + symbols
+    geometries = [TextGeometry(name="%s TextGeometry" % c, text=c, parameters=kwargs) for c in characters]
+    if meshes:
+        if material is None:
+            material = MeshBasicMaterial(color=0xff3300)
+        meshes = [Mesh(name="%s TextMesh" % c, geometry=geometry, material=material)
+                  for c, geometry in zip(characters, geometries)]
+        return meshes
+    else:
+        return geometries

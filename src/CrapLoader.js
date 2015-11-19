@@ -52,9 +52,20 @@ var CrapLoader = ( function () {
                 }
             } );
         }
+        // filter out geometries that ObjectLoader doesn't handle:
         var geometries = objectLoader.parseGeometries(json.geometries.filter(function (geom) {
             return geom.type != "TextGeometry";
         }));
+        // construct and insert geometries that ObjectLoader doesn't handle
+        json.geometries.forEach( function (geom) {
+            if (geom.type == "TextGeometry") {
+                var geometry = new THREE.TextGeometry(geom.text, geom.parameters);
+                geometry.uuid = geom.uuid;
+                if (geom.name !== undefined) geometry.name = geom.name;
+                geometries[geom.uuid] = geometry;
+            }
+        } );
+
         var images = objectLoader.parseImages(json.images, function () {
             onLoad(object);
         });
