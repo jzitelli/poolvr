@@ -193,7 +193,7 @@ def pool_hall(useBasicMaterials=True,
     sphere = SphereBufferGeometry(radius=ball_radius,
                                   widthSegments=16,
                                   heightSegments=12)
-    stripeGeom = SphereBufferGeometry(radius=1.02*ball_radius,
+    stripeGeom = SphereBufferGeometry(radius=1.04*ball_radius,
                                       widthSegments=16,
                                       heightSegments=6,
                                       thetaStart=np.pi/4,

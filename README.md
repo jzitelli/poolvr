@@ -4,6 +4,8 @@ Play pool / billiards with your [Leap Motion sensor](https://www.leapmotion.com)
 
 ![screenshot](http://jzitelli.github.io/poolvr/images/screenshot.png)
 
+![screenshot](http://jzitelli.github.io/poolvr/images/screenshot4b.png)
+
 
 ## About:
 
@@ -30,7 +32,7 @@ The three.js pool table scene and Cannon.js world is defined procedurally via a 
 1. Start a Python HTTP server in the root directory:
     - using Python 2: `python -m SimpleHTTPServer`
     - using Python 3: `python -m http.server`
-2. Point your browser to `http://localhost:8000` (desktop tracking) or `http://localhost:8000?vr=1` (VR tracking)
+2. Point your browser to `http://127.0.0.1:8000` (desktop tracking) or `http://127.0.0.1:8000?vr=1` (VR tracking)
 
 ### Method B (Flask application serving dynamically generated HTML):
 
@@ -53,9 +55,10 @@ Currently this mode is selected using a `vr` URL parameter, e.g. you would point
 
 
 
-## Building:
+## Building **poolvr**:
 
-If you have [Node.js](https://nodejs.org) and [Grunt](http://www.gruntjs.com) installed, the included `Gruntfile.js` may be used to build packaged versions of `poolvr`:
+If you have [Node.js](https://nodejs.org) and [Grunt](http://www.gruntjs.com) installed,
+the included `Gruntfile.js` may be used to build packaged versions of **poolvr**:
 
 1. Install grunt dependencies via Node Package Manager - from the root directory: `npm install`
 2. From the root directory: `grunt`

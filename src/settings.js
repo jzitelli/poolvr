@@ -33,6 +33,8 @@ POOLVR.settings = {
     useBasicMaterials: (URL_PARAMS.useBasicMaterials === undefined ? true : URL_PARAMS.useBasicMaterials),
     // use three.js shadow map plugin (slow on some devices)
     shadowMap: URL_PARAMS.shadowMap,
+    // include point light
+    pointLight: URL_PARAMS.pointLight,
     // use older version of webvr-boilerplate
     oldBoilerplate: URL_PARAMS.oldBoilerplate
 };
