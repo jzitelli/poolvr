@@ -33,7 +33,8 @@ def pool_table(L_table=2.3368, W_table=None, H_table=0.74295,
                W_cushion=2*IN2METER,
                H_cushion=None,
                W_rail=None,
-               useBasicMaterials=False, shadowMap=False, **kwargs):
+               useBasicMaterials=True, useLambertMaterials=False, usePhongMaterials=False,
+               shadowMap=False, **kwargs):
     """Procedurally defined three.js pool table 'Object3D' (three.js JSON format V4)
 
     :param L_table: length of the pool table (longer than the playable surface); default is 8ft.
@@ -57,21 +58,22 @@ def pool_table(L_table=2.3368, W_table=None, H_table=0.74295,
         H_cushion = 0.635 * ball_diameter
     if W_rail is None:
         W_rail = 2*W_cushion
-
     poolTable = Object3D(name="poolTable")
-
+    rail_color = 0xdda400 # 0xffff00 # 0xffaa00
     if useBasicMaterials:
         surfaceMaterial = MeshBasicMaterial(color=0x00aa00)
-        cushionMaterial = surfaceMaterial
         spotMaterial = MeshBasicMaterial(color=0xaaaaaa)
-        railMaterial = MeshBasicMaterial(color=0xffff00)
+        railMaterial = MeshBasicMaterial(color=rail_color)
     else:
-        surfaceMaterial = MeshPhongMaterial(color=0x00aa00, shininess=5, shading=FlatShading)
-        #surfaceMaterial = MeshLambertMaterial(color=0x00aa00, shading=FlatShading)
-        cushionMaterial = MeshPhongMaterial(color=0x00aa00, shininess=5, shading=FlatShading)
-        spotMaterial = MeshLambertMaterial(color=0xaaaaaa)
-        railMaterial = MeshPhongMaterial(color=0xffaa00, shininess=10, shading=FlatShading)
-
+        if useLambertMaterials:
+            surfaceMaterial = MeshLambertMaterial(color=0x00aa00, shading=FlatShading)
+            spotMaterial = MeshLambertMaterial(color=0xaaaaaa, shading=FlatShading)
+            railMaterial = MeshLambertMaterial(color=0xffaa00, shading=FlatShading)
+        else:
+            surfaceMaterial = MeshPhongMaterial(color=0x00aa00, shininess=5, shading=FlatShading)
+            spotMaterial = MeshLambertMaterial(color=0xaaaaaa, shininess=1, shading=FlatShading)
+            railMaterial = MeshPhongMaterial(color=0xdda400, shininess=10, shading=FlatShading)
+    cushionMaterial = surfaceMaterial
     playableSurfaceGeom = BoxGeometry(W_playable, H_table, L_playable)
     playableSurfaceMesh = Mesh(name='playableSurfaceMesh',
                                geometry=playableSurfaceGeom,
@@ -81,9 +83,7 @@ def pool_table(L_table=2.3368, W_table=None, H_table=0.74295,
                                userData={'cannonData': {'mass': 0,
                                                         'shapes': ['Box']}})
     poolTable.add(playableSurfaceMesh)
-
     ball_radius = ball_diameter / 2
-
     spotGeom = CircleBufferGeometry(name='spotGeom', radius=ball_radius)
     headSpotMesh = Mesh(geometry=spotGeom,
                         material=spotMaterial,
@@ -91,7 +91,6 @@ def pool_table(L_table=2.3368, W_table=None, H_table=0.74295,
                         rotation=[-np.pi/2, 0, 0],
                         receiveShadow=True)
     poolTable.add(headSpotMesh)
-
     # centered as if it were BoxGeometry(W_playable, H_cushion, W_cushion):
     headCushionGeom = PrismBufferGeometry(vertices=[[-0.5*W_playable,                        0,          0.5*W_cushion],
                                                     [-0.5*W_playable,                        H_cushion,  0.5*W_cushion],
@@ -155,12 +154,21 @@ def pool_table(L_table=2.3368, W_table=None, H_table=0.74295,
                         userData={'cannonData': {'mass': 0, 'shapes': ['Box']}})
     poolTable.add(headRailMesh)
 
+    footRailMesh = Mesh(geometry=headRailGeom,
+                        material=railMaterial,
+                        position=[0, H_table + 0.5*H_cushion, -(0.5*L_table + W_cushion)],
+                        rotation=[0, np.pi, 0],
+                        receiveShadow=True,
+                        userData={'cannonData': {'mass': 0, 'shapes': ['Box']}})
+    poolTable.add(footRailMesh)
+
     return poolTable
 
 
 def pool_hall(useBasicMaterials=True,
               useLambertMaterials=False,
               usePhongMaterials=False,
+              shadowMap=False,
               url_prefix="",
               **kwargs):
     scene = Scene()
@@ -246,19 +254,18 @@ def pool_hall(useBasicMaterials=True,
                         userData=ballData,
                         castShadow=True)
         scene.add(ballMesh)
-
         if i > 8:
             stripeMesh = Mesh(name="ballStripeMesh %d" % i,
                               material=ball_materials[i-8],
                               geometry=stripeGeom)
             ballMesh.add(stripeMesh)
-
-        ballShadowMesh = Mesh(name="ballShadowMesh %d" % i,
-                              geometry=shadowGeom,
-                              material=shadowMaterial,
-                              position=[0, -ball_radius + 0.001, 0],
-                              rotation=[-0.5*np.pi - rotation[0], -rotation[1], -rotation[2]])
-        ballMesh.add(ballShadowMesh)
+        if not shadowMap:
+            ballShadowMesh = Mesh(name="ballShadowMesh %d" % i,
+                                  geometry=shadowGeom,
+                                  material=shadowMaterial,
+                                  position=[0, -ball_radius + 0.001, 0],
+                                  rotation=[-0.5*np.pi - rotation[0], -rotation[1], -rotation[2]])
+            ballMesh.add(ballShadowMesh)
 
     textMaterial = MeshBasicMaterial(color=0xff2200)
     text_size = 0.1

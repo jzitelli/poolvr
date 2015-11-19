@@ -25,6 +25,7 @@ POOLVR.settings = {
     leapDisabled: URL_PARAMS.leapDisabled,
     leapHandsDisabled: URL_PARAMS.leapHandsDisabled,
     mouseControls: URL_PARAMS.mouseControls,
+    gamepadControls: URL_PARAMS.gamepadControls,
     // TODO: use three.js MeshPhongMaterials
     usePhongMaterials: URL_PARAMS.usePhongMaterials,
     // TODO: use three.js MeshLambertMaterials

@@ -8,9 +8,7 @@ avatar.position.y = 1.2;
 avatar.position.z = 2;
 
 var POOLVR = POOLVR || {};
-POOLVR.settings = POOLVR.settings || {
-    basicMaterials: 'true'
-};
+POOLVR.settings = POOLVR.settings || {useBasicMaterials: 'true'};
 
 if (POOLVR.settings.useBasicMaterials === 'false') {
     // would rather add the spot lights via three.py generated JSON_SCENE, but I'm having problems getting shadows frm them:
@@ -239,13 +237,14 @@ function animate(t) {
     toolRoot.position.z += -0.25 * dt * toolDrive;
     toolRoot.position.y += 0.25  * dt * toolFloat;
 
-    stickShadow.position.x = stickMesh.position.x;
-    stickShadow.position.z = stickMesh.position.z;
-    stickShadow.position.y = -avatar.position.y - toolRoot.position.y + H_table + 0.001;
+    if (!POOLVR.settings.shadowMap) {
+        stickShadow.position.x = stickMesh.position.x;
+        stickShadow.position.z = stickMesh.position.z;
+        stickShadow.position.y = -avatar.position.y - toolRoot.position.y + H_table + 0.001;
 
-    stickShadowMesh.quaternion.copy(stickMesh.quaternion);
+        stickShadowMesh.quaternion.copy(stickMesh.quaternion);
+    }
 }
-
 
     // if (app.mousePointer.visible && picking) {
     //     origin.set(0, 0, 0);

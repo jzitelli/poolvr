@@ -20,61 +20,74 @@ app.config.from_object(site_settings)
 from pool_table import pool_hall
 
 
-def get_url_args(max=None):
+# TODO: centralize poolvr args definitions, dynamically generated option portal page
+def get_poolvr_args(max=None):
     args = dict()
-    args['useBasicMaterials'] = request.args.get('useBasicMaterials', 'true')
-    args['useLambertMaterials'] = request.args.get('useLambertMaterials', 'true')
-    args['usePhongMaterials'] = request.args.get('usePhongMaterials', 'true')
-    args['shadowMap']      = request.args.get('shadowMap',      'false')
-    args['oldBoilerplate'] = request.args.get('oldBoilerplate', 'false')
+    args['useBasicMaterials']   = request.args.get('useBasicMaterials', 'true')
+    args['useLambertMaterials'] = request.args.get('useLambertMaterials')
+    args['usePhongMaterials']   = request.args.get('usePhongMaterials')
+    args['shadowMap']           = request.args.get('shadowMap', 'false')
+    args['oldBoilerplate']      = request.args.get('oldBoilerplate')
     for k, v in args.items():
         if v == 'false':
             args[k] = False
         elif v == 'true':
             args[k] = True
-        else:
+        elif v is not None:
             try:
                 args[k] = float(v)
             except Exception as err:
                 _logger.warning(err)
                 _logger.warning(str(args.pop(k)))
+    if not args['useBasicMaterials']:
+        if args['useLambertMaterials'] is None:
+            args['useLambertMaterials'] = True
+        if args['usePhongMaterials'] is None:
+            args['usePhongMaterials'] = True
     return args
+
 
 
 @app.route('/')
 def poolvr():
     """Serves the app HTML"""
-    args = get_url_args()
+    args = get_poolvr_args()
     _logger.info('\n****** POOLVR REQUEST ******')
-    _logger.info('\n'.join(['%s: %s' % (k, v) for k, v in args.items()]))
+    _logger.info('\n'.join(['%s: %s' % (k, v)
+                            for k, v in sorted(args.items(), key=operator.itemgetter(0))]))
     return render_template('poolvr.html',
-                           old_boilerplate=args.get('oldBoilerplate', False),
                            json_config=Markup(r"""<script>
 var JSON_SCENE = %s;
 </script>""" % json.dumps(pool_hall(**args),
-                          indent=(2 if app.debug else None))))
+                          indent=(2 if app.debug else None))), **args)
+
 
 
 @app.route('/log', methods=['POST'])
 def log():
+    """Post message from client to the server log
+    """
     msg = request.form['msg']
     _logger.info(msg)
     response = {'status': 0}
     return jsonify(response)
 
 
+
 @app.route('/release')
 def poolvr_release():
-    """Serves the app HTML (tagged release)"""
-    args = get_url_args()
+    """Serves the app HTML (tagged releases)"""
+    args = get_poolvr_args()
     _logger.info('\n****** POOLVR REQUEST ******')
-    _logger.info('\n'.join(['%s: %s' % (k, v) for k, v in args.items()]))
+    _logger.info('\n'.join(['%s: %s' % (k, v)
+                            for k, v in sorted(args.items(), key=operator.itemgetter(0))]))
     version = request.args.get('version', '0.1.0')
     return render_template('poolvr.%s.html' % version,
                            json_config=Markup(r"""<script>
 var JSON_SCENE = %s;
 </script>""" % json.dumps(pool_hall(**args),
-                          indent=(2 if app.debug else None))))
+                          indent=(2 if app.debug else None))), **args)
+
 
 
 def main():

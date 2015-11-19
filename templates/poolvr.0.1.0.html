@@ -33,8 +33,13 @@
     <script src="bin/VREffect.js"></script>
     <script src="bin/VRControls.js"></script>
 
+{% if oldBoilerplate %}
+    <script src="bin/webvr-polyfill.old.js"></script>
+    <script src="bin/webvr-manager.old.js"></script>
+{% else %}
     <script src="bin/webvr-polyfill.js"></script>
     <script src="bin/webvr-manager.js"></script>
+{% endif %}
 
     <script src="bin/socket.io.js"></script>
     <script src="bin/cannon.js"></script>
