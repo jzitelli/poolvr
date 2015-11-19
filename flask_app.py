@@ -17,7 +17,7 @@ import site_settings
 app.config.from_object(site_settings)
 
 
-from pool_table import pool_hall
+from . import pool_table
 
 
 # TODO: centralize poolvr args definitions, dynamically generated option portal page
@@ -58,7 +58,7 @@ def poolvr():
     return render_template('poolvr.html',
                            json_config=Markup(r"""<script>
 var JSON_SCENE = %s;
-</script>""" % json.dumps(pool_hall(**args),
+</script>""" % json.dumps(pool_table.pool_hall(**args),
                           indent=(2 if app.debug else None))), **args)
 
 
