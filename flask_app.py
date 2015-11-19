@@ -22,9 +22,11 @@ from pool_table import pool_hall
 
 def get_url_args(max=None):
     args = dict()
-    args['basicMaterials'] = request.args.get('basicMaterials', 'true')
+    args['useBasicMaterials'] = request.args.get('useBasicMaterials', 'true')
+    args['useLambertMaterials'] = request.args.get('useLambertMaterials', 'true')
+    args['usePhongMaterials'] = request.args.get('usePhongMaterials', 'true')
     args['shadowMap']      = request.args.get('shadowMap',      'false')
-    #args['vr']             = request.args.get('vr',             'false')
+    args['oldBoilerplate'] = request.args.get('oldBoilerplate', 'false')
     for k, v in args.items():
         if v == 'false':
             args[k] = False
@@ -46,7 +48,7 @@ def poolvr():
     _logger.info('\n****** POOLVR REQUEST ******')
     _logger.info('\n'.join(['%s: %s' % (k, v) for k, v in args.items()]))
     return render_template('poolvr.html',
-                           old_boilerplate=request.args.get('old_boilerplate', False),
+                           old_boilerplate=args.get('oldBoilerplate', False),
                            json_config=Markup(r"""<script>
 var JSON_SCENE = %s;
 </script>""" % json.dumps(pool_hall(**args),
@@ -71,7 +73,6 @@ def poolvr_release():
     return render_template('poolvr.%s.html' % version,
                            json_config=Markup(r"""<script>
 var JSON_SCENE = %s;
-
 </script>""" % json.dumps(pool_hall(**args),
                           indent=(2 if app.debug else None))))
 

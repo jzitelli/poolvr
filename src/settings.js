@@ -25,8 +25,16 @@ POOLVR.settings = {
     leapDisabled: URL_PARAMS.leapDisabled,
     leapHandsDisabled: URL_PARAMS.leapHandsDisabled,
     mouseControls: URL_PARAMS.mouseControls,
-    basicMaterials: (URL_PARAMS.basicMaterials === undefined ? true : URL_PARAMS.basicMaterials),
-    shadowMap: URL_PARAMS.shadowMap
+    // TODO: use three.js MeshPhongMaterials
+    usePhongMaterials: URL_PARAMS.usePhongMaterials,
+    // TODO: use three.js MeshLambertMaterials
+    useLambertMaterials: URL_PARAMS.useLambertMaterials,
+    // use *only* three.js MeshBasicMaterials (a.k.a. "EGA-graphics" look)
+    useBasicMaterials: (URL_PARAMS.useBasicMaterials === undefined ? true : URL_PARAMS.useBasicMaterials),
+    // use three.js shadow map plugin (slow on some devices)
+    shadowMap: URL_PARAMS.shadowMap,
+    // use older version of webvr-boilerplate
+    oldBoilerplate: URL_PARAMS.oldBoilerplate
 };
 
 function logVars() {

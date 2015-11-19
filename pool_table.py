@@ -33,7 +33,7 @@ def pool_table(L_table=2.3368, W_table=None, H_table=0.74295,
                W_cushion=2*IN2METER,
                H_cushion=None,
                W_rail=None,
-               basicMaterials=False, shadowMap=False):
+               useBasicMaterials=False, shadowMap=False, **kwargs):
     """Procedurally defined three.js pool table 'Object3D' (three.js JSON format V4)
 
     :param L_table: length of the pool table (longer than the playable surface); default is 8ft.
@@ -43,7 +43,7 @@ def pool_table(L_table=2.3368, W_table=None, H_table=0.74295,
     :param L_playable: length of the playable area, I still don't understand exactly what it refers to
     :param W_cushion: width of the cushions
     :param H_cushion: height of the nose of the cushions; default is 63.5% of ball diameter
-    :param basicMaterials: if True, use only three.js BasicMeshMaterials
+    :param useBasicMaterials: if True, use only three.js BasicMeshMaterials
     :param shadowMap: by default, plane-projected geometries/meshes representing shadows are created;
                       if shadowMap is True, they are not
     """
@@ -60,7 +60,7 @@ def pool_table(L_table=2.3368, W_table=None, H_table=0.74295,
 
     poolTable = Object3D(name="poolTable")
 
-    if basicMaterials:
+    if useBasicMaterials:
         surfaceMaterial = MeshBasicMaterial(color=0x00aa00)
         cushionMaterial = surfaceMaterial
         spotMaterial = MeshBasicMaterial(color=0xaaaaaa)
@@ -158,10 +158,12 @@ def pool_table(L_table=2.3368, W_table=None, H_table=0.74295,
     return poolTable
 
 
-def pool_hall(basicMaterials=False,
-              url_prefix="", **kwargs):
+def pool_hall(useBasicMaterials=True,
+              useLambertMaterials=False,
+              usePhongMaterials=False,
+              url_prefix="",
+              **kwargs):
     scene = Scene()
-    # room:
     L_room, W_room = 10, 10
     floor = Mesh(name="floor", geometry=square,
                  material=MeshBasicMaterial(color=0xffffff,
@@ -181,7 +183,7 @@ def pool_hall(basicMaterials=False,
     W_table = L_table / 2
     H_table = 0.74295
     poolTable = pool_table(H_table=H_table, ball_diameter=ball_diameter,
-                           basicMaterials=basicMaterials, **kwargs)
+                           useBasicMaterials=useBasicMaterials, **kwargs)
     scene.add(poolTable)
 
     # balls:
@@ -200,7 +202,7 @@ def pool_hall(basicMaterials=False,
                                       radius=ball_radius,
                                       segments=16)
 
-    if basicMaterials:
+    if useBasicMaterials:
         ball_materials = [MeshBasicMaterial(color=color) for color in ball_colors]
     else:
         ball_materials = [MeshPhongMaterial(color=color, shading=SmoothShading) for color in ball_colors]

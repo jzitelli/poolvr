@@ -1,3 +1,5 @@
+// TODO requires three.js, CANNON.js, settings.js, cardboard.js, WebVRApplication.js, CrapLoader.js, LeapTools.js, pyserver.js
+
 var app;
 var scene = CrapLoader.parse(JSON_SCENE);
 var H_table = 0.74295; // TODO: coordinate w/ server
@@ -10,7 +12,7 @@ POOLVR.settings = POOLVR.settings || {
     basicMaterials: 'true'
 };
 
-if (POOLVR.settings.basicMaterials === 'false') {
+if (POOLVR.settings.useBasicMaterials === 'false') {
     // would rather add the spot lights via three.py generated JSON_SCENE, but I'm having problems getting shadows frm them:
     var centerSpotLight = new THREE.SpotLight(0xffffee, 1, 10, 90);
     centerSpotLight.position.set(0, 3, 0);
@@ -106,18 +108,20 @@ function onLoad() {
     tipBody   = toolStuff[1];
     toolRoot  = toolStuff[2];
 
-    stickShadow = new THREE.Object3D();
-    stickShadow.position.y = -avatar.position.y - toolRoot.position.y + H_table + 0.001;
-    stickShadow.scale.set(1, 0.0004, 1);
-    toolRoot.add(stickShadow);
-
-    var stickShadowGeom = stickMesh.geometry.clone();
-    var toolLength = 0.4;
-    stickShadowGeom.translate(0, -toolLength / 2, 0); // have to do this again because not buffergeometry???
-    var stickShadowMaterial = new THREE.MeshBasicMaterial({color: 0x004400});
-    stickShadowMesh = new THREE.Mesh(stickShadowGeom, stickShadowMaterial);
-    stickShadowMesh.quaternion.copy(stickMesh.quaternion);
-    stickShadow.add(stickShadowMesh);
+    if (!options.shadowMap) {
+        // create shadow mesh from projection:
+        stickShadow = new THREE.Object3D();
+        stickShadow.position.y = -avatar.position.y - toolRoot.position.y + H_table + 0.001;
+        stickShadow.scale.set(1, 0.0004, 1);
+        toolRoot.add(stickShadow);
+        var stickShadowGeom = stickMesh.geometry.clone();
+        var toolLength = 0.4;
+        stickShadowGeom.translate(0, -toolLength / 2, 0); // have to do this again because not buffergeometry???
+        var stickShadowMaterial = new THREE.MeshBasicMaterial({color: 0x004400});
+        stickShadowMesh = new THREE.Mesh(stickShadowGeom, stickShadowMaterial);
+        stickShadowMesh.quaternion.copy(stickMesh.quaternion);
+        stickShadow.add(stickShadowMesh);
+    }
 
     if (options.mouseControls) {
         var mousePointer = stickMesh;

@@ -15,6 +15,7 @@ var CrapLoader = ( function () {
     }
 
     function parse(json) {
+        // TODO: convert all to BufferGeometry option
         function onLoad(obj) {
             obj.traverse( function (node) {
                 if (node instanceof THREE.Mesh) {

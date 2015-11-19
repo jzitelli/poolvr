@@ -512,7 +512,7 @@ def text_geom_alphabet(meshes=True, material=None, **kwargs):
     alphas  = "abcdefghijklmnopqrstuvwxyz"
     alphas += alphas.upper()
     digits  = '0123456789'
-    symbols = r""",./;'[]\-=<>?:"{}|_+~!@#$%^&*()"""
+    symbols = r""",./;'[]\-=<>?:"{}|_+`~!@#$%^&*()"""
     characters = alphas + digits + symbols
     geometries = [TextGeometry(name="%s TextGeometry" % c, text=c, parameters=kwargs) for c in characters]
     if meshes:

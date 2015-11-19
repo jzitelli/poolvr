@@ -2,6 +2,7 @@
 """
 import os
 import logging
+import operator
 
 from tornado.wsgi import WSGIContainer
 from tornado.web import Application, FallbackHandler, StaticFileHandler
@@ -28,13 +29,13 @@ handlers = websocket_handlers + [(r'.*', FallbackHandler, dict(fallback=WSGICont
 
 def main():
     _logger.info("app_flask.config:\n%s" % '\n'.join(['%s: %s' % (k, str(v))
-                                                      for k, v in sorted(app_flask.config.items(), key=lambda (k,v): k)]))
+                                                      for k, v in sorted(app_flask.config.items(), key=operator.itemgetter(0))]))
 
     app = Application(handlers,
                       debug=app_flask.debug)
 
     _logger.info("app.settings:\n%s" % '\n'.join(['%s: %s' % (k, str(v))
-                                                  for k, v in sorted(app.settings.items(), key=lambda (k,v): k)]))
+                                                  for k, v in sorted(app.settings.items(), key=operator.itemgetter(0))]))
 
     port = app_flask.config.get('PORT', 5000)
     app.listen(port)

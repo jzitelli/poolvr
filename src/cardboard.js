@@ -1,11 +1,27 @@
-WebVRConfig = {
-    FORCE_ENABLE_VR: false,
-    FORCE_DISTORTION: false
-};
+// TODO requires pyserver.js, settings.js, webvr-manager.js, webvr-polyfill.js
+
+pyserver.log("hello from cardboard.js");
+
+var userAgent = navigator.userAgent || navigator.vendor || window.opera;
+// Check both width and height since the phone may be in landscape.
+var width = screen.availWidth;
+var height = screen.availHeight;
+var pixelWidth = width * window.devicePixelRatio;
+var pixelHeight = height * window.devicePixelRatio;
+
+if (!POOLVR.settings.oldBoilerplate) {
+    // using most recent webvr-boilerplate
+    window.WebVRConfig = window.WebVRConfig || {
+        FORCE_ENABLE_VR: URL_PARAMS.forceEnableVR,
+        FORCE_DISTORTION: URL_PARAMS.forceDistortion
+    };
+} else {
+    // using older version
+    window.WEBVR_FORCE_DISTORTION = window.WEBVR_FORCE_DISTORTION || URL_PARAMS.forceDistorion;
+    window.WebVRConfig = window.WebVRConfig || {};
+}
 
 var VR_DEVICES = [
-    // {FORCE_ENABLE_VR: true, FORCE_DISTORTION: true}
-
     // Samsung Galaxy 4S #########################################################################################
     // Firefox Beta:
     // Mozilla/5.0 (Android 5.0.1; Mobile; rv:43.0) Gecko/43.0 Firefox/43.0
@@ -46,23 +62,13 @@ var VR_DEVICES = [
     "Oculus VR HMD (Sensor)" // VR device 0
     // DK2 0.8 drivers
 
+
     // Windows 7 ################################################################################################
     // DK2 0.8 drivers
     // Chrome 0.8.0.1 DK2 build
-
+    // *** WORKS W/ OLDER WEBVR-BOILERPLATE ***
 ];
 
-// On iOS, use screen dimensions to determine iPhone/iPad model.
-var userAgent = navigator.userAgent || navigator.vendor || window.opera;
-
-// Check both width and height since the phone may be in landscape.
-var width = screen.availWidth;
-var height = screen.availHeight;
-var pixelWidth = width * window.devicePixelRatio;
-var pixelHeight = height * window.devicePixelRatio;
-
-
-pyserver.log("hello from cardboard.js");
 pyserver.log(JSON.stringify(WebVRConfig));
 pyserver.log(userAgent);
 if (navigator.getVRDevices) {
