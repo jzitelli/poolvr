@@ -15,7 +15,7 @@ var ballMeshes       = [],
 
 var dynamicBodies;
 
-if (POOLVR.settings.useBasicMaterials === 'false') {
+if (POOLVR.settings.useBasicMaterials == 'false') {
     // would rather add the spot lights via three.py generated JSON_SCENE, but I'm having problems getting shadows frm them:
     var centerSpotLight = new THREE.SpotLight(0xffffee, 1, 10, 90);
     centerSpotLight.position.set(0, 3, 0);
@@ -54,15 +54,15 @@ function onLoad() {
     avatar.add(app.camera);
     scene.add(avatar);
 
-    pyserver.log("gamepadCommands:\n" + JSON.stringify(options.gamepadCommands));
-    pyserver.log("keyboardCommands:\n" + JSON.stringify(options.keyboardCommands));
+    // pyserver.log("gamepadCommands:\n" + JSON.stringify(options.gamepadCommands));
+    // pyserver.log("keyboardCommands:\n" + JSON.stringify(options.keyboardCommands));
 
     // ##### Desktop mode (default): #####
     var toolOptions = {transformOptions : {vr: 'desktop'},
-                       leapDisabled     : options.leapDisabled,
-                       leapHandsDisabled: options.leapHandsDisabled};
+                       leapDisabled     : app.options.leapDisabled,
+                       leapHandsDisabled: app.options.leapHandsDisabled};
     // ##### VR mode: #####
-    if (options.leapVR) {
+    if (app.options.leapVR) {
         toolOptions.transformOptions = {vr: true, effectiveParent: app.camera};
     }
 
@@ -182,7 +182,7 @@ function animate(t) {
     }
     var cosHeading = Math.cos(avatar.heading),
         sinHeading = Math.sin(avatar.heading);
-    if (!app.vrControls.enabled || POOLVR.settings.vrPitching) {
+    if (!app.vrControls.enabled || app.options.vrPitchingEnabled) {
         kbpitch -= 0.8 * dt * (app.keyboard.getValue("pitchUp") + app.keyboard.getValue("pitchDown"));
         pitch = kbpitch;
         // if (!avatar.floatMode) {
@@ -235,7 +235,7 @@ function animate(t) {
     toolRoot.position.z += -0.25 * dt * toolDrive;
     toolRoot.position.y += 0.25  * dt * toolFloat;
 
-    if (!POOLVR.settings.shadowMap) {
+    if (!app.options.shadowMap) {
         stickShadow.position.x = stickMesh.position.x;
         stickShadow.position.z = stickMesh.position.z;
         stickShadow.position.y = -avatar.position.y - toolRoot.position.y + H_table + 0.001;

@@ -1,5 +1,3 @@
-var POOLVR = POOLVR || {};
-
 var URL_PARAMS = (function () {
     "use strict";
     var params = {};
@@ -17,28 +15,38 @@ var URL_PARAMS = (function () {
             params[k] = params[k][0];
         }
     }
+    for (var k in params) {
+        if (params[k] === 'true')
+            params[k] = true;
+        else if (params[k] === 'false')
+            params[k] = false;
+    }
     return params;
 })();
 
-POOLVR.settings = {
+var POOLVR = {
+    settings: URL_PARAMS
+};
+
+POOLVR.settings = combineDefaults(POOLVR.settings, {
     gravity: 9.8,
     leapDisabled: URL_PARAMS.leapDisabled,
     leapHandsDisabled: URL_PARAMS.leapHandsDisabled,
     mouseControls: URL_PARAMS.mouseControls,
     gamepadControls: URL_PARAMS.gamepadControls,
     // TODO: use three.js MeshPhongMaterials
-    usePhongMaterials: URL_PARAMS.usePhongMaterials,
+    usePhongMaterials: false,
     // TODO: use three.js MeshLambertMaterials
-    useLambertMaterials: URL_PARAMS.useLambertMaterials,
+    useLambertMaterials: false,
     // use *only* three.js MeshBasicMaterials (a.k.a. "EGA-graphics" look)
-    useBasicMaterials: (URL_PARAMS.useBasicMaterials === undefined ? true : URL_PARAMS.useBasicMaterials),
+    useBasicMaterials: true,
     // use three.js shadow map plugin (slow on some devices)
-    shadowMap: URL_PARAMS.shadowMap,
+    shadowMap: false,
     // include point light
-    pointLight: URL_PARAMS.pointLight,
+    pointLight: false,
     // use older version of webvr-boilerplate
-    oldBoilerplate: URL_PARAMS.oldBoilerplate
-};
+    oldBoilerplate: false
+});
 
 function logVars() {
     "use strict";

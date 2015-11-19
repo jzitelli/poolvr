@@ -79,5 +79,4 @@ if (navigator.getVRDevices) {
     });
 }
 
-var POOLVR = POOLVR || {};
-POOLVR.settings = POOLVR.settings || {useBasicMaterials: 'true'};
+pyserver.log("goodbye from cardboard.js");

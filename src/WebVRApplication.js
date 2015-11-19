@@ -103,7 +103,7 @@ WebVRApplication = ( function () {
         this.renderer.setPixelRatio(window.devicePixelRatio);
         this.renderer.setClearColor(options.backgroundColor);
         this.renderer.setSize(window.innerWidth, window.innerHeight);
-        if (options.shadowMap) {
+        if (options.shadowMap == 'true') {
             console.log("shadow mapping enabled");
             this.renderer.shadowMap.enabled = true;
             this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -236,6 +236,8 @@ WebVRApplication = ( function () {
             };
             request.send();
         };
+
+        this.options = options;
     }
 
     return WebVRApplication;

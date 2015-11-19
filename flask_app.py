@@ -23,14 +23,15 @@ sys.path.append(POOLVR_PYTHONPATH)
 import poolvr
 from poolvr.pool_table import pool_hall
 
-ARGS = {'useBasicMaterials'  : 'true',
+ARGS = {'useBasicMaterials'  :   True,
         'useLambertMaterials':   None,
         'usePhongMaterials'  :   None,
         'shadowMap'          :   None,
         'oldBoilerplate'     :   None}
 def get_poolvr_args(max=None):
     args = deepcopy(ARGS)
-    for k, v in args.items():
+    args.update(deepcopy(request.args))
+    for k, v in list(args.items()):
         if v == 'false':
             args[k] = False
         elif v == 'true':
@@ -41,11 +42,12 @@ def get_poolvr_args(max=None):
             except Exception as err:
                 _logger.warning(err)
                 _logger.warning(str(args.pop(k)))
-    if not args['useBasicMaterials']:
-        if args['useLambertMaterials'] is None:
-            args['useLambertMaterials'] = True
-        if args['usePhongMaterials'] is None:
-            args['usePhongMaterials'] = True
+    # if not args['useBasicMaterials']:
+    #     if args['useLambertMaterials'] is None:
+    #         args['useLambertMaterials'] = True
+    #     if args['usePhongMaterials'] is None:
+    #         args['usePhongMaterials'] = True
+    _logger.debug(args)
     return args
 
 
