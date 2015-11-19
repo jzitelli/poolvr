@@ -55,25 +55,31 @@ Currently this mode is selected using a `vr` URL parameter, e.g. you would point
 
 ## Building:
 
-If you have [Node.js](https://nodejs.org) and [Grunt](http://www.gruntjs.com) installed, the included `Gruntfile.js` may be used to build packaged versions of `poolvr`.
+If you have [Node.js](https://nodejs.org) and [Grunt](http://www.gruntjs.com) installed, the included `Gruntfile.js` may be used to build packaged versions of `poolvr`:
+
+1. Install grunt dependencies via Node Package Manager - from the root directory: `npm install`
+2. From the root directory: `grunt`
 
 
 
 ## TODO list:
 
-- Finish the pool table
+- finish the pool table
   a. ball labels
   b. initial positions
   c. rails
 - sounds
+  a. collisions
+  b. speech synthesis
 - menu / menus for options / settings:
-  a. toggle Leap Motion tracking mode
-  b. set keyboard controls
-  c. set mouse controls
-  d. set gamepad controls
+  a. Leap Motion settings
+  b. keyboard controls
+  c. mouse controls
+  d. gamepad controls
   e. volume controls
+  f. physics parameters
 - friction, collision response physics parameters
-- hand interactions
+- hand interactions / auto-positioning
 - improve Leap Motion tracking robustness
 
 
