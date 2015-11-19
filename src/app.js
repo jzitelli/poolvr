@@ -1,13 +1,16 @@
 var app;
-
 var scene = CrapLoader.parse(JSON_SCENE);
-
 var H_table = 0.74295; // TODO: coordinate w/ server
+var avatar = new THREE.Object3D();
+avatar.position.y = 1.2;
+avatar.position.z = 2;
 
-console.log('poolvr settings:');
-console.log(options);
+var POOLVR = POOLVR || {};
+POOLVR.settings = POOLVR.settings || {
+    basicMaterials: 'true'
+};
 
-if (options.basicMaterials === 'false') {
+if (POOLVR.settings.basicMaterials === 'false') {
     // would rather add the spot lights via three.py generated JSON_SCENE, but I'm having problems getting shadows frm them:
     var centerSpotLight = new THREE.SpotLight(0xffffee, 1, 10, 90);
     centerSpotLight.position.set(0, 3, 0);
@@ -19,97 +22,67 @@ if (options.basicMaterials === 'false') {
     var centerSpotLightHelper = new THREE.SpotLightHelper(centerSpotLight);
     scene.add(centerSpotLightHelper);
     centerSpotLightHelper.visible = false;
+
+    // var spotLight = new THREE.SpotLight(0xddffdd,
+    //                                     0.7, // intensity
+    //                                     10); // distance
+    // spotLight.position.set(-5/2, 3/2, 4/2);
+    // spotLight.castShadow = true;
+    // spotLight.shadowCameraNear = 0.01;
+    // spotLight.shadowCameraFar = 10;
+    // spotLight.shadowCameraFov = 50;
+    // spotLight.shadowDarkness = 0.4;
+    // scene.add(spotLight);
+    // var spotLightHelper = new THREE.SpotLightHelper(spotLight);
+    // scene.add(spotLightHelper);
+    // spotLightHelper.visible = false;
 }
 
-// var spotLight = new THREE.SpotLight(0xddffdd,
-//                                     0.7, // intensity
-//                                     10); // distance
-// spotLight.position.set(-5/2, 3/2, 4/2);
-// spotLight.castShadow = true;
-// spotLight.shadowCameraNear = 0.01;
-// spotLight.shadowCameraFar = 10;
-// spotLight.shadowCameraFov = 50;
-// spotLight.shadowDarkness = 0.4;
-// scene.add(spotLight);
-// var spotLightHelper = new THREE.SpotLightHelper(spotLight);
-// scene.add(spotLightHelper);
-// spotLightHelper.visible = false;
-
-
-var avatar = new THREE.Object3D();
-avatar.position.y = 1.2;
-avatar.position.z = 2;
-
-options.keyboardCommands = {
-    logVars: {buttons: [Primrose.Input.Keyboard.Q],
-              commandDown: logVars},
-    moveToolUp: {buttons: [Primrose.Input.Keyboard.U]},
-    moveToolDown: {buttons: [Primrose.Input.Keyboard.M]},
-    moveToolForwards: {buttons: [Primrose.Input.Keyboard.I]},
-    moveToolBackwards: {buttons: [Primrose.Input.Keyboard.K]},
-    moveToolLeft: {buttons: [Primrose.Input.Keyboard.J]},
-    moveToolRight: {buttons: [Primrose.Input.Keyboard.L]}
-};
-
-options.gamepadCommands = {
-    strafe: {axes: [Primrose.Input.Gamepad.LSX], deadzone: 0.15},
-    drive: {axes: [Primrose.Input.Gamepad.LSY], deadzone: 0.15},
-    dheading: {axes: [-Primrose.Input.Gamepad.LSX], deadzone: 0.15},
-    pitch: {axes: [Primrose.Input.Gamepad.LSY], integrate: true, deadzone: 0.15,
-            max: 0.5 * Math.PI, min: -0.5 * Math.PI},
-    float: {axes: [-Primrose.Input.Gamepad.LSY], deadzone: 0.15},
-    toggleFloatMode: {buttons: [Primrose.Input.Gamepad.XBOX_BUTTONS.leftStick],
-                      commandDown: function () { avatar.floatMode = true; },
-                      commandUp: function () { avatar.floatMode = false; }},
-    toolStrafe: {axes: [Primrose.Input.Gamepad.RSX], deadzone: 0.15},
-    toolDrive: {axes: [Primrose.Input.Gamepad.RSY], deadzone: 0.15},
-    toolHeading: {axes: [-Primrose.Input.Gamepad.RSX], integrate: true, deadzone: 0.15},
-    toolFloat: {axes: [-Primrose.Input.Gamepad.RSY], deadzone: 0.15},
-    toggleToolFloatMode: {buttons: [Primrose.Input.Gamepad.XBOX_BUTTONS.rightStick],
-                     commandDown: function () { avatar.toolMode = true; },
-                     commandUp: function () { avatar.toolMode = false; } }
-};
-
 var stickMesh, tipBody, toolRoot;
-
 var stickShadow, stickShadowMesh;
-
 var ballMeshes       = [],
     ballStripeMeshes = [];
 
-function logVars() {
-    "use strict";
-    console.log(tipBody.position);
-    console.log(toolRoot);
-    console.log(avatar);
-}
+var dynamicBodies;
 
 function onLoad() {
     "use strict";
+    pyserver.log("starting poolvr...\nSETTINGS:\n" + JSON.stringify(POOLVR.settings));
+    var options = POOLVR.settings;
+    options.keyboardCommands = POOLVR.keyboardCommands;
+    options.gamepadCommands = POOLVR.gamepadCommands;
+    
     app = new WebVRApplication("poolvr", avatar, scene, options);
     avatar.add(app.camera);
     scene.add(avatar);
 
-    // ##### Desktop mode (default): #####
-    var toolOptions = {transformOptions: {vr: 'desktop'},
-                       leapDisabled    : options.leapDisabled};
+    pyserver.log("gamepadCommands:\n" + JSON.stringify(options.gamepadCommands));
+    pyserver.log("keyboardCommands:\n" + JSON.stringify(options.keyboardCommands));
 
+    // ##### Desktop mode (default): #####
+    var toolOptions = {transformOptions : {vr: 'desktop'},
+                       leapDisabled     : options.leapDisabled,
+                       leapHandsDisabled: options.leapHandsDisabled};
     // ##### VR mode: #####
-    if (URL_PARAMS.vr) {
+    if (options.leapVR) {
         toolOptions.transformOptions = {vr: true, effectiveParent: app.camera};
     }
 
-    console.log(toolOptions);
+    pyserver.log(JSON.stringify(toolOptions));
 
     CrapLoader.CANNONize(scene, app.world);
 
     var ballMaterial = new CANNON.Material();
-    var ballBallContactMaterial = new CANNON.ContactMaterial(ballMaterial, ballMaterial, {restitution: 0.9});
+    var ballBallContactMaterial = new CANNON.ContactMaterial(ballMaterial, ballMaterial, {restitution: 0.93});
     app.world.addContactMaterial(ballBallContactMaterial);
 
     var playableSurfaceMaterial = new CANNON.Material();
-    var ballPlayableSurfaceContactMaterial = new CANNON.ContactMaterial(ballMaterial, playableSurfaceMaterial, {restitution: 0.1, friction: 0.333});
-    //app.world.addContactMaterial(ballPlayableSurfaceContactMaterial);
+    var ballPlayableSurfaceContactMaterial = new CANNON.ContactMaterial(ballMaterial, playableSurfaceMaterial, {restitution: 0.1, friction: 0.2});
+    app.world.addContactMaterial(ballPlayableSurfaceContactMaterial);
+    
+    var cushionMaterial = new CANNON.Material();
+    var ballCushionContactMaterial = new CANNON.ContactMaterial(ballMaterial, cushionMaterial, {restitution: 0.8, friction: 0.3});
+    app.world.addContactMaterial(ballCushionContactMaterial);
 
     scene.traverse(function (node) {
         if (node.name.startsWith('ballMesh')) {
@@ -122,12 +95,12 @@ function onLoad() {
         else if (node.name.startsWith('playableSurfaceMesh')) {
             node.body.material = playableSurfaceMaterial;
         }
+        else if (node.name.endsWith('CushionMesh')) {
+            node.body.material = cushionMaterial;
+        }
     });
-    // var feltMaterial = new CANNON.Material();
-    // var cushionMaterial = new CANNON.Material();
 
     var toolStuff = addTool(avatar, app.world, toolOptions);
-
 
     stickMesh = toolStuff[0];
     tipBody   = toolStuff[1];
@@ -135,11 +108,11 @@ function onLoad() {
 
     stickShadow = new THREE.Object3D();
     stickShadow.position.y = -avatar.position.y - toolRoot.position.y + H_table + 0.001;
-    stickShadow.scale.set(1, 0.0001, 1);
+    stickShadow.scale.set(1, 0.0004, 1);
     toolRoot.add(stickShadow);
 
     var stickShadowGeom = stickMesh.geometry.clone();
-    var toolLength = 0.5;
+    var toolLength = 0.4;
     stickShadowGeom.translate(0, -toolLength / 2, 0); // have to do this again because not buffergeometry???
     var stickShadowMaterial = new THREE.MeshBasicMaterial({color: 0x004400});
     stickShadowMesh = new THREE.Mesh(stickShadowGeom, stickShadowMaterial);
@@ -163,6 +136,7 @@ function onLoad() {
     }
 
     dynamicBodies = app.world.bodies.filter(function(body) { return body.mesh && body.type !== CANNON.Body.STATIC; });
+
     app.start(animate);
 }
 
@@ -180,7 +154,6 @@ var UP = new THREE.Vector3(0, 1, 0),
     walkSpeed = 0.3,
     floatSpeed = 0.1,
     toolDrive, toolStrafe, toolFloat;
-var dynamicBodies;
 function animate(t) {
     "use strict";
     requestAnimationFrame(animate);
@@ -209,7 +182,7 @@ function animate(t) {
     }
     var cosHeading = Math.cos(avatar.heading),
         sinHeading = Math.sin(avatar.heading);
-    if (!app.vrControls.enabled || options.vrPitching) {
+    if (!app.vrControls.enabled || POOLVR.settings.vrPitching) {
         kbpitch -= 0.8 * dt * (app.keyboard.getValue("pitchUp") + app.keyboard.getValue("pitchDown"));
         pitch = kbpitch;
         // if (!avatar.floatMode) {

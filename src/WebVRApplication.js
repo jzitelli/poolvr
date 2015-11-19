@@ -56,13 +56,14 @@ WebVRApplication = ( function () {
         });
 
         // default gamepad controls:
+        var DEADZONE = 0.2;
         var gamepadCommands = {
-            strafe: {axes: [Primrose.Input.Gamepad.LSX], deadzone: 0.15},
-            drive: {axes: [Primrose.Input.Gamepad.LSY], deadzone: 0.15},
-            heading: {axes: [-Primrose.Input.Gamepad.RSX], integrate: true, deadzone: 0.15},
-            pitch: {axes: [Primrose.Input.Gamepad.RSY], integrate: true, deadzone: 0.15,
+            strafe: {axes: [Primrose.Input.Gamepad.LSX], deadzone: DEADZONE},
+            drive: {axes: [Primrose.Input.Gamepad.LSY], deadzone: DEADZONE},
+            heading: {axes: [-Primrose.Input.Gamepad.RSX], integrate: true, deadzone: DEADZONE},
+            pitch: {axes: [Primrose.Input.Gamepad.RSY], integrate: true, deadzone: DEADZONE,
                     max: 0.5 * Math.PI, min: -0.5 * Math.PI},
-            float: {axes: [-Primrose.Input.Gamepad.LSY], deadzone: 0.12},
+            float: {axes: [-Primrose.Input.Gamepad.LSY], deadzone: DEADZONE},
             toggleFloatMode: {buttons: [Primrose.Input.Gamepad.XBOX_BUTTONS.leftStick],
                               commandDown: function () { avatar.floatMode = true; },
                               commandUp: function () { avatar.floatMode = false; }},

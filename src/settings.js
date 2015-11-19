@@ -1,3 +1,5 @@
+var POOLVR = POOLVR || {};
+
 var URL_PARAMS = (function () {
     "use strict";
     var params = {};
@@ -18,13 +20,48 @@ var URL_PARAMS = (function () {
     return params;
 })();
 
-var options = {
+POOLVR.settings = {
     gravity: 9.8,
     leapDisabled: URL_PARAMS.leapDisabled,
+    leapHandsDisabled: URL_PARAMS.leapHandsDisabled,
     mouseControls: URL_PARAMS.mouseControls,
-    basicMaterials: URL_PARAMS.basicMaterials,
+    basicMaterials: (URL_PARAMS.basicMaterials === undefined ? true : URL_PARAMS.basicMaterials),
     shadowMap: URL_PARAMS.shadowMap
 };
 
-var POOLVR = POOLVR || {};
-POOLVR.settings = options;
+function logVars() {
+    "use strict";
+    pyserver.log(tipBody.position);
+    pyserver.log(toolRoot);
+    pyserver.log(avatar);
+}
+
+POOLVR.keyboardCommands = {
+    logVars: {buttons: [Primrose.Input.Keyboard.Q],
+              commandDown: logVars},
+    moveToolUp:        {buttons: [Primrose.Input.Keyboard.U]},
+    moveToolDown:      {buttons: [Primrose.Input.Keyboard.M]},
+    moveToolForwards:  {buttons: [Primrose.Input.Keyboard.I]},
+    moveToolBackwards: {buttons: [Primrose.Input.Keyboard.K]},
+    moveToolLeft:      {buttons: [Primrose.Input.Keyboard.J]},
+    moveToolRight:     {buttons: [Primrose.Input.Keyboard.L]}
+};
+
+var DEADZONE = 0.2;
+POOLVR.gamepadCommands = {
+    strafe: {axes: [Primrose.Input.Gamepad.LSX], deadzone: DEADZONE},
+    drive: {axes: [Primrose.Input.Gamepad.LSY], deadzone: DEADZONE},
+    dheading: {axes: [-Primrose.Input.Gamepad.LSX], deadzone: DEADZONE},
+    pitch: {axes: [Primrose.Input.Gamepad.LSY], integrate: true, deadzone: DEADZONE,
+            max: 0.5 * Math.PI, min: -0.5 * Math.PI},
+    float: {axes: [-Primrose.Input.Gamepad.LSY], deadzone: DEADZONE},
+    toggleFloatMode: {buttons: [Primrose.Input.Gamepad.XBOX_BUTTONS.leftStick],
+                      commandDown: function () { avatar.floatMode = true; },
+                      commandUp: function () { avatar.floatMode = false; }},
+    toolStrafe: {axes: [Primrose.Input.Gamepad.RSX], deadzone: DEADZONE},
+    toolDrive: {axes: [Primrose.Input.Gamepad.RSY], deadzone: DEADZONE},
+    toolFloat: {axes: [-Primrose.Input.Gamepad.RSY], deadzone: DEADZONE},
+    toggleToolFloatMode: {buttons: [Primrose.Input.Gamepad.XBOX_BUTTONS.rightStick],
+                          commandDown: function () { avatar.toolMode = true; },
+                          commandUp: function () { avatar.toolMode = false; } }
+};
