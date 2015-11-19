@@ -261,11 +261,11 @@ def pool_hall(basicMaterials=False,
     textMaterial = MeshBasicMaterial(color=0xff2200)
     text_size = 0.1
     text_meshes = text_geom_alphabet(meshes=True, material=textMaterial,
-                                     height=0, size=text_size)
+                                     font='anonymous pro', height=0, size=text_size)
     for i, mesh in enumerate(text_meshes):
-        mesh.position[0] = 1.3 * (i % 26) * text_size
-        mesh.position[1] = 2 - 2 * (i // 26) * text_size 
-        mesh.position[2] = -2
+        mesh.position[0] = 1.05 * (i % 26) * text_size
+        mesh.position[1] = 2 - 1.6 * (i // 26) * text_size 
+        mesh.position[2] = 0
         scene.add(mesh)
 
     return scene.export()
