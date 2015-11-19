@@ -30,7 +30,21 @@ def pool_table(L_table=2.3368, W_table=None, H_table=0.74295,
                ball_diameter=2.25*IN2METER,
                W_cushion=2*IN2METER,
                H_cushion=None,
-               W_rail=None, basicMaterials=False):
+               W_rail=None,
+               basicMaterials=False, shadowMap=False):
+    """Procedurally defined three.js pool table 'Object3D' (three.js JSON format V4)
+
+    :param L_table: length of the pool table (longer than the playable surface); default is 8ft.
+    :param W_table: width the of the pool table; usually half the length.
+    :param H_table: height of the playable surface; if no transformations are applied to the pool table
+                    `Object3D`, the base/bottom of the pool table is at `y=0` and the playable surface is at `y=H_table`.
+    :param L_playable: length of the playable area, I still don't understand exactly what it refers to
+    :param W_cushion: width of the cushions
+    :param H_cushion: height of the nose of the cushions; default is 63.5% of ball diameter
+    :param basicMaterials: if True, use only three.js BasicMeshMaterials
+    :param shadowMap: by default, plane-projected geometries/meshes representing shadows are created;
+                      if shadowMap is True, they are not
+    """
     if W_table is None:
         W_table = 0.5*L_table
     if L_playable is None:
@@ -143,7 +157,7 @@ def pool_table(L_table=2.3368, W_table=None, H_table=0.74295,
 
 
 def pool_hall(basicMaterials=False,
-              url_prefix=""):
+              url_prefix="", **kwargs):
     scene = Scene()
     # room:
     L_room, W_room = 10, 10
@@ -165,7 +179,7 @@ def pool_hall(basicMaterials=False,
     W_table = L_table / 2
     H_table = 0.74295
     poolTable = pool_table(H_table=H_table, ball_diameter=ball_diameter,
-                           basicMaterials=basicMaterials)
+                           basicMaterials=basicMaterials, **kwargs)
     scene.add(poolTable)
 
     # balls:

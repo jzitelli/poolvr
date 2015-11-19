@@ -10,7 +10,7 @@ from tornado.ioloop import IOLoop
 from flask_app import app, site_settings, STATIC_FOLDER, TEMPLATE_FOLDER
 app_flask = app
 
-from gfxtablet import GFXTabletHandler
+#from gfxtablet import GFXTabletHandler
 #from PointerEventHandler import PointerEventHandler
 #from TouchEventHandler import TouchEventHandler
 

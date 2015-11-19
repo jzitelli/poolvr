@@ -2,6 +2,6 @@ DEBUG         = True
 TESTING       = True
 PORT          = 5000
 
-GFXTABLET     = True
+GFXTABLET     = False
 POINTEREVENTS = False
 TOUCHEVENTS   = False
