@@ -1,12 +1,17 @@
-html {
-      background: url("../images/tunnel.png") no-repeat center center fixed;
-      background-size: cover;
 
+html {
+  margin: 0 auto;
+  padding: 0;
+/*
+  background: url("../images/tunnel.png") no-repeat center center fixed;
+  background-size: cover;
+*/
 }
+
 body {
   margin: 0;
   padding: 0;
-  /* background: #151515 url("../images/tunnel.png") 0 0; */
+  background: #001100;
   color: #eaeaea;
   font: 16px;
   line-height: 1.5;
