@@ -45,13 +45,13 @@ def pool_table(L_table=2.3368, W_table=None, H_table=0.74295,
     poolTable = Object3D(name="poolTable")
 
     if basicMaterials:
-        feltMaterial = MeshBasicMaterial(color=0x00aa00)
-        cushionMaterial = feltMaterial
+        surfaceMaterial = MeshBasicMaterial(color=0x00aa00)
+        cushionMaterial = surfaceMaterial
         spotMaterial = MeshBasicMaterial(color=0xaaaaaa)
         railMaterial = MeshBasicMaterial(color=0xffff00)
     else:
-        feltMaterial = MeshPhongMaterial(color=0x00aa00, shininess=5, shading=FlatShading)
-        #feltMaterial = MeshLambertMaterial(color=0x00aa00, shading=FlatShading)
+        surfaceMaterial = MeshPhongMaterial(color=0x00aa00, shininess=5, shading=FlatShading)
+        #surfaceMaterial = MeshLambertMaterial(color=0x00aa00, shading=FlatShading)
         cushionMaterial = MeshPhongMaterial(color=0x00aa00, shininess=5, shading=FlatShading)
         spotMaterial = MeshLambertMaterial(color=0xaaaaaa)
         railMaterial = MeshPhongMaterial(color=0xffaa00, shininess=10, shading=FlatShading)
@@ -59,7 +59,7 @@ def pool_table(L_table=2.3368, W_table=None, H_table=0.74295,
     playableSurfaceGeom = BoxGeometry(W_playable, H_table, L_playable)
     playableSurfaceMesh = Mesh(name='playableSurfaceMesh',
                                geometry=playableSurfaceGeom,
-                               material=feltMaterial,
+                               material=surfaceMaterial,
                                position=[0, 0.5*H_table, 0],
                                receiveShadow=True,
                                userData={'cannonData': {'mass': 0,
