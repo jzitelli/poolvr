@@ -7,8 +7,13 @@ var avatar = new THREE.Object3D();
 avatar.position.y = 1.2;
 avatar.position.z = 2;
 
-var POOLVR = POOLVR || {};
-POOLVR.settings = POOLVR.settings || {useBasicMaterials: 'true'};
+
+var stickMesh, tipBody, toolRoot;
+var stickShadow, stickShadowMesh;
+var ballMeshes       = [],
+    ballStripeMeshes = [];
+
+var dynamicBodies;
 
 if (POOLVR.settings.useBasicMaterials === 'false') {
     // would rather add the spot lights via three.py generated JSON_SCENE, but I'm having problems getting shadows frm them:
@@ -37,13 +42,6 @@ if (POOLVR.settings.useBasicMaterials === 'false') {
     // scene.add(spotLightHelper);
     // spotLightHelper.visible = false;
 }
-
-var stickMesh, tipBody, toolRoot;
-var stickShadow, stickShadowMesh;
-var ballMeshes       = [],
-    ballStripeMeshes = [];
-
-var dynamicBodies;
 
 function onLoad() {
     "use strict";

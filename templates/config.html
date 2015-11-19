@@ -26,6 +26,10 @@
 
   <body>
 
+    <p>
+{{ poolvr_config if poolvr_config else "" }}
+    </p>
+
     <script src="lib/three-r73.js"></script>
     <script src="lib/TextGeometry.js"></script>
     <script src="lib/FontUtils.js"></script>
@@ -43,9 +47,10 @@
     <script src="lib/leap-0.6.4.js"></script>
     <!-- enhanced version w/ tool tracking: -->
     <script src="lib/leap.transform.js"></script>
-    <script src="lib/Primrose.js"></script>
+
     <script src="fonts/helvetiker_regular.typeface.js"></script>
     <script src="fonts/Anonymous Pro_Regular.js"></script>
+
     <script src="src/pyserver.js"></script>
     <script src="src/settings.js"></script>
     <script src="src/cardboard.js"></script>

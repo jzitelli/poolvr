@@ -60,11 +60,11 @@ def poolvr_config():
     return render_template('config.html',
                            json_config=Markup(r"""<script>
 var JSON_SCENE = %s;
-var POOLVR = POOLVR || {};
-POOLVR.ARGS = POOLVR.ARGS || %s;
-</script>""" % (json.dumps(pool_hall(**args),
-                           indent=(2 if app.debug else None)),
-                json.dumps(args))), **args)
+</script>""" % json.dumps(pool_hall(**args),
+                          indent=(2 if app.debug else None))),
+                           poolvr_config=Markup(r"""<code>
+POOLVR.config = %s;
+</code>""" % json.dumps(args, indent=2)), **args)
 
 
 
