@@ -4,7 +4,7 @@ from copy import deepcopy
 import logging
 import numpy as np
 
-from three import *
+from .three import *
 
 _logger = logging.getLogger(__name__)
 

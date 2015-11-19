@@ -23,7 +23,6 @@ sys.path.append(POOLVR_PYTHONPATH)
 import poolvr
 from poolvr.pool_table import pool_hall
 
-
 ARGS = {'useBasicMaterials'  : 'true',
         'useLambertMaterials':   None,
         'usePhongMaterials'  :   None,
