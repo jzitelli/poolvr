@@ -57,8 +57,8 @@ module.exports = function ( grunt ) {
               "src/CrapLoader.js",
               "src/LeapTools.js",
               "src/pyserver.js",
-              "src/cardboard.js",
               "src/settings.js",
+              "src/cardboard.js",
               "src/app.js"
           ]
         }
