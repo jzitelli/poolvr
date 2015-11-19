@@ -46,6 +46,7 @@ def poolvr():
     _logger.info('\n****** POOLVR REQUEST ******')
     _logger.info('\n'.join(['%s: %s' % (k, v) for k, v in args.items()]))
     return render_template('poolvr.html',
+                           old_boilerplate=request.args.get('old_boilerplate', False),
                            json_config=Markup(r"""<script>
 var JSON_SCENE = %s;
 </script>""" % json.dumps(pool_hall(**args),
