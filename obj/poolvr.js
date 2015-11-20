@@ -454,14 +454,14 @@ function addTool(parent, world, options) {
     options = options || {};
 
     var toolLength = options.toolLength || 0.5;
-    var toolRadius = options.toolRadius || 0.016;
-    var toolOffset = options.toolOffset || new THREE.Vector3(0, -0.42, -toolLength - 0.15);
-    var toolMass = options.toolMass || 0.09;
+    var toolRadius = options.toolRadius || 0.013;
+    var toolOffset = options.toolOffset || new THREE.Vector3(0, -0.46, -toolLength - 0.15);
+    var toolMass = options.toolMass || 0.06;
     var toolTime = options.toolTime || 0.02;
 
     var handOffset = options.handOffset || new THREE.Vector3(0, -0.25, -0.4);
 
-    var minConfidence = options.minConfidence || 0.25;
+    var minConfidence = options.minConfidence || 0.3;
 
     var transformOptions = options.transformOptions || {};
 
@@ -469,15 +469,21 @@ function addTool(parent, world, options) {
     var toolRoot = new THREE.Object3D();
     toolRoot.position.copy(toolOffset);
     parent.add(toolRoot);
-    var stickGeom = new THREE.CylinderGeometry(toolRadius, toolRadius, toolLength, 10, 1, false, 0, 2*Math.PI);
+    var stickGeom = new THREE.CylinderGeometry(toolRadius, toolRadius, toolLength, 10, 1, false);
     stickGeom.translate(0, -toolLength / 2, 0);
-    //var stickMaterial = new THREE.MeshLambertMaterial({color: 0xeebb99, side: THREE.DoubleSide});
-    var stickMaterial = new THREE.MeshBasicMaterial({color: 0xeebb99, side: THREE.DoubleSide});
+    var stickMaterial;
+    var tipMaterial;
+    if (options.useBasicMaterials) {
+        stickMaterial = new THREE.MeshBasicMaterial({color: 0xeebb99, side: THREE.DoubleSide});
+        tipMaterial = new THREE.MeshBasicMaterial({color: 0x004488});
+    }
+    else {
+        stickMaterial = new THREE.MeshLambertMaterial({color: 0xeebb99, side: THREE.DoubleSide});
+        tipMaterial = new THREE.MeshLambertMaterial({color: 0x004488});
+    }
     var stickMesh = new THREE.Mesh(stickGeom, stickMaterial);
     stickMesh.castShadow = true;
     toolRoot.add(stickMesh);
-    //var tipMaterial = new THREE.MeshLambertMaterial({color: 0x004488});
-    var tipMaterial = new THREE.MeshBasicMaterial({color: 0x004488});
     var tipMesh = new THREE.Mesh(new THREE.SphereBufferGeometry(toolRadius), tipMaterial);
     tipMesh.castShadow = true;
     stickMesh.add(tipMesh);
@@ -498,7 +504,6 @@ function addTool(parent, world, options) {
     leftRoot.visible = rightRoot.visible = false;
 
     if (!options.leapHandsDisabled) {
-        //var handMaterial = new THREE.MeshLambertMaterial({color: 0x113399, transparent: true, opacity: 0});
         var handMaterial = new THREE.MeshBasicMaterial({color: 0x113399, transparent: true, opacity: 0});
         // arms:
         var armRadius = 0.0276,
@@ -545,7 +550,7 @@ function addTool(parent, world, options) {
 
         var leapController = new Leap.Controller({frameEventName: 'animationFrame'});
         if (transformOptions.vr === true) {
-            toolTime *= 2; // i guess this could help with vr tracking zaniness? im assuming reported hand.confidence already factors VR effects in (don't know)
+            toolTime *= 2;
         }
         console.log("'transform' options:");
         console.log(transformOptions);
@@ -564,10 +569,10 @@ function addTool(parent, world, options) {
                         var tool = frame.tools[0];
                         if (tool.timeVisible > toolTime) {
                             // TODO: option to toggle stabilized or not
-                            stickMesh.position.set(tool.tipPosition[0], tool.tipPosition[1], tool.tipPosition[2]);
-                            // stickMesh.position.set(tool.stabilizedTipPosition[0], tool.stabilizedTipPosition[1], tool.stabilizedTipPosition[2]);
+                            stickMesh.position.fromArray(tool.tipPosition);
+                            // stickMesh.position.fromArray(tool.stabilizedTipPosition);
 
-                            direction.set(tool.direction[0], tool.direction[1], tool.direction[2]);
+                            direction.fromArray(tool.direction);
                             stickMesh.quaternion.setFromUnitVectors(UP, direction);
 
                             position.set(0, 0, 0);
@@ -591,10 +596,10 @@ function addTool(parent, world, options) {
                         var tool = frame.tools[0];
                         if (tool.timeVisible > toolTime) {
                             // TODO: option to toggle stabilized or not
-                            stickMesh.position.set(tool.tipPosition[0], tool.tipPosition[1], tool.tipPosition[2]);
-                            // stickMesh.position.set(tool.stabilizedTipPosition[0], tool.stabilizedTipPosition[1], tool.stabilizedTipPosition[2]);
+                            stickMesh.position.fromArray(tool.tipPosition);
+                            // stickMesh.position.fromArray(tool.stabilizedTipPosition);
 
-                            direction.set(tool.direction[0], tool.direction[1], tool.direction[2]);
+                            direction.fromArray(tool.direction);
                             stickMesh.quaternion.setFromUnitVectors(UP, direction);
 
                             position.set(0, 0, 0);
@@ -615,20 +620,20 @@ function addTool(parent, world, options) {
                         if (hand.confidence > minConfidence) {
                             handRoots[i].visible = true;
                             handMaterial.opacity = hand.confidence;
-                            direction.set(hand.arm.basis[2][0], hand.arm.basis[2][1], hand.arm.basis[2][2]);
+                            direction.fromArray(hand.arm.basis[2]);
                             arms[i].quaternion.setFromUnitVectors(UP, direction);
                             var center = hand.arm.center();
-                            arms[i].position.set(center[0], center[1], center[2]);
+                            arms[i].position.fromArray(center);
 
-                            direction.set(hand.palmNormal[0], hand.palmNormal[1], hand.palmNormal[2]);
+                            direction.fromArray(hand.palmNormal);
                             palms[i].quaternion.setFromUnitVectors(UP, direction);
-                            palms[i].position.set(hand.palmPosition[0], hand.palmPosition[1], hand.palmPosition[2]);
+                            palms[i].position.fromArray(hand.palmPosition);
 
                             for (var j = 0; j < hand.fingers.length; j++) {
                                 var finger = hand.fingers[j];
                                 fingerTips[i][j].position.fromArray(finger.tipPosition);
-                                joints[i][j].position.set(finger.bones[1].nextJoint[0], finger.bones[1].nextJoint[1], finger.bones[1].nextJoint[2]);
-                                joint2s[i][j].position.set(finger.bones[2].nextJoint[0], finger.bones[2].nextJoint[1], finger.bones[2].nextJoint[2]);
+                                joints[i][j].position.fromArray(finger.bones[1].nextJoint);
+                                joint2s[i][j].position.fromArray(finger.bones[2].nextJoint);
                             }
                         }
                     }
@@ -856,7 +861,6 @@ if (navigator.getVRDevices) {
 pyserver.log("goodbye from cardboard.js");
 ;
 // TODO requires three.js, CANNON.js, settings.js, cardboard.js, WebVRApplication.js, CrapLoader.js, LeapTools.js, pyserver.js
-
 var app;
 var scene = CrapLoader.parse(JSON_SCENE);
 var H_table = 0.74295; // TODO: coordinate w/ server
@@ -910,15 +914,16 @@ function onLoad() {
     }
 
     // ##### Desktop mode (default): #####
-    var toolOptions = {transformOptions : {vr: 'desktop'},
-                       leapDisabled     : app.options.leapDisabled,
-                       leapHandsDisabled: app.options.leapHandsDisabled};
+    var toolOptions = {
+        transformOptions : {vr: 'desktop'},
+        leapDisabled     : app.options.leapDisabled,
+        leapHandsDisabled: app.options.leapHandsDisabled,
+        useBasicMaterials: app.options.useBasicMaterials
+    };
     // ##### VR mode: #####
     if (app.options.leapVR) {
         toolOptions.transformOptions = {vr: true, effectiveParent: app.camera};
     }
-
-    pyserver.log(JSON.stringify(toolOptions));
 
     CrapLoader.CANNONize(scene, app.world);
 
@@ -950,6 +955,7 @@ function onLoad() {
         }
     });
 
+    pyserver.log('adding tool...\ntoolOptions = ' + JSON.stringify(toolOptions));
     var toolStuff = addTool(avatar, app.world, toolOptions);
 
     stickMesh = toolStuff[0];
@@ -1011,13 +1017,10 @@ function animate(t) {
     requestAnimationFrame(animate);
     var dt = (t - app.lt) * 0.001;
     app.lt = t;
-
     if (app.vrControls.enabled) {
         app.vrControls.update();
     }
-
     app.vrManager.render(app.scene, app.camera, t);
-
     app.keyboard.update(dt);
     app.gamepad.update(dt);
 
@@ -1037,9 +1040,6 @@ function animate(t) {
     if (!app.vrControls.enabled || app.options.vrPitchingEnabled) {
         kbpitch -= 0.8 * dt * (app.keyboard.getValue("pitchUp") + app.keyboard.getValue("pitchDown"));
         pitch = kbpitch;
-        // if (!avatar.floatMode) {
-        //     pitch += -app.gamepad.getValue("pitch");
-        // }
         pitchQuat.setFromAxisAngle(RIGHT, pitch);
     }
     var cosPitch = Math.cos(pitch),
@@ -1066,16 +1066,18 @@ function animate(t) {
     }
 
     // TODO: resolve CANNON issues w/ initial low framerate
-    app.world.step(1/60);
+
+    app.world.step(Math.min(dt, 1/60));
 
     for (var j = 0; j < dynamicBodies.length; ++j) {
         var body = dynamicBodies[j];
         body.mesh.position.copy(body.position);
     }
 
-    ballStripeMeshes.forEach(function (mesh) {
+    for (j = 0; j < ballStripeMeshes.length; j++) {
+        var mesh = ballStripeMeshes[j];
         mesh.quaternion.copy(mesh.parent.body.quaternion);
-    });
+    }
 
     avatar.quaternion.setFromAxisAngle(UP, avatar.heading);
     avatar.quaternion.multiply(pitchQuat);
@@ -1091,7 +1093,6 @@ function animate(t) {
         stickShadow.position.x = stickMesh.position.x;
         stickShadow.position.z = stickMesh.position.z;
         stickShadow.position.y = -avatar.position.y - toolRoot.position.y + H_table + 0.001;
-
         stickShadowMesh.quaternion.copy(stickMesh.quaternion);
     }
 }

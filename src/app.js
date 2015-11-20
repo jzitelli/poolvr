@@ -1,5 +1,4 @@
 // TODO requires three.js, CANNON.js, settings.js, cardboard.js, WebVRApplication.js, CrapLoader.js, LeapTools.js, pyserver.js
-
 var app;
 var scene = CrapLoader.parse(JSON_SCENE);
 var H_table = 0.74295; // TODO: coordinate w/ server
@@ -53,15 +52,16 @@ function onLoad() {
     }
 
     // ##### Desktop mode (default): #####
-    var toolOptions = {transformOptions : {vr: 'desktop'},
-                       leapDisabled     : app.options.leapDisabled,
-                       leapHandsDisabled: app.options.leapHandsDisabled};
+    var toolOptions = {
+        transformOptions : {vr: 'desktop'},
+        leapDisabled     : app.options.leapDisabled,
+        leapHandsDisabled: app.options.leapHandsDisabled,
+        useBasicMaterials: app.options.useBasicMaterials
+    };
     // ##### VR mode: #####
     if (app.options.leapVR) {
         toolOptions.transformOptions = {vr: true, effectiveParent: app.camera};
     }
-
-    pyserver.log(JSON.stringify(toolOptions));
 
     CrapLoader.CANNONize(scene, app.world);
 
@@ -93,6 +93,7 @@ function onLoad() {
         }
     });
 
+    pyserver.log('adding tool...\ntoolOptions = ' + JSON.stringify(toolOptions));
     var toolStuff = addTool(avatar, app.world, toolOptions);
 
     stickMesh = toolStuff[0];
@@ -154,13 +155,10 @@ function animate(t) {
     requestAnimationFrame(animate);
     var dt = (t - app.lt) * 0.001;
     app.lt = t;
-
     if (app.vrControls.enabled) {
         app.vrControls.update();
     }
-
     app.vrManager.render(app.scene, app.camera, t);
-
     app.keyboard.update(dt);
     app.gamepad.update(dt);
 
@@ -180,9 +178,6 @@ function animate(t) {
     if (!app.vrControls.enabled || app.options.vrPitchingEnabled) {
         kbpitch -= 0.8 * dt * (app.keyboard.getValue("pitchUp") + app.keyboard.getValue("pitchDown"));
         pitch = kbpitch;
-        // if (!avatar.floatMode) {
-        //     pitch += -app.gamepad.getValue("pitch");
-        // }
         pitchQuat.setFromAxisAngle(RIGHT, pitch);
     }
     var cosPitch = Math.cos(pitch),
@@ -209,16 +204,18 @@ function animate(t) {
     }
 
     // TODO: resolve CANNON issues w/ initial low framerate
-    app.world.step(1/60);
+
+    app.world.step(Math.min(dt, 1/60));
 
     for (var j = 0; j < dynamicBodies.length; ++j) {
         var body = dynamicBodies[j];
         body.mesh.position.copy(body.position);
     }
 
-    ballStripeMeshes.forEach(function (mesh) {
+    for (j = 0; j < ballStripeMeshes.length; j++) {
+        var mesh = ballStripeMeshes[j];
         mesh.quaternion.copy(mesh.parent.body.quaternion);
-    });
+    }
 
     avatar.quaternion.setFromAxisAngle(UP, avatar.heading);
     avatar.quaternion.multiply(pitchQuat);
@@ -234,7 +231,6 @@ function animate(t) {
         stickShadow.position.x = stickMesh.position.x;
         stickShadow.position.z = stickMesh.position.z;
         stickShadow.position.y = -avatar.position.y - toolRoot.position.y + H_table + 0.001;
-
         stickShadowMesh.quaternion.copy(stickMesh.quaternion);
     }
 }

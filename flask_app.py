@@ -72,15 +72,14 @@ def js_suffix():
 
 
 
-# @app.route('/config', methods=['GET', 'POST'])
-# def poolvr_config():
-#     """Serves the app configuration data / menu HTML"""
-#     config = get_poolvr_config()
-#     return render_template('config.html',
-#                            json_config=Markup(r"""<script>
-# var POOLVR_CONFIG = %s;
-# </script>""" % json.dumps(config, indent=(2 if app.debug else None))),
-#                            **config)
+@app.route('/config', methods=['GET', 'POST'])
+def poolvr_config():
+    """app configurator"""
+    config = get_poolvr_config()
+    return render_template('config.html',
+                           json_config=Markup(r"""<script>
+var POOLVR_CONFIG = %s;
+</script>""" % json.dumps(config, indent=(2 if app.debug else None))), **config)
 
 
 
@@ -92,10 +91,8 @@ def poolvr():
                            json_config=Markup(r"""<script>
 var POOLVR_CONFIG = %s;
 var JSON_SCENE = %s;
-</script>""" % (json.dumps(config,
-                           indent=(2 if app.debug else None)),
-                json.dumps(pool_hall(**config),
-                           indent=(2 if app.debug else None)))), **config)
+</script>""" % (json.dumps(config, indent=(2 if app.debug else None)),
+                json.dumps(pool_hall(**config), indent=(2 if app.debug else None)))), **config)
 
 
 
@@ -110,10 +107,8 @@ var POOLVR_VERSION = "%s";
 var POOLVR_CONFIG = %s;
 var JSON_SCENE = %s;
 </script>""" % ('poolvr-%s' % version,
-                json.dumps(config,
-                           indent=(2 if app.debug else None)),
-                json.dumps(pool_hall(**config),
-                           indent=(2 if app.debug else None)))), **config)
+                json.dumps(config, indent=(2 if app.debug else None)),
+                json.dumps(pool_hall(**config), indent=(2 if app.debug else None)))), **config)
 
 
 
