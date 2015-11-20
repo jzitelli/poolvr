@@ -4,7 +4,6 @@ import os
 import logging
 _logger = logging.getLogger(__name__)
 import json
-import operator
 from copy import deepcopy
 import sys
 
@@ -39,7 +38,7 @@ POOLVR_CONFIG = {
     'leapHandsDisabled'     : None
 }
 
-def get_poolvr_config():
+def get_poolvr_config(version=None):
     config = deepcopy(POOLVR_CONFIG)
     args = dict({k: v for k, v in request.args.items()
                  if k in config})
@@ -87,7 +86,7 @@ def js_suffix():
 
 @app.route('/')
 def poolvr():
-    """Serves the app HTML"""
+    """Serves the app HTML (development endpoint)"""
     config = get_poolvr_config()
     return render_template('poolvr.html',
                            json_config=Markup(r"""<script>
@@ -103,8 +102,8 @@ var JSON_SCENE = %s;
 @app.route('/release')
 def poolvr_release():
     """Serves the app HTML (tagged releases)"""
-    config = get_poolvr_config()
     version = request.args.get('version', '0.1.0')
+    config = get_poolvr_config(version=version)
     return render_template('poolvr.%s.html' % version,
                            json_config=Markup(r"""<script>
 var POOLVR_VERSION = "%s";
@@ -132,7 +131,7 @@ def log():
 def main():
     _logger.info("app.config:\n%s" % '\n'.join(['%s: %s' % (k, str(v))
                                                 for k, v in sorted(app.config.items(),
-                                                                   key=operator.itemgetter(0))]))
+                                                                   key=lambda item: item[0])]))
     _logger.info("press CTRL-C to terminate the server")
     app.run(host='0.0.0.0')
 
