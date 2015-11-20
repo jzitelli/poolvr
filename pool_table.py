@@ -62,18 +62,19 @@ def pool_table(L_table=2.3368, W_table=None, H_table=0.74295,
     rail_color = 0xdda400 # 0xffff00 # 0xffaa00
     if useBasicMaterials:
         surfaceMaterial = MeshBasicMaterial(color=0x00aa00)
+        cushionMaterial = MeshBasicMaterial(color=0x02a800)
         spotMaterial = MeshBasicMaterial(color=0xaaaaaa)
         railMaterial = MeshBasicMaterial(color=rail_color)
     else:
-        if useLambertMaterials:
-            surfaceMaterial = MeshLambertMaterial(color=0x00aa00, shading=FlatShading)
-            spotMaterial = MeshLambertMaterial(color=0xaaaaaa, shading=FlatShading)
-            railMaterial = MeshLambertMaterial(color=0xffaa00, shading=FlatShading)
-        else:
+        spotMaterial = MeshLambertMaterial(color=0xaaaaaa, shading=FlatShading)
+        if usePhongMaterials:
             surfaceMaterial = MeshPhongMaterial(color=0x00aa00, shininess=5, shading=FlatShading)
-            spotMaterial = MeshLambertMaterial(color=0xaaaaaa, shininess=1, shading=FlatShading)
+            cushionMaterial = MeshPhongMaterial(color=0x00aa00, shininess=5, shading=FlatShading)
             railMaterial = MeshPhongMaterial(color=0xdda400, shininess=10, shading=FlatShading)
-    cushionMaterial = surfaceMaterial
+        else:
+            surfaceMaterial = MeshLambertMaterial(color=0x00aa00, shading=FlatShading)
+            cushionMaterial = MeshLambertMaterial(color=0x00aa00, shading=FlatShading)
+            railMaterial = MeshLambertMaterial(color=0xffaa00, shading=FlatShading)
     playableSurfaceGeom = BoxGeometry(W_playable, H_table, L_playable)
     playableSurfaceMesh = Mesh(name='playableSurfaceMesh',
                                geometry=playableSurfaceGeom,
