@@ -1,3 +1,5 @@
+var avatar = avatar || new THREE.Object3D();
+
 var TextGeomLogger = (function () {
 	"use strict";
 	function TextGeomLogger(geometries, material, options) {
@@ -10,8 +12,14 @@ var TextGeomLogger = (function () {
 		}
 		this.logRoot = new THREE.Object3D();
 		this.lineMeshBuffer = {};
-		this.options = options || {size: 0.2, font: 'anonymous pro',
-	                               rows: 20, columns: 80};
+		options = options || {};
+		options.size    = options.size || 0.2;
+	    options.font    = 'anonymous pro';
+		options.height  = options.height || 0;
+        options.rows    = options.rows || 20;
+        options.columns = options.columns || 80;
+        options.parent  = options.parent || avatar;
+        this.options = options;
 
 		this.log = function (msg) {
 			var lines = msg.split('\n');

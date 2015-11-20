@@ -173,15 +173,15 @@ def pool_hall(useBasicMaterials=True,
               **kwargs):
     scene = Scene()
     L_room, W_room = 10, 10
-    floor = Mesh(name="floor", geometry=square,
-                 material=MeshBasicMaterial(color=0xffffff,
-                                            map=Texture(image=Image(url=url_prefix+"images/deck.png"),
-                                                        repeat=[4*L_room, 4*W_room], wrap=[RepeatWrapping, RepeatWrapping])),
-                 position=[0, 0, 0],
-                 scale=[L_room, 1, W_room],
-                 userData={'cannonData': {'mass': 0,
-                                          'shapes': ['Plane']}})
-    scene.add(floor)
+    floorMesh = Mesh(name="floorMesh", geometry=square,
+                     material=MeshBasicMaterial(color=0xffffff,
+                                                map=Texture(image=Image(url=url_prefix+"images/deck.png"),
+                                                            repeat=[4*L_room, 4*W_room], wrap=[RepeatWrapping, RepeatWrapping])),
+                     position=[0, 0, 0],
+                     scale=[L_room, 1, W_room],
+                     userData={'cannonData': {'mass': 0,
+                                              'shapes': ['Plane']}})
+    scene.add(floorMesh)
 
     if pointLight:
         light = PointLight(color=0xaa8866, position=[4, 5, 2.5], intensity=0.8, distance=40)

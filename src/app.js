@@ -1,11 +1,11 @@
 // TODO requires three.js, CANNON.js, settings.js, cardboard.js, WebVRApplication.js, CrapLoader.js, LeapTools.js, pyserver.js
 var app;
 var scene = CrapLoader.parse(JSON_SCENE);
-var H_table = 0.74295; // TODO: coordinate w/ server
-var avatar = new THREE.Object3D();
-avatar.position.y = 1.2;
-avatar.position.z = 2;
+var avatar = avatar || new THREE.Object3D();
 
+var H_table = 0.74295; // TODO: coordinate w/ server
+avatar.position.y = 1.2;
+avatar.position.z = 1.88;
 
 var stickMesh, tipBody, toolRoot;
 var stickShadow, stickShadowMesh;
@@ -36,19 +36,6 @@ function onLoad() {
         var centerSpotLightHelper = new THREE.SpotLightHelper(centerSpotLight);
         scene.add(centerSpotLightHelper);
         centerSpotLightHelper.visible = false;
-        // var spotLight = new THREE.SpotLight(0xddffdd,
-        //                                     0.7, // intensity
-        //                                     10); // distance
-        // spotLight.position.set(-5/2, 3/2, 4/2);
-        // spotLight.castShadow = true;
-        // spotLight.shadowCameraNear = 0.01;
-        // spotLight.shadowCameraFar = 10;
-        // spotLight.shadowCameraFov = 50;
-        // spotLight.shadowDarkness = 0.4;
-        // scene.add(spotLight);
-        // var spotLightHelper = new THREE.SpotLightHelper(spotLight);
-        // scene.add(spotLightHelper);
-        // spotLightHelper.visible = false;
     }
 
     // ##### Desktop mode (default): #####
@@ -56,9 +43,11 @@ function onLoad() {
         transformOptions : {vr: 'desktop'},
         leapDisabled     : app.options.leapDisabled,
         leapHandsDisabled: app.options.leapHandsDisabled,
-        useBasicMaterials: app.options.useBasicMaterials
+        useBasicMaterials: app.options.useBasicMaterials,
+        toolLength       : app.options.toolLength,
+        toolRadius       : app.options.toolRadius
     };
-    // ##### VR mode: #####
+    // ##### Leap Motion VR tracking mode: #####
     if (app.options.leapVR) {
         toolOptions.transformOptions = {vr: true, effectiveParent: app.camera};
     }
@@ -77,6 +66,10 @@ function onLoad() {
     var ballCushionContactMaterial = new CANNON.ContactMaterial(ballMaterial, cushionMaterial, {restitution: 0.8, friction: 0.3});
     app.world.addContactMaterial(ballCushionContactMaterial);
 
+    var floorMaterial = new CANNON.Material();
+    var floorBallContactMaterial = new CANNON.ContactMaterial(floorMaterial, ballMaterial, {restitution: 0.88, friction: 0.4});
+    app.world.addContactMaterial(floorBallContactMaterial);
+
     scene.traverse(function (node) {
         if (node.name.startsWith('ballMesh')) {
             node.body.material = ballMaterial;
@@ -90,6 +83,9 @@ function onLoad() {
         }
         else if (node.name.endsWith('CushionMesh')) {
             node.body.material = cushionMaterial;
+        }
+        else if (node.name === 'floorMesh') {
+            node.body.material = floorMaterial;
         }
     });
 
@@ -107,7 +103,7 @@ function onLoad() {
         stickShadow.scale.set(1, 0.0004, 1);
         toolRoot.add(stickShadow);
         var stickShadowGeom = stickMesh.geometry.clone();
-        var toolLength = 0.4;
+        var toolLength = 0.5;
         stickShadowGeom.translate(0, -toolLength / 2, 0); // have to do this again because not buffergeometry???
         var stickShadowMaterial = new THREE.MeshBasicMaterial({color: 0x004400});
         stickShadowMesh = new THREE.Mesh(stickShadowGeom, stickShadowMaterial);
@@ -204,7 +200,6 @@ function animate(t) {
     }
 
     // TODO: resolve CANNON issues w/ initial low framerate
-
     app.world.step(Math.min(dt, 1/60));
 
     for (var j = 0; j < dynamicBodies.length; ++j) {
@@ -233,23 +228,23 @@ function animate(t) {
         stickShadow.position.y = -avatar.position.y - toolRoot.position.y + H_table + 0.001;
         stickShadowMesh.quaternion.copy(stickMesh.quaternion);
     }
+    if (app.mousePointer && picking) {
+        origin.set(0, 0, 0);
+        direction.set(0, 0, 0);
+        direction.subVectors(mousePointer.localToWorld(direction), camera.localToWorld(origin)).normalize();
+        raycaster.set(origin, direction);
+        var intersects = raycaster.intersectObjects(pickables);
+        if (intersects.length > 0) {
+            if (app.picked != intersects[0].object) {
+                if (app.picked) app.picked.material.color.setHex(app.picked.currentHex);
+                app.picked = intersects[0].object;
+                app.picked.currentHex = app.picked.material.color.getHex();
+                app.picked.material.color.setHex(0xff4444); //0x44ff44);
+            }
+        } else {
+            if (app.picked) app.picked.material.color.setHex(app.picked.currentHex);
+            app.picked = null;
+        }
+    }
 }
 
-    // if (app.mousePointer.visible && picking) {
-    //     origin.set(0, 0, 0);
-    //     direction.set(0, 0, 0);
-    //     direction.subVectors(mousePointer.localToWorld(direction), camera.localToWorld(origin)).normalize();
-    //     raycaster.set(origin, direction);
-    //     var intersects = raycaster.intersectObjects(pickables);
-    //     if (intersects.length > 0) {
-    //         if (app.picked != intersects[0].object) {
-    //             if (app.picked) app.picked.material.color.setHex(app.picked.currentHex);
-    //             app.picked = intersects[0].object;
-    //             app.picked.currentHex = app.picked.material.color.getHex();
-    //             app.picked.material.color.setHex(0xff4444); //0x44ff44);
-    //         }
-    //     } else {
-    //         if (app.picked) app.picked.material.color.setHex(app.picked.currentHex);
-    //         app.picked = null;
-    //     }
-    // }
