@@ -9,7 +9,7 @@ var height = screen.availHeight;
 var pixelWidth = width * window.devicePixelRatio;
 var pixelHeight = height * window.devicePixelRatio;
 
-if (!POOLVR.settings.oldBoilerplate) {
+if (!POOLVR.config.oldBoilerplate) {
     // using most recent webvr-boilerplate
     window.WebVRConfig = window.WebVRConfig || {
         FORCE_ENABLE_VR: URL_PARAMS.forceEnableVR,

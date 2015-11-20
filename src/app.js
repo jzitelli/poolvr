@@ -17,16 +17,15 @@ var dynamicBodies;
 
 function onLoad() {
     "use strict";
-    pyserver.log("starting poolvr...\nSETTINGS:\n" + JSON.stringify(POOLVR.config));
-    var options = POOLVR.config;
-    options.keyboardCommands = POOLVR.keyboardCommands;
-    options.gamepadCommands = POOLVR.gamepadCommands;
+    pyserver.log("starting poolvr...\nPOOLVR.config =\n" + JSON.stringify(POOLVR.config));
+    POOLVR.config.keyboardCommands = POOLVR.keyboardCommands;
+    POOLVR.config.gamepadCommands = POOLVR.gamepadCommands;
     
-    app = new WebVRApplication("poolvr", avatar, scene, options);
+    app = new WebVRApplication("poolvr", avatar, scene, POOLVR.config);
     avatar.add(app.camera);
     scene.add(avatar);
 
-    if (!options.useBasicMaterials) {
+    if (!app.options.useBasicMaterials) {
         // would rather add the spot lights via three.py generated JSON_SCENE, but I'm having problems getting shadows frm them:
         var centerSpotLight = new THREE.SpotLight(0xffffee, 1, 10, 90);
         centerSpotLight.position.set(0, 3, 0);
@@ -100,7 +99,7 @@ function onLoad() {
     tipBody   = toolStuff[1];
     toolRoot  = toolStuff[2];
 
-    if (!options.shadowMap) {
+    if (!app.options.shadowMap) {
         // create shadow mesh from projection:
         stickShadow = new THREE.Object3D();
         stickShadow.position.y = -avatar.position.y - toolRoot.position.y + H_table + 0.001;
@@ -115,7 +114,7 @@ function onLoad() {
         stickShadow.add(stickShadowMesh);
     }
 
-    if (options.mouseControls) {
+    if (app.options.mouseControls) {
         var mousePointer = stickMesh;
         mousePointer.position.y -= 0.01;
         tipBody.position[1] -= 0.01;

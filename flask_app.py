@@ -25,39 +25,40 @@ from poolvr.pool_table import pool_hall
 
 POOLVR_CONFIG = {
     'gravity'               : 9.8,
-    'leapDisabled'          : False,
-    'leapHandsDisabled'     : False,
+    'useBasicMaterials'     : True,
+    'useLambertMaterials'   : None,
+    'usePhongMaterials'     : None,
+    'shadowMap'             : None,
+    'pointLight'            : None,
+    'backgroundColor'       : 0x000000,
+    'oldBoilerplate'        : False,
     'mouseControlsEnabled'  : False,
     'gamepadControlsEnabled': True,
-    'useBasicMaterials'     : True,
-    'useLambertMaterials'   : False,
-    'usePhongMaterials'     : False,
-    'shadowMap'             : False,
-    'oldBoilerplate'        : False
+    'showMousePointerOnLock': False,
+    'leapDisabled'          : None,
+    'leapHandsDisabled'     : None
 }
 
 def get_poolvr_config():
     config = deepcopy(POOLVR_CONFIG)
-    config.update({k: v
-                   for k, v in request.args.items()
-                   if k in POOLVR_CONFIG})
-    for k, v in list(config.items()):
+    args = dict({k: v for k, v in request.args.items() if k in POOLVR_CONFIG})
+    config.update(args)
+    for k, v in config.items():
         if v == 'false':
             config[k] = False
         elif v == 'true':
             config[k] = True
-        elif v is not None:
+        elif not (v is False or v is True or v is None):
             try:
                 config[k] = float(v)
             except Exception as err:
-                _logger.warning(err)
-                _logger.warning(str(config.pop(k)))
+                _logger.warning('\nUNRECOGNIZED ARGUMENT: %s' % str(config.pop(k)))
     if not config['useBasicMaterials']:
         if config['useLambertMaterials'] is None:
             config['useLambertMaterials'] = True
         if config['usePhongMaterials'] is None:
             config['usePhongMaterials'] = True
-    _logger.debug(config)
+    _logger.debug(json.dumps(config, indent=2))
     return config
 
 
@@ -87,7 +88,8 @@ var JSON_SCENE = %s;
 var POOLVR_CONFIG = %s;
 </script>""" % (json.dumps(pool_hall(**config),
                            indent=(2 if app.debug else None)),
-                json.dumps(config))), **config)
+                json.dumps(config,
+                           indent=(2 if app.debug else None)))), **config)
 
 
 
@@ -106,15 +108,15 @@ def log():
 def poolvr_release():
     """Serves the app HTML (tagged releases)"""
     config = get_poolvr_config()
-    _logger.info('\n****** POOLVR REQUEST ******')
-    _logger.info('\n'.join(['%s: %s' % (k, v)
-                            for k, v in sorted(config.items(), key=operator.itemgetter(0))]))
     version = request.args.get('version', '0.1.0')
     return render_template('poolvr.%s.html' % version,
                            json_config=Markup(r"""<script>
 var JSON_SCENE = %s;
-</script>""" % json.dumps(pool_hall(**config),
-                          indent=(2 if app.debug else None))), **config)
+var POOLVR_CONFIG = %s;
+</script>""" % (json.dumps(pool_hall(**config),
+                           indent=(2 if app.debug else None)),
+                json.dumps(config,
+                           indent=(2 if app.debug else None)))), **config)
 
 
 

@@ -57,7 +57,7 @@ module.exports = function ( grunt ) {
               "src/CrapLoader.js",
               "src/LeapTools.js",
               "src/pyserver.js",
-              "src/settings.js",
+              "src/config.js",
               "src/cardboard.js",
               "src/app.js"
           ]
@@ -84,5 +84,4 @@ module.exports = function ( grunt ) {
   grunt.loadNpmTasks( "grunt-contrib-uglify" );
 
   grunt.registerTask( "default", [ "jshint", "clean", "concat", "uglify", "copy" ] );
-  grunt.registerTask( "quick", [ "concat", "copy" ] );
 };

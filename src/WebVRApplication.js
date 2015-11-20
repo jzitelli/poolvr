@@ -75,13 +75,7 @@ WebVRApplication = ( function () {
             return combineDefaults({name: k}, options.gamepadCommands[k]);
         });
 
-        this.options = combineDefaults(options, {
-            gravity: 0,
-            backgroundColor: 0x000000,
-            moveSpeed: 0.5,
-            mousePointerColor: 0xff3322,
-            showMousePointerOnLock: false
-        });
+        this.options = options;
 
         this.keyboard = new Primrose.Input.Keyboard("keyboard", window, options.keyboardCommands);
 
@@ -101,9 +95,10 @@ WebVRApplication = ( function () {
         });
         this.renderer = renderer;
         this.renderer.setPixelRatio(window.devicePixelRatio);
-        this.renderer.setClearColor(options.backgroundColor);
+        if (options.backgroundColor !== undefined)
+            this.renderer.setClearColor(options.backgroundColor);
         this.renderer.setSize(window.innerWidth, window.innerHeight);
-        if (options.shadowMap == 'true') {
+        if (options.shadowMap) {
             console.log("shadow mapping enabled");
             this.renderer.shadowMap.enabled = true;
             this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -125,7 +120,7 @@ WebVRApplication = ( function () {
         world.gravity.set( 0, -options.gravity, 0 );
         world.broadphase = new CANNON.SAPBroadphase( world );
         world.defaultContactMaterial.contactEquationStiffness = 1e8;
-        world.defaultContactMaterial.frictionEquationStiffness = 1e7;
+        world.defaultContactMaterial.frictionEquationStiffness = 1e8;
         world.defaultContactMaterial.contactEquationRelaxation = 3;
         world.defaultContactMaterial.frictionEquationRelaxation = 3;
         world.solver.iterations = 10;
@@ -236,8 +231,6 @@ WebVRApplication = ( function () {
             };
             request.send();
         };
-
-        this.options = options;
     }
 
     return WebVRApplication;
