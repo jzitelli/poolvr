@@ -113,34 +113,34 @@ class Object3D(Three):
     def json(self):
         d = Three.json(self)
         # TODO: fix
-        # d['position'] = list(self.position)
-        # d['rotation'] = list(self.rotation)
-        # d['scale'] = list(self.scale)
-        # d['children'] = [c.json() for c in self.children]
-        # d.update({k: v for k, v in self.__dict__.items()
-        #           if v is not None and k not in d})
-        S = np.diag(list(self.scale) + [1])
-        I = np.eye(4)
-        T = I.copy()
-        T[:3,-1] = self.position.ravel()
-        # TODO: never checked this rigorously:
-        Rx = I.copy()
-        s, c = np.sin(self.rotation[0]), np.cos(self.rotation[0])
-        Rx[1,1] = c; Rx[1,2] = -s
-        Rx[2,1] = s; Rx[2,2] = c
-        Ry = I.copy()
-        s, c = np.sin(self.rotation[1]), np.cos(self.rotation[1])
-        Ry[0,0] = c;  Ry[0,2] = s
-        Ry[2,0] = -s; Ry[2,2] = c
-        Rz = I.copy()
-        s, c = np.sin(self.rotation[2]), np.cos(self.rotation[2])
-        Rz[0,0] = c; Rz[0,1] = -s
-        Rz[1,0] = s; Rz[1,1] = c
-        matrix = T.dot(Rz).dot(Ry).dot(Rx).dot(S)
-        d.update({"matrix": matrix.T.ravel().tolist(),
-                  'children': [c.json() for c in self.children]})
+        d['position'] = list(self.position.ravel())
+        d['rotation'] = list(self.rotation.ravel())
+        d['scale'] = list(self.scale.ravel())
+        d['children'] = [c.json() for c in self.children]
         d.update({k: v for k, v in self.__dict__.items()
-                  if v is not None and k not in ['position', 'rotation', 'scale'] + list(d.keys())})
+                  if v is not None and k not in d})
+        # S = np.diag(list(self.scale) + [1])
+        # I = np.eye(4)
+        # T = I.copy()
+        # T[:3,-1] = self.position.ravel()
+        # # TODO: never checked this rigorously:
+        # Rx = I.copy()
+        # s, c = np.sin(self.rotation[0]), np.cos(self.rotation[0])
+        # Rx[1,1] = c; Rx[1,2] = -s
+        # Rx[2,1] = s; Rx[2,2] = c
+        # Ry = I.copy()
+        # s, c = np.sin(self.rotation[1]), np.cos(self.rotation[1])
+        # Ry[0,0] = c;  Ry[0,2] = s
+        # Ry[2,0] = -s; Ry[2,2] = c
+        # Rz = I.copy()
+        # s, c = np.sin(self.rotation[2]), np.cos(self.rotation[2])
+        # Rz[0,0] = c; Rz[0,1] = -s
+        # Rz[1,0] = s; Rz[1,1] = c
+        # matrix = T.dot(Rz).dot(Ry).dot(Rx).dot(S)
+        # d.update({"matrix": matrix.T.ravel().tolist(),
+        #           'children': [c.json() for c in self.children]})
+        # d.update({k: v for k, v in self.__dict__.items()
+        #           if v is not None and k not in ['position', 'rotation', 'scale'] + list(d.keys())})
         return d
     def export(self, geometries=None, materials=None, textures=None, images=None):
         if geometries is None:

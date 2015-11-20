@@ -21,6 +21,8 @@ POOLVR_PYTHONPATH = os.environ.get('POOLVR_PYTHONPATH', os.path.join(os.getcwd()
 sys.path.append(POOLVR_PYTHONPATH)
 import poolvr
 from poolvr.pool_table import pool_hall
+from poolvr import three
+
 
 POOLVR_CONFIG = {
     'gravity'               : 9.8,

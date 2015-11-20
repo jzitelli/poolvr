@@ -246,7 +246,7 @@ def pool_hall(useBasicMaterials=True,
     # z_positions = [L_table / 4] + list(0.6 * np.array(z_positions))
 
     for i, material in enumerate(ball_materials[:9] + 7*[ball_materials[0]]):
-        rotation = [0, 0, 0] #np.random.uniform()]
+        rotation = [0, 0, 0]
         ballMesh = Mesh(name="ballMesh %d" % i,
                         geometry=sphere,
                         position=[x_positions[i], y_position, z_positions[i]],
@@ -268,14 +268,8 @@ def pool_hall(useBasicMaterials=True,
                                   rotation=[-0.5*np.pi - rotation[0], -rotation[1], -rotation[2]])
             ballMesh.add(ballShadowMesh)
 
-    # textMaterial = MeshBasicMaterial(color=0xff2200)
-    # text_size = 0.1
-    # textGeometries = text_geom_alphabet(font='anonymous pro', height=0, size=text_size)
-    # scene.userData = {'textGeometries': {char: geom.json() for (char, geom) in textGeometries.items()}}
+    textGeometries = text_geom_alphabet(font='anonymous pro', height=0, size=0.1, curveSegments=2)
+    geometries = scene.find_geometries()
+    geometries.update({geom.uuid: geom for geom in textGeometries.values()})
 
-    # for i, geom in enumerate(textGeometries):
-    #     mesh.position[0] = 1.05 * (i % 26) * text_size
-    #     mesh.position[1] = 2 - 1.6 * (i // 26) * text_size 
-    #     mesh.position[2] = 0
-    #     scene.add(mesh)
-    return scene.export()
+    return scene.export(geometries=geometries)

@@ -1,3 +1,9 @@
+var POOLVR_VERSION = POOLVR_VERSION || 'poolvr-0.1.0';
+var POOLVR = {
+    config: POOLVR_CONFIG,
+    version: POOLVR_VERSION
+};
+
 var URL_PARAMS = (function () {
     "use strict";
     var params = {};
@@ -21,12 +27,6 @@ var URL_PARAMS = (function () {
     }
     return params;
 })();
-
-var POOLVR_VERSION = POOLVR_VERSION || 'poolvr-0.1.0';
-var POOLVR = {
-    config: POOLVR_CONFIG,
-    version: POOLVR_VERSION
-};
 
 function logVars() {
     "use strict";
