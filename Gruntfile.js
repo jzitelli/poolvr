@@ -58,6 +58,7 @@ module.exports = function ( grunt ) {
               "src/LeapTools.js",
               "src/pyserver.js",
               "src/config.js",
+              //"src/TextGeomLogger.js",
               "src/cardboard.js",
               "src/app.js"
           ]

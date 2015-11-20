@@ -2,6 +2,7 @@
 """
 import os
 import logging
+_logger = logging.getLogger(__name__)
 import operator
 
 from tornado.wsgi import WSGIContainer
@@ -15,13 +16,9 @@ app_flask = app
 #from PointerEventHandler import PointerEventHandler
 #from TouchEventHandler import TouchEventHandler
 
-
-_logger = logging.getLogger(__name__)
-
-
 websocket_handlers = []
-if site_settings.GFXTABLET:
-    websocket_handlers.append((r'/gfxtablet', GFXTabletHandler))
+# if site_settings.GFXTABLET:
+#     websocket_handlers.append((r'/gfxtablet', GFXTabletHandler))
 # if site_settings.POINTEREVENTS:
 #     websocket_handlers.append((r'/pointerevents', PointerEventHandler))
 handlers = websocket_handlers + [(r'.*', FallbackHandler, dict(fallback=WSGIContainer(app_flask)))]

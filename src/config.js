@@ -11,11 +11,9 @@ var URL_PARAMS = (function () {
         }
     });
     for (var k in params) {
-        if (params[k].length == 1) {
+        if (params[k].length == 1)
             params[k] = params[k][0];
-        }
-    }
-    for (var k in params) {
+
         if (params[k] === 'true')
             params[k] = true;
         else if (params[k] === 'false')
@@ -24,25 +22,29 @@ var URL_PARAMS = (function () {
     return params;
 })();
 
-var POOLVR = {config: POOLVR_CONFIG};
+var POOLVR_VERSION = POOLVR_VERSION || 'poolvr-0.1.0';
+var POOLVR = {
+    config: POOLVR_CONFIG,
+    version: POOLVR_VERSION
+};
 
 function logVars() {
     "use strict";
-    pyserver.log(JSON.stringify(POOLVR.config));
-    pyserver.log(tipBody.position);
-    pyserver.log(toolRoot);
-    pyserver.log(avatar);
+    pyserver.log('app.options = ' + JSON.stringify(app.options));
+    pyserver.log('tipBody.position = ' + tipBody.position);
+    pyserver.log('toolRoot = ' + toolRoot);
+    pyserver.log('avatar = ' + avatar);
 }
 
 POOLVR.keyboardCommands = {
     logVars: {buttons: [Primrose.Input.Keyboard.Q],
               commandDown: logVars},
-    moveToolUp:        {buttons: [Primrose.Input.Keyboard.U]},
-    moveToolDown:      {buttons: [Primrose.Input.Keyboard.M]},
-    moveToolForwards:  {buttons: [Primrose.Input.Keyboard.I]},
-    moveToolBackwards: {buttons: [Primrose.Input.Keyboard.K]},
-    moveToolLeft:      {buttons: [Primrose.Input.Keyboard.J]},
-    moveToolRight:     {buttons: [Primrose.Input.Keyboard.L]}
+    moveToolUp:        {buttons: [Primrose.Input.Keyboard.NUMBER7]},
+    moveToolDown:      {buttons: [Primrose.Input.Keyboard.NUMBER1]},
+    moveToolForwards:  {buttons: [Primrose.Input.Keyboard.NUMBER8]},
+    moveToolBackwards: {buttons: [Primrose.Input.Keyboard.NUMBER5]},
+    moveToolLeft:      {buttons: [Primrose.Input.Keyboard.NUMBER4]},
+    moveToolRight:     {buttons: [Primrose.Input.Keyboard.NUMBER6]}
 };
 
 var DEADZONE = 0.2;

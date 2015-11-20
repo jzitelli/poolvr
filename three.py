@@ -508,18 +508,12 @@ class TextGeometry(Three):
         return d
 
 
-def text_geom_alphabet(meshes=True, material=None, **kwargs):
+def text_geom_alphabet(**kwargs):
     alphas  = "abcdefghijklmnopqrstuvwxyz"
     alphas += alphas.upper()
     digits  = '0123456789'
     symbols = r""",./;'[]\-=<>?:"{}|_+`~!@#$%^&*()"""
     characters = alphas + digits + symbols
-    geometries = [TextGeometry(name="%s TextGeometry" % c, text=c, parameters=kwargs) for c in characters]
-    if meshes:
-        if material is None:
-            material = MeshBasicMaterial(color=0xff3300)
-        meshes = [Mesh(name="%s TextMesh" % c, geometry=geometry, material=material)
-                  for c, geometry in zip(characters, geometries)]
-        return meshes
-    else:
-        return geometries
+    geometries = {c: TextGeometry(name="%s TextGeometry" % c, text=c, parameters=kwargs)
+                  for c in characters}
+    return geometries

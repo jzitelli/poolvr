@@ -18,7 +18,7 @@ app = Flask(__name__,
 import site_settings
 app.config.from_object(site_settings)
 
-POOLVR_PYTHONPATH = os.environ.get('POOLVR_PYTHONPATH', os.path.pardir)
+POOLVR_PYTHONPATH = os.environ.get('POOLVR_PYTHONPATH', os.path.join(os.getcwd(), os.path.pardir))
 sys.path.append(POOLVR_PYTHONPATH)
 import poolvr
 from poolvr.pool_table import pool_hall
@@ -41,7 +41,8 @@ POOLVR_CONFIG = {
 
 def get_poolvr_config():
     config = deepcopy(POOLVR_CONFIG)
-    args = dict({k: v for k, v in request.args.items() if k in POOLVR_CONFIG})
+    args = dict({k: v for k, v in request.args.items()
+                 if k in config})
     config.update(args)
     for k, v in config.items():
         if v == 'false':
@@ -63,18 +64,24 @@ def get_poolvr_config():
 
 
 
-@app.route('/config', methods=['GET', 'POST'])
-def poolvr_config():
-    """Serves the app configuration data / menu HTML"""
-    config = get_poolvr_config()
-    return render_template('config.html',
-                           json_config=Markup(r"""<script>
-var JSON_SCENE = %s;
-var POOLVR_CONFIG = %s;
-</script>""" % (json.dumps(pool_hall(**config),
-                           indent=(2 if app.debug else None)),
-                json.dumps(config,
-                           indent=(2 if app.debug else None)))), **config)
+@app.context_processor
+def js_suffix():
+    if app.debug:
+        return {'js_suffix': '.js'}
+    else:
+        return {'js_suffix': '.min.js'}
+
+
+
+# @app.route('/config', methods=['GET', 'POST'])
+# def poolvr_config():
+#     """Serves the app configuration data / menu HTML"""
+#     config = get_poolvr_config()
+#     return render_template('config.html',
+#                            json_config=Markup(r"""<script>
+# var POOLVR_CONFIG = %s;
+# </script>""" % json.dumps(config, indent=(2 if app.debug else None))),
+#                            **config)
 
 
 
@@ -84,11 +91,29 @@ def poolvr():
     config = get_poolvr_config()
     return render_template('poolvr.html',
                            json_config=Markup(r"""<script>
-var JSON_SCENE = %s;
 var POOLVR_CONFIG = %s;
-</script>""" % (json.dumps(pool_hall(**config),
+var JSON_SCENE = %s;
+</script>""" % (json.dumps(config,
                            indent=(2 if app.debug else None)),
+                json.dumps(pool_hall(**config),
+                           indent=(2 if app.debug else None)))), **config)
+
+
+
+@app.route('/release')
+def poolvr_release():
+    """Serves the app HTML (tagged releases)"""
+    config = get_poolvr_config()
+    version = request.args.get('version', '0.1.0')
+    return render_template('poolvr.%s.html' % version,
+                           json_config=Markup(r"""<script>
+var POOLVR_VERSION = "%s";
+var POOLVR_CONFIG = %s;
+var JSON_SCENE = %s;
+</script>""" % ('poolvr-%s' % version,
                 json.dumps(config,
+                           indent=(2 if app.debug else None)),
+                json.dumps(pool_hall(**config),
                            indent=(2 if app.debug else None)))), **config)
 
 
@@ -101,22 +126,6 @@ def log():
     _logger.info(msg)
     response = {'status': 0}
     return jsonify(response)
-
-
-
-@app.route('/release')
-def poolvr_release():
-    """Serves the app HTML (tagged releases)"""
-    config = get_poolvr_config()
-    version = request.args.get('version', '0.1.0')
-    return render_template('poolvr.%s.html' % version,
-                           json_config=Markup(r"""<script>
-var JSON_SCENE = %s;
-var POOLVR_CONFIG = %s;
-</script>""" % (json.dumps(pool_hall(**config),
-                           indent=(2 if app.debug else None)),
-                json.dumps(config,
-                           indent=(2 if app.debug else None)))), **config)
 
 
 
