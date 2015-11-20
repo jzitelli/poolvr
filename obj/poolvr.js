@@ -709,6 +709,12 @@ var pyserver = {
 
 };
 ;
+var POOLVR_VERSION = POOLVR_VERSION || 'poolvr-0.1.0';
+var POOLVR = {
+    config: POOLVR_CONFIG,
+    version: POOLVR_VERSION
+};
+
 var URL_PARAMS = (function () {
     "use strict";
     var params = {};
@@ -732,12 +738,6 @@ var URL_PARAMS = (function () {
     }
     return params;
 })();
-
-var POOLVR_VERSION = POOLVR_VERSION || 'poolvr-0.1.0';
-var POOLVR = {
-    config: POOLVR_CONFIG,
-    version: POOLVR_VERSION
-};
 
 function logVars() {
     "use strict";
@@ -969,15 +969,15 @@ function onLoad() {
         stickShadow.scale.set(1, 0.0004, 1);
         toolRoot.add(stickShadow);
         var stickShadowGeom = stickMesh.geometry.clone();
-        var toolLength = 0.4;
+        var toolLength = 0.5;
         stickShadowGeom.translate(0, -toolLength / 2, 0); // have to do this again because not buffergeometry???
-        var stickShadowMaterial = new THREE.MeshBasicMaterial({color: 0x004400});
+        var stickShadowMaterial = new THREE.MeshBasicMaterial({color: 0x002200});
         stickShadowMesh = new THREE.Mesh(stickShadowGeom, stickShadowMaterial);
         stickShadowMesh.quaternion.copy(stickMesh.quaternion);
         stickShadow.add(stickShadowMesh);
     }
 
-    if (app.options.mouseControls) {
+    if (app.options.mouseControlsEnabled) {
         var mousePointer = stickMesh;
         mousePointer.position.y -= 0.01;
         tipBody.position[1] -= 0.01;
