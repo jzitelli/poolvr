@@ -24,32 +24,11 @@ var URL_PARAMS = (function () {
     return params;
 })();
 
-var POOLVR = {
-    settings: URL_PARAMS
-};
-
-POOLVR.settings = combineDefaults(POOLVR.settings, {
-    gravity: 9.8,
-    leapDisabled: URL_PARAMS.leapDisabled,
-    leapHandsDisabled: URL_PARAMS.leapHandsDisabled,
-    mouseControls: URL_PARAMS.mouseControls,
-    gamepadControls: URL_PARAMS.gamepadControls,
-    // TODO: use three.js MeshPhongMaterials
-    usePhongMaterials: false,
-    // TODO: use three.js MeshLambertMaterials
-    useLambertMaterials: false,
-    // use *only* three.js MeshBasicMaterials (a.k.a. "EGA-graphics" look)
-    useBasicMaterials: true,
-    // use three.js shadow map plugin (slow on some devices)
-    shadowMap: false,
-    // include point light
-    pointLight: false,
-    // use older version of webvr-boilerplate
-    oldBoilerplate: false
-});
+var POOLVR = {config: POOLVR_CONFIG};
 
 function logVars() {
     "use strict";
+    pyserver.log(JSON.stringify(POOLVR.config));
     pyserver.log(tipBody.position);
     pyserver.log(toolRoot);
     pyserver.log(avatar);

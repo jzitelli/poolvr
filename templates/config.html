@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
 
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no">
 
     <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
 
@@ -25,31 +25,6 @@
   </head>
 
   <body>
-
-    <p>
-{{ poolvr_config if poolvr_config else "" }}
-    </p>
-
-    <script src="lib/three-r73.js"></script>
-    <script src="lib/TextGeometry.js"></script>
-    <script src="lib/FontUtils.js"></script>
-
-    <script src="lib/VREffect.js"></script>
-    <script src="lib/VRControls.js"></script>
-
-{% if oldBoilerplate %}
-    <script src="lib/webvr-polyfill.old.js"></script>
-    <script src="lib/webvr-manager.old.js"></script>
-{% else %}
-    <script src="lib/webvr-polyfill.js"></script>
-    <script src="lib/webvr-manager.js"></script>
-{% endif %}
-    <script src="lib/leap-0.6.4.js"></script>
-    <!-- enhanced version w/ tool tracking: -->
-    <script src="lib/leap.transform.js"></script>
-
-    <script src="fonts/helvetiker_regular.typeface.js"></script>
-    <script src="fonts/Anonymous Pro_Regular.js"></script>
 
     <script src="src/pyserver.js"></script>
     <script src="src/settings.js"></script>

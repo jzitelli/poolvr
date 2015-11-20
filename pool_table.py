@@ -166,10 +166,9 @@ def pool_table(L_table=2.3368, W_table=None, H_table=0.74295,
 
 
 def pool_hall(useBasicMaterials=True,
-              useLambertMaterials=False,
-              usePhongMaterials=False,
               shadowMap=False,
               url_prefix="",
+              pointLight=None,
               **kwargs):
     scene = Scene()
     L_room, W_room = 10, 10
@@ -183,15 +182,16 @@ def pool_hall(useBasicMaterials=True,
                                           'shapes': ['Plane']}})
     scene.add(floor)
 
-    # pointLight = PointLight(color=0xaa8866, position=[4, 5, 2.5], intensity=0.8, distance=40)
-    # scene.add(pointLight)
+    if pointLight:
+        light = PointLight(color=0xaa8866, position=[4, 5, 2.5], intensity=0.8, distance=40)
+        scene.add(light)
 
     ball_diameter = 2.25 * IN2METER
     L_table = 2.3368
     W_table = L_table / 2
     H_table = 0.74295
     poolTable = pool_table(H_table=H_table, ball_diameter=ball_diameter,
-                           useBasicMaterials=useBasicMaterials, **kwargs)
+                           useBasicMaterials=useBasicMaterials, shadowMap=shadowMap, pointLight=pointLight, **kwargs)
     scene.add(poolTable)
 
     # balls:
@@ -209,12 +209,12 @@ def pool_hall(useBasicMaterials=True,
     shadowGeom = CircleBufferGeometry(name='shadowGeom',
                                       radius=ball_radius,
                                       segments=16)
+    shadowMaterial = MeshBasicMaterial(color=0x002200)
 
     if useBasicMaterials:
         ball_materials = [MeshBasicMaterial(color=color) for color in ball_colors]
     else:
         ball_materials = [MeshPhongMaterial(color=color, shading=SmoothShading) for color in ball_colors]
-    shadowMaterial = MeshBasicMaterial(color=0x002200)
 
     ballData = {'cannonData': {'mass': 0.17, 'shapes': ['Sphere']}}
 
