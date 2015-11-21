@@ -195,22 +195,17 @@ WebVRApplication = ( function () {
             waitForResources(0);
         };
 
-        var raycaster = new THREE.Raycaster(),
-            picking = false,
-            pickables,
-            origin = new THREE.Vector3(),
-            direction = new THREE.Vector3();
-        raycaster.far = 100;
+        this.pickables = null;
         this.setPicking = function (mode, objects) {
-            picking = mode;
-            if (picking) {
+            this.picking = mode;
+            if (this.picking) {
                 if (objects) {
-                    pickables = objects;
-                } else {
-                    pickables = [];
+                    this.pickables = objects;
+                } else if (!this.pickables) {
+                    this.pickables = [];
                     scene.traverse(function (obj) {
                         if (obj != mousePointer && obj instanceof THREE.Mesh && obj.material.color !== undefined) {
-                            pickables.push(obj);
+                            this.pickables.push(obj);
                         }
                     });
                 }
@@ -777,6 +772,61 @@ POOLVR.gamepadCommands = {
                           commandUp: function () { avatar.toolMode = false; } }
 };
 ;
+var avatar = avatar || new THREE.Object3D();
+
+var TextGeomLogger = (function () {
+	"use strict";
+	function TextGeomLogger(geometries, material, options) {
+		this.geometries = geomeries;
+		this.material = material;
+		this.meshes = {};
+		for (var c in this.geometries) {
+			var geom = this.geometries[c].clone();
+			this.meshes[c] = new THREE.Mesh(geom, material.clone());
+		}
+		this.logRoot = new THREE.Object3D();
+		this.lineMeshBuffer = {};
+		options = options || {};
+		options.size    = options.size || 0.2;
+	    options.font    = 'anonymous pro';
+		options.height  = options.height || 0;
+        options.rows    = options.rows || 20;
+        options.columns = options.columns || 80;
+        options.parent  = options.parent || avatar;
+        this.options = options;
+
+		this.log = function (msg) {
+			var lines = msg.split('\n');
+			for (var i = 0; i < lines.length && i < this.logRoot.children.length; i++) {
+				var child = this.logRoot.children[i];
+				child.position.y += 1.6 * this.options.size;
+			}
+			for (i = 0; i < lines.length; i++) {
+				var line = lines[i];
+				var mesh = this.lineMeshBuffer[line];
+				if (mesh) {
+					this.logRoot.add(mesh.clone());
+				}
+				else {
+					mesh = new THREE.Object3D();
+					this.logRoot.add(mesh);
+					this.lineMeshBuffer[line] = mesh;
+					for (var col = 0; col < line.length; col++) {
+						var c = line[col];
+						if (c !== ' ') {
+							var letterMesh = this.meshes[c].clone();
+							letterMesh.position.x = 1.6*this.options.size * col;
+						}
+					}
+				}
+			}
+		}.bind(this);
+	}
+	
+	return TextGeomLogger;
+
+})();
+;
 // TODO requires pyserver.js, settings.js, webvr-manager.js, webvr-polyfill.js
 
 pyserver.log("hello from cardboard.js");
@@ -863,11 +913,11 @@ pyserver.log("goodbye from cardboard.js");
 // TODO requires three.js, CANNON.js, settings.js, cardboard.js, WebVRApplication.js, CrapLoader.js, LeapTools.js, pyserver.js
 var app;
 var scene = CrapLoader.parse(JSON_SCENE);
-var H_table = 0.74295; // TODO: coordinate w/ server
-var avatar = new THREE.Object3D();
-avatar.position.y = 1.2;
-avatar.position.z = 2;
+var avatar = avatar || new THREE.Object3D();
 
+var H_table = 0.74295; // TODO: coordinate w/ server
+avatar.position.y = 1.2;
+avatar.position.z = 1.88;
 
 var stickMesh, tipBody, toolRoot;
 var stickShadow, stickShadowMesh;
@@ -898,19 +948,6 @@ function onLoad() {
         var centerSpotLightHelper = new THREE.SpotLightHelper(centerSpotLight);
         scene.add(centerSpotLightHelper);
         centerSpotLightHelper.visible = false;
-        // var spotLight = new THREE.SpotLight(0xddffdd,
-        //                                     0.7, // intensity
-        //                                     10); // distance
-        // spotLight.position.set(-5/2, 3/2, 4/2);
-        // spotLight.castShadow = true;
-        // spotLight.shadowCameraNear = 0.01;
-        // spotLight.shadowCameraFar = 10;
-        // spotLight.shadowCameraFov = 50;
-        // spotLight.shadowDarkness = 0.4;
-        // scene.add(spotLight);
-        // var spotLightHelper = new THREE.SpotLightHelper(spotLight);
-        // scene.add(spotLightHelper);
-        // spotLightHelper.visible = false;
     }
 
     // ##### Desktop mode (default): #####
@@ -918,9 +955,11 @@ function onLoad() {
         transformOptions : {vr: 'desktop'},
         leapDisabled     : app.options.leapDisabled,
         leapHandsDisabled: app.options.leapHandsDisabled,
-        useBasicMaterials: app.options.useBasicMaterials
+        useBasicMaterials: app.options.useBasicMaterials,
+        toolLength       : app.options.toolLength,
+        toolRadius       : app.options.toolRadius
     };
-    // ##### VR mode: #####
+    // ##### Leap Motion VR tracking mode: #####
     if (app.options.leapVR) {
         toolOptions.transformOptions = {vr: true, effectiveParent: app.camera};
     }
@@ -936,8 +975,12 @@ function onLoad() {
     app.world.addContactMaterial(ballPlayableSurfaceContactMaterial);
     
     var cushionMaterial = new CANNON.Material();
-    var ballCushionContactMaterial = new CANNON.ContactMaterial(ballMaterial, cushionMaterial, {restitution: 0.8, friction: 0.3});
+    var ballCushionContactMaterial = new CANNON.ContactMaterial(ballMaterial, cushionMaterial, {restitution: 0.8, friction: 0.12});
     app.world.addContactMaterial(ballCushionContactMaterial);
+
+    var floorMaterial = new CANNON.Material();
+    var floorBallContactMaterial = new CANNON.ContactMaterial(floorMaterial, ballMaterial, {restitution: 0.88, friction: 0.4});
+    app.world.addContactMaterial(floorBallContactMaterial);
 
     scene.traverse(function (node) {
         if (node.name.startsWith('ballMesh')) {
@@ -952,6 +995,9 @@ function onLoad() {
         }
         else if (node.name.endsWith('CushionMesh')) {
             node.body.material = cushionMaterial;
+        }
+        else if (node.name === 'floorMesh') {
+            node.body.material = floorMaterial;
         }
     });
 
@@ -969,7 +1015,7 @@ function onLoad() {
         stickShadow.scale.set(1, 0.0004, 1);
         toolRoot.add(stickShadow);
         var stickShadowGeom = stickMesh.geometry.clone();
-        var toolLength = 0.5;
+        var toolLength = toolOptions.toolLength;
         stickShadowGeom.translate(0, -toolLength / 2, 0); // have to do this again because not buffergeometry???
         var stickShadowMaterial = new THREE.MeshBasicMaterial({color: 0x002200});
         stickShadowMesh = new THREE.Mesh(stickShadowGeom, stickShadowMaterial);
@@ -979,8 +1025,8 @@ function onLoad() {
 
     if (app.options.mouseControlsEnabled) {
         var mousePointer = stickMesh;
-        mousePointer.position.y -= 0.01;
-        tipBody.position[1] -= 0.01;
+        mousePointer.position.y = H_table + 0.1 - avatar.position.y;
+        tipBody.position[1] = H_table + 0.1;
         window.addEventListener("mousemove", function (evt) {
             var dx = evt.movementX,
                 dy = evt.movementY;
@@ -1012,6 +1058,7 @@ var UP = new THREE.Vector3(0, 1, 0),
     walkSpeed = 0.3,
     floatSpeed = 0.1,
     toolDrive, toolStrafe, toolFloat;
+var raycaster = new THREE.Raycaster();
 function animate(t) {
     "use strict";
     requestAnimationFrame(animate);
@@ -1066,7 +1113,6 @@ function animate(t) {
     }
 
     // TODO: resolve CANNON issues w/ initial low framerate
-
     app.world.step(Math.min(dt, 1/60));
 
     for (var j = 0; j < dynamicBodies.length; ++j) {
@@ -1095,24 +1141,24 @@ function animate(t) {
         stickShadow.position.y = -avatar.position.y - toolRoot.position.y + H_table + 0.001;
         stickShadowMesh.quaternion.copy(stickMesh.quaternion);
     }
+    if (app.mousePointer && avatar.picking) {
+        origin.set(0, 0, 0);
+        direction.set(0, 0, 0);
+        direction.subVectors(mousePointer.localToWorld(direction), camera.localToWorld(origin)).normalize();
+        raycaster.set(origin, direction);
+        var intersects = raycaster.intersectObjects(app.pickables);
+        if (intersects.length > 0) {
+            if (app.picked != intersects[0].object) {
+                if (app.picked) app.picked.material.color.setHex(app.picked.currentHex);
+                app.picked = intersects[0].object;
+                app.picked.currentHex = app.picked.material.color.getHex();
+                app.picked.material.color.setHex(0xff4444); //0x44ff44);
+            }
+        } else {
+            if (app.picked) app.picked.material.color.setHex(app.picked.currentHex);
+            app.picked = null;
+        }
+    }
 }
 
-    // if (app.mousePointer.visible && picking) {
-    //     origin.set(0, 0, 0);
-    //     direction.set(0, 0, 0);
-    //     direction.subVectors(mousePointer.localToWorld(direction), camera.localToWorld(origin)).normalize();
-    //     raycaster.set(origin, direction);
-    //     var intersects = raycaster.intersectObjects(pickables);
-    //     if (intersects.length > 0) {
-    //         if (app.picked != intersects[0].object) {
-    //             if (app.picked) app.picked.material.color.setHex(app.picked.currentHex);
-    //             app.picked = intersects[0].object;
-    //             app.picked.currentHex = app.picked.material.color.getHex();
-    //             app.picked.material.color.setHex(0xff4444); //0x44ff44);
-    //         }
-    //     } else {
-    //         if (app.picked) app.picked.material.color.setHex(app.picked.currentHex);
-    //         app.picked = null;
-    //     }
-    // }
 // ################## poolvr VERSION = "v0.1.0";

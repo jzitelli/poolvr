@@ -188,22 +188,17 @@ WebVRApplication = ( function () {
             waitForResources(0);
         };
 
-        var raycaster = new THREE.Raycaster(),
-            picking = false,
-            pickables,
-            origin = new THREE.Vector3(),
-            direction = new THREE.Vector3();
-        raycaster.far = 100;
+        this.pickables = null;
         this.setPicking = function (mode, objects) {
-            picking = mode;
-            if (picking) {
+            this.picking = mode;
+            if (this.picking) {
                 if (objects) {
-                    pickables = objects;
-                } else {
-                    pickables = [];
+                    this.pickables = objects;
+                } else if (!this.pickables) {
+                    this.pickables = [];
                     scene.traverse(function (obj) {
                         if (obj != mousePointer && obj instanceof THREE.Mesh && obj.material.color !== undefined) {
-                            pickables.push(obj);
+                            this.pickables.push(obj);
                         }
                     });
                 }

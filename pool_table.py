@@ -35,7 +35,7 @@ def pool_table(L_table=2.3368, W_table=None, H_table=0.74295,
                W_rail=None,
                useBasicMaterials=True, useLambertMaterials=False, usePhongMaterials=False,
                shadowMap=False, **kwargs):
-    """Procedurally defined three.js pool table 'Object3D' (three.js JSON format V4)
+    """Procedurally defined three.js pool table 'Object3D' (three.js Object format V4)
 
     :param L_table: length of the pool table (longer than the playable surface); default is 8ft.
     :param W_table: width the of the pool table; usually half the length.
@@ -217,7 +217,8 @@ def pool_hall(useBasicMaterials=True,
     else:
         ball_materials = [MeshPhongMaterial(color=color, shading=SmoothShading) for color in ball_colors]
 
-    ballData = {'cannonData': {'mass': 0.17, 'shapes': ['Sphere']}}
+    ballData = {'cannonData': {'mass': 0.17, 'shapes': ['Sphere'],
+                               'linearDamping': 0.05, 'angularDamping': 0.05}}
 
     y_position = H_table + ball_radius + 0.0001 # epsilon distance which the ball will fall from initial position
 

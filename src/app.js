@@ -63,7 +63,7 @@ function onLoad() {
     app.world.addContactMaterial(ballPlayableSurfaceContactMaterial);
     
     var cushionMaterial = new CANNON.Material();
-    var ballCushionContactMaterial = new CANNON.ContactMaterial(ballMaterial, cushionMaterial, {restitution: 0.8, friction: 0.3});
+    var ballCushionContactMaterial = new CANNON.ContactMaterial(ballMaterial, cushionMaterial, {restitution: 0.8, friction: 0.12});
     app.world.addContactMaterial(ballCushionContactMaterial);
 
     var floorMaterial = new CANNON.Material();
@@ -103,7 +103,7 @@ function onLoad() {
         stickShadow.scale.set(1, 0.0004, 1);
         toolRoot.add(stickShadow);
         var stickShadowGeom = stickMesh.geometry.clone();
-        var toolLength = 0.5;
+        var toolLength = toolOptions.toolLength;
         stickShadowGeom.translate(0, -toolLength / 2, 0); // have to do this again because not buffergeometry???
         var stickShadowMaterial = new THREE.MeshBasicMaterial({color: 0x002200});
         stickShadowMesh = new THREE.Mesh(stickShadowGeom, stickShadowMaterial);
@@ -113,15 +113,17 @@ function onLoad() {
 
     if (app.options.mouseControlsEnabled) {
         var mousePointer = stickMesh;
-        mousePointer.position.y -= 0.01;
-        tipBody.position[1] -= 0.01;
+        mousePointer.position.y = H_table + 0.1 - avatar.position.y - toolRoot.position.y;
+        tipBody.position[1] = H_table + 0.1;
         window.addEventListener("mousemove", function (evt) {
             var dx = evt.movementX,
                 dy = evt.movementY;
-            mousePointer.position.x += 0.001*dx;
-            mousePointer.position.x = Math.max(Math.min(mousePointer.position.x, 2.25), -2.25);
-            mousePointer.position.z += 0.001*dy;
-            mousePointer.position.z = Math.max(Math.min(mousePointer.position.z, 1.5), -1);
+            mousePointer.position.x += 0.0004*dx;
+            if (mousePointer.position.x > 2) mousePointer.position.x = 2;
+            else if (mousePointer.position.x < -2) mousePointer.position.x = -2;
+            mousePointer.position.z += 0.0004*dy;
+            if (mousePointer.position.z > 2) mousePointer.position.z = 2;
+            else if (mousePointer.position.z < -2) mousePointer.position.z = -2;
             tipBody.position[0] = mousePointer.position.x;
             tipBody.position[2] = mousePointer.position.z;
         });
@@ -146,6 +148,7 @@ var UP = new THREE.Vector3(0, 1, 0),
     walkSpeed = 0.3,
     floatSpeed = 0.1,
     toolDrive, toolStrafe, toolFloat;
+var raycaster = new THREE.Raycaster();
 function animate(t) {
     "use strict";
     requestAnimationFrame(animate);
@@ -228,12 +231,12 @@ function animate(t) {
         stickShadow.position.y = -avatar.position.y - toolRoot.position.y + H_table + 0.001;
         stickShadowMesh.quaternion.copy(stickMesh.quaternion);
     }
-    if (app.mousePointer && picking) {
+    if (app.mousePointer && avatar.picking) {
         origin.set(0, 0, 0);
         direction.set(0, 0, 0);
         direction.subVectors(mousePointer.localToWorld(direction), camera.localToWorld(origin)).normalize();
         raycaster.set(origin, direction);
-        var intersects = raycaster.intersectObjects(pickables);
+        var intersects = raycaster.intersectObjects(app.pickables);
         if (intersects.length > 0) {
             if (app.picked != intersects[0].object) {
                 if (app.picked) app.picked.material.color.setHex(app.picked.currentHex);

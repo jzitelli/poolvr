@@ -103,7 +103,7 @@ def poolvr_release():
     """Serves the app HTML (tagged releases)"""
     version = request.args.get('version', '0.1.0')
     config = get_poolvr_config(version=version)
-    return render_template('poolvr.%s.html' % version,
+    return render_template('poolvr-%s.html' % version,
                            json_config=Markup(r"""<script>
 var POOLVR_VERSION = "%s";
 var POOLVR_CONFIG = %s;
