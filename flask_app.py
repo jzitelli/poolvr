@@ -71,11 +71,18 @@ def js_suffix():
 
 
 
+configScene = None
+with open(os.path.join(os.getcwd(), 'models',
+                       'ConfigUtilDeskScene.json')) as f:
+    configScene = f.read()
 @app.route('/poolvr/config', methods=['GET', 'POST'])
 def poolvr_config():
     """app configurator"""
     config = get_poolvr_config()
     return render_template('config.html',
+                           json_config=Markup(r"""<script>
+var JSON_SCENE = %s
+</script>""" % configScene),
                            poolvr_config=json.dumps(config, indent=2))
 
 
