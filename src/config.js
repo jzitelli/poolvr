@@ -1,13 +1,7 @@
-var POOLVR_VERSION = POOLVR_VERSION || 'poolvr-0.1.0';
-var POOLVR = {
-    config: POOLVR_CONFIG,
-    version: POOLVR_VERSION
-};
-
 var URL_PARAMS = (function () {
     "use strict";
     var params = {};
-    location.search.substr(1).split("&").forEach(function(item) {
+    location.search.substr(1).split("&").forEach( function(item) {
         var k = item.split("=")[0],
             v = decodeURIComponent(item.split("=")[1]);
         if (k in params) {
@@ -15,7 +9,7 @@ var URL_PARAMS = (function () {
         } else {
             params[k] = [v];
         }
-    });
+    } );
     for (var k in params) {
         if (params[k].length == 1)
             params[k] = params[k][0];
@@ -28,17 +22,20 @@ var URL_PARAMS = (function () {
     return params;
 })();
 
-function logVars() {
-    "use strict";
-    pyserver.log('app.options = ' + JSON.stringify(app.options));
-    pyserver.log('tipBody.position = ' + tipBody.position);
-    pyserver.log('toolRoot = ' + toolRoot);
-    pyserver.log('avatar = ' + avatar);
-}
-
+var POOLVR_VERSION = POOLVR_VERSION || 'poolvr-0.1.0';
+var POOLVR = {
+    config: POOLVR_CONFIG,
+    version: POOLVR_VERSION
+};
 POOLVR.keyboardCommands = {
-    logVars: {buttons: [Primrose.Input.Keyboard.Q],
-              commandDown: logVars},
+    turnLeft: {buttons: [-Primrose.Input.Keyboard.LEFTARROW]},
+    turnRight: {buttons: [Primrose.Input.Keyboard.RIGHTARROW]},
+    driveForward: {buttons: [-Primrose.Input.Keyboard.W]},
+    driveBack: {buttons: [Primrose.Input.Keyboard.S]},
+    strafeLeft: {buttons: [-Primrose.Input.Keyboard.A]},
+    strafeRight: {buttons: [Primrose.Input.Keyboard.D]},
+    floatUp: {buttons: [Primrose.Input.Keyboard.E, Primrose.Input.Keyboard.NUMBER9]},
+    floatDown: {buttons: [-Primrose.Input.Keyboard.C, -Primrose.Input.Keyboard.NUMBER3]},
     moveToolUp:        {buttons: [Primrose.Input.Keyboard.NUMBER7]},
     moveToolDown:      {buttons: [Primrose.Input.Keyboard.NUMBER1]},
     moveToolForwards:  {buttons: [Primrose.Input.Keyboard.NUMBER8]},
@@ -115,7 +112,6 @@ var VR_DEVICES = [
     "Oculus VR HMD (Sensor)" // VR device 0
     // DK2 0.8 drivers
 
-
     // Windows 7 ################################################################################################
     // DK2 0.8 drivers
     // Chrome 0.8.0.1 DK2 build
@@ -123,6 +119,7 @@ var VR_DEVICES = [
 ];
 
 pyserver.log(JSON.stringify(WebVRConfig));
+var userAgent = navigator.userAgent;
 pyserver.log(userAgent);
 if (navigator.getVRDevices) {
     navigator.getVRDevices().then(function (devices) {

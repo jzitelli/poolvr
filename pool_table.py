@@ -267,9 +267,8 @@ def pool_hall(useBasicMaterials=True,
                                   position=[0, -ball_radius + 0.001, 0],
                                   rotation=[-0.5*np.pi - rotation[0], -rotation[1], -rotation[2]])
             ballMesh.add(ballShadowMesh)
-
-    textGeometries = text_geom_alphabet(font='anonymous pro', height=0, size=0.1, curveSegments=2)
-    geometries = scene.find_geometries()
-    geometries.update({geom.uuid: geom for geom in textGeometries.values()})
-
-    return scene.export(geometries=geometries)
+    return scene.export()
+    # textGeometries = text_geom_alphabet(font='anonymous pro', height=0, size=0.1, curveSegments=2)
+    # geometries = scene.find_geometries()
+    # geometries.update({geom.uuid: geom for geom in textGeometries.values()})
+    # return scene.export(geometries=geometries)

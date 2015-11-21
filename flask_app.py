@@ -23,19 +23,13 @@ import poolvr
 from poolvr.pool_table import pool_hall
 from poolvr import three
 
-
 POOLVR_CONFIG = {
-    'gravity'               : 9.8,
     'useBasicMaterials'     : True,
     'useLambertMaterials'   : None,
     'usePhongMaterials'     : None,
     'shadowMap'             : None,
     'pointLight'            : None,
-    'backgroundColor'       : 0x000000,
     'oldBoilerplate'        : False,
-    'mouseControlsEnabled'  : False,
-    'gamepadControlsEnabled': True,
-    'showMousePointerOnLock': False,
     'leapDisabled'          : None,
     'leapHandsDisabled'     : None
 }
@@ -103,7 +97,7 @@ def poolvr_release():
     """Serves the app HTML (tagged releases)"""
     version = request.args.get('version', '0.1.0')
     config = get_poolvr_config(version=version)
-    return render_template('poolvr.%s.html' % version,
+    return render_template('poolvr-%s.html' % version,
                            json_config=Markup(r"""<script>
 var POOLVR_VERSION = "%s";
 var POOLVR_CONFIG = %s;
