@@ -24,6 +24,7 @@ from poolvr.pool_table import pool_hall
 from poolvr import three
 
 POOLVR_CONFIG = {
+    'pyserver'              : True,
     'gravity'               : 9.8,
     'useBasicMaterials'     : True,
     'useLambertMaterials'   : None,
@@ -34,6 +35,7 @@ POOLVR_CONFIG = {
     'leapDisabled'          : None,
     'leapHandsDisabled'     : None
 }
+
 
 def get_poolvr_config(version=None):
     config = deepcopy(POOLVR_CONFIG)
@@ -74,37 +76,24 @@ def poolvr_config():
     """app configurator"""
     config = get_poolvr_config()
     return render_template('config.html',
-                           json_config=Markup(r"""<script>
-var POOLVR_CONFIG = %s;
-</script>""" % json.dumps(config, indent=(2 if app.debug else None))), **config)
+                           poolvr_config=json.dumps(config))
 
 
 
-@app.route('/')
-def poolvr():
-    """Serves the app HTML (development endpoint)"""
+@app.route('/poolvr')
+def poolvr_app():
+    """Serves the poolvr HTML app"""
+    version = request.args.get('version')
     config = get_poolvr_config()
-    return render_template('poolvr.html',
+    if version is not None:
+        template = '%s.html' % version
+    else:
+        template = 'poolvr.html'
+    return render_template(template,
                            json_config=Markup(r"""<script>
 var POOLVR_CONFIG = %s;
 var JSON_SCENE = %s;
 </script>""" % (json.dumps(config, indent=(2 if app.debug else None)),
-                json.dumps(pool_hall(**config), indent=(2 if app.debug else None)))), **config)
-
-
-
-@app.route('/release')
-def poolvr_release():
-    """Serves the app HTML (tagged releases)"""
-    version = request.args.get('version', '0.1.0')
-    config = get_poolvr_config(version=version)
-    return render_template('poolvr-%s.html' % version,
-                           json_config=Markup(r"""<script>
-var POOLVR_VERSION = "%s";
-var POOLVR_CONFIG = %s;
-var JSON_SCENE = %s;
-</script>""" % ('poolvr-%s' % version,
-                json.dumps(config, indent=(2 if app.debug else None)),
                 json.dumps(pool_hall(**config), indent=(2 if app.debug else None)))), **config)
 
 
