@@ -16,11 +16,10 @@ class EndpointsTest(unittest.TestCase):
     	response = self.app.get('/poolvr/config')
     	print(response)
     	assert(response)
-    # def test_log(self):
-    # 	response = self.app.get('/log')
-    # 	print(response)
-    # 	assert(response)
-
+    def test_log(self):
+    	response = self.app.post('/log', data={'msg': 'testing 1 w23 gaemah'})
+    	print(response)
+    	assert(response)
 
 if __name__ == "__main__":
 	unittest.main()
