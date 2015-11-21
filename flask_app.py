@@ -69,7 +69,7 @@ def js_suffix():
 
 
 
-@app.route('/config', methods=['GET', 'POST'])
+@app.route('/poolvr/config', methods=['GET', 'POST'])
 def poolvr_config():
     """app configurator"""
     config = get_poolvr_config()
