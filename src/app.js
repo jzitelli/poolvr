@@ -10,7 +10,6 @@ var stickMesh, tipBody, toolRoot;
 var stickShadow, stickShadowMesh;
 var ballMeshes       = [],
     ballStripeMeshes = [];
-
 var dynamicBodies;
 
 function onLoad() {
@@ -33,9 +32,9 @@ function onLoad() {
         centerSpotLight.shadowCameraFar = 4;
         centerSpotLight.shadowCameraFov = 90;
         scene.add(centerSpotLight);
-        var centerSpotLightHelper = new THREE.SpotLightHelper(centerSpotLight);
-        scene.add(centerSpotLightHelper);
-        centerSpotLightHelper.visible = false;
+        // var centerSpotLightHelper = new THREE.SpotLightHelper(centerSpotLight);
+        // scene.add(centerSpotLightHelper);
+        // centerSpotLightHelper.visible = false;
     }
 
     var toolOptions = {
@@ -55,15 +54,15 @@ function onLoad() {
     CrapLoader.CANNONize(scene, app.world);
 
     var ballMaterial = new CANNON.Material();
-    var ballBallContactMaterial = new CANNON.ContactMaterial(ballMaterial, ballMaterial, {restitution: 0.93});
+    var ballBallContactMaterial = new CANNON.ContactMaterial(ballMaterial, ballMaterial, {restitution: 0.91, friction: 0.07});
     app.world.addContactMaterial(ballBallContactMaterial);
 
     var playableSurfaceMaterial = new CANNON.Material();
-    var ballPlayableSurfaceContactMaterial = new CANNON.ContactMaterial(ballMaterial, playableSurfaceMaterial, {restitution: 0.1, friction: 0.2});
+    var ballPlayableSurfaceContactMaterial = new CANNON.ContactMaterial(ballMaterial, playableSurfaceMaterial, {restitution: 0.3, friction: 0.1});
     app.world.addContactMaterial(ballPlayableSurfaceContactMaterial);
     
     var cushionMaterial = new CANNON.Material();
-    var ballCushionContactMaterial = new CANNON.ContactMaterial(ballMaterial, cushionMaterial, {restitution: 0.8, friction: 0.3});
+    var ballCushionContactMaterial = new CANNON.ContactMaterial(ballMaterial, cushionMaterial, {restitution: 0.85, friction: 0.14});
     app.world.addContactMaterial(ballCushionContactMaterial);
 
     var floorMaterial = new CANNON.Material();

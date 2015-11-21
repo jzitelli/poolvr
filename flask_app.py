@@ -24,6 +24,7 @@ from poolvr.pool_table import pool_hall
 from poolvr import three
 
 POOLVR_CONFIG = {
+    'gravity'               : 9.8,
     'useBasicMaterials'     : True,
     'useLambertMaterials'   : None,
     'usePhongMaterials'     : None,

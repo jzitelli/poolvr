@@ -365,7 +365,7 @@ class BufferGeometry(Three):
         if self.indices:
             d['data']['index'] = {
                 "itemSize": 1,
-                "type": "Uint32Array",
+                "type": "Uint16Array",
                 "array": np.array(self.indices).ravel().tolist()
             }
         if self.normals:
@@ -383,9 +383,12 @@ class BufferGeometry(Three):
         return d
 
 
-def _tri_faces(rect_face):
+def _tri_faces(rect_face, flip_normals=False):
     "Return indices for two triangles comprising the rectangle"
-    return [[rect_face[0], rect_face[1], rect_face[2]], [rect_face[0], rect_face[2], rect_face[3]]]
+    if flip_normals:
+        return [[rect_face[0], rect_face[2], rect_face[1]], [rect_face[0], rect_face[3], rect_face[2]]]
+    else:
+        return [[rect_face[0], rect_face[1], rect_face[2]], [rect_face[0], rect_face[2], rect_face[3]]]
 
 
 class QuadBufferGeometry(BufferGeometry):
@@ -395,17 +398,18 @@ class QuadBufferGeometry(BufferGeometry):
         BufferGeometry.__init__(self, vertices=vertices, uvs=uvs, indices=_tri_faces([0,1,2,3]), **kwargs)
 
 
-class BoxBufferGeometry(BufferGeometry):
+class HexaBufferGeometry(BufferGeometry):
     def __init__(self, vertices, **kwargs):
         rects = [[0,1,2,3], # bottom
-                 [4,7,6,5], # top
-                 [0,4,5,1], # back
+                 [4,5,6,7], # top
+                 [0,4,5,1], # front
                  [2,1,5,6], # right
-                 [3,2,6,7], # front
+                 [3,2,6,7], # rear
                  [0,3,7,4]] # left
         BufferGeometry.__init__(self, vertices=vertices,
-            indices=[_tri_faces(rect) for rect in rects],
-            **kwargs)
+                                indices=[_tri_faces(rect)
+                                         for rect in rects],
+                                **kwargs)
 
 
 class PrismBufferGeometry(BufferGeometry):
@@ -417,7 +421,7 @@ class PrismBufferGeometry(BufferGeometry):
     def __init__(self, vertices, **kwargs):
         indices = [[0,1,2], [3,4,5][::-1]]
         for rect in [[0,1,4,3], [1,2,5,4], [2,0,3,5]]:
-            indices += _tri_faces(rect[::-1])
+            indices += _tri_faces(rect[::-1], flip_normals=False)
         BufferGeometry.__init__(self, vertices=vertices,
                                 indices=indices, **kwargs)
 
