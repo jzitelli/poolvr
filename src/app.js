@@ -2,21 +2,20 @@
 var app;
 var scene = CrapLoader.parse(JSON_SCENE);
 var avatar = avatar || new THREE.Object3D();
-
 var H_table = 0.74295; // TODO: coordinate w/ server
 avatar.position.y = 1.2;
-avatar.position.z = 1.88;
+avatar.position.z = 1.9;
 
 var stickMesh, tipBody, toolRoot;
 var stickShadow, stickShadowMesh;
 var ballMeshes       = [],
     ballStripeMeshes = [];
-
 var dynamicBodies;
 
 function onLoad() {
     "use strict";
-    pyserver.log("starting poolvr...\nPOOLVR.config =\n" + JSON.stringify(POOLVR.config));
+    pyserver.log("starting poolvr...");
+    pyserver.log("POOLVR.config =\n" + JSON.stringify(POOLVR.config));
     POOLVR.config.keyboardCommands = POOLVR.keyboardCommands;
     POOLVR.config.gamepadCommands = POOLVR.gamepadCommands;
     
@@ -24,7 +23,7 @@ function onLoad() {
     avatar.add(app.camera);
     scene.add(avatar);
 
-    if (!app.options.useBasicMaterials) {
+    if (!app.config.useBasicMaterials) {
         // would rather add the spot lights via three.py generated JSON_SCENE, but I'm having problems getting shadows frm them:
         var centerSpotLight = new THREE.SpotLight(0xffffee, 1, 10, 90);
         centerSpotLight.position.set(0, 3, 0);
@@ -33,37 +32,37 @@ function onLoad() {
         centerSpotLight.shadowCameraFar = 4;
         centerSpotLight.shadowCameraFov = 90;
         scene.add(centerSpotLight);
-        var centerSpotLightHelper = new THREE.SpotLightHelper(centerSpotLight);
-        scene.add(centerSpotLightHelper);
-        centerSpotLightHelper.visible = false;
+        // var centerSpotLightHelper = new THREE.SpotLightHelper(centerSpotLight);
+        // scene.add(centerSpotLightHelper);
+        // centerSpotLightHelper.visible = false;
     }
 
-    // ##### Desktop mode (default): #####
     var toolOptions = {
+        // ##### Desktop mode (default): #####
         transformOptions : {vr: 'desktop'},
-        leapDisabled     : app.options.leapDisabled,
-        leapHandsDisabled: app.options.leapHandsDisabled,
-        useBasicMaterials: app.options.useBasicMaterials,
-        toolLength       : app.options.toolLength,
-        toolRadius       : app.options.toolRadius
+        leapDisabled     : app.config.leapDisabled,
+        leapHandsDisabled: app.config.leapHandsDisabled,
+        useBasicMaterials: app.config.useBasicMaterials,
+        toolLength       : app.config.toolLength,
+        toolRadius       : app.config.toolRadius
     };
-    // ##### Leap Motion VR tracking mode: #####
-    if (app.options.leapVR) {
+    if (app.config.leapVR) {
+        // ##### Leap Motion VR tracking mode: #####
         toolOptions.transformOptions = {vr: true, effectiveParent: app.camera};
     }
 
     CrapLoader.CANNONize(scene, app.world);
 
     var ballMaterial = new CANNON.Material();
-    var ballBallContactMaterial = new CANNON.ContactMaterial(ballMaterial, ballMaterial, {restitution: 0.93});
+    var ballBallContactMaterial = new CANNON.ContactMaterial(ballMaterial, ballMaterial, {restitution: 0.91, friction: 0.07});
     app.world.addContactMaterial(ballBallContactMaterial);
 
     var playableSurfaceMaterial = new CANNON.Material();
-    var ballPlayableSurfaceContactMaterial = new CANNON.ContactMaterial(ballMaterial, playableSurfaceMaterial, {restitution: 0.1, friction: 0.2});
+    var ballPlayableSurfaceContactMaterial = new CANNON.ContactMaterial(ballMaterial, playableSurfaceMaterial, {restitution: 0.3, friction: 0.1});
     app.world.addContactMaterial(ballPlayableSurfaceContactMaterial);
     
     var cushionMaterial = new CANNON.Material();
-    var ballCushionContactMaterial = new CANNON.ContactMaterial(ballMaterial, cushionMaterial, {restitution: 0.8, friction: 0.3});
+    var ballCushionContactMaterial = new CANNON.ContactMaterial(ballMaterial, cushionMaterial, {restitution: 0.85, friction: 0.14});
     app.world.addContactMaterial(ballCushionContactMaterial);
 
     var floorMaterial = new CANNON.Material();
@@ -89,14 +88,16 @@ function onLoad() {
         }
     });
 
-    pyserver.log('adding tool...\ntoolOptions = ' + JSON.stringify(toolOptions));
+    pyserver.log('adding tool...');
+    pyserver.log('toolOptions =\n' + JSON.stringify(toolOptions));
+    
     var toolStuff = addTool(avatar, app.world, toolOptions);
-
+    
     stickMesh = toolStuff[0];
     tipBody   = toolStuff[1];
     toolRoot  = toolStuff[2];
 
-    if (!app.options.shadowMap) {
+    if (!app.config.shadowMap) {
         // create shadow mesh from projection:
         stickShadow = new THREE.Object3D();
         stickShadow.position.y = -avatar.position.y - toolRoot.position.y + H_table + 0.001;
@@ -111,7 +112,7 @@ function onLoad() {
         stickShadow.add(stickShadowMesh);
     }
 
-    if (app.options.mouseControlsEnabled) {
+    if (app.config.mouseControlsEnabled) {
         var mousePointer = stickMesh;
         mousePointer.position.y -= 0.01;
         tipBody.position[1] -= 0.01;
@@ -171,7 +172,7 @@ function animate(t) {
     }
     var cosHeading = Math.cos(avatar.heading),
         sinHeading = Math.sin(avatar.heading);
-    if (!app.vrControls.enabled || app.options.vrPitchingEnabled) {
+    if (!app.vrControls.enabled || app.config.vrPitchingEnabled) {
         kbpitch -= 0.8 * dt * (app.keyboard.getValue("pitchUp") + app.keyboard.getValue("pitchDown"));
         pitch = kbpitch;
         pitchQuat.setFromAxisAngle(RIGHT, pitch);
@@ -222,7 +223,7 @@ function animate(t) {
     toolRoot.position.z += -0.25 * dt * toolDrive;
     toolRoot.position.y += 0.25  * dt * toolFloat;
 
-    if (!app.options.shadowMap) {
+    if (!app.config.shadowMap) {
         stickShadow.position.x = stickMesh.position.x;
         stickShadow.position.z = stickMesh.position.z;
         stickShadow.position.y = -avatar.position.y - toolRoot.position.y + H_table + 0.001;

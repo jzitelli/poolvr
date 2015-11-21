@@ -8,8 +8,6 @@ import uuid
 from collections import defaultdict
 import numpy as np
 
-DEG2RAD = np.pi / 180
-
 
 FrontSide  = 0
 BackSide   = 1
@@ -119,28 +117,6 @@ class Object3D(Three):
         d['children'] = [c.json() for c in self.children]
         d.update({k: v for k, v in self.__dict__.items()
                   if v is not None and k not in d})
-        # S = np.diag(list(self.scale) + [1])
-        # I = np.eye(4)
-        # T = I.copy()
-        # T[:3,-1] = self.position.ravel()
-        # # TODO: never checked this rigorously:
-        # Rx = I.copy()
-        # s, c = np.sin(self.rotation[0]), np.cos(self.rotation[0])
-        # Rx[1,1] = c; Rx[1,2] = -s
-        # Rx[2,1] = s; Rx[2,2] = c
-        # Ry = I.copy()
-        # s, c = np.sin(self.rotation[1]), np.cos(self.rotation[1])
-        # Ry[0,0] = c;  Ry[0,2] = s
-        # Ry[2,0] = -s; Ry[2,2] = c
-        # Rz = I.copy()
-        # s, c = np.sin(self.rotation[2]), np.cos(self.rotation[2])
-        # Rz[0,0] = c; Rz[0,1] = -s
-        # Rz[1,0] = s; Rz[1,1] = c
-        # matrix = T.dot(Rz).dot(Ry).dot(Rx).dot(S)
-        # d.update({"matrix": matrix.T.ravel().tolist(),
-        #           'children': [c.json() for c in self.children]})
-        # d.update({k: v for k, v in self.__dict__.items()
-        #           if v is not None and k not in ['position', 'rotation', 'scale'] + list(d.keys())})
         return d
     def export(self, geometries=None, materials=None, textures=None, images=None):
         if geometries is None:
@@ -389,7 +365,7 @@ class BufferGeometry(Three):
         if self.indices:
             d['data']['index'] = {
                 "itemSize": 1,
-                "type": "Uint32Array",
+                "type": "Uint16Array",
                 "array": np.array(self.indices).ravel().tolist()
             }
         if self.normals:
@@ -407,9 +383,12 @@ class BufferGeometry(Three):
         return d
 
 
-def _tri_faces(rect_face):
+def _tri_faces(rect_face, flip_normals=False):
     "Return indices for two triangles comprising the rectangle"
-    return [[rect_face[0], rect_face[1], rect_face[2]], [rect_face[0], rect_face[2], rect_face[3]]]
+    if flip_normals:
+        return [[rect_face[0], rect_face[2], rect_face[1]], [rect_face[0], rect_face[3], rect_face[2]]]
+    else:
+        return [[rect_face[0], rect_face[1], rect_face[2]], [rect_face[0], rect_face[2], rect_face[3]]]
 
 
 class QuadBufferGeometry(BufferGeometry):
@@ -419,17 +398,18 @@ class QuadBufferGeometry(BufferGeometry):
         BufferGeometry.__init__(self, vertices=vertices, uvs=uvs, indices=_tri_faces([0,1,2,3]), **kwargs)
 
 
-class BoxBufferGeometry(BufferGeometry):
+class HexaBufferGeometry(BufferGeometry):
     def __init__(self, vertices, **kwargs):
         rects = [[0,1,2,3], # bottom
-                 [4,7,6,5], # top
-                 [0,4,5,1], # back
+                 [4,5,6,7], # top
+                 [0,4,5,1], # front
                  [2,1,5,6], # right
-                 [3,2,6,7], # front
+                 [3,2,6,7], # rear
                  [0,3,7,4]] # left
         BufferGeometry.__init__(self, vertices=vertices,
-            indices=[_tri_faces(rect) for rect in rects],
-            **kwargs)
+                                indices=[_tri_faces(rect)
+                                         for rect in rects],
+                                **kwargs)
 
 
 class PrismBufferGeometry(BufferGeometry):
@@ -441,7 +421,7 @@ class PrismBufferGeometry(BufferGeometry):
     def __init__(self, vertices, **kwargs):
         indices = [[0,1,2], [3,4,5][::-1]]
         for rect in [[0,1,4,3], [1,2,5,4], [2,0,3,5]]:
-            indices += _tri_faces(rect[::-1])
+            indices += _tri_faces(rect[::-1], flip_normals=False)
         BufferGeometry.__init__(self, vertices=vertices,
                                 indices=indices, **kwargs)
 

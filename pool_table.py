@@ -98,16 +98,18 @@ def pool_table(L_table=2.3368, W_table=None, H_table=0.74295,
                                                     [-0.5*W_playable + np.sqrt(2)*W_cushion, H_cushion, -0.5*W_cushion],
                                                     [ 0.5*W_playable,                        0,          0.5*W_cushion],
                                                     [ 0.5*W_playable,                        H_cushion,  0.5*W_cushion],
-                                                    [ 0.5*W_playable - np.sqrt(2)*W_cushion, H_cushion, -0.5*W_cushion]])
+                                                    [ 0.5*W_playable - np.sqrt(2)*W_cushion, H_cushion, -0.5*W_cushion]][::-1])
     ###
-    headCushionMesh = Mesh(geometry=headCushionGeom,
+    headCushionMesh = Mesh(name='headCushionMesh',
+                           geometry=headCushionGeom,
                            material=cushionMaterial,
                            position=[0, H_table, 0.5*L_table - 0.5*W_cushion],
                            receiveShadow=True,
                            userData={'cannonData': {'mass': 0, 'shapes': ['ConvexPolyhedron']}})
     poolTable.add(headCushionMesh)
     ###
-    footCushionMesh = Mesh(geometry=headCushionGeom,
+    footCushionMesh = Mesh(name='footCushionMesh',
+                           geometry=headCushionGeom,
                            material=cushionMaterial,
                            position=[0, H_table, -0.5*L_table + 0.5*W_cushion],
                            rotation=[0, np.pi, 0],
@@ -115,7 +117,8 @@ def pool_table(L_table=2.3368, W_table=None, H_table=0.74295,
                            userData={'cannonData': {'mass': 0, 'shapes': ['ConvexPolyhedron']}})
     poolTable.add(footCushionMesh)
     ###
-    leftHeadCushionGeom = Mesh(geometry=headCushionGeom,
+    leftHeadCushionGeom = Mesh(name='leftHeadCushionMesh',
+                               geometry=headCushionGeom,
                                material=cushionMaterial,
                                position=[-0.5*W_table + 0.5*W_cushion, H_table, 0.25*L_table],
                                rotation=[0, -np.pi/2, 0],
@@ -123,7 +126,8 @@ def pool_table(L_table=2.3368, W_table=None, H_table=0.74295,
                                userData={'cannonData': {'mass': 0, 'shapes': ['ConvexPolyhedron']}})
     poolTable.add(leftHeadCushionGeom)
     ###
-    leftFootCushionGeom = Mesh(geometry=headCushionGeom,
+    leftFootCushionGeom = Mesh(name='leftFootCushionMesh',
+                               geometry=headCushionGeom,
                                material=cushionMaterial,
                                position=[-0.5*W_table + 0.5*W_cushion, H_table, -0.25*L_table],
                                rotation=[0, -np.pi/2, 0],
@@ -131,7 +135,8 @@ def pool_table(L_table=2.3368, W_table=None, H_table=0.74295,
                                userData={'cannonData': {'mass': 0, 'shapes': ['ConvexPolyhedron']}})
     poolTable.add(leftFootCushionGeom)
     ##
-    rightHeadCushionGeom = Mesh(geometry=headCushionGeom,
+    rightHeadCushionGeom = Mesh(name='rightHeadCushionMesh',
+                                geometry=headCushionGeom,
                                 material=cushionMaterial,
                                 position=[0.5*W_table - 0.5*W_cushion, H_table, 0.25*L_table],
                                 rotation=[0, np.pi/2, 0],
@@ -139,7 +144,8 @@ def pool_table(L_table=2.3368, W_table=None, H_table=0.74295,
                                 userData={'cannonData': {'mass': 0, 'shapes': ['ConvexPolyhedron']}})
     poolTable.add(rightHeadCushionGeom)
     ###
-    rightFootCushionGeom = Mesh(geometry=headCushionGeom,
+    rightFootCushionGeom = Mesh(name='rightFootCushionMesh',
+                                geometry=headCushionGeom,
                                 material=cushionMaterial,
                                 position=[0.5*W_table - 0.5*W_cushion, H_table, -0.25*L_table],
                                 rotation=[0, np.pi/2, 0],
@@ -267,9 +273,8 @@ def pool_hall(useBasicMaterials=True,
                                   position=[0, -ball_radius + 0.001, 0],
                                   rotation=[-0.5*np.pi - rotation[0], -rotation[1], -rotation[2]])
             ballMesh.add(ballShadowMesh)
-
-    textGeometries = text_geom_alphabet(font='anonymous pro', height=0, size=0.1, curveSegments=2)
-    geometries = scene.find_geometries()
-    geometries.update({geom.uuid: geom for geom in textGeometries.values()})
-
-    return scene.export(geometries=geometries)
+    return scene.export()
+    # textGeometries = text_geom_alphabet(font='anonymous pro', height=0, size=0.1, curveSegments=2)
+    # geometries = scene.find_geometries()
+    # geometries.update({geom.uuid: geom for geom in textGeometries.values()})
+    # return scene.export(geometries=geometries)
