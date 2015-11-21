@@ -3,36 +3,30 @@
   <head>
     <meta charset="utf-8">
 
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no">
-
     <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
 
-    <title>poolvr config</title>
+    <title>poolvr/config</title>
 
     <style>
-      body {
-        background-color: #000;
-        color: #fff;
-        margin: 0px;
-        padding: 0;
-        overflow: hidden;
-      }
+    html {
+      font-size: 150%;
+    }
     </style>
-
-<!-- poolvr config definition is embedded here -->
-{{ json_config if json_config else "" }}
 
   </head>
 
-  <body onLoad='onLoad()'>
+  <body>
 
-    <script src="src/pyserver.js"></script>
-    <script src="src/config.js"></script>
+  <blockquote>
+  <code>
+    {{ poolvr_config }}
+  </code>
+  </blockquote>
 
-    <script>
-    function onLoad() {
-    }
-    </script>
+  <a id='save config'>
+  <a id='import config'>
+  <a id='export config'>
 
   </body>
+
 </html>

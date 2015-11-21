@@ -76,7 +76,7 @@ def poolvr_config():
     """app configurator"""
     config = get_poolvr_config()
     return render_template('config.html',
-                           poolvr_config=json.dumps(config))
+                           poolvr_config=json.dumps(config, indent=2))
 
 
 
