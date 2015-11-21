@@ -93,12 +93,23 @@ def pool_table(L_table=2.3368, W_table=None, H_table=0.74295,
                         receiveShadow=True)
     poolTable.add(headSpotMesh)
     # centered as if it were BoxGeometry(W_playable, H_cushion, W_cushion):
-    headCushionGeom = PrismBufferGeometry(vertices=[[-0.5*W_playable,                        0,          0.5*W_cushion],
-                                                    [-0.5*W_playable,                        H_cushion,  0.5*W_cushion],
-                                                    [-0.5*W_playable + np.sqrt(2)*W_cushion, H_cushion, -0.5*W_cushion],
-                                                    [ 0.5*W_playable,                        0,          0.5*W_cushion],
-                                                    [ 0.5*W_playable,                        H_cushion,  0.5*W_cushion],
-                                                    [ 0.5*W_playable - np.sqrt(2)*W_cushion, H_cushion, -0.5*W_cushion]][::-1])
+    # headCushionGeom = PrismBufferGeometry(vertices=[[-0.5*W_playable,                        0,          0.5*W_cushion],
+    #                                                 [-0.5*W_playable,                        H_cushion,  0.5*W_cushion],
+    #                                                 [-0.5*W_playable + np.sqrt(2)*W_cushion, H_cushion, -0.5*W_cushion],
+    #                                                 [ 0.5*W_playable,                        0,          0.5*W_cushion],
+    #                                                 [ 0.5*W_playable,                        H_cushion,  0.5*W_cushion],
+    #                                                 [ 0.5*W_playable - np.sqrt(2)*W_cushion, H_cushion, -0.5*W_cushion]][::-1])
+    noseSize = 0.25 * H_cushion
+    headCushionGeom = HexaBufferGeometry(vertices=[# bottom quad:
+                                                   [-0.5*W_playable,                        0,                     0.5*W_cushion],
+                                                   [ 0.5*W_playable,                        0,                     0.5*W_cushion],
+                                                   [ 0.5*W_playable - np.sqrt(2)*W_cushion, H_cushion - noseSize, -0.5*W_cushion],
+                                                   [-0.5*W_playable + np.sqrt(2)*W_cushion, H_cushion - noseSize, -0.5*W_cushion],
+                                                   # top quad:
+                                                   [-0.5*W_playable,                        H_cushion,  0.5*W_cushion],
+                                                   [ 0.5*W_playable,                        H_cushion,  0.5*W_cushion],
+                                                   [ 0.5*W_playable - np.sqrt(2)*W_cushion, H_cushion, -0.5*W_cushion],
+                                                   [-0.5*W_playable + np.sqrt(2)*W_cushion, H_cushion, -0.5*W_cushion]])
     ###
     #cushionShape = 'ConvexPolyhedron'
     cushionShape = 'Box'
