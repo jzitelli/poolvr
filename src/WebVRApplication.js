@@ -102,17 +102,17 @@ WebVRApplication = ( function () {
         world.solver.iterations = 10;
         this.world = world;
 
-        // TODO: needed?
-        // window.addEventListener("resize", function () {
-        //     var canvasWidth = window.innerWidth,
-        //         canvasHeight = window.innerHeight;
-        //     this.camera.aspect = canvasWidth / canvasHeight;
-        //     this.camera.updateProjectionMatrix();
-        //     this.renderer.setSize(canvasWidth, canvasHeight);
-        //     if (this.vrManager.isVRMode()) {
-        //         this.vrControls.enabled = true;
-        //     }
-        // }.bind(this), false);
+        // TODO: needed? *^^
+        window.addEventListener("resize", function () {
+            var canvasWidth = window.innerWidth,
+                canvasHeight = window.innerHeight;
+            this.camera.aspect = canvasWidth / canvasHeight;
+            this.camera.updateProjectionMatrix();
+            this.renderer.setSize(canvasWidth, canvasHeight);
+            if (this.vrManager.isVRMode()) {
+                this.vrControls.enabled = true;
+            }
+        }.bind(this), false);
 
         function lockChangeAlert() {
             if ( document.pointerLockElement || document.mozPointerLockElement || document.webkitPointerLockElement ) {
