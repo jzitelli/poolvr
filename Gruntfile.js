@@ -56,10 +56,9 @@ module.exports = function ( grunt ) {
               "src/WebVRApplication.js",
               "src/CrapLoader.js",
               "src/LeapTools.js",
+              "src/TextGeomLogger.js",
               "src/pyserver.js",
               "src/config.js",
-              //"src/TextGeomLogger.js",
-              "src/cardboard.js",
               "src/app.js"
           ]
         }
