@@ -123,7 +123,7 @@ def log():
 def main():
     _logger.info("app.config:\n%s" % '\n'.join(['%s: %s' % (k, str(v))
                                                 for k, v in sorted(app.config.items(),
-                                                                   key=operator.itemgetter(0))]))
+                                                                   key=lambda i: i[0])]))
     _logger.info("STARTING FLASK APP!!!!!!!!!!!!!")
     app.run(host='0.0.0.0')
 
