@@ -15,7 +15,7 @@ var CrapLoader = ( function () {
     }
 
     function parse(json) {
-        // TODO: convert all to BufferGeometry option
+        // TODO: convert all to BufferGeometry?
         function onLoad(obj) {
             obj.traverse( function (node) {
                 if (node instanceof THREE.Mesh) {
@@ -24,9 +24,8 @@ var CrapLoader = ( function () {
                     if (node.userData && node.userData.visible === false) {
                         node.visible = false;
                     }
-                    if (node.material.shading === THREE.SmoothShading)
-                        node.geometry.computeVertexNormals();
-                    else if (node.material.shading === THREE.FlatShading)
+                    node.geometry.computeVertexNormals();
+                    if (node.material.shading === THREE.FlatShading)
                         node.geometry.computeFaceNormals();
                 }
             } );
@@ -53,6 +52,7 @@ var CrapLoader = ( function () {
                 }
             } );
         }
+
         // filter out geometries that ObjectLoader doesn't handle:
         var geometries = objectLoader.parseGeometries(json.geometries.filter(function (geom) {
             return geom.type != "TextGeometry";
@@ -79,9 +79,7 @@ var CrapLoader = ( function () {
         return object;
     }
 
-
     var position = new THREE.Vector3();
-
     function CANNONize(obj, world) {
         obj.traverse(function(node) {
             if (node.userData && node.userData.cannonData) {
@@ -105,11 +103,16 @@ var CrapLoader = ( function () {
             }
             if (node instanceof THREE.Mesh) {
                 position.copy(node.position);
-                body = new CANNON.Body({
-                    mass: cannonData.mass,
-                    position: node.localToWorld(position),
-                    quaternion: node.quaternion
-                });
+                params = {mass: cannonData.mass,
+                          position: node.localToWorld(position),
+                          quaternion: node.quaternion};
+                if (cannonData.linearDamping !== undefined) {
+                    params.linearDamping = cannonData.linearDamping;
+                }
+                if (cannonData.angularDamping !== undefined) {
+                    params.angularDamping = cannonData.angularDamping;
+                }
+                body = new CANNON.Body(params);
                 body.mesh = node;
                 cannonData.shapes.forEach(function(e) {
                     var shape,

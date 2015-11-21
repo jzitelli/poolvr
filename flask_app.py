@@ -23,7 +23,6 @@ import poolvr
 from poolvr.pool_table import pool_hall
 from poolvr import three
 
-
 POOLVR_CONFIG = {
     'gravity'               : 9.8,
     'useBasicMaterials'     : True,
@@ -31,11 +30,7 @@ POOLVR_CONFIG = {
     'usePhongMaterials'     : None,
     'shadowMap'             : None,
     'pointLight'            : None,
-    'backgroundColor'       : 0x000000,
     'oldBoilerplate'        : False,
-    'mouseControlsEnabled'  : False,
-    'gamepadControlsEnabled': True,
-    'showMousePointerOnLock': False,
     'leapDisabled'          : None,
     'leapHandsDisabled'     : None
 }

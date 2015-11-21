@@ -15,16 +15,20 @@
     "README.md",
     "lib/",
     "sounds/",
-    "images/"
+    "images/",
+    "fonts/",
+    "favicon.ico",
+    "flask_app.py",
+    "tornado_app.py"
   ],
   "keywords": [
     "pool",
     "billiards",
     "WebVR",
-    "Leap Motion"
+    "Leap Motion",
+    "cannon.js",
+    "three.js"
   ],
-  "dependencies": {
-  },
   "devDependencies": {
     "grunt": "^0.4.5",
     "grunt-contrib-clean": "^0.6.0",
