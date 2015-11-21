@@ -14,7 +14,10 @@ var CrapLoader = ( function () {
         return isLoaded_;
     }
 
-    function parse(json) {
+    function parse(json, texturePath) {
+        if (texturePath) {
+            objectLoader.setTexturePath(texturePath);
+        }
         // TODO: convert all to BufferGeometry?
         function onLoad(obj) {
             obj.traverse( function (node) {
@@ -66,7 +69,6 @@ var CrapLoader = ( function () {
                 geometries[geom.uuid] = geometry;
             }
         } );
-
         var images = objectLoader.parseImages(json.images, function () {
             onLoad(object);
         });

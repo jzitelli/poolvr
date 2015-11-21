@@ -8,27 +8,77 @@
     <title>poolvr/config</title>
 
     <style>
-    html {
-      font-size: 150%;
-    }
+      body {
+        background-color: #000;
+        color: #fff;
+        margin: 0px;
+        padding: 0;
+        overflow: hidden;
+      }
     </style>
 
-{{ json_config if json_config else "" }}
+{{ json_config }}
 
   </head>
 
-  <body>
+  <body onLoad='onLoad()'>
 
-  <blockquote>
-  <code>
-    {{ poolvr_config }}
-  </code>
-  </blockquote>
+    <code>
+      {{ poolvr_config }}
+    </code>
 
-  <a id='save config'>
-  <a id='import config'>
-  <a id='export config'>
+<!--
+    <a id='save'>   Save config   </a>
+    <a id='import'> Import config </a>
+    <a id='export'> Export config </a>
+ -->
+    <script src="{{ url_for('static', filename='lib/three-r73.js') }}"></script>
+    <script src="{{ url_for('static', filename='lib/TextGeometry.js') }}"></script>
+    <script src="{{ url_for('static', filename='lib/FontUtils.js') }}"></script>
+    <script src="{{ url_for('static', filename='lib/VREffect.js') }}"></script>
+    <script src="{{ url_for('static', filename='lib/VRControls.js') }}"></script>
+    <script src="{{ url_for('static', filename='lib/webvr-polyfill.js') }}"></script>
+    <script src="{{ url_for('static', filename='lib/webvr-manager.js') }}"></script>
+
+    <!-- TODO: remove colladaloader dependency -->
+    <!-- TODO: remove cannon dependency -->
+    <script src="{{ url_for('static', filename='lib/ColladaLoader.js') }}"></script>
+    <script src="{{ url_for('static', filename='lib/cannon.js') }}"></script>
+    <script src="{{ url_for('static', filename='lib/Primrose.js') }}"></script>
+
+    <script src="{{ url_for('static', filename='src/CrapLoader.js') }}"></script>
+    <script src="{{ url_for('static', filename='src/WebVRApplication.js') }}"></script>
+
+<script>
+var scene;
+var app;
+var avatar = new THREE.Object3D();
+var POOLVR = POOLVR || {};
+var POOLVR_CONFIG = POOLVR_CONFIG || {};
+POOLVR.config = POOLVR.config || POOLVR_CONFIG;
+function onLoad() {
+    scene = CrapLoader.parse(JSON_SCENE);
+    console.log(scene.type);
+    console.log(scene);
+    scene.scale.set(0.1, 0.1, 0.1);
+    scene.add(avatar);
+    app = new WebVRApplication('poolvr config', avatar, scene, POOLVR.config);
+    avatar.add(app.camera);
+    app.start(animate);
+}
+function animate(t) {
+    "use strict";
+    requestAnimationFrame(animate);
+    var dt = (t - app.lt) * 0.001;
+    app.lt = t;
+    if (app.vrControls.enabled) {
+        app.vrControls.update();
+    }
+    app.vrManager.render(app.scene, app.camera, t);
+    // app.keyboard.update(dt);
+    // app.gamepad.update(dt);
+}
+</script>
 
   </body>
-
 </html>

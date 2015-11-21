@@ -5,10 +5,12 @@ WebVRApplication = ( function () {
         this.scene = scene;
         this.config = config;
 
-        this.avatar.heading = 0;
+        avatar.heading = avatar.heading || 0;
+        avatar.pitch = avatar.pitch || 0;
 
         var camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
         this.camera = camera;
+
         var renderer = new THREE.WebGLRenderer({
             antialias: true,
             alpha: true
@@ -24,17 +26,28 @@ WebVRApplication = ( function () {
             this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         }
         document.body.appendChild(this.renderer.domElement);
+
         this.vrEffect = new THREE.VREffect(this.renderer);
         this.vrManager = new WebVRManager(this.renderer, this.vrEffect, {
             hideButton: false
         });
-
         this.vrControls = new THREE.VRControls(this.camera);
         this.vrControls.enabled = false;
 
         this.resetVRSensor = function () {
             this.vrControls.resetSensor();
             this.avatar.heading = 0;
+        }.bind(this);
+
+        this.toggleVRControls = function () {
+            if (this.vrControls.enabled) {
+                this.vrControls.enabled = false;
+                this.camera.position.set(0, 0, 0);
+                this.camera.quaternion.set(0, 0, 0, 1);
+            } else {
+                this.vrControls.enabled = true;
+                this.vrControls.update();
+            }
         }.bind(this);
 
         var wireframeMaterial = new THREE.MeshBasicMaterial({color: 0xeeddaa, wireframe: true});
@@ -45,16 +58,6 @@ WebVRApplication = ( function () {
             } else {
                 console.log("wireframe: on");
                 this.scene.overrideMaterial = wireframeMaterial;
-            }
-        }.bind(this);
-        this.toggleVRControls = function () {
-            if (this.vrControls.enabled) {
-                this.vrControls.enabled = false;
-                this.camera.position.set(0, 0, 0);
-                this.camera.quaternion.set(0, 0, 0, 1);
-            } else {
-                this.vrControls.enabled = true;
-                this.vrControls.update();
             }
         }.bind(this);
 
@@ -155,7 +158,6 @@ WebVRApplication = ( function () {
             waitForResources(0);
         };
 
-
         this.audioContext = new AudioContext();
         var audioContext = this.audioContext;
         var gainNode = audioContext.createGain();
@@ -177,6 +179,7 @@ WebVRApplication = ( function () {
             };
             request.send();
         };
+
     }
 
     return WebVRApplication;

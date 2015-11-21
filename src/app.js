@@ -1,8 +1,10 @@
 // TODO requires three.js, CANNON.js, settings.js, cardboard.js, WebVRApplication.js, CrapLoader.js, LeapTools.js, pyserver.js
 var app;
+
 var scene = CrapLoader.parse(JSON_SCENE);
-var avatar = avatar || new THREE.Object3D();
 var H_table = 0.74295; // TODO: coordinate w/ server
+
+var avatar = avatar || new THREE.Object3D();
 avatar.position.y = 1.2;
 avatar.position.z = 1.9;
 
@@ -139,13 +141,11 @@ function onLoad() {
 
 var UP = new THREE.Vector3(0, 1, 0),
     RIGHT = new THREE.Vector3(1, 0, 0),
-    pitch = 0,
     pitchQuat = new THREE.Quaternion(),
     headingQuat = new THREE.Quaternion(),
     strafe,
     drive,
     floatUp,
-    kbpitch = 0,
     walkSpeed = 0.3,
     floatSpeed = 0.1,
     toolDrive, toolStrafe, toolFloat;
@@ -175,13 +175,12 @@ function animate(t) {
     }
     var cosHeading = Math.cos(avatar.heading),
         sinHeading = Math.sin(avatar.heading);
-    if (!app.vrControls.enabled || app.config.vrPitchingEnabled) {
-        kbpitch -= 0.8 * dt * (app.keyboard.getValue("pitchUp") + app.keyboard.getValue("pitchDown"));
-        pitch = kbpitch;
-        pitchQuat.setFromAxisAngle(RIGHT, pitch);
+    if (!app.vrControls.enabled) {
+        avatar.pitch -= 0.8 * dt * (app.keyboard.getValue("pitchUp") + app.keyboard.getValue("pitchDown"));
+        pitchQuat.setFromAxisAngle(RIGHT, avatar.pitch);
     }
-    var cosPitch = Math.cos(pitch),
-        sinPitch = Math.sin(pitch);
+    var cosPitch = Math.cos(avatar.pitch),
+        sinPitch = Math.sin(avatar.pitch);
     floatUp *= floatSpeed;
     if (strafe || drive) {
         var len = walkSpeed * Math.min(1, 1 / Math.sqrt(drive * drive +
@@ -232,23 +231,22 @@ function animate(t) {
         stickShadow.position.y = -avatar.position.y - toolRoot.position.y + H_table + 0.001;
         stickShadowMesh.quaternion.copy(stickMesh.quaternion);
     }
-    if (app.mousePointer && avatar.picking) {
-        origin.set(0, 0, 0);
-        direction.set(0, 0, 0);
-        direction.subVectors(mousePointer.localToWorld(direction), camera.localToWorld(origin)).normalize();
-        raycaster.set(origin, direction);
-        var intersects = raycaster.intersectObjects(app.pickables);
-        if (intersects.length > 0) {
-            if (app.picked != intersects[0].object) {
-                if (app.picked) app.picked.material.color.setHex(app.picked.currentHex);
-                app.picked = intersects[0].object;
-                app.picked.currentHex = app.picked.material.color.getHex();
-                app.picked.material.color.setHex(0xff4444); //0x44ff44);
-            }
-        } else {
-            if (app.picked) app.picked.material.color.setHex(app.picked.currentHex);
-            app.picked = null;
-        }
-    }
+    // if (app.mousePointer && avatar.picking) {
+    //     origin.set(0, 0, 0);
+    //     direction.set(0, 0, 0);
+    //     direction.subVectors(mousePointer.localToWorld(direction), camera.localToWorld(origin)).normalize();
+    //     raycaster.set(origin, direction);
+    //     var intersects = raycaster.intersectObjects(app.pickables);
+    //     if (intersects.length > 0) {
+    //         if (app.picked != intersects[0].object) {
+    //             if (app.picked) app.picked.material.color.setHex(app.picked.currentHex);
+    //             app.picked = intersects[0].object;
+    //             app.picked.currentHex = app.picked.material.color.getHex();
+    //             app.picked.material.color.setHex(0xff4444); //0x44ff44);
+    //         }
+    //     } else {
+    //         if (app.picked) app.picked.material.color.setHex(app.picked.currentHex);
+    //         app.picked = null;
+    //     }
+    // }
 }
-

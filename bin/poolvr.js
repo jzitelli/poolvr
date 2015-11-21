@@ -12,10 +12,12 @@ WebVRApplication = ( function () {
         this.scene = scene;
         this.config = config;
 
-        this.avatar.heading = 0;
+        avatar.heading = avatar.heading || 0;
+        avatar.pitch = avatar.pitch || 0;
 
         var camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
         this.camera = camera;
+
         var renderer = new THREE.WebGLRenderer({
             antialias: true,
             alpha: true
@@ -31,17 +33,28 @@ WebVRApplication = ( function () {
             this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         }
         document.body.appendChild(this.renderer.domElement);
+
         this.vrEffect = new THREE.VREffect(this.renderer);
         this.vrManager = new WebVRManager(this.renderer, this.vrEffect, {
             hideButton: false
         });
-
         this.vrControls = new THREE.VRControls(this.camera);
         this.vrControls.enabled = false;
 
         this.resetVRSensor = function () {
             this.vrControls.resetSensor();
             this.avatar.heading = 0;
+        }.bind(this);
+
+        this.toggleVRControls = function () {
+            if (this.vrControls.enabled) {
+                this.vrControls.enabled = false;
+                this.camera.position.set(0, 0, 0);
+                this.camera.quaternion.set(0, 0, 0, 1);
+            } else {
+                this.vrControls.enabled = true;
+                this.vrControls.update();
+            }
         }.bind(this);
 
         var wireframeMaterial = new THREE.MeshBasicMaterial({color: 0xeeddaa, wireframe: true});
@@ -52,16 +65,6 @@ WebVRApplication = ( function () {
             } else {
                 console.log("wireframe: on");
                 this.scene.overrideMaterial = wireframeMaterial;
-            }
-        }.bind(this);
-        this.toggleVRControls = function () {
-            if (this.vrControls.enabled) {
-                this.vrControls.enabled = false;
-                this.camera.position.set(0, 0, 0);
-                this.camera.quaternion.set(0, 0, 0, 1);
-            } else {
-                this.vrControls.enabled = true;
-                this.vrControls.update();
             }
         }.bind(this);
 
@@ -162,7 +165,6 @@ WebVRApplication = ( function () {
             waitForResources(0);
         };
 
-
         this.audioContext = new AudioContext();
         var audioContext = this.audioContext;
         var gainNode = audioContext.createGain();
@@ -184,6 +186,7 @@ WebVRApplication = ( function () {
             };
             request.send();
         };
+
     }
 
     return WebVRApplication;
@@ -205,7 +208,10 @@ var CrapLoader = ( function () {
         return isLoaded_;
     }
 
-    function parse(json) {
+    function parse(json, texturePath) {
+        if (texturePath) {
+            objectLoader.setTexturePath(texturePath);
+        }
         // TODO: convert all to BufferGeometry?
         function onLoad(obj) {
             obj.traverse( function (node) {
@@ -257,7 +263,6 @@ var CrapLoader = ( function () {
                 geometries[geom.uuid] = geometry;
             }
         } );
-
         var images = objectLoader.parseImages(json.images, function () {
             onLoad(object);
         });
@@ -837,22 +842,26 @@ var VR_DEVICES = [
     // *** WORKS W/ OLDER WEBVR-BOILERPLATE ***
 ];
 
-pyserver.log(JSON.stringify(WebVRConfig));
+pyserver.log('WebVRConfig =\n' + JSON.stringify(WebVRConfig));
 var userAgent = navigator.userAgent;
-pyserver.log(userAgent);
+pyserver.log('userAgent = ' + userAgent);
+var vrDevices = [];
 if (navigator.getVRDevices) {
     navigator.getVRDevices().then(function (devices) {
         devices.forEach(function (device, i) {
-            pyserver.log('VR device ' + i + ': ' + device.deviceName);
+            pyserver.log('VR device ' + i + ': ' + JSON.stringify(device));
+            vrDevices[i] = device;
         });
     });
 }
 ;
 // TODO requires three.js, CANNON.js, settings.js, cardboard.js, WebVRApplication.js, CrapLoader.js, LeapTools.js, pyserver.js
 var app;
+
 var scene = CrapLoader.parse(JSON_SCENE);
-var avatar = avatar || new THREE.Object3D();
 var H_table = 0.74295; // TODO: coordinate w/ server
+
+var avatar = avatar || new THREE.Object3D();
 avatar.position.y = 1.2;
 avatar.position.z = 1.9;
 
@@ -989,13 +998,11 @@ function onLoad() {
 
 var UP = new THREE.Vector3(0, 1, 0),
     RIGHT = new THREE.Vector3(1, 0, 0),
-    pitch = 0,
     pitchQuat = new THREE.Quaternion(),
     headingQuat = new THREE.Quaternion(),
     strafe,
     drive,
     floatUp,
-    kbpitch = 0,
     walkSpeed = 0.3,
     floatSpeed = 0.1,
     toolDrive, toolStrafe, toolFloat;
@@ -1025,13 +1032,12 @@ function animate(t) {
     }
     var cosHeading = Math.cos(avatar.heading),
         sinHeading = Math.sin(avatar.heading);
-    if (!app.vrControls.enabled || app.config.vrPitchingEnabled) {
-        kbpitch -= 0.8 * dt * (app.keyboard.getValue("pitchUp") + app.keyboard.getValue("pitchDown"));
-        pitch = kbpitch;
-        pitchQuat.setFromAxisAngle(RIGHT, pitch);
+    if (!app.vrControls.enabled) {
+        avatar.pitch -= 0.8 * dt * (app.keyboard.getValue("pitchUp") + app.keyboard.getValue("pitchDown"));
+        pitchQuat.setFromAxisAngle(RIGHT, avatar.pitch);
     }
-    var cosPitch = Math.cos(pitch),
-        sinPitch = Math.sin(pitch);
+    var cosPitch = Math.cos(avatar.pitch),
+        sinPitch = Math.sin(avatar.pitch);
     floatUp *= floatSpeed;
     if (strafe || drive) {
         var len = walkSpeed * Math.min(1, 1 / Math.sqrt(drive * drive +
@@ -1082,24 +1088,23 @@ function animate(t) {
         stickShadow.position.y = -avatar.position.y - toolRoot.position.y + H_table + 0.001;
         stickShadowMesh.quaternion.copy(stickMesh.quaternion);
     }
-    if (app.mousePointer && avatar.picking) {
-        origin.set(0, 0, 0);
-        direction.set(0, 0, 0);
-        direction.subVectors(mousePointer.localToWorld(direction), camera.localToWorld(origin)).normalize();
-        raycaster.set(origin, direction);
-        var intersects = raycaster.intersectObjects(app.pickables);
-        if (intersects.length > 0) {
-            if (app.picked != intersects[0].object) {
-                if (app.picked) app.picked.material.color.setHex(app.picked.currentHex);
-                app.picked = intersects[0].object;
-                app.picked.currentHex = app.picked.material.color.getHex();
-                app.picked.material.color.setHex(0xff4444); //0x44ff44);
-            }
-        } else {
-            if (app.picked) app.picked.material.color.setHex(app.picked.currentHex);
-            app.picked = null;
-        }
-    }
+    // if (app.mousePointer && avatar.picking) {
+    //     origin.set(0, 0, 0);
+    //     direction.set(0, 0, 0);
+    //     direction.subVectors(mousePointer.localToWorld(direction), camera.localToWorld(origin)).normalize();
+    //     raycaster.set(origin, direction);
+    //     var intersects = raycaster.intersectObjects(app.pickables);
+    //     if (intersects.length > 0) {
+    //         if (app.picked != intersects[0].object) {
+    //             if (app.picked) app.picked.material.color.setHex(app.picked.currentHex);
+    //             app.picked = intersects[0].object;
+    //             app.picked.currentHex = app.picked.material.color.getHex();
+    //             app.picked.material.color.setHex(0xff4444); //0x44ff44);
+    //         }
+    //     } else {
+    //         if (app.picked) app.picked.material.color.setHex(app.picked.currentHex);
+    //         app.picked = null;
+    //     }
+    // }
 }
-
 // ################## poolvr VERSION = "v0.1.0";

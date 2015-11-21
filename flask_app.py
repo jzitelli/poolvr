@@ -71,10 +71,21 @@ def js_suffix():
 
 
 
-configScene = None
-with open(os.path.join(os.getcwd(), 'models',
-                       'ConfigUtilDeskScene.json')) as f:
-    configScene = f.read()
+try:
+    model_dir = os.path.join(os.getcwd(), 'models')
+    with open(os.path.join(model_dir, 'ConfigUtilDeskScene.json')) as f:
+        configScene = json.loads(f.read())
+    def replace_urls(node):
+        for k, v in node.items():
+            if isinstance(v, str) and v[-4:] == '.png':
+                node[k] = os.path.join('models', v)
+            elif isinstance(v, dict):
+                replace_urls(v)
+    replace_urls(configScene)
+except Exception as err:
+    _logger.warning(err)
+    configScene = three.Scene().export()
+
 @app.route('/poolvr/config', methods=['GET', 'POST'])
 def poolvr_config():
     """app configurator"""

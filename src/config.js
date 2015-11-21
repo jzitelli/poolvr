@@ -118,13 +118,15 @@ var VR_DEVICES = [
     // *** WORKS W/ OLDER WEBVR-BOILERPLATE ***
 ];
 
-pyserver.log(JSON.stringify(WebVRConfig));
+pyserver.log('WebVRConfig =\n' + JSON.stringify(WebVRConfig));
 var userAgent = navigator.userAgent;
-pyserver.log(userAgent);
+pyserver.log('userAgent = ' + userAgent);
+var vrDevices = [];
 if (navigator.getVRDevices) {
     navigator.getVRDevices().then(function (devices) {
         devices.forEach(function (device, i) {
-            pyserver.log('VR device ' + i + ': ' + device.deviceName);
+            pyserver.log('VR device ' + i + ': ' + JSON.stringify(device));
+            vrDevices[i] = device;
         });
     });
 }
