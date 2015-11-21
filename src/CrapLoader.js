@@ -103,9 +103,9 @@ var CrapLoader = ( function () {
             }
             if (node instanceof THREE.Mesh) {
                 position.copy(node.position);
-                params = {mass: cannonData.mass,
-                          position: node.localToWorld(position),
-                          quaternion: node.quaternion};
+                var params = {mass: cannonData.mass,
+                              position: node.localToWorld(position),
+                              quaternion: node.quaternion};
                 if (cannonData.linearDamping !== undefined) {
                     params.linearDamping = cannonData.linearDamping;
                 }
