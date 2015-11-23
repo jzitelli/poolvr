@@ -15,16 +15,68 @@ var stickShadow, stickShadowMesh;
 var dynamicBodies,
     ballBodies;
 
+var mouseParticleGroup = new SPE.Group({
+    texture: {value: THREE.ImageUtils.loadTexture('images/smokeparticle.png')}
+});
+var mouseParticleEmitter = new SPE.Emitter({maxAge: {value: 0.5},
+                                            position: {value: new THREE.Vector3(),
+                                                       spread: new THREE.Vector3()},
+                                            velocity: {value: new THREE.Vector3(0, 0, 0),
+                                                       spread: new THREE.Vector3(0.3, 0.3, 0.3)},
+                                            color: {value: [new THREE.Color('white'), new THREE.Color('red')]},
+                                            size: {value: 0.1},
+                                            particleCount: 50});
+mouseParticleGroup.addEmitter(mouseParticleEmitter);
+var mousePointer = mouseParticleGroup.mesh;
+
 function onLoad() {
     "use strict";
     pyserver.log("starting poolvr...");
+
     pyserver.log("POOLVR.config =\n" + JSON.stringify(POOLVR.config, undefined, 2));
+
     POOLVR.config.keyboardCommands = POOLVR.keyboardCommands;
     POOLVR.config.gamepadCommands = POOLVR.gamepadCommands;
 
     app = new WebVRApplication("poolvr", avatar, scene, POOLVR.config);
     avatar.add(app.camera);
     scene.add(avatar);
+
+    function lockChangeAlert() {
+        if ( document.pointerLockElement || document.mozPointerLockElement || document.webkitPointerLockElement ) {
+            pyserver.log('pointer lock status is now locked');
+            mousePointer.visible = true;
+        } else {
+            pyserver.log('pointer lock status is now unlocked');
+            mousePointer.visible = false;
+        }
+    }
+    if (app.config.mouseEnabled) {
+        if ("onpointerlockchange" in document) {
+          document.addEventListener('pointerlockchange', lockChangeAlert, false);
+        } else if ("onmozpointerlockchange" in document) {
+          document.addEventListener('mozpointerlockchange', lockChangeAlert, false);
+        } else if ("onwebkitpointerlockchange" in document) {
+          document.addEventListener('webkitpointerlockchange', lockChangeAlert, false);
+        }
+        avatar.add(mousePointer);
+        mousePointer.position.set(0, 0, -2);
+        app.mousePointer = mousePointer;
+        app.mouseParticleGroup = mouseParticleGroup;
+        var xMax = 2, xMin = -2,
+            yMax = 1, yMin = -1;
+        window.addEventListener("mousemove", function (evt) {
+            if (!mousePointer.visible) return;
+            var dx = evt.movementX,
+                dy = evt.movementY;
+            mousePointer.position.x += 0.0004*dx;
+            mousePointer.position.y -= 0.0004*dy;
+            if (mousePointer.position.x > xMax) mousePointer.position.x = xMax;
+            else if (mousePointer.position.x < xMin) mousePointer.position.x = xMin;
+            if (mousePointer.position.y > yMax) mousePointer.position.y = yMax;
+            else if (mousePointer.position.y < yMin) mousePointer.position.y = yMin;
+        });
+    }
 
     if (!app.config.useBasicMaterials) {
         // would rather add the spot lights via three.py generated JSON_SCENE, but I'm having problems getting shadows frm them:
@@ -121,27 +173,8 @@ function onLoad() {
         stickShadow.add(tipShadowMesh);
     }
 
-    // if (app.config.mouseControlsEnabled) {
-    //     var mousePointer = stickMesh;
-    //     mousePointer.position.y = H_table + 0.1 - avatar.position.y - toolRoot.position.y;
-    //     tipBody.position[1] = H_table + 0.1;
-    //     window.addEventListener("mousemove", function (evt) {
-    //         var dx = evt.movementX,
-    //             dy = evt.movementY;
-    //         mousePointer.position.x += 0.0004*dx;
-    //         if (mousePointer.position.x > 2) mousePointer.position.x = 2;
-    //         else if (mousePointer.position.x < -2) mousePointer.position.x = -2;
-    //         mousePointer.position.z += 0.0004*dy;
-    //         if (mousePointer.position.z > 2) mousePointer.position.z = 2;
-    //         else if (mousePointer.position.z < -2) mousePointer.position.z = -2;
-    //         tipBody.position[0] = mousePointer.position.x;
-    //         tipBody.position[2] = mousePointer.position.z;
-    //     });
-    // }
-
     dynamicBodies = app.world.bodies.filter(function(body) { return body.mesh && body.type !== CANNON.Body.STATIC; });
     ballBodies = dynamicBodies.filter(function(body) { return body.mesh.name.startsWith('ballMesh'); });
-
 
     var ballBallBuffer;
     var request = new XMLHttpRequest();
@@ -268,6 +301,9 @@ function animate(t) {
             app.playCollisionSound();
         }
     }
+
+    app.mouseParticleGroup.tick(dt);
+
 }
 
     // if (app.mousePointer && avatar.picking) {

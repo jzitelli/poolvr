@@ -17,6 +17,7 @@ var fs = require( "fs" ),
       "lib/leap.transform.js",
       "lib/ColladaLoader.js",
       "lib/Primrose.js",
+      "lib/SPE.js",
       "obj/poolvr.js"
     ],
     uglifyFiles = files.map( function ( s ) {

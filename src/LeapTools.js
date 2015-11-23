@@ -7,7 +7,7 @@ function addTool(parent, world, options) {
     var toolOffset = options.toolOffset || new THREE.Vector3(0, -0.46, -toolLength - 0.15);
     var toolMass   = options.toolMass || 0.06;
     var handOffset = options.handOffset || new THREE.Vector3(0, -0.25, -0.4);
-    
+
     var toolTime      = options.toolTime  || 0.04;
     var toolTimeB     = options.toolTimeB || toolTime + 0.1;
     var minConfidence = options.minConfidence || 0.3;
@@ -33,7 +33,7 @@ function addTool(parent, world, options) {
     var stickMesh = new THREE.Mesh(stickGeom, stickMaterial);
     stickMesh.castShadow = true;
     toolRoot.add(stickMesh);
-    var tipMesh = new THREE.Mesh(new THREE.SphereBufferGeometry(toolRadius), tipMaterial);
+    var tipMesh = new THREE.Mesh(new THREE.SphereBufferGeometry(0.95*toolRadius, 10), tipMaterial);
     tipMesh.castShadow = true;
     stickMesh.add(tipMesh);
     // TODO: mass

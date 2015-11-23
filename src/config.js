@@ -63,6 +63,7 @@ POOLVR.gamepadCommands = {
                           commandUp: function () { avatar.toolMode = false; } }
 };
 
+POOLVR.config.mouseEnabled = URL_PARAMS.mouseEnabled || POOLVR.config.mouseEnabled;
 
 window.WebVRConfig = window.WebVRConfig || {
     FORCE_ENABLE_VR: URL_PARAMS.forceEnableVR,
@@ -96,7 +97,7 @@ var VR_DEVICES = [
     // Firefox Nightly:
     // Mozilla/5.0 (X11; Linux x86_64; rv:45.0) Gecko/20100101 Firefox/45.0
     // no devices
-    
+
     // Windows 10 ################################################################################################
     // DK2 0.6.0.1 drivers
     // Chrome 0.5.0.1 DK2 build:
