@@ -181,7 +181,11 @@ function onLoad() {
     request.responseType = 'arraybuffer';
     request.open('GET', 'sounds/ballBall.ogg', true);
     request.onload = function() {
-        app.audioContext.decodeAudioData(request.response).then(function(buffer) {
+        // chome doesn't support promise-based method?
+        // app.audioContext.decodeAudioData(request.response).then(function(buffer) {
+        //     ballBallBuffer = buffer;
+        // });
+        app.audioContext.decodeAudioData(request.response, function(buffer) {
             ballBallBuffer = buffer;
         });
     };
