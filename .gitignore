@@ -1,3 +1,7 @@
+Leap.py
+LeapPython.pyd
+Leap.dll
+
 node_modules
 __pycache__
 *.min.js
