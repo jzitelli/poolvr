@@ -142,6 +142,24 @@ function onLoad() {
     dynamicBodies = app.world.bodies.filter(function(body) { return body.mesh && body.type !== CANNON.Body.STATIC; });
     ballBodies = dynamicBodies.filter(function(body) { return body.mesh.name.startsWith('ballMesh'); });
 
+
+    var ballBallBuffer;
+    var request = new XMLHttpRequest();
+    request.responseType = 'arraybuffer';
+    request.open('GET', 'sounds/ballBall.ogg', true);
+    request.onload = function() {
+        app.audioContext.decodeAudioData(request.response).then(function(buffer) {
+            ballBallBuffer = buffer;
+        });
+    };
+    request.send();
+    app.playCollisionSound = function () {
+        var source = app.audioContext.createBufferSource();
+        source.connect(app.gainNode);
+        source.buffer = ballBallBuffer;
+        source.start(0);
+    };
+
     app.start(animate);
 }
 
@@ -247,9 +265,10 @@ function animate(t) {
         var bi = contactEquation.bi,
             bj = contactEquation.bj;
         if (bi.material === bj.material) {
-            pyserver.log("BALL COLLISION!!!!");
+            app.playCollisionSound();
         }
     }
+}
 
     // if (app.mousePointer && avatar.picking) {
     //     origin.set(0, 0, 0);
@@ -269,4 +288,4 @@ function animate(t) {
     //         app.picked = null;
     //     }
     // }
-}
+
