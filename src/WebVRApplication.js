@@ -121,27 +121,6 @@ WebVRApplication = ( function () {
             }
         }.bind(this), false);
 
-        function lockChangeAlert() {
-            if ( document.pointerLockElement || document.mozPointerLockElement || document.webkitPointerLockElement ) {
-                pyserver.log('pointer lock status is now locked');
-                mousePointer.visible = true;
-            } else {
-                pyserver.log('pointer lock status is now unlocked');
-                mousePointer.visible = false;
-            }
-        }
-        if (config.mouseControlsEnabled) {
-            var mousePointer = config.mousePointer ||
-                new THREE.Mesh(new THREE.SphereBufferGeometry(0.025), new THREE.MeshBasicMaterial({color: 0xffeebb}));
-            if ("onpointerlockchange" in document) {
-              document.addEventListener('pointerlockchange', lockChangeAlert, false);
-            } else if ("onmozpointerlockchange" in document) {
-              document.addEventListener('mozpointerlockchange', lockChangeAlert, false);
-            } else if ("onwebkitpointerlockchange" in document) {
-              document.addEventListener('webkitpointerlockchange', lockChangeAlert, false);
-            }
-        }
-
         this.lt = 0;
 
         this.start = function(animate) {
