@@ -302,7 +302,7 @@ function animate(t) {
         }
     }
 
-    app.mouseParticleGroup.tick(dt);
+    if (app.mouseParticleGroup) app.mouseParticleGroup.tick(dt);
 
 }
 
