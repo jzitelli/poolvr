@@ -16,7 +16,7 @@ var dynamicBodies,
     ballBodies;
 
 var mouseParticleGroup = new SPE.Group({
-    texture: {value: THREE.ImageUtils.loadTexture('images/smokeparticle.png')}
+    texture: {value: THREE.ImageUtils.loadTexture('images/particle.png')}
 });
 var mouseParticleEmitter = new SPE.Emitter({maxAge: {value: 0.5},
                                             position: {value: new THREE.Vector3(),
