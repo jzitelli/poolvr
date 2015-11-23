@@ -51,32 +51,30 @@ function onLoad() {
             mousePointer.visible = false;
         }
     }
-    if (app.config.mouseEnabled) {
-        if ("onpointerlockchange" in document) {
-          document.addEventListener('pointerlockchange', lockChangeAlert, false);
-        } else if ("onmozpointerlockchange" in document) {
-          document.addEventListener('mozpointerlockchange', lockChangeAlert, false);
-        } else if ("onwebkitpointerlockchange" in document) {
-          document.addEventListener('webkitpointerlockchange', lockChangeAlert, false);
-        }
-        avatar.add(mousePointer);
-        mousePointer.position.set(0, 0, -2);
-        app.mousePointer = mousePointer;
-        app.mouseParticleGroup = mouseParticleGroup;
-        var xMax = 2, xMin = -2,
-            yMax = 1, yMin = -1;
-        window.addEventListener("mousemove", function (evt) {
-            if (!mousePointer.visible) return;
-            var dx = evt.movementX,
-                dy = evt.movementY;
-            mousePointer.position.x += 0.0004*dx;
-            mousePointer.position.y -= 0.0004*dy;
-            if (mousePointer.position.x > xMax) mousePointer.position.x = xMax;
-            else if (mousePointer.position.x < xMin) mousePointer.position.x = xMin;
-            if (mousePointer.position.y > yMax) mousePointer.position.y = yMax;
-            else if (mousePointer.position.y < yMin) mousePointer.position.y = yMin;
-        });
+    if ("onpointerlockchange" in document) {
+      document.addEventListener('pointerlockchange', lockChangeAlert, false);
+    } else if ("onmozpointerlockchange" in document) {
+      document.addEventListener('mozpointerlockchange', lockChangeAlert, false);
+    } else if ("onwebkitpointerlockchange" in document) {
+      document.addEventListener('webkitpointerlockchange', lockChangeAlert, false);
     }
+    avatar.add(mousePointer);
+    mousePointer.position.set(0, 0, -2);
+    app.mousePointer = mousePointer;
+    app.mouseParticleGroup = mouseParticleGroup;
+    var xMax = 2, xMin = -2,
+        yMax = 1, yMin = -1;
+    window.addEventListener("mousemove", function (evt) {
+        if (!mousePointer.visible) return;
+        var dx = evt.movementX,
+            dy = evt.movementY;
+        mousePointer.position.x += 0.0004*dx;
+        mousePointer.position.y -= 0.0004*dy;
+        if (mousePointer.position.x > xMax) mousePointer.position.x = xMax;
+        else if (mousePointer.position.x < xMin) mousePointer.position.x = xMin;
+        if (mousePointer.position.y > yMax) mousePointer.position.y = yMax;
+        else if (mousePointer.position.y < yMin) mousePointer.position.y = yMin;
+    });
 
     if (!app.config.useBasicMaterials) {
         // would rather add the spot lights via three.py generated JSON_SCENE, but I'm having problems getting shadows frm them:
