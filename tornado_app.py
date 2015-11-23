@@ -24,13 +24,14 @@ websocket_handlers = []
 handlers = websocket_handlers + [(r'.*', FallbackHandler, dict(fallback=WSGIContainer(app_flask)))]
 
 
+def make_app():
+    return Application(handlers, debug=app_flask.debug)
+
+
 def main():
     _logger.info("app_flask.config:\n%s" % '\n'.join(['%s: %s' % (k, str(v))
                                                       for k, v in sorted(app_flask.config.items(), key=operator.itemgetter(0))]))
-
-    app = Application(handlers,
-                      debug=app_flask.debug)
-
+    app = make_app()
     _logger.info("app.settings:\n%s" % '\n'.join(['%s: %s' % (k, str(v))
                                                   for k, v in sorted(app.settings.items(), key=operator.itemgetter(0))]))
 
@@ -46,6 +47,6 @@ def main():
 
 
 if __name__ == "__main__":
-    logging.basicConfig(level=(logging.DEBUG if app.debug else logging.INFO),
+    logging.basicConfig(level=(logging.DEBUG if app_flask.debug else logging.INFO),
                         format="%(asctime)s: %(levelname)s %(name)s %(funcName)s %(lineno)d:  %(message)s")
     main()
