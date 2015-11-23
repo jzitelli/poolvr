@@ -12,7 +12,8 @@ var ballMeshes       = [],
     ballStripeMeshes = [];
 var stickMesh, tipBody, toolRoot, tipMesh;
 var stickShadow, stickShadowMesh;
-var dynamicBodies;
+var dynamicBodies,
+    ballBodies;
 
 function onLoad() {
     "use strict";
@@ -20,7 +21,7 @@ function onLoad() {
     pyserver.log("POOLVR.config =\n" + JSON.stringify(POOLVR.config, undefined, 2));
     POOLVR.config.keyboardCommands = POOLVR.keyboardCommands;
     POOLVR.config.gamepadCommands = POOLVR.gamepadCommands;
-    
+
     app = new WebVRApplication("poolvr", avatar, scene, POOLVR.config);
     avatar.add(app.camera);
     scene.add(avatar);
@@ -47,7 +48,7 @@ function onLoad() {
     app.world.addContactMaterial(ballBallContactMaterial);
     var playableSurfaceMaterial            = new CANNON.Material();
     var ballPlayableSurfaceContactMaterial = new CANNON.ContactMaterial(ballMaterial, playableSurfaceMaterial, {restitution: 0.3, friction: 0.1});
-    app.world.addContactMaterial(ballPlayableSurfaceContactMaterial);    
+    app.world.addContactMaterial(ballPlayableSurfaceContactMaterial);
     var cushionMaterial            = new CANNON.Material();
     var ballCushionContactMaterial = new CANNON.ContactMaterial(ballMaterial, cushionMaterial, {restitution: 0.8, friction: 0.4});
     app.world.addContactMaterial(ballCushionContactMaterial);
@@ -90,7 +91,7 @@ function onLoad() {
 
     pyserver.log('adding tool...');
     pyserver.log('toolOptions =\n' + JSON.stringify(toolOptions, undefined, 2));
-    
+
     var toolStuff = addTool(avatar, app.world, toolOptions);
     stickMesh = toolStuff.stickMesh;
     tipMesh   = toolStuff.tipMesh;
@@ -139,6 +140,7 @@ function onLoad() {
     // }
 
     dynamicBodies = app.world.bodies.filter(function(body) { return body.mesh && body.type !== CANNON.Body.STATIC; });
+    ballBodies = dynamicBodies.filter(function(body) { return body.mesh.name.startsWith('ballMesh'); });
 
     app.start(animate);
 }
@@ -238,6 +240,15 @@ function animate(t) {
                                      stickMesh.position.z);
             stickShadowMesh.quaternion.copy(stickMesh.quaternion);
         // }
+    }
+
+    for (j = 0; j < app.world.contacts.length; j++) {
+        var contactEquation = app.world.contacts[j];
+        var bi = contactEquation.bi,
+            bj = contactEquation.bj;
+        if (bi.material === bj.material) {
+            pyserver.log("BALL COLLISION!!!!");
+        }
     }
 
     // if (app.mousePointer && avatar.picking) {
