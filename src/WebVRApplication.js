@@ -36,7 +36,6 @@ WebVRApplication = ( function () {
 
         this.resetVRSensor = function () {
             this.vrControls.resetSensor();
-            this.avatar.heading = 0;
         }.bind(this);
 
         this.toggleVRControls = function () {
@@ -95,17 +94,22 @@ WebVRApplication = ( function () {
 
         this.listeners = {'update': []};
 
-        var world = new CANNON.World();
-        world.gravity.set( 0, -config.gravity, 0 );
-        world.broadphase = new CANNON.SAPBroadphase( world );
-        world.defaultContactMaterial.contactEquationStiffness = 1e8;
-        world.defaultContactMaterial.frictionEquationStiffness = 1e8;
-        world.defaultContactMaterial.contactEquationRelaxation = 3;
-        world.defaultContactMaterial.frictionEquationRelaxation = 3;
-        world.solver.iterations = 10;
+        var world;
+        if (config.world) {
+            world = config.world;
+        } else {
+            world = new CANNON.World();
+            world.gravity.set( 0, -config.gravity, 0 );
+            world.broadphase = new CANNON.SAPBroadphase( world );
+            world.defaultContactMaterial.contactEquationStiffness = 1e8;
+            world.defaultContactMaterial.frictionEquationStiffness = 1e8;
+            world.defaultContactMaterial.contactEquationRelaxation = 3;
+            world.defaultContactMaterial.frictionEquationRelaxation = 3;
+            world.solver.iterations = 10;
+        }
         this.world = world;
 
-        // TODO: needed? *^^
+        // TODO: needed?
         window.addEventListener("resize", function () {
             var canvasWidth = window.innerWidth,
                 canvasHeight = window.innerHeight;
@@ -119,16 +123,16 @@ WebVRApplication = ( function () {
 
         function lockChangeAlert() {
             if ( document.pointerLockElement || document.mozPointerLockElement || document.webkitPointerLockElement ) {
-                if (config.showMousePointerOnLock) {
-                    mousePointer.visible = true;
-                }
-                mousePointer.position.x = mousePointer.position.y = 0;
+                pyserver.log('pointer lock status is now locked');
+                mousePointer.visible = true;
             } else {
-                console.log('pointer lock status is now unlocked');
+                pyserver.log('pointer lock status is now unlocked');
                 mousePointer.visible = false;
             }
         }
         if (config.mouseControlsEnabled) {
+            var mousePointer = config.mousePointer ||
+                new THREE.Mesh(new THREE.SphereBufferGeometry(0.025), new THREE.MeshBasicMaterial({color: 0xffeebb}));
             if ("onpointerlockchange" in document) {
               document.addEventListener('pointerlockchange', lockChangeAlert, false);
             } else if ("onmozpointerlockchange" in document) {
@@ -158,11 +162,11 @@ WebVRApplication = ( function () {
             waitForResources(0);
         };
 
-        this.audioContext = new AudioContext();
-        var audioContext = this.audioContext;
+        var audioContext = new AudioContext();
         var gainNode = audioContext.createGain();
         gainNode.connect(audioContext.destination);
         gainNode.gain.value = 1;
+        this.audioContext = audioContext;
         this.gainNode = gainNode;
         this.playSound = function (url, loop) {
             var source = audioContext.createBufferSource();

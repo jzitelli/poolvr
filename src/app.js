@@ -8,16 +8,16 @@ var avatar = avatar || new THREE.Object3D();
 avatar.position.y = 1.2;
 avatar.position.z = 1.9;
 
-var stickMesh, tipBody, toolRoot;
-var stickShadow, stickShadowMesh;
 var ballMeshes       = [],
     ballStripeMeshes = [];
+var stickMesh, tipBody, toolRoot, tipMesh;
+var stickShadow, stickShadowMesh;
 var dynamicBodies;
 
 function onLoad() {
     "use strict";
     pyserver.log("starting poolvr...");
-    pyserver.log("POOLVR.config =\n" + JSON.stringify(POOLVR.config));
+    pyserver.log("POOLVR.config =\n" + JSON.stringify(POOLVR.config, undefined, 2));
     POOLVR.config.keyboardCommands = POOLVR.keyboardCommands;
     POOLVR.config.gamepadCommands = POOLVR.gamepadCommands;
     
@@ -39,35 +39,19 @@ function onLoad() {
         // centerSpotLightHelper.visible = false;
     }
 
-    var toolOptions = {
-        // ##### Desktop mode (default): #####
-        transformOptions : {vr: 'desktop'},
-        leapDisabled     : app.config.leapDisabled,
-        leapHandsDisabled: app.config.leapHandsDisabled,
-        useBasicMaterials: app.config.useBasicMaterials,
-        toolLength       : app.config.toolLength,
-        toolRadius       : app.config.toolRadius
-    };
-    if (app.config.leapVR) {
-        // ##### Leap Motion VR tracking mode: #####
-        toolOptions.transformOptions = {vr: true, effectiveParent: app.camera};
-    }
-
     CrapLoader.CANNONize(scene, app.world);
 
-    var ballMaterial = new CANNON.Material();
+    // TODO: load from JSON config
+    var ballMaterial            = new CANNON.Material();
     var ballBallContactMaterial = new CANNON.ContactMaterial(ballMaterial, ballMaterial, {restitution: 0.91, friction: 0.08});
     app.world.addContactMaterial(ballBallContactMaterial);
-
-    var playableSurfaceMaterial = new CANNON.Material();
+    var playableSurfaceMaterial            = new CANNON.Material();
     var ballPlayableSurfaceContactMaterial = new CANNON.ContactMaterial(ballMaterial, playableSurfaceMaterial, {restitution: 0.3, friction: 0.1});
-    app.world.addContactMaterial(ballPlayableSurfaceContactMaterial);
-    
-    var cushionMaterial = new CANNON.Material();
-    var ballCushionContactMaterial = new CANNON.ContactMaterial(ballMaterial, cushionMaterial, {restitution: 0.8, friction: 0.18});
+    app.world.addContactMaterial(ballPlayableSurfaceContactMaterial);    
+    var cushionMaterial            = new CANNON.Material();
+    var ballCushionContactMaterial = new CANNON.ContactMaterial(ballMaterial, cushionMaterial, {restitution: 0.8, friction: 0.4});
     app.world.addContactMaterial(ballCushionContactMaterial);
-
-    var floorMaterial = new CANNON.Material();
+    var floorMaterial            = new CANNON.Material();
     var floorBallContactMaterial = new CANNON.ContactMaterial(floorMaterial, ballMaterial, {restitution: 0.88, friction: 0.4});
     app.world.addContactMaterial(floorBallContactMaterial);
 
@@ -90,14 +74,28 @@ function onLoad() {
         }
     });
 
+    var toolOptions = {
+        // ##### Desktop mode (default): #####
+        transformOptions : app.config.transformOptions || {vr: 'desktop'},
+        leapDisabled     : app.config.leapDisabled,
+        leapHandsDisabled: app.config.leapHandsDisabled,
+        useBasicMaterials: app.config.useBasicMaterials,
+        toolLength       : app.config.toolLength || 0.5,
+        toolRadius       : app.config.toolRadius || 0.013
+    };
+    // if (app.config.leapVR) {
+    //     // ##### Leap Motion VR tracking mode: #####
+    //     toolOptions.transformOptions = {vr: true, effectiveParent: app.camera};
+    // }
+
     pyserver.log('adding tool...');
-    pyserver.log('toolOptions =\n' + JSON.stringify(toolOptions));
+    pyserver.log('toolOptions =\n' + JSON.stringify(toolOptions, undefined, 2));
     
     var toolStuff = addTool(avatar, app.world, toolOptions);
-    
-    stickMesh = toolStuff[0];
-    tipBody   = toolStuff[1];
-    toolRoot  = toolStuff[2];
+    stickMesh = toolStuff.stickMesh;
+    tipMesh   = toolStuff.tipMesh;
+    tipBody   = toolStuff.tipBody;
+    toolRoot  = toolStuff.toolRoot;
 
     if (!app.config.shadowMap) {
         // create shadow mesh from projection:
@@ -105,32 +103,40 @@ function onLoad() {
         stickShadow.position.y = -avatar.position.y - toolRoot.position.y + H_table + 0.001;
         stickShadow.scale.set(1, 0.0004, 1);
         toolRoot.add(stickShadow);
-        var stickShadowGeom = stickMesh.geometry.clone();
-        var toolLength = toolOptions.toolLength;
-        stickShadowGeom.translate(0, -toolLength / 2, 0); // have to do this again because not buffergeometry???
+
         var stickShadowMaterial = new THREE.MeshBasicMaterial({color: 0x002200});
+
+        var stickShadowGeom = stickMesh.geometry.clone();
+        var toolLength = toolOptions.toolLength || 0.5;
+        stickShadowGeom.translate(0, -toolLength / 2, 0); // have to do this again because not buffergeometry???
+
         stickShadowMesh = new THREE.Mesh(stickShadowGeom, stickShadowMaterial);
         stickShadowMesh.quaternion.copy(stickMesh.quaternion);
         stickShadow.add(stickShadowMesh);
+
+        tipMesh.geometry.computeBoundingSphere();
+        var tipShadowGeom = new THREE.CircleBufferGeometry(tipMesh.geometry.boundingSphere.radius).rotateX(-Math.PI / 2);
+        var tipShadowMesh = new THREE.Mesh(tipShadowGeom, stickShadowMaterial);
+        stickShadow.add(tipShadowMesh);
     }
 
-    if (app.config.mouseControlsEnabled) {
-        var mousePointer = stickMesh;
-        mousePointer.position.y = H_table + 0.1 - avatar.position.y - toolRoot.position.y;
-        tipBody.position[1] = H_table + 0.1;
-        window.addEventListener("mousemove", function (evt) {
-            var dx = evt.movementX,
-                dy = evt.movementY;
-            mousePointer.position.x += 0.0004*dx;
-            if (mousePointer.position.x > 2) mousePointer.position.x = 2;
-            else if (mousePointer.position.x < -2) mousePointer.position.x = -2;
-            mousePointer.position.z += 0.0004*dy;
-            if (mousePointer.position.z > 2) mousePointer.position.z = 2;
-            else if (mousePointer.position.z < -2) mousePointer.position.z = -2;
-            tipBody.position[0] = mousePointer.position.x;
-            tipBody.position[2] = mousePointer.position.z;
-        });
-    }
+    // if (app.config.mouseControlsEnabled) {
+    //     var mousePointer = stickMesh;
+    //     mousePointer.position.y = H_table + 0.1 - avatar.position.y - toolRoot.position.y;
+    //     tipBody.position[1] = H_table + 0.1;
+    //     window.addEventListener("mousemove", function (evt) {
+    //         var dx = evt.movementX,
+    //             dy = evt.movementY;
+    //         mousePointer.position.x += 0.0004*dx;
+    //         if (mousePointer.position.x > 2) mousePointer.position.x = 2;
+    //         else if (mousePointer.position.x < -2) mousePointer.position.x = -2;
+    //         mousePointer.position.z += 0.0004*dy;
+    //         if (mousePointer.position.z > 2) mousePointer.position.z = 2;
+    //         else if (mousePointer.position.z < -2) mousePointer.position.z = -2;
+    //         tipBody.position[0] = mousePointer.position.x;
+    //         tipBody.position[2] = mousePointer.position.z;
+    //     });
+    // }
 
     dynamicBodies = app.world.bodies.filter(function(body) { return body.mesh && body.type !== CANNON.Body.STATIC; });
 
@@ -226,11 +232,14 @@ function animate(t) {
     toolRoot.position.y += 0.25  * dt * toolFloat;
 
     if (!app.config.shadowMap) {
-        stickShadow.position.x = stickMesh.position.x;
-        stickShadow.position.z = stickMesh.position.z;
-        stickShadow.position.y = -avatar.position.y - toolRoot.position.y + H_table + 0.001;
-        stickShadowMesh.quaternion.copy(stickMesh.quaternion);
+        // if (tipBody.position[1] > H_table - 0.0666) {
+            stickShadow.position.set(stickMesh.position.x,
+                                     H_table + 0.001 - toolRoot.position.y - avatar.position.y,
+                                     stickMesh.position.z);
+            stickShadowMesh.quaternion.copy(stickMesh.quaternion);
+        // }
     }
+
     // if (app.mousePointer && avatar.picking) {
     //     origin.set(0, 0, 0);
     //     direction.set(0, 0, 0);

@@ -400,12 +400,12 @@ class QuadBufferGeometry(BufferGeometry):
 
 class HexaBufferGeometry(BufferGeometry):
     def __init__(self, vertices, **kwargs):
-        rects = [[0,1,2,3], # bottom
+        rects = [[0,1,2,3][::-1], # bottom
                  [4,5,6,7], # top
-                 [0,4,5,1], # front
-                 [2,1,5,6], # right
-                 [3,2,6,7], # rear
-                 [0,3,7,4]] # left
+                 [0,1,5,4], # front
+                 [1,2,6,5], # right
+                 [2,3,7,6], # rear
+                 [3,0,4,7]] # left
         BufferGeometry.__init__(self, vertices=vertices,
                                 indices=[_tri_faces(rect)
                                          for rect in rects],
@@ -494,6 +494,6 @@ def text_geom_alphabet(**kwargs):
     digits  = '0123456789'
     symbols = r""",./;'[]\-=<>?:"{}|_+`~!@#$%^&*()"""
     characters = alphas + digits + symbols
-    geometries = {c: TextGeometry(name="%s TextGeometry" % c, text=c, parameters=kwargs)
+    geometries = {c: TextGeometry(name=c, text=c, parameters=kwargs)
                   for c in characters}
     return geometries

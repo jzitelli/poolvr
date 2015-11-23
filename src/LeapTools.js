@@ -5,11 +5,11 @@ function addTool(parent, world, options) {
     var toolLength = options.toolLength || 0.5;
     var toolRadius = options.toolRadius || 0.013;
     var toolOffset = options.toolOffset || new THREE.Vector3(0, -0.46, -toolLength - 0.15);
-    var toolMass = options.toolMass || 0.06;
-    var toolTime = options.toolTime || 0.02;
-
+    var toolMass   = options.toolMass || 0.06;
     var handOffset = options.handOffset || new THREE.Vector3(0, -0.25, -0.4);
-
+    
+    var toolTime      = options.toolTime  || 0.04;
+    var toolTimeB     = options.toolTimeB || toolTime + 0.1;
     var minConfidence = options.minConfidence || 0.3;
 
     var transformOptions = options.transformOptions || {};
@@ -40,6 +40,7 @@ function addTool(parent, world, options) {
     var tipBody = new CANNON.Body({mass: toolMass, type: CANNON.Body.KINEMATIC});
     tipBody.addShape(new CANNON.Sphere(toolRadius));
     world.addBody(tipBody);
+    toolRoot.visible = false;
 
     // setup hands: ############################
     // hands don't necessarily correspond the left / right labels, but doesn't matter to me because they look indistinguishable
@@ -101,8 +102,7 @@ function addTool(parent, world, options) {
         if (transformOptions.vr === true) {
             toolTime *= 2;
         }
-        console.log("'transform' options:");
-        console.log(transformOptions);
+        pyserver.log("transformOptions =\n" + JSON.stringify(transformOptions, undefined, 2));
         leapController.use('transform', transformOptions).connect();
         var onFrame = (function () {
             var UP = new THREE.Vector3(0, 1, 0);
@@ -120,21 +120,26 @@ function addTool(parent, world, options) {
                             // TODO: option to toggle stabilized or not
                             stickMesh.position.fromArray(tool.tipPosition);
                             // stickMesh.position.fromArray(tool.stabilizedTipPosition);
-
                             direction.fromArray(tool.direction);
                             stickMesh.quaternion.setFromUnitVectors(UP, direction);
+                            if (tool.timeVisible > toolTimeB) {
+                                if (tipBody.sleepState === CANNON.Body.SLEEPING) {
+                                    // cue becomes collidable
+                                    tipBody.wakeUp();
+                                    // TODO: indicator (particle effect)
+                                }
+                                position.set(0, 0, 0);
+                                stickMesh.localToWorld(position);
+                                tipBody.position.copy(position);
 
-                            position.set(0, 0, 0);
-                            stickMesh.localToWorld(position);
-                            tipBody.position.copy(position);
-
-                            velocity.set(tool.tipVelocity[0] * 0.001, tool.tipVelocity[1] * 0.001, tool.tipVelocity[2] * 0.001);
-                            velocity.applyQuaternion(parent.quaternion);
-                            tipBody.velocity.copy(velocity);
+                                velocity.set(tool.tipVelocity[0] * 0.001, tool.tipVelocity[1] * 0.001, tool.tipVelocity[2] * 0.001);
+                                velocity.applyQuaternion(parent.quaternion);
+                                tipBody.velocity.copy(velocity);
+                            }
                         }
                     }
                     else if (frame.tools.length === 2) {
-                        console.log('TWO TOOLS OMG');
+                        pyserver.log('TWO TOOLS OMG');
                     }
                 };
             } else {
@@ -144,7 +149,6 @@ function addTool(parent, world, options) {
                         toolRoot.visible = true;
                         var tool = frame.tools[0];
                         if (tool.timeVisible > toolTime) {
-                            // TODO: option to toggle stabilized or not
                             stickMesh.position.fromArray(tool.tipPosition);
                             // stickMesh.position.fromArray(tool.stabilizedTipPosition);
 
@@ -161,7 +165,7 @@ function addTool(parent, world, options) {
                         }
                     }
                     else if (frame.tools.length === 2) {
-                        console.log('TWO TOOLS OMG');
+                        pyserver.log('TWO TOOLS OMG');
                     }
                     leftRoot.visible = rightRoot.visible = false;
                     for (var i = 0; i < frame.hands.length; i++) {
@@ -193,5 +197,10 @@ function addTool(parent, world, options) {
 
     }
 
-    return [stickMesh, tipBody, toolRoot];
+    return {
+        stickMesh: stickMesh,
+        tipMesh: tipMesh,
+        tipBody: tipBody,
+        toolRoot: toolRoot
+    };
 }

@@ -63,15 +63,14 @@ POOLVR.gamepadCommands = {
                           commandUp: function () { avatar.toolMode = false; } }
 };
 
-if (!POOLVR.config.oldBoilerplate) {
-    // using most recent webvr-boilerplate
-    window.WebVRConfig = window.WebVRConfig || {
-        FORCE_ENABLE_VR: URL_PARAMS.forceEnableVR,
-        FORCE_DISTORTION: URL_PARAMS.forceDistortion
-    };
-} else {
+
+window.WebVRConfig = window.WebVRConfig || {
+    FORCE_ENABLE_VR: URL_PARAMS.forceEnableVR,
+    FORCE_DISTORTION: URL_PARAMS.forceDistortion
+};
+if (POOLVR.config.oldBoilerplate) {
     // using older version
-    window.WEBVR_FORCE_DISTORTION = window.WEBVR_FORCE_DISTORTION || URL_PARAMS.forceDistorion;
+    window.WEBVR_FORCE_DISTORTION = WebVRConfig.FORCE_DISTORTION;
 }
 
 var VR_DEVICES = [
@@ -118,14 +117,14 @@ var VR_DEVICES = [
     // *** WORKS W/ OLDER WEBVR-BOILERPLATE ***
 ];
 
-pyserver.log('WebVRConfig =\n' + JSON.stringify(WebVRConfig));
+pyserver.log('WebVRConfig =\n' + JSON.stringify(WebVRConfig, undefined, 2));
 var userAgent = navigator.userAgent;
 pyserver.log('userAgent = ' + userAgent);
 var vrDevices = [];
 if (navigator.getVRDevices) {
     navigator.getVRDevices().then(function (devices) {
         devices.forEach(function (device, i) {
-            pyserver.log('VR device ' + i + ': ' + JSON.stringify(device));
+            pyserver.log('VR device ' + i + ': ' + JSON.stringify(device, undefined, 2));
             vrDevices[i] = device;
         });
     });

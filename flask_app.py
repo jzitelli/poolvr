@@ -32,8 +32,6 @@ POOLVR_CONFIG = {
     'shadowMap'             : None,
     'pointLight'            : None,
     'oldBoilerplate'        : False,
-    'leapDisabled'          : None,
-    'leapHandsDisabled'     : None
 }
 
 
@@ -57,7 +55,6 @@ def get_poolvr_config(version=None):
             config['useLambertMaterials'] = True
         if config['usePhongMaterials'] is None:
             config['usePhongMaterials'] = True
-    _logger.debug(json.dumps(config, indent=2))
     return config
 
 
@@ -71,30 +68,30 @@ def js_suffix():
 
 
 
-try:
-    model_dir = os.path.join(os.getcwd(), 'models')
-    with open(os.path.join(model_dir, 'ConfigUtilDeskScene.json')) as f:
-        configScene = json.loads(f.read())
-    def replace_urls(node):
-        for k, v in node.items():
-            if isinstance(v, str) and v[-4:] == '.png':
-                node[k] = os.path.join('models', v)
-            elif isinstance(v, dict):
-                replace_urls(v)
-    replace_urls(configScene)
-except Exception as err:
-    _logger.warning(err)
-    configScene = three.Scene().export()
-
 @app.route('/poolvr/config', methods=['GET', 'POST'])
 def poolvr_config():
     """app configurator"""
+    configScene = three.Scene().export()
     config = get_poolvr_config()
     return render_template('config.html',
                            json_config=Markup(r"""<script>
 var JSON_SCENE = %s
 </script>""" % configScene),
                            poolvr_config=json.dumps(config, indent=2))
+# try:
+#     model_dir = os.path.join(os.getcwd(), 'models')
+#     with open(os.path.join(model_dir, 'ConfigUtilDeskScene.json')) as f:
+#         configScene = json.loads(f.read())
+#     def replace_urls(node):
+#         for k, v in node.items():
+#             if isinstance(v, str) and v[-4:] == '.png':
+#                 node[k] = os.path.join('models', v)
+#             elif isinstance(v, dict):
+#                 replace_urls(v)
+#     replace_urls(configScene)
+# except Exception as err:
+#     _logger.warning(err)
+#     configScene = three.Scene().export()
 
 
 
