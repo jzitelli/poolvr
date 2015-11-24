@@ -975,7 +975,6 @@ function WebVRManager(renderer, effect, params) {
 
   // Check if the browser is compatible with WebVR.
   this.getDeviceByType_(HMDVRDevice).then(function(hmd) {
-    console.log(hmd);
     // Activate either VR or Immersive mode.
     if (WebVRConfig.FORCE_DISTORTION) {
       this.distorter.setActive(true);
@@ -1076,15 +1075,13 @@ WebVRManager.prototype.setMode_ = function(mode) {
   this.mode = mode;
   this.button.setMode(mode, this.isVRCompatible);
 
-  // if (Util.isMobile()) {
-  //   if (this.mode == Modes.VR && Util.isLandscapeMode()) {
-  //       // In landscape mode, temporarily show the "put into Cardboard"
-  //       // interstitial. Otherwise, do the default thing.
-  //       this.rotateInstructions.showTemporarily(3000);
-  //       } else {
-  //        this.updateRotateInstructions_();
-  //       }
-  // }
+  if (this.mode == Modes.VR && Util.isLandscapeMode() && Util.isMobile()) {
+    // In landscape mode, temporarily show the "put into Cardboard"
+    // interstitial. Otherwise, do the default thing.
+    this.rotateInstructions.showTemporarily(3000);
+  } else {
+    this.updateRotateInstructions_();
+  }
 };
 
 /**
@@ -1173,9 +1170,9 @@ WebVRManager.prototype.anyModeToVR = function() {
   // Don't do orientation locking for consistency.
   //this.requestOrientationLock_();
   this.requestFullscreen_();
-  //if (hmd.deviceName.indexOf('webvr-polyfill') == 0
-  this.effect.setFullScreen(true);
-  //this.wakelock.request();
+  this.requestPointerLock_();
+  //this.effect.setFullScreen(true);
+  this.wakelock.request();
   this.distorter.patch();
 };
 
@@ -1270,11 +1267,10 @@ WebVRManager.prototype.releaseOrientationLock_ = function() {
 };
 
 WebVRManager.prototype.requestFullscreen_ = function() {
-  var canvas = document.body;
-  //var canvas = this.renderer.domElement;
-  if (canvas.requestFullscreen) {
-    canvas.requestFullscreen();
-  } else if (canvas.mozRequestFullScreen) {
+  //var canvas = document.body;
+  var canvas = this.renderer.domElement;
+
+  if (canvas.mozRequestFullScreen) {
     canvas.mozRequestFullScreen({vrDisplay: this.hmd});
   } else if (canvas.webkitRequestFullscreen) {
     canvas.webkitRequestFullscreen({vrDisplay: this.hmd});
