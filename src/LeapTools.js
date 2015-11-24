@@ -96,13 +96,16 @@ function addTool(parent, world, options) {
         rightRoot.add(joint2s[1][0], joint2s[1][1], joint2s[1][2], joint2s[1][3], joint2s[1][4]);
     }
 
+    var leapController;
     if (!options.leapDisabled) {
-
-        var leapController = new Leap.Controller({frameEventName: 'animationFrame'});
+        leapController = new Leap.Controller({frameEventName: 'animationFrame'});
         if (transformOptions.vr === true) {
             toolTime *= 2;
         }
         pyserver.log("transformOptions =\n" + JSON.stringify(transformOptions, undefined, 2));
+        leapController.on('connect', function () {
+            pyserver.log('Leap Motion controller connected');
+        });
         leapController.use('transform', transformOptions).connect();
         var onFrame = (function () {
             var UP = new THREE.Vector3(0, 1, 0);
@@ -201,6 +204,7 @@ function addTool(parent, world, options) {
         stickMesh: stickMesh,
         tipMesh: tipMesh,
         tipBody: tipBody,
-        toolRoot: toolRoot
+        toolRoot: toolRoot,
+        leapController: leapController
     };
 }
