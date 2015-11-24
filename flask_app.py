@@ -30,8 +30,7 @@ POOLVR_CONFIG = {
     'useLambertMaterials'   : None,
     'usePhongMaterials'     : None,
     'shadowMap'             : None,
-    'pointLight'            : None,
-    'oldBoilerplate'        : False,
+    'pointLight'            : None
 }
 
 

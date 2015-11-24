@@ -10,9 +10,11 @@
     <style>
       body {
         background-color: #000;
+/*
         color: #fff;
         margin: 0px;
         padding: 0;
+*/
         overflow: hidden;
       }
     </style>
@@ -31,13 +33,8 @@
     <script src="{{ url_for('static', filename='bin/VREffect'       + js_suffix) }}"></script>
     <script src="{{ url_for('static', filename='bin/VRControls'     + js_suffix) }}"></script>
 
-{% if oldBoilerplate %}
-    <script src="{{ url_for('static', filename='bin/webvr-polyfill.old' + js_suffix) }}"></script>
-    <script src="{{ url_for('static', filename='bin/webvr-manager.old'  + js_suffix) }}"></script>
-{% else %}
     <script src="{{ url_for('static', filename='bin/webvr-polyfill' + js_suffix) }}"></script>
     <script src="{{ url_for('static', filename='bin/webvr-manager'  + js_suffix) }}"></script>
-{% endif %}
 
     <script src="{{ url_for('static', filename='bin/socket.io'      + js_suffix) }}"></script>
     <script src="{{ url_for('static', filename='bin/cannon'         + js_suffix) }}"></script>
@@ -48,6 +45,8 @@
 
     <script src="{{ url_for('static', filename='bin/ColladaLoader'  + js_suffix) }}"></script>
     <script src="{{ url_for('static', filename='bin/Primrose'       + js_suffix) }}"></script>
+
+    <script src="{{ url_for('static', filename='bin/SPE' + js_suffix) }}"></script>
 
     <script src="{{ url_for('static', filename='fonts/Anonymous Pro_Regular.js'      ) }}"></script>
     <script src="{{ url_for('static', filename='fonts/helvetiker_regular.typeface.js') }}"></script>

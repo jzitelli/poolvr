@@ -28,6 +28,7 @@ var mouseParticleEmitter = new SPE.Emitter({maxAge: {value: 0.5},
                                             particleCount: 50});
 mouseParticleGroup.addEmitter(mouseParticleEmitter);
 var mousePointer = mouseParticleGroup.mesh;
+mousePointer.visible = false;
 
 function onLoad() {
     "use strict";
