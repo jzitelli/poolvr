@@ -111,8 +111,8 @@ def pool_table(L_table=2.3368, W_table=None, H_table=0.74295,
                                                    [ 0.5*W_playable - np.sqrt(2)*W_cushion, H_cushion, -0.5*W_cushion],
                                                    [-0.5*W_playable + np.sqrt(2)*W_cushion, H_cushion, -0.5*W_cushion]])
     ###
-    #cushionShape = 'ConvexPolyhedron'
-    cushionShape = 'Box'
+    cushionShape = 'ConvexPolyhedron'
+    # cushionShape = 'Box'
     headCushionMesh = Mesh(name='headCushionMesh',
                            geometry=headCushionGeom,
                            material=cushionMaterial,
@@ -130,41 +130,41 @@ def pool_table(L_table=2.3368, W_table=None, H_table=0.74295,
                            userData={'cannonData': {'mass': 0, 'shapes': [cushionShape]}})
     poolTable.add(footCushionMesh)
     ###
-    leftHeadCushionGeom = Mesh(name='leftHeadCushionMesh',
+    leftHeadCushionMesh = Mesh(name='leftHeadCushionMesh',
                                geometry=headCushionGeom,
                                material=cushionMaterial,
                                position=[-0.5*W_table + 0.5*W_cushion, H_table, 0.25*L_table],
                                rotation=[0, -np.pi/2, 0],
                                receiveShadow=True,
                                userData={'cannonData': {'mass': 0, 'shapes': [cushionShape]}})
-    poolTable.add(leftHeadCushionGeom)
+    poolTable.add(leftHeadCushionMesh)
     ###
-    leftFootCushionGeom = Mesh(name='leftFootCushionMesh',
+    leftFootCushionMesh = Mesh(name='leftFootCushionMesh',
                                geometry=headCushionGeom,
                                material=cushionMaterial,
                                position=[-0.5*W_table + 0.5*W_cushion, H_table, -0.25*L_table],
                                rotation=[0, -np.pi/2, 0],
                                receiveShadow=True,
                                userData={'cannonData': {'mass': 0, 'shapes': [cushionShape]}})
-    poolTable.add(leftFootCushionGeom)
+    poolTable.add(leftFootCushionMesh)
     ##
-    rightHeadCushionGeom = Mesh(name='rightHeadCushionMesh',
+    rightHeadCushionMesh = Mesh(name='rightHeadCushionMesh',
                                 geometry=headCushionGeom,
                                 material=cushionMaterial,
                                 position=[0.5*W_table - 0.5*W_cushion, H_table, 0.25*L_table],
                                 rotation=[0, np.pi/2, 0],
                                 receiveShadow=True,
                                 userData={'cannonData': {'mass': 0, 'shapes': [cushionShape]}})
-    poolTable.add(rightHeadCushionGeom)
+    poolTable.add(rightHeadCushionMesh)
     ###
-    rightFootCushionGeom = Mesh(name='rightFootCushionMesh',
+    rightFootCushionMesh = Mesh(name='rightFootCushionMesh',
                                 geometry=headCushionGeom,
                                 material=cushionMaterial,
                                 position=[0.5*W_table - 0.5*W_cushion, H_table, -0.25*L_table],
                                 rotation=[0, np.pi/2, 0],
                                 receiveShadow=True,
                                 userData={'cannonData': {'mass': 0, 'shapes': [cushionShape]}})
-    poolTable.add(rightFootCushionGeom)
+    poolTable.add(rightFootCushionMesh)
 
     # RAILSSSSSSSS
     headRailGeom = BoxGeometry(W_playable, H_cushion, W_rail)
@@ -238,7 +238,7 @@ def pool_hall(useBasicMaterials=True,
         ball_materials = [MeshPhongMaterial(color=color, shading=SmoothShading) for color in ball_colors]
 
     ballData = {'cannonData': {'mass': 0.17, 'shapes': ['Sphere'],
-                               'linearDamping': 0.05, 'angularDamping': 0.05}}
+                               'linearDamping': 0.1, 'angularDamping': 0.1}}
 
     y_position = H_table + ball_radius + 0.0001 # epsilon distance which the ball will fall from initial position
 
