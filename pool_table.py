@@ -274,29 +274,28 @@ def pool_hall(useBasicMaterials=True,
 
     y_position = H_table + ball_radius + 0.0001 # epsilon distance which the ball will fall from initial position
 
-    z_positions = 0.8 * np.linspace(-L_table / 2, L_table / 2, num_balls - 1)
-    x_positions = 0.5 * z_positions
+    # z_positions = 0.8 * np.linspace(-L_table / 2, L_table / 2, num_balls - 1)
+    # x_positions = 0.5 * z_positions
+    # x_positions = [0] + list(x_positions)
+    # z_positions = [L_table / 4] + list(z_positions)
+
+    d = 0.2*ball_radius # separation between racked balls
+    side_length = 4 * (ball_diameter + d)
+    x_positions = np.concatenate([np.linspace(0,                        0.5 * side_length,                         5),
+                                  np.linspace(-0.5*(ball_diameter + d), 0.5 * side_length - (ball_diameter + d),   4),
+                                  np.linspace(-(ball_diameter + d),     0.5 * side_length - 2*(ball_diameter + d), 3),
+                                  np.linspace(-1.5*(ball_diameter + d), 0.5 * side_length - 3*(ball_diameter + d), 2),
+                                  np.array([-2*(ball_diameter + d)])])
+    z_positions = np.concatenate([np.linspace(0,                                    np.sqrt(3)/2 * side_length, 5),
+                                  np.linspace(0.5*np.sqrt(3) * (ball_diameter + d), np.sqrt(3)/2 * side_length, 4),
+                                  np.linspace(np.sqrt(3) * (ball_diameter + d),     np.sqrt(3)/2 * side_length, 3),
+                                  np.linspace(1.5*np.sqrt(3) * (ball_diameter + d), np.sqrt(3)/2 * side_length, 2),
+                                  np.array([np.sqrt(3)/2 * side_length])])
+    z_positions *= -1
+    z_positions -= L_table / 8
+
     x_positions = [0] + list(x_positions)
     z_positions = [L_table / 4] + list(z_positions)
-
-    # tri_vertices = np.array([( 0,               -0.2*L_table + 4*ball_radius),
-    #                          (-4*2*ball_radius, -0.2*L_table + 4*ball_radius - 4*3*ball_radius),
-    #                          ( 4*2*ball_radius, -0.2*L_table + 4*ball_radius - 4*3*ball_radius)])
-
-    # x_positions =  list(np.linspace(tri_vertices[0][0], tri_vertices[1][0], 5))
-    # x_positions += list(np.linspace(tri_vertices[1][0], tri_vertices[2][0], 5)[1:])
-    # x_positions += list(np.linspace(tri_vertices[2][0], tri_vertices[0][0], 5)[1:-1])
-    # x_positions += [0, -4*ball_radius, 4*ball_radius]
-
-    # z_positions =  list(np.linspace(tri_vertices[0][1], tri_vertices[1][1], 5))
-    # z_positions += list(np.linspace(tri_vertices[1][1], tri_vertices[2][1], 5)[1:])
-    # z_positions += list(np.linspace(tri_vertices[2][1], tri_vertices[0][1], 5)[1:-1])
-    # z_positions += [-0.2*L_table + 4*ball_radius - 4*1*ball_radius,
-    #                 -0.2*L_table + 4*ball_radius - 4*2*ball_radius,
-    #                 -0.2*L_table + 4*ball_radius - 4*2*ball_radius]
-
-    # x_positions = 0.6 * np.array([0] + list(x_positions))
-    # z_positions = [L_table / 4] + list(0.6 * np.array(z_positions))
 
     for i, material in enumerate(ball_materials[:9] + 7*[ball_materials[0]]):
         rotation = [0, 0, 0]
