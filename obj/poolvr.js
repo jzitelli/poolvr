@@ -1,5 +1,5 @@
 /*
-  poolvr v0.1.0 2015-11-23
+  poolvr v0.1.0 2015-11-24
   
   Copyright (C) 2015 Jeffrey Zitelli <jeffrey.zitelli@gmail.com> (http://subvr.info)
   http://subvr.info/poolvr
@@ -484,13 +484,16 @@ function addTool(parent, world, options) {
         rightRoot.add(joint2s[1][0], joint2s[1][1], joint2s[1][2], joint2s[1][3], joint2s[1][4]);
     }
 
+    var leapController;
     if (!options.leapDisabled) {
-
-        var leapController = new Leap.Controller({frameEventName: 'animationFrame'});
+        leapController = new Leap.Controller({frameEventName: 'animationFrame'});
         if (transformOptions.vr === true) {
             toolTime *= 2;
         }
         pyserver.log("transformOptions =\n" + JSON.stringify(transformOptions, undefined, 2));
+        leapController.on('connect', function () {
+            pyserver.log('Leap Motion controller connected');
+        });
         leapController.use('transform', transformOptions).connect();
         var onFrame = (function () {
             var UP = new THREE.Vector3(0, 1, 0);
@@ -589,7 +592,8 @@ function addTool(parent, world, options) {
         stickMesh: stickMesh,
         tipMesh: tipMesh,
         tipBody: tipBody,
-        toolRoot: toolRoot
+        toolRoot: toolRoot,
+        leapController: leapController
     };
 }
 ;
@@ -657,6 +661,7 @@ if (!POOLVR_CONFIG.pyserver) {
     pyserver = {
         log: function (msg, success) {
             "use strict";
+            // console.log('pyserver.log: ' + msg);
             var xhr = new XMLHttpRequest();
             var data = new FormData();
             data.append("msg", msg);
@@ -841,7 +846,8 @@ var vrDevices = [];
 if (navigator.getVRDevices) {
     navigator.getVRDevices().then(function (devices) {
         devices.forEach(function (device, i) {
-            pyserver.log('VR device ' + i + ': ' + JSON.stringify(device, undefined, 2));
+            pyserver.log('VR device ' + i + ': ' + device.deviceName);
+            console.log(device);
             vrDevices[i] = device;
         });
     });
@@ -865,7 +871,7 @@ var dynamicBodies,
     ballBodies;
 
 var mouseParticleGroup = new SPE.Group({
-    texture: {value: THREE.ImageUtils.loadTexture('images/smokeparticle.png')}
+    texture: {value: THREE.ImageUtils.loadTexture('images/particle.png')}
 });
 var mouseParticleEmitter = new SPE.Emitter({maxAge: {value: 0.5},
                                             position: {value: new THREE.Vector3(),
@@ -900,32 +906,30 @@ function onLoad() {
             mousePointer.visible = false;
         }
     }
-    if (app.config.mouseEnabled) {
-        if ("onpointerlockchange" in document) {
-          document.addEventListener('pointerlockchange', lockChangeAlert, false);
-        } else if ("onmozpointerlockchange" in document) {
-          document.addEventListener('mozpointerlockchange', lockChangeAlert, false);
-        } else if ("onwebkitpointerlockchange" in document) {
-          document.addEventListener('webkitpointerlockchange', lockChangeAlert, false);
-        }
-        avatar.add(mousePointer);
-        mousePointer.position.set(0, 0, -2);
-        app.mousePointer = mousePointer;
-        app.mouseParticleGroup = mouseParticleGroup;
-        var xMax = 2, xMin = -2,
-            yMax = 1, yMin = -1;
-        window.addEventListener("mousemove", function (evt) {
-            if (!mousePointer.visible) return;
-            var dx = evt.movementX,
-                dy = evt.movementY;
-            mousePointer.position.x += 0.0004*dx;
-            mousePointer.position.y -= 0.0004*dy;
-            if (mousePointer.position.x > xMax) mousePointer.position.x = xMax;
-            else if (mousePointer.position.x < xMin) mousePointer.position.x = xMin;
-            if (mousePointer.position.y > yMax) mousePointer.position.y = yMax;
-            else if (mousePointer.position.y < yMin) mousePointer.position.y = yMin;
-        });
+    if ("onpointerlockchange" in document) {
+      document.addEventListener('pointerlockchange', lockChangeAlert, false);
+    } else if ("onmozpointerlockchange" in document) {
+      document.addEventListener('mozpointerlockchange', lockChangeAlert, false);
+    } else if ("onwebkitpointerlockchange" in document) {
+      document.addEventListener('webkitpointerlockchange', lockChangeAlert, false);
     }
+    avatar.add(mousePointer);
+    mousePointer.position.set(0, 0, -2);
+    app.mousePointer = mousePointer;
+    app.mouseParticleGroup = mouseParticleGroup;
+    var xMax = 2, xMin = -2,
+        yMax = 1, yMin = -1;
+    window.addEventListener("mousemove", function (evt) {
+        if (!mousePointer.visible) return;
+        var dx = evt.movementX,
+            dy = evt.movementY;
+        mousePointer.position.x += 0.0004*dx;
+        mousePointer.position.y -= 0.0004*dy;
+        if (mousePointer.position.x > xMax) mousePointer.position.x = xMax;
+        else if (mousePointer.position.x < xMin) mousePointer.position.x = xMin;
+        if (mousePointer.position.y > yMax) mousePointer.position.y = yMax;
+        else if (mousePointer.position.y < yMin) mousePointer.position.y = yMin;
+    });
 
     if (!app.config.useBasicMaterials) {
         // would rather add the spot lights via three.py generated JSON_SCENE, but I'm having problems getting shadows frm them:
@@ -1030,7 +1034,11 @@ function onLoad() {
     request.responseType = 'arraybuffer';
     request.open('GET', 'sounds/ballBall.ogg', true);
     request.onload = function() {
-        app.audioContext.decodeAudioData(request.response).then(function(buffer) {
+        // chome doesn't support promise-based method?
+        // app.audioContext.decodeAudioData(request.response).then(function(buffer) {
+        //     ballBallBuffer = buffer;
+        // });
+        app.audioContext.decodeAudioData(request.response, function(buffer) {
             ballBallBuffer = buffer;
         });
     };
@@ -1151,7 +1159,7 @@ function animate(t) {
         }
     }
 
-    app.mouseParticleGroup.tick(dt);
+    if (app.mouseParticleGroup) app.mouseParticleGroup.tick(dt);
 
 }
 
