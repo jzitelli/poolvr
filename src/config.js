@@ -125,7 +125,8 @@ var vrDevices = [];
 if (navigator.getVRDevices) {
     navigator.getVRDevices().then(function (devices) {
         devices.forEach(function (device, i) {
-            pyserver.log('VR device ' + i + ': ' + JSON.stringify(device, undefined, 2));
+            pyserver.log('VR device ' + i + ': ' + device.deviceName);
+            console.log(device);
             vrDevices[i] = device;
         });
     });
