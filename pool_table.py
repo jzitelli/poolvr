@@ -57,7 +57,7 @@ def pool_table(L_table=2.3368, W_table=None, H_table=0.74295,
     if H_cushion is None:
         H_cushion = 0.635 * ball_diameter
     if W_rail is None:
-        W_rail = 2*W_cushion
+        W_rail = 1.5*W_cushion
     poolTable = Object3D(name="poolTable")
     rail_color = 0xdda400 # 0xffff00 # 0xffaa00
     if useBasicMaterials:
@@ -170,18 +170,50 @@ def pool_table(L_table=2.3368, W_table=None, H_table=0.74295,
     headRailGeom = BoxGeometry(W_playable, H_cushion, W_rail)
     headRailMesh = Mesh(geometry=headRailGeom,
                         material=railMaterial,
-                        position=[0, H_table + 0.5*H_cushion, 0.5*L_table + W_cushion],
+                        position=[0, H_table + 0.5*H_cushion, 0.5*L_table + 0.5*W_rail],
                         receiveShadow=True,
                         userData={'cannonData': {'mass': 0, 'shapes': ['Box']}})
     poolTable.add(headRailMesh)
 
     footRailMesh = Mesh(geometry=headRailGeom,
                         material=railMaterial,
-                        position=[0, H_table + 0.5*H_cushion, -(0.5*L_table + W_cushion)],
+                        position=[0, H_table + 0.5*H_cushion, -(0.5*L_table + 0.5*W_rail)],
                         rotation=[0, np.pi, 0],
                         receiveShadow=True,
                         userData={'cannonData': {'mass': 0, 'shapes': ['Box']}})
     poolTable.add(footRailMesh)
+
+    leftHeadRailMesh = Mesh(geometry=headRailGeom,
+                            material=railMaterial,
+                            position=[-(0.5*W_table + 0.5*W_rail), H_table + 0.5*H_cushion, 0.25*L_table],
+                            rotation=[0, np.pi/2, 0],
+                            receiveShadow=True,
+                            userData={'cannonData': {'mass': 0, 'shapes': ['Box']}})
+    poolTable.add(leftHeadRailMesh)
+
+    rightHeadRailMesh = Mesh(geometry=headRailGeom,
+                             material=railMaterial,
+                             position=[0.5*W_table + 0.5*W_rail, H_table + 0.5*H_cushion, 0.25*L_table],
+                             rotation=[0, np.pi/2, 0],
+                             receiveShadow=True,
+                             userData={'cannonData': {'mass': 0, 'shapes': ['Box']}})
+    poolTable.add(rightHeadRailMesh)
+
+    leftFootRailMesh = Mesh(geometry=headRailGeom,
+                            material=railMaterial,
+                            position=[-(0.5*W_table + 0.5*W_rail), H_table + 0.5*H_cushion, -0.25*L_table],
+                            rotation=[0, np.pi/2, 0],
+                            receiveShadow=True,
+                            userData={'cannonData': {'mass': 0, 'shapes': ['Box']}})
+    poolTable.add(leftFootRailMesh)
+
+    rightFootRailMesh = Mesh(geometry=headRailGeom,
+                             material=railMaterial,
+                             position=[0.5*W_table + 0.5*W_rail, H_table + 0.5*H_cushion, -0.25*L_table],
+                             rotation=[0, np.pi/2, 0],
+                             receiveShadow=True,
+                             userData={'cannonData': {'mass': 0, 'shapes': ['Box']}})
+    poolTable.add(rightFootRailMesh)
 
     return poolTable
 
@@ -222,7 +254,7 @@ def pool_hall(useBasicMaterials=True,
     sphere = SphereBufferGeometry(radius=ball_radius,
                                   widthSegments=16,
                                   heightSegments=12)
-    stripeGeom = SphereBufferGeometry(radius=1.032*ball_radius,
+    stripeGeom = SphereBufferGeometry(radius=1.023*ball_radius,
                                       widthSegments=16,
                                       heightSegments=6,
                                       thetaStart=np.pi/3,
