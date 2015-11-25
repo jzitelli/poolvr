@@ -97,7 +97,7 @@ function onLoad() {
     //     else if (mousePointer.position.y < yMin) mousePointer.position.y = yMin;
     // });
 
-    if (!app.config.useBasicMaterials) {
+    if (!POOLVR.config.useBasicMaterials) {
         // would rather add the spot lights via three.py generated JSON_SCENE, but I'm having problems getting shadows frm them:
         var centerSpotLight = new THREE.SpotLight(0xffffee, 1, 10, 90);
         centerSpotLight.position.set(0, 3, 0);
@@ -145,12 +145,12 @@ function onLoad() {
 
     var toolOptions = {
         // ##### Desktop mode (default): #####
-        transformOptions : app.config.transformOptions || {vr: 'desktop'},
-        leapDisabled     : app.config.leapDisabled,
-        leapHandsDisabled: app.config.leapHandsDisabled,
-        useBasicMaterials: app.config.useBasicMaterials,
-        toolLength       : app.config.toolLength || 0.5,
-        toolRadius       : app.config.toolRadius || 0.013
+        transformOptions : POOLVR.config.transformOptions || {vr: 'desktop'},
+        leapDisabled     : POOLVR.config.leapDisabled,
+        leapHandsDisabled: POOLVR.config.leapHandsDisabled,
+        useBasicMaterials: POOLVR.config.useBasicMaterials,
+        toolLength       : POOLVR.config.toolLength || 0.5,
+        toolRadius       : POOLVR.config.toolRadius || 0.013
     };
 
     // if (app.config.leapVR) {
