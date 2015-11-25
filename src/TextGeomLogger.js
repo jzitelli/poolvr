@@ -18,7 +18,10 @@ var TextGeomLogger = (function () {
 		for (var i = 0; i < chars.length; i++) {
 			var c = chars[i];
 			var geom = new THREE.TextGeometry(c, textGeomParams);
-			this.geometries[c] = geom;
+			var bufferGeom = new THREE.BufferGeometry();
+			bufferGeom.fromGeometry(geom);
+			geom.dispose();
+			this.geometries[c] = bufferGeom;
 			this.meshes[c] = new THREE.Mesh(geom, material);
 		}
 

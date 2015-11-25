@@ -181,7 +181,7 @@ function onLoad() {
 
         var stickShadowGeom = stickMesh.geometry.clone();
         var toolLength = toolOptions.toolLength || 0.5;
-        stickShadowGeom.translate(0, -toolLength / 2, 0); // have to do this again because not buffergeometry???
+        // stickShadowGeom.translate(0, -toolLength / 2, 0); // have to do this again because not buffergeometry???
 
         stickShadowMesh = new THREE.Mesh(stickShadowGeom, stickShadowMaterial);
         stickShadowMesh.quaternion.copy(stickMesh.quaternion);
@@ -311,12 +311,10 @@ function animate(t) {
     toolRoot.position.y += 0.25  * dt * toolFloat;
 
     if (!app.config.shadowMap) {
-        // if (tipBody.position[1] > H_table - 0.0666) {
-            stickShadow.position.set(stickMesh.position.x,
-                                     H_table + 0.001 - toolRoot.position.y - avatar.position.y,
-                                     stickMesh.position.z);
-            stickShadowMesh.quaternion.copy(stickMesh.quaternion);
-        // }
+        stickShadow.position.set(stickMesh.position.x,
+                                 H_table + 0.001 - toolRoot.position.y - avatar.position.y,
+                                 stickMesh.position.z);
+        stickShadowMesh.quaternion.copy(stickMesh.quaternion);
     }
 
     for (j = 0; j < app.world.contacts.length; j++) {
@@ -340,7 +338,7 @@ function animate(t) {
         }
     }
 
-    if (app.mouseParticleGroup) app.mouseParticleGroup.tick(dt);
+    //if (app.mouseParticleGroup) app.mouseParticleGroup.tick(dt);
 
 }
 

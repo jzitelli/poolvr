@@ -4,12 +4,12 @@ function addTool(parent, world, options) {
 
     var toolLength = options.toolLength || 0.5;
     var toolRadius = options.toolRadius || 0.013;
-    var toolOffset = options.toolOffset || new THREE.Vector3(0, -0.46, -toolLength - 0.15);
+    var toolOffset = options.toolOffset || new THREE.Vector3(0, -0.49, -toolLength - 0.15);
     var toolMass   = options.toolMass || 0.05;
     var handOffset = options.handOffset || new THREE.Vector3(0, -0.25, -0.4);
 
-    var toolTime      = options.toolTime  || 0.04;
-    var toolTimeB     = options.toolTimeB || toolTime + 0.1;
+    var toolTime      = options.toolTime  || 0.25;
+    var toolTimeB     = options.toolTimeB || toolTime + 1;
     var minConfidence = options.minConfidence || 0.3;
 
     var transformOptions = options.transformOptions || {};
@@ -30,17 +30,25 @@ function addTool(parent, world, options) {
     var toolRoot = new THREE.Object3D();
     toolRoot.position.copy(toolOffset);
     parent.add(toolRoot);
+
     var stickGeom = new THREE.CylinderGeometry(toolRadius, toolRadius, toolLength, 10, 1, false);
     stickGeom.translate(0, -toolLength / 2, 0);
+    var bufferGeom = new THREE.BufferGeometry();
+    bufferGeom.fromGeometry(stickGeom);
+    stickGeom.dispose();
+    stickGeom = bufferGeom;
+
     var stickMaterial;
+    var stickColor = 0xeebb99;
+    var tipColor = 0x004488;
     var tipMaterial;
     if (options.useBasicMaterials) {
-        stickMaterial = new THREE.MeshBasicMaterial({color: 0xeebb99, side: THREE.DoubleSide});
-        tipMaterial = new THREE.MeshBasicMaterial({color: 0x004488});
+        stickMaterial = new THREE.MeshBasicMaterial({color: stickColor, side: THREE.DoubleSide});
+        tipMaterial = new THREE.MeshBasicMaterial({color: tipColor});
     }
     else {
-        stickMaterial = new THREE.MeshLambertMaterial({color: 0xeebb99, side: THREE.DoubleSide});
-        tipMaterial = new THREE.MeshLambertMaterial({color: 0x004488});
+        stickMaterial = new THREE.MeshLambertMaterial({color: stickColor, side: THREE.DoubleSide});
+        tipMaterial = new THREE.MeshLambertMaterial({color: tipColor});
     }
     var stickMesh = new THREE.Mesh(stickGeom, stickMaterial);
     stickMesh.castShadow = true;
@@ -70,7 +78,13 @@ function addTool(parent, world, options) {
         // arms:
         var armRadius = 0.0276,
             armLength = 0.26;
+
         var armGeom = new THREE.CylinderGeometry(armRadius, armRadius, armLength);
+        bufferGeom = new THREE.BufferGeometry();
+        bufferGeom.fromGeometry(armGeom);
+        armGeom.dispose();
+        armGeom = bufferGeom;
+
         var armMesh = new THREE.Mesh(armGeom, handMaterial);
         var arms = [armMesh, armMesh.clone()];
         leftRoot.add(arms[0]);
@@ -109,7 +123,9 @@ function addTool(parent, world, options) {
     }
 
     var leapController;
+
     if (!options.leapDisabled) {
+
         leapController = new Leap.Controller({frameEventName: 'animationFrame'});
         if (transformOptions.vr === true) {
             toolTime *= 2;
@@ -121,29 +137,32 @@ function addTool(parent, world, options) {
         leapController.on('deviceDisconnected', onDeviceDisconnected);
 
         leapController.use('transform', transformOptions).connect();
+
         var onFrame = (function () {
+
             var UP = new THREE.Vector3(0, 1, 0);
             var direction = new THREE.Vector3();
             var position = new THREE.Vector3();
             var velocity = new THREE.Vector3();
 
+            // onFrame: ############################################################################3
+
             if (options.leapHandsDisabled) {
-                // onFrame (tool only): ########################################
+
+                // TOOL ONLY VERSION:
                 return function (frame) {
                     if (frame.tools.length === 1) {
                         toolRoot.visible = true;
                         var tool = frame.tools[0];
                         if (tool.timeVisible > toolTime) {
                             // TODO: option to toggle stabilized or not
-                            stickMesh.position.fromArray(tool.tipPosition);
-                            // stickMesh.position.fromArray(tool.stabilizedTipPosition);
+                            stickMesh.position.fromArray(tool.tipPosition); // stickMesh.position.fromArray(tool.stabilizedTipPosition);
                             direction.fromArray(tool.direction);
                             stickMesh.quaternion.setFromUnitVectors(UP, direction);
+
                             if (tool.timeVisible > toolTimeB) {
                                 if (tipBody.sleepState === CANNON.Body.SLEEPING) {
-                                    // cue becomes collidable
                                     tipBody.wakeUp();
-                                    // TODO: indicator (particle effect)
                                 }
                                 position.set(0, 0, 0);
                                 stickMesh.localToWorld(position);
@@ -155,35 +174,40 @@ function addTool(parent, world, options) {
                             }
                         }
                     }
-                    // else if (frame.tools.length === 2) {
-                    //     pyserver.log('TWO TOOLS OMG');
-                    // }
                 };
+
             } else {
-                // onFrame: ########################################
+
+                // TOOL + HANDS VERSION:
                 return function (frame) {
                     if (frame.tools.length === 1) {
                         toolRoot.visible = true;
                         var tool = frame.tools[0];
                         if (tool.timeVisible > toolTime) {
-                            stickMesh.position.fromArray(tool.tipPosition);
-                            // stickMesh.position.fromArray(tool.stabilizedTipPosition);
-
+                            stickMesh.position.fromArray(tool.tipPosition); // stickMesh.position.fromArray(tool.stabilizedTipPosition);
                             direction.fromArray(tool.direction);
                             stickMesh.quaternion.setFromUnitVectors(UP, direction);
 
-                            position.set(0, 0, 0);
-                            stickMesh.localToWorld(position);
-                            tipBody.position.copy(position);
+                            if (tool.timeVisible > toolTimeB) {
+                                if (tipBody.sleepState === CANNON.Body.SLEEPING) {
+                                    // cue becomes collidable
+                                    tipBody.wakeUp();
+                                    // TODO: indicator (particle effect)
+                                    tipMaterial.color.setHex(0xff0000);
+                                }
+                                position.set(0, 0, 0);
+                                stickMesh.localToWorld(position);
+                                tipBody.position.copy(position);
 
-                            velocity.set(tool.tipVelocity[0] * 0.001, tool.tipVelocity[1] * 0.001, tool.tipVelocity[2] * 0.001);
-                            velocity.applyQuaternion(parent.quaternion);
-                            tipBody.velocity.copy(velocity);
+                                velocity.set(tool.tipVelocity[0] * 0.001, tool.tipVelocity[1] * 0.001, tool.tipVelocity[2] * 0.001);
+                                velocity.applyQuaternion(parent.quaternion);
+                                tipBody.velocity.copy(velocity);
+                            }
                         }
+                    } else if (tipBody.sleepState === CANNON.Body.AWAKE) {
+                        tipBody.sleep();
+                        tipMaterial.color.setHex(tipColor);
                     }
-                    // else if (frame.tools.length === 2) {
-                    //     pyserver.log('TWO TOOLS OMG');
-                    // }
                     leftRoot.visible = rightRoot.visible = false;
                     for (var i = 0; i < frame.hands.length; i++) {
                         var hand = frame.hands[i];
@@ -208,8 +232,11 @@ function addTool(parent, world, options) {
                         }
                     }
                 };
+
             }
+
         })();
+
         leapController.on('frame', onFrame);
 
     }
