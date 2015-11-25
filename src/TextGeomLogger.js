@@ -1,50 +1,67 @@
-var avatar = avatar || new THREE.Object3D();
-
 var TextGeomLogger = (function () {
 	"use strict";
-	function TextGeomLogger(geometries, material, options) {
-		this.geometries = geomeries;
-		this.material = material;
-		this.meshes = {};
-		for (var c in this.geometries) {
-			var geom = this.geometries[c].clone();
-			this.meshes[c] = new THREE.Mesh(geom, material.clone());
-		}
-		this.logRoot = new THREE.Object3D();
-		this.lineMeshBuffer = {};
+	var alphas = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+	var digits = "0123456789";
+	var symbols = ",./;'[]\\-=<>?:\"{}|_+~!@#$%^&*()";
+	var chars = alphas + digits + symbols;
+
+	function TextGeomLogger(material, options) {
 		options = options || {};
-		options.size    = options.size || 0.2;
-	    options.font    = 'anonymous pro';
-		options.height  = options.height || 0;
-        options.rows    = options.rows || 20;
-        options.columns = options.columns || 80;
-        options.parent  = options.parent || avatar;
-        this.options = options;
+		var textGeomParams = {
+			size:          options.size || 0.12,
+			font:          options.font || 'anonymous pro',
+			height:        options.height || 0,
+			curveSegments: options.curveSegments || 2
+		};
+		this.geometries = {};
+		this.meshes = {};
+		for (var i = 0; i < chars.length; i++) {
+			var c = chars[i];
+			var geom = new THREE.TextGeometry(c, textGeomParams);
+			this.geometries[c] = geom;
+			this.meshes[c] = new THREE.Mesh(geom, material);
+		}
+
+        var nrows = options.nrows || 20;
+        var ncols = options.ncols || 80;
+
+		var lineMeshBuffer = {};
+
+		this.root = new THREE.Object3D();
 
 		this.log = function (msg) {
 			var lines = msg.split('\n');
-			for (var i = 0; i < lines.length && i < this.logRoot.children.length; i++) {
-				var child = this.logRoot.children[i];
-				child.position.y += 1.6 * this.options.size;
+			// scroll previous lines:
+			for (var i = 0; i < this.root.children.length; i++) {
+				var child = this.root.children[i];
+				child.position.y += 1.6*textGeomParams.size;
 			}
+			// create / clone new lines:
 			for (i = 0; i < lines.length; i++) {
 				var line = lines[i];
-				var mesh = this.lineMeshBuffer[line];
-				if (mesh) {
-					this.logRoot.add(mesh.clone());
+				var lineMesh = lineMeshBuffer[line];
+				if (lineMesh) {
+					var clone = lineMesh.clone();
+					clone.position.y = 0;
+					this.root.add(clone);
 				}
 				else {
-					mesh = new THREE.Object3D();
-					this.logRoot.add(mesh);
-					this.lineMeshBuffer[line] = mesh;
-					for (var col = 0; col < line.length; col++) {
-						var c = line[col];
+					lineMesh = new THREE.Object3D();
+					this.root.add(lineMesh);
+					lineMeshBuffer[line] = lineMesh;
+					for (var j = 0; j < line.length; j++) {
+						var c = line[j];
 						if (c !== ' ') {
 							var letterMesh = this.meshes[c].clone();
-							letterMesh.position.x = 1.6*this.options.size * col;
+							letterMesh.position.x = 0.8*textGeomParams.size * j;
+							lineMesh.add(letterMesh);
 						}
 					}
 				}
+			}
+			// remove rows exceeding max display
+			if (this.root.children.length > nrows) {
+
 			}
 		}.bind(this);
 	}

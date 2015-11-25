@@ -270,7 +270,7 @@ def pool_hall(useBasicMaterials=True,
         ball_materials = [MeshPhongMaterial(color=color, shading=SmoothShading) for color in ball_colors]
 
     ballData = {'cannonData': {'mass': 0.17, 'shapes': ['Sphere'],
-                               'linearDamping': 0.1, 'angularDamping': 0.1}}
+                               'linearDamping': 0.3, 'angularDamping': 0.3}}
 
     y_position = H_table + ball_radius + 0.0001 # epsilon distance which the ball will fall from initial position
 
@@ -279,7 +279,7 @@ def pool_hall(useBasicMaterials=True,
     # x_positions = [0] + list(x_positions)
     # z_positions = [L_table / 4] + list(z_positions)
 
-    d = 0.2*ball_radius # separation between racked balls
+    d = 0.1*ball_radius # separation between racked balls
     side_length = 4 * (ball_diameter + d)
     x_positions = np.concatenate([np.linspace(0,                        0.5 * side_length,                         5),
                                   np.linspace(-0.5*(ball_diameter + d), 0.5 * side_length - (ball_diameter + d),   4),
@@ -320,7 +320,3 @@ def pool_hall(useBasicMaterials=True,
                                   rotation=[-0.5*np.pi - rotation[0], -rotation[1], -rotation[2]])
             ballMesh.add(ballShadowMesh)
     return scene.export()
-    # textGeometries = text_geom_alphabet(font='anonymous pro', height=0, size=0.1, curveSegments=2)
-    # geometries = scene.find_geometries()
-    # geometries.update({geom.uuid: geom for geom in textGeometries.values()})
-    # return scene.export(geometries=geometries)

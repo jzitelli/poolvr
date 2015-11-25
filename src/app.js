@@ -1,4 +1,6 @@
 // TODO requires three.js, CANNON.js, settings.js, cardboard.js, WebVRApplication.js, CrapLoader.js, LeapTools.js, pyserver.js
+// TODO restructure fdsgbfng
+
 var app;
 
 var scene = CrapLoader.parse(JSON_SCENE);
@@ -30,6 +32,24 @@ mouseParticleGroup.addEmitter(mouseParticleEmitter);
 var mousePointer = mouseParticleGroup.mesh;
 mousePointer.visible = false;
 
+// TODO: load from JSON config
+var ballMaterial            = new CANNON.Material();
+var ballBallContactMaterial = new CANNON.ContactMaterial(ballMaterial, ballMaterial, {restitution: 0.91, friction: 0.2});
+var playableSurfaceMaterial            = new CANNON.Material();
+var ballPlayableSurfaceContactMaterial = new CANNON.ContactMaterial(ballMaterial, playableSurfaceMaterial, {restitution: 0.33, friction: 0.1});
+var cushionMaterial            = new CANNON.Material();
+var ballCushionContactMaterial = new CANNON.ContactMaterial(ballMaterial, cushionMaterial, {restitution: 0.8, friction: 0.4});
+var floorMaterial            = new CANNON.Material();
+var floorBallContactMaterial = new CANNON.ContactMaterial(floorMaterial, ballMaterial, {restitution: 0.88, friction: 0.4});
+
+function setupMenu(parent) {
+    "use strict";
+    var textGeom = new THREE.TextGeometry('RESET TABLE', {font: 'anonymous pro', size: 0.2, height: 0});
+    var textMesh = new THREE.Mesh(textGeom);
+    textMesh.position.set(0, 1, -2);
+    parent.add(textMesh);
+}
+
 function onLoad() {
     "use strict";
     pyserver.log("starting poolvr...");
@@ -46,10 +66,10 @@ function onLoad() {
     function lockChangeAlert() {
         if ( document.pointerLockElement || document.mozPointerLockElement || document.webkitPointerLockElement ) {
             pyserver.log('pointer lock status is now locked');
-            mousePointer.visible = true;
+            // mousePointer.visible = true;
         } else {
             pyserver.log('pointer lock status is now unlocked');
-            mousePointer.visible = false;
+            // mousePointer.visible = false;
         }
     }
     if ("onpointerlockchange" in document) {
@@ -65,17 +85,17 @@ function onLoad() {
     app.mouseParticleGroup = mouseParticleGroup;
     var xMax = 2, xMin = -2,
         yMax = 1, yMin = -1;
-    window.addEventListener("mousemove", function (evt) {
-        if (!mousePointer.visible) return;
-        var dx = evt.movementX,
-            dy = evt.movementY;
-        mousePointer.position.x += 0.0004*dx;
-        mousePointer.position.y -= 0.0004*dy;
-        if (mousePointer.position.x > xMax) mousePointer.position.x = xMax;
-        else if (mousePointer.position.x < xMin) mousePointer.position.x = xMin;
-        if (mousePointer.position.y > yMax) mousePointer.position.y = yMax;
-        else if (mousePointer.position.y < yMin) mousePointer.position.y = yMin;
-    });
+    // window.addEventListener("mousemove", function (evt) {
+    //     if (!mousePointer.visible) return;
+    //     var dx = evt.movementX,
+    //         dy = evt.movementY;
+    //     mousePointer.position.x += 0.0004*dx;
+    //     mousePointer.position.y -= 0.0004*dy;
+    //     if (mousePointer.position.x > xMax) mousePointer.position.x = xMax;
+    //     else if (mousePointer.position.x < xMin) mousePointer.position.x = xMin;
+    //     if (mousePointer.position.y > yMax) mousePointer.position.y = yMax;
+    //     else if (mousePointer.position.y < yMin) mousePointer.position.y = yMin;
+    // });
 
     if (!app.config.useBasicMaterials) {
         // would rather add the spot lights via three.py generated JSON_SCENE, but I'm having problems getting shadows frm them:
@@ -93,18 +113,9 @@ function onLoad() {
 
     CrapLoader.CANNONize(scene, app.world);
 
-    // TODO: load from JSON config
-    var ballMaterial            = new CANNON.Material();
-    var ballBallContactMaterial = new CANNON.ContactMaterial(ballMaterial, ballMaterial, {restitution: 0.91, friction: 0.08});
     app.world.addContactMaterial(ballBallContactMaterial);
-    var playableSurfaceMaterial            = new CANNON.Material();
-    var ballPlayableSurfaceContactMaterial = new CANNON.ContactMaterial(ballMaterial, playableSurfaceMaterial, {restitution: 0.3, friction: 0.1});
     app.world.addContactMaterial(ballPlayableSurfaceContactMaterial);
-    var cushionMaterial            = new CANNON.Material();
-    var ballCushionContactMaterial = new CANNON.ContactMaterial(ballMaterial, cushionMaterial, {restitution: 0.8, friction: 0.4});
     app.world.addContactMaterial(ballCushionContactMaterial);
-    var floorMaterial            = new CANNON.Material();
-    var floorBallContactMaterial = new CANNON.ContactMaterial(floorMaterial, ballMaterial, {restitution: 0.88, friction: 0.4});
     app.world.addContactMaterial(floorBallContactMaterial);
 
     scene.traverse(function (node) {
@@ -126,6 +137,12 @@ function onLoad() {
         }
     });
 
+    var textGeomLogger = new TextGeomLogger();
+    app.textGeomLogger = textGeomLogger;
+    textGeomLogger.root.position.set(-2.5, 1, -3);
+    avatar.add(textGeomLogger.root);
+    textGeomLogger.log("HELLO.  WELCOME TO POOLVR.");
+
     var toolOptions = {
         // ##### Desktop mode (default): #####
         transformOptions : app.config.transformOptions || {vr: 'desktop'},
@@ -135,13 +152,17 @@ function onLoad() {
         toolLength       : app.config.toolLength || 0.5,
         toolRadius       : app.config.toolRadius || 0.013
     };
+
     // if (app.config.leapVR) {
     //     // ##### Leap Motion VR tracking mode: #####
     //     toolOptions.transformOptions = {vr: true, effectiveParent: app.camera};
     // }
 
-    pyserver.log('adding tool...');
     pyserver.log('toolOptions =\n' + JSON.stringify(toolOptions, undefined, 2));
+
+    // toolOptions.onConnect = function () { textGeomLogger.log("YOUR LEAP MOTION CONTROLLER IS CONNECTED.  GOOD JOB."); };
+    toolOptions.onDeviceConnected = function () { textGeomLogger.log("YOUR LEAP MOTION CONTROLLER IS CONNECTED.  GOOD JOB."); };
+    toolOptions.onDeviceDisconnected = function () { textGeomLogger.log("YOUR LEAP MOTION CONTROLLER IS DISCONNECTED!  HOW WILL YOU PLAY?!"); };
 
     var toolStuff = addTool(avatar, app.world, toolOptions);
     stickMesh = toolStuff.stickMesh;
@@ -195,6 +216,8 @@ function onLoad() {
         source.buffer = ballBallBuffer;
         source.start(0);
     };
+
+    // setupMenu(avatar);
 
     app.start(animate);
 }
@@ -301,7 +324,19 @@ function animate(t) {
         var bi = contactEquation.bi,
             bj = contactEquation.bj;
         if (bi.material === bj.material) {
+            // ball-ball collision
             app.playCollisionSound();
+        } else if (bi.material === floorMaterial || bj.material === floorMaterial) {
+            // ball-floor collision
+            var ballBody = (bi.material === ballMaterial ? bi : bj);
+            if (!ballBody.bounces) {
+                app.textGeomLogger.log("A BALL HIT THE FLOOR!");
+                ballBody.bounces = 1;
+            } else if (ballBody.bounces > 5) {
+                ballBody.sleep();
+            } else {
+                ballBody.bounces++;
+            }
         }
     }
 

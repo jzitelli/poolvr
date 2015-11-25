@@ -5,7 +5,7 @@ function addTool(parent, world, options) {
     var toolLength = options.toolLength || 0.5;
     var toolRadius = options.toolRadius || 0.013;
     var toolOffset = options.toolOffset || new THREE.Vector3(0, -0.46, -toolLength - 0.15);
-    var toolMass   = options.toolMass || 0.06;
+    var toolMass   = options.toolMass || 0.05;
     var handOffset = options.handOffset || new THREE.Vector3(0, -0.25, -0.4);
 
     var toolTime      = options.toolTime  || 0.04;
@@ -13,6 +13,18 @@ function addTool(parent, world, options) {
     var minConfidence = options.minConfidence || 0.3;
 
     var transformOptions = options.transformOptions || {};
+
+    // leap motion event callbacks:
+    var onConnect = options.onConnect || function () {
+        pyserver.log('Leap Motion WebSocket connected');
+    };
+    var onDeviceConnected = options.onDeviceConnected || function () {
+        pyserver.log('Leap Motion controller connected');
+    };
+    var onDeviceDisconnected = options.onDeviceDisconnected || function () {
+        pyserver.log('Leap Motion controller disconnected');
+    };
+
 
     // tool:
     var toolRoot = new THREE.Object3D();
@@ -103,9 +115,11 @@ function addTool(parent, world, options) {
             toolTime *= 2;
         }
         pyserver.log("transformOptions =\n" + JSON.stringify(transformOptions, undefined, 2));
-        leapController.on('connect', function () {
-            pyserver.log('Leap Motion controller connected');
-        });
+
+        leapController.on('connect', onConnect);
+        leapController.on('deviceConnected', onDeviceConnected);
+        leapController.on('deviceDisconnected', onDeviceDisconnected);
+
         leapController.use('transform', transformOptions).connect();
         var onFrame = (function () {
             var UP = new THREE.Vector3(0, 1, 0);
@@ -141,9 +155,9 @@ function addTool(parent, world, options) {
                             }
                         }
                     }
-                    else if (frame.tools.length === 2) {
-                        pyserver.log('TWO TOOLS OMG');
-                    }
+                    // else if (frame.tools.length === 2) {
+                    //     pyserver.log('TWO TOOLS OMG');
+                    // }
                 };
             } else {
                 // onFrame: ########################################
@@ -167,9 +181,9 @@ function addTool(parent, world, options) {
                             tipBody.velocity.copy(velocity);
                         }
                     }
-                    else if (frame.tools.length === 2) {
-                        pyserver.log('TWO TOOLS OMG');
-                    }
+                    // else if (frame.tools.length === 2) {
+                    //     pyserver.log('TWO TOOLS OMG');
+                    // }
                     leftRoot.visible = rightRoot.visible = false;
                     for (var i = 0; i < frame.hands.length; i++) {
                         var hand = frame.hands[i];

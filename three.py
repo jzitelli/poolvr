@@ -486,14 +486,3 @@ class TextGeometry(Three):
         d = Three.json(self)
         d.update({k: v for k, v in self.__dict__.items() if k not in d and v is not None})
         return d
-
-
-def text_geom_alphabet(**kwargs):
-    alphas  = "abcdefghijklmnopqrstuvwxyz"
-    alphas += alphas.upper()
-    digits  = '0123456789'
-    symbols = r""",./;'[]\-=<>?:"{}|_+`~!@#$%^&*()"""
-    characters = alphas + digits + symbols
-    geometries = {c: TextGeometry(name=c, text=c, parameters=kwargs)
-                  for c in characters}
-    return geometries
