@@ -1,5 +1,5 @@
 /*
-  poolvr v0.1.0 2015-11-24
+  poolvr v0.1.0 2015-11-26
   
   Copyright (C) 2015 Jeffrey Zitelli <jeffrey.zitelli@gmail.com> (http://subvr.info)
   http://subvr.info/poolvr
@@ -108,10 +108,10 @@ WebVRApplication = ( function () {
             world = new CANNON.World();
             world.gravity.set( 0, -config.gravity, 0 );
             world.broadphase = new CANNON.SAPBroadphase( world );
-            world.defaultContactMaterial.contactEquationStiffness = 1e8;
-            world.defaultContactMaterial.frictionEquationStiffness = 1e8;
-            world.defaultContactMaterial.contactEquationRelaxation = 3;
-            world.defaultContactMaterial.frictionEquationRelaxation = 3;
+            world.defaultContactMaterial.contactEquationStiffness   = config.contactEquationStiffness || 1e7;
+            world.defaultContactMaterial.frictionEquationStiffness  = config.frictionEquationStiffness || 1e7;
+            world.defaultContactMaterial.contactEquationRelaxation  = config.contactEquationRelaxation || 3;
+            world.defaultContactMaterial.frictionEquationRelaxation = config.frictionEquationRelaxation || 3;
             world.solver.iterations = 10;
         }
         this.world = world;
@@ -392,36 +392,78 @@ function addTool(parent, world, options) {
 
     var toolLength = options.toolLength || 0.5;
     var toolRadius = options.toolRadius || 0.013;
-    var toolOffset = options.toolOffset || new THREE.Vector3(0, -0.46, -toolLength - 0.15);
-    var toolMass   = options.toolMass || 0.06;
+    var toolMass   = options.toolMass   || 0.06;
+
+    var toolOffset = options.toolOffset || new THREE.Vector3(0, -0.4, -toolLength - 0.2);
     var handOffset = options.handOffset || new THREE.Vector3(0, -0.25, -0.4);
 
-    var toolTime      = options.toolTime  || 0.04;
-    var toolTimeB     = options.toolTimeB || toolTime + 0.1;
+    var toolTime      = options.toolTime  || 0.25;
+    var toolTimeB     = options.toolTimeB || toolTime + 1;
     var minConfidence = options.minConfidence || 0.3;
 
-    var transformOptions = options.transformOptions || {};
+    var leapController = new Leap.Controller({frameEventName: 'animationFrame'});
 
-    // tool:
+    var scalar;
+    var transformOptions = options.transformOptions;
+    if (transformOptions) {
+        leapController.use('transform', transformOptions);
+        pyserver.log("transformOptions =\n" + JSON.stringify(transformOptions, undefined, 2));
+        if (transformOptions.vr === true) {
+            toolOffset.set(0, 0, 0);
+            handOffset.set(0, 0, 0);
+        }
+        scalar = 1; // transform plugin takes care of scaling
+    } else {
+        scalar = 0.001;
+    }
+
+    // leap motion event callbacks:
+    var onConnect = options.onConnect || function () {
+        pyserver.log('Leap Motion WebSocket connected');
+    };
+    var onDeviceConnected = options.onDeviceConnected || function () {
+        pyserver.log('Leap Motion controller connected');
+    };
+    var onDeviceDisconnected = options.onDeviceDisconnected || function () {
+        pyserver.log('Leap Motion controller disconnected');
+    };
+
+    leapController.on('connect', onConnect);
+    // deprecated, use streamingStarted / streamingStopped:
+    // leapController.on('deviceConnected', onDeviceConnected);
+    // leapController.on('deviceDisconnected', onDeviceDisconnected);
+
+    leapController.connect();
+
+    // three.js tool: ########################################################################
     var toolRoot = new THREE.Object3D();
     toolRoot.position.copy(toolOffset);
+    toolRoot.scale.set(scalar, scalar, scalar);
     parent.add(toolRoot);
-    var stickGeom = new THREE.CylinderGeometry(toolRadius, toolRadius, toolLength, 10, 1, false);
-    stickGeom.translate(0, -toolLength / 2, 0);
+
+    var stickGeom = new THREE.CylinderGeometry(toolRadius/scalar, toolRadius/scalar, toolLength/scalar, 10, 1, false);
+    stickGeom.translate(0, -toolLength/scalar / 2, 0);
+    var bufferGeom = new THREE.BufferGeometry();
+    bufferGeom.fromGeometry(stickGeom);
+    stickGeom.dispose();
+    stickGeom = bufferGeom;
+
     var stickMaterial;
+    var stickColor = 0xeebb99;
+    var tipColor = 0x004488;
     var tipMaterial;
     if (options.useBasicMaterials) {
-        stickMaterial = new THREE.MeshBasicMaterial({color: 0xeebb99, side: THREE.DoubleSide});
-        tipMaterial = new THREE.MeshBasicMaterial({color: 0x004488});
+        stickMaterial = new THREE.MeshBasicMaterial({color: stickColor, side: THREE.DoubleSide});
+        tipMaterial = new THREE.MeshBasicMaterial({color: tipColor});
     }
     else {
-        stickMaterial = new THREE.MeshLambertMaterial({color: 0xeebb99, side: THREE.DoubleSide});
-        tipMaterial = new THREE.MeshLambertMaterial({color: 0x004488});
+        stickMaterial = new THREE.MeshLambertMaterial({color: stickColor, side: THREE.DoubleSide});
+        tipMaterial = new THREE.MeshLambertMaterial({color: tipColor});
     }
     var stickMesh = new THREE.Mesh(stickGeom, stickMaterial);
     stickMesh.castShadow = true;
     toolRoot.add(stickMesh);
-    var tipMesh = new THREE.Mesh(new THREE.SphereBufferGeometry(0.95*toolRadius, 10), tipMaterial);
+    var tipMesh = new THREE.Mesh(new THREE.SphereBufferGeometry(0.95*toolRadius/scalar, 10), tipMaterial);
     tipMesh.castShadow = true;
     stickMesh.add(tipMesh);
     // TODO: mass
@@ -430,12 +472,14 @@ function addTool(parent, world, options) {
     world.addBody(tipBody);
     toolRoot.visible = false;
 
-    // setup hands: ############################
+    // three.js hands: ############################
     // hands don't necessarily correspond the left / right labels, but doesn't matter to me because they look indistinguishable
     var leftRoot = new THREE.Object3D(),
         rightRoot = new THREE.Object3D();
     leftRoot.position.copy(handOffset);
+    leftRoot.scale.set(scalar, scalar, scalar);
     rightRoot.position.copy(handOffset);
+    rightRoot.scale.set(scalar, scalar, scalar);
     var handRoots = [leftRoot, rightRoot];
     parent.add(leftRoot);
     parent.add(rightRoot);
@@ -444,15 +488,21 @@ function addTool(parent, world, options) {
     if (!options.leapHandsDisabled) {
         var handMaterial = new THREE.MeshBasicMaterial({color: 0x113399, transparent: true, opacity: 0});
         // arms:
-        var armRadius = 0.0276,
-            armLength = 0.26;
+        var armRadius = 0.0276/scalar,
+            armLength = 0.26/scalar;
+
         var armGeom = new THREE.CylinderGeometry(armRadius, armRadius, armLength);
+        bufferGeom = new THREE.BufferGeometry();
+        bufferGeom.fromGeometry(armGeom);
+        armGeom.dispose();
+        armGeom = bufferGeom;
+
         var armMesh = new THREE.Mesh(armGeom, handMaterial);
         var arms = [armMesh, armMesh.clone()];
         leftRoot.add(arms[0]);
         rightRoot.add(arms[1]);
         // palms:
-        var radius = 0.025;
+        var radius = 0.025/scalar;
         var palmGeom = new THREE.SphereBufferGeometry(radius).scale(1, 0.5, 1);
         var palmMesh = new THREE.Mesh(palmGeom, handMaterial);
         palmMesh.castShadow = true;
@@ -460,7 +510,7 @@ function addTool(parent, world, options) {
         leftRoot.add(palms[0]);
         rightRoot.add(palms[1]);
         // fingertips:
-        radius = 0.005;
+        radius = 0.005/scalar;
         var fingerTipGeom = new THREE.SphereBufferGeometry(radius);
         var fingerTipMesh = new THREE.Mesh(fingerTipGeom, handMaterial);
         var fingerTips = [[fingerTipMesh, fingerTipMesh.clone(), fingerTipMesh.clone(), fingerTipMesh.clone(), fingerTipMesh.clone()],
@@ -484,171 +534,150 @@ function addTool(parent, world, options) {
         rightRoot.add(joint2s[1][0], joint2s[1][1], joint2s[1][2], joint2s[1][3], joint2s[1][4]);
     }
 
-    var leapController;
-    if (!options.leapDisabled) {
-        leapController = new Leap.Controller({frameEventName: 'animationFrame'});
-        if (transformOptions.vr === true) {
-            toolTime *= 2;
-        }
-        pyserver.log("transformOptions =\n" + JSON.stringify(transformOptions, undefined, 2));
-        leapController.on('connect', function () {
-            pyserver.log('Leap Motion controller connected');
-        });
-        leapController.use('transform', transformOptions).connect();
-        var onFrame = (function () {
-            var UP = new THREE.Vector3(0, 1, 0);
-            var direction = new THREE.Vector3();
-            var position = new THREE.Vector3();
-            var velocity = new THREE.Vector3();
+    var UP = new THREE.Vector3(0, 1, 0);
+    var direction = new THREE.Vector3();
+    var position = new THREE.Vector3();
+    var velocity = new THREE.Vector3();
 
-            if (options.leapHandsDisabled) {
-                // onFrame (tool only): ########################################
-                return function (frame) {
-                    if (frame.tools.length === 1) {
-                        toolRoot.visible = true;
-                        var tool = frame.tools[0];
-                        if (tool.timeVisible > toolTime) {
-                            // TODO: option to toggle stabilized or not
-                            stickMesh.position.fromArray(tool.tipPosition);
-                            // stickMesh.position.fromArray(tool.stabilizedTipPosition);
-                            direction.fromArray(tool.direction);
-                            stickMesh.quaternion.setFromUnitVectors(UP, direction);
-                            if (tool.timeVisible > toolTimeB) {
-                                if (tipBody.sleepState === CANNON.Body.SLEEPING) {
-                                    // cue becomes collidable
-                                    tipBody.wakeUp();
-                                    // TODO: indicator (particle effect)
-                                }
-                                position.set(0, 0, 0);
-                                stickMesh.localToWorld(position);
-                                tipBody.position.copy(position);
+    function animateLeap(frame) {
+        // TOOL + HANDS VERSION:
+        if (frame.tools.length === 1) {
+            toolRoot.visible = true;
+            var tool = frame.tools[0];
+            if (tool.timeVisible > toolTime) {
+                stickMesh.position.fromArray(tool.tipPosition); // stickMesh.position.fromArray(tool.stabilizedTipPosition);
+                direction.fromArray(tool.direction);
+                stickMesh.quaternion.setFromUnitVectors(UP, direction);
 
-                                velocity.set(tool.tipVelocity[0] * 0.001, tool.tipVelocity[1] * 0.001, tool.tipVelocity[2] * 0.001);
-                                velocity.applyQuaternion(parent.quaternion);
-                                tipBody.velocity.copy(velocity);
-                            }
-                        }
+                if (tool.timeVisible > toolTimeB) {
+                    if (tipBody.sleepState === CANNON.Body.SLEEPING) {
+                        // cue becomes collidable
+                        tipBody.wakeUp();
+                        // TODO: indicator (particle effect)
+                        tipMaterial.color.setHex(0xff0000);
                     }
-                    else if (frame.tools.length === 2) {
-                        pyserver.log('TWO TOOLS OMG');
-                    }
-                };
-            } else {
-                // onFrame: ########################################
-                return function (frame) {
-                    if (frame.tools.length === 1) {
-                        toolRoot.visible = true;
-                        var tool = frame.tools[0];
-                        if (tool.timeVisible > toolTime) {
-                            stickMesh.position.fromArray(tool.tipPosition);
-                            // stickMesh.position.fromArray(tool.stabilizedTipPosition);
+                    position.set(0, 0, 0);
+                    stickMesh.localToWorld(position);
+                    tipBody.position.copy(position);
 
-                            direction.fromArray(tool.direction);
-                            stickMesh.quaternion.setFromUnitVectors(UP, direction);
-
-                            position.set(0, 0, 0);
-                            stickMesh.localToWorld(position);
-                            tipBody.position.copy(position);
-
-                            velocity.set(tool.tipVelocity[0] * 0.001, tool.tipVelocity[1] * 0.001, tool.tipVelocity[2] * 0.001);
-                            velocity.applyQuaternion(parent.quaternion);
-                            tipBody.velocity.copy(velocity);
-                        }
-                    }
-                    else if (frame.tools.length === 2) {
-                        pyserver.log('TWO TOOLS OMG');
-                    }
-                    leftRoot.visible = rightRoot.visible = false;
-                    for (var i = 0; i < frame.hands.length; i++) {
-                        var hand = frame.hands[i];
-                        if (hand.confidence > minConfidence) {
-                            handRoots[i].visible = true;
-                            handMaterial.opacity = hand.confidence;
-                            direction.fromArray(hand.arm.basis[2]);
-                            arms[i].quaternion.setFromUnitVectors(UP, direction);
-                            var center = hand.arm.center();
-                            arms[i].position.fromArray(center);
-
-                            direction.fromArray(hand.palmNormal);
-                            palms[i].quaternion.setFromUnitVectors(UP, direction);
-                            palms[i].position.fromArray(hand.palmPosition);
-
-                            for (var j = 0; j < hand.fingers.length; j++) {
-                                var finger = hand.fingers[j];
-                                fingerTips[i][j].position.fromArray(finger.tipPosition);
-                                joints[i][j].position.fromArray(finger.bones[1].nextJoint);
-                                joint2s[i][j].position.fromArray(finger.bones[2].nextJoint);
-                            }
-                        }
-                    }
-                };
+                    velocity.set(tool.tipVelocity[0] * 0.001, tool.tipVelocity[1] * 0.001, tool.tipVelocity[2] * 0.001);
+                    velocity.applyQuaternion(parent.quaternion);
+                    tipBody.velocity.copy(velocity);
+                }
             }
-        })();
-        leapController.on('frame', onFrame);
+        } else if (tipBody.sleepState === CANNON.Body.AWAKE) {
+            tipBody.sleep();
+            tipMaterial.color.setHex(tipColor);
+        }
+        leftRoot.visible = rightRoot.visible = false;
+        for (var i = 0; i < frame.hands.length; i++) {
+            var hand = frame.hands[i];
+            if (hand.confidence > minConfidence) {
+                handRoots[i].visible = true;
+                handMaterial.opacity = (hand.confidence - minConfidence) / (1 - minConfidence);
+                direction.fromArray(hand.arm.basis[2]);
+                arms[i].quaternion.setFromUnitVectors(UP, direction);
+                var center = hand.arm.center();
+                arms[i].position.fromArray(center);
 
+                direction.fromArray(hand.palmNormal);
+                palms[i].quaternion.setFromUnitVectors(UP, direction);
+                palms[i].position.fromArray(hand.palmPosition);
+
+                for (var j = 0; j < hand.fingers.length; j++) {
+                    var finger = hand.fingers[j];
+                    fingerTips[i][j].position.fromArray(finger.tipPosition);
+                    joints[i][j].position.fromArray(finger.bones[1].nextJoint);
+                    joint2s[i][j].position.fromArray(finger.bones[2].nextJoint);
+                }
+            }
+        }
     }
+
+    // leapController.on('frame', animateLeap);
 
     return {
         stickMesh: stickMesh,
         tipMesh: tipMesh,
         tipBody: tipBody,
         toolRoot: toolRoot,
-        leapController: leapController
+        leapController: leapController,
+        animateLeap: animateLeap
     };
 }
 ;
-var avatar = avatar || new THREE.Object3D();
-
 var TextGeomLogger = (function () {
-	"use strict";
-	function TextGeomLogger(geometries, material, options) {
-		this.geometries = geomeries;
-		this.material = material;
-		this.meshes = {};
-		for (var c in this.geometries) {
-			var geom = this.geometries[c].clone();
-			this.meshes[c] = new THREE.Mesh(geom, material.clone());
-		}
-		this.logRoot = new THREE.Object3D();
-		this.lineMeshBuffer = {};
-		options = options || {};
-		options.size    = options.size || 0.2;
-	    options.font    = 'anonymous pro';
-		options.height  = options.height || 0;
-        options.rows    = options.rows || 20;
-        options.columns = options.columns || 80;
-        options.parent  = options.parent || avatar;
-        this.options = options;
+    "use strict";
+    var alphas = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    var digits = "0123456789";
+    var symbols = ",./;'[]\\-=<>?:\"{}|_+~!@#$%^&*()";
+    var chars = alphas + digits + symbols;
 
-		this.log = function (msg) {
-			var lines = msg.split('\n');
-			for (var i = 0; i < lines.length && i < this.logRoot.children.length; i++) {
-				var child = this.logRoot.children[i];
-				child.position.y += 1.6 * this.options.size;
-			}
-			for (i = 0; i < lines.length; i++) {
-				var line = lines[i];
-				var mesh = this.lineMeshBuffer[line];
-				if (mesh) {
-					this.logRoot.add(mesh.clone());
-				}
-				else {
-					mesh = new THREE.Object3D();
-					this.logRoot.add(mesh);
-					this.lineMeshBuffer[line] = mesh;
-					for (var col = 0; col < line.length; col++) {
-						var c = line[col];
-						if (c !== ' ') {
-							var letterMesh = this.meshes[c].clone();
-							letterMesh.position.x = 1.6*this.options.size * col;
-						}
-					}
-				}
-			}
-		}.bind(this);
-	}
-	
-	return TextGeomLogger;
+    function TextGeomLogger(material, options) {
+        options = options || {};
+        var textGeomParams = {
+            size:          options.size || 0.12,
+            font:          options.font || 'anonymous pro',
+            height:        options.height || 0,
+            curveSegments: options.curveSegments || 2
+        };
+        this.geometries = {};
+        this.meshes = {};
+        for (var i = 0; i < chars.length; i++) {
+            var c = chars[i];
+            var geom = new THREE.TextGeometry(c, textGeomParams);
+            var bufferGeom = new THREE.BufferGeometry();
+            bufferGeom.fromGeometry(geom);
+            geom.dispose();
+            this.geometries[c] = bufferGeom;
+            this.meshes[c] = new THREE.Mesh(geom, material);
+        }
+
+        var nrows = options.nrows || 20;
+        //var ncols = options.ncols || 80;
+
+        var lineMeshBuffer = {};
+
+        this.root = new THREE.Object3D();
+
+        this.log = function (msg) {
+            var lines = msg.split('\n');
+            // scroll previous lines:
+            for (var i = 0; i < this.root.children.length; i++) {
+                var child = this.root.children[i];
+                child.position.y += 1.6*textGeomParams.size;
+            }
+            // create / clone new lines:
+            for (i = 0; i < lines.length; i++) {
+                var line = lines[i];
+                var lineMesh = lineMeshBuffer[line];
+                if (lineMesh) {
+                    var clone = lineMesh.clone();
+                    clone.position.y = 0;
+                    this.root.add(clone);
+                }
+                else {
+                    lineMesh = new THREE.Object3D();
+                    this.root.add(lineMesh);
+                    lineMeshBuffer[line] = lineMesh;
+                    for (var j = 0; j < line.length; j++) {
+                        var c = line[j];
+                        if (c !== ' ') {
+                            var letterMesh = this.meshes[c].clone();
+                            letterMesh.position.x = 0.8*textGeomParams.size * j;
+                            lineMesh.add(letterMesh);
+                        }
+                    }
+                }
+            }
+            // remove rows exceeding max display
+            while (this.root.children.length > nrows) {
+                this.root.remove(this.root.children[-1]);
+            }
+        }.bind(this);
+    }
+    
+    return TextGeomLogger;
 
 })();
 ;
@@ -734,7 +763,6 @@ var URL_PARAMS = (function () {
     for (var k in params) {
         if (params[k].length == 1)
             params[k] = params[k][0];
-
         if (params[k] === 'true')
             params[k] = true;
         else if (params[k] === 'false')
@@ -785,59 +813,12 @@ POOLVR.gamepadCommands = {
 };
 
 POOLVR.config.mouseEnabled = URL_PARAMS.mouseEnabled || POOLVR.config.mouseEnabled;
+POOLVR.config.leapVR = URL_PARAMS.vr;
 
 window.WebVRConfig = window.WebVRConfig || {
     FORCE_ENABLE_VR: URL_PARAMS.forceEnableVR,
-    FORCE_DISTORTION: URL_PARAMS.forceDistortion
+    FORCE_DISTORTION: URL_PARAMS.forceDistortion || true
 };
-if (POOLVR.config.oldBoilerplate) {
-    // using older version
-    window.WEBVR_FORCE_DISTORTION = WebVRConfig.FORCE_DISTORTION;
-}
-
-var VR_DEVICES = [
-    // Samsung Galaxy 4S #########################################################################################
-    // Firefox Beta: Mozilla/5.0 (Android 5.0.1; Mobile; rv:43.0) Gecko/43.0 Firefox/43.0
-    // vr.cardboard.enabled = true
-    "Phone Sensor (Cardboard) HMD (HMD)",    // VR device 0
-    "Phone Sensor (Cardboard) HMD (Sensor)", // VR device 1
-    // vr.cardboard.enabled = false
-    // no devices
-    // Chrome Dev: Mozilla/5.0 (Linux; Android 5.0.1; SCH-I545 Build/LRX22C) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/48.0.2560.5 Mobile Safari/537.36
-    // chrome://flags WebVR enabled
-    // *** WORKS ***
-    "Google, Inc. Cardboard v1", // VR device 0
-    "Google, Inc. Cardboard v1", // VR device 1
-    // Chrome:
-    // Mozilla/5.0 (Linux; Android 5.0.1; SCH-I545 Build/LRX22C) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2490.76 Mobile Safari/537.36
-    // *** WORKS WITH LATEST WEBVR-BOILERPLATE (z-ordering issue) ***
-    "webvr-polyfill deviceName",                 // VR device 0
-    "VR Position Device (webvr-polyfill:fused)", // VR device 1
-
-    // Fedora 22 #################################################################################################
-    // Firefox Nightly:
-    // Mozilla/5.0 (X11; Linux x86_64; rv:45.0) Gecko/20100101 Firefox/45.0
-    // no devices
-
-    // Windows 10 ################################################################################################
-    // DK2 0.6.0.1 drivers
-    // Chrome 0.5.0.1 DK2 build:
-    // Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/44.0.2383.0 Safari/537.36
-    // *** WORKS W/ OLDER WEBVR-BOILERPLATE ***
-    "Oculus Rift DK2, Oculus VR", // VR device 0
-    "Oculus Rift DK2, Oculus VR", // VR device 1
-    // Firefox Nightly:
-    // Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:45.0) Gecko/20100101 Firefox/45.0
-    // *** NO DISPLAY IN HMD ***
-    "Oculus VR HMD (HMD)",   // VR device 0
-    "Oculus VR HMD (Sensor)" // VR device 0
-    // DK2 0.8 drivers
-
-    // Windows 7 ################################################################################################
-    // DK2 0.8 drivers
-    // Chrome 0.8.0.1 DK2 build
-    // *** WORKS W/ OLDER WEBVR-BOILERPLATE ***
-];
 
 pyserver.log('WebVRConfig =\n' + JSON.stringify(WebVRConfig, undefined, 2));
 var userAgent = navigator.userAgent;
@@ -854,6 +835,8 @@ if (navigator.getVRDevices) {
 }
 ;
 // TODO requires three.js, CANNON.js, settings.js, cardboard.js, WebVRApplication.js, CrapLoader.js, LeapTools.js, pyserver.js
+// TODO restructure fdsgbfng
+
 var app;
 
 var scene = CrapLoader.parse(JSON_SCENE);
@@ -883,6 +866,28 @@ var mouseParticleEmitter = new SPE.Emitter({maxAge: {value: 0.5},
                                             particleCount: 50});
 mouseParticleGroup.addEmitter(mouseParticleEmitter);
 var mousePointer = mouseParticleGroup.mesh;
+mousePointer.visible = false;
+
+// TODO: load from JSON config
+var ballMaterial            = new CANNON.Material();
+var ballBallContactMaterial = new CANNON.ContactMaterial(ballMaterial, ballMaterial, {restitution: 0.91, friction: 0.2});
+var playableSurfaceMaterial            = new CANNON.Material();
+var ballPlayableSurfaceContactMaterial = new CANNON.ContactMaterial(ballMaterial, playableSurfaceMaterial, {restitution: 0.33, friction: 0.1});
+var cushionMaterial            = new CANNON.Material();
+var ballCushionContactMaterial = new CANNON.ContactMaterial(ballMaterial, cushionMaterial, {restitution: 0.8, friction: 0.4});
+var floorMaterial            = new CANNON.Material();
+var floorBallContactMaterial = new CANNON.ContactMaterial(floorMaterial, ballMaterial, {restitution: 0.88, friction: 0.4});
+
+function setupMenu(parent) {
+    "use strict";
+    var textGeom = new THREE.TextGeometry('RESET TABLE', {font: 'anonymous pro', size: 0.2, height: 0});
+    var textMesh = new THREE.Mesh(textGeom);
+    textMesh.position.set(0, 1, -2);
+    parent.add(textMesh);
+}
+
+var leapController;
+var animateLeap;
 
 function onLoad() {
     "use strict";
@@ -900,10 +905,10 @@ function onLoad() {
     function lockChangeAlert() {
         if ( document.pointerLockElement || document.mozPointerLockElement || document.webkitPointerLockElement ) {
             pyserver.log('pointer lock status is now locked');
-            mousePointer.visible = true;
+            // mousePointer.visible = true;
         } else {
             pyserver.log('pointer lock status is now unlocked');
-            mousePointer.visible = false;
+            // mousePointer.visible = false;
         }
     }
     if ("onpointerlockchange" in document) {
@@ -919,19 +924,19 @@ function onLoad() {
     app.mouseParticleGroup = mouseParticleGroup;
     var xMax = 2, xMin = -2,
         yMax = 1, yMin = -1;
-    window.addEventListener("mousemove", function (evt) {
-        if (!mousePointer.visible) return;
-        var dx = evt.movementX,
-            dy = evt.movementY;
-        mousePointer.position.x += 0.0004*dx;
-        mousePointer.position.y -= 0.0004*dy;
-        if (mousePointer.position.x > xMax) mousePointer.position.x = xMax;
-        else if (mousePointer.position.x < xMin) mousePointer.position.x = xMin;
-        if (mousePointer.position.y > yMax) mousePointer.position.y = yMax;
-        else if (mousePointer.position.y < yMin) mousePointer.position.y = yMin;
-    });
+    // window.addEventListener("mousemove", function (evt) {
+    //     if (!mousePointer.visible) return;
+    //     var dx = evt.movementX,
+    //         dy = evt.movementY;
+    //     mousePointer.position.x += 0.0004*dx;
+    //     mousePointer.position.y -= 0.0004*dy;
+    //     if (mousePointer.position.x > xMax) mousePointer.position.x = xMax;
+    //     else if (mousePointer.position.x < xMin) mousePointer.position.x = xMin;
+    //     if (mousePointer.position.y > yMax) mousePointer.position.y = yMax;
+    //     else if (mousePointer.position.y < yMin) mousePointer.position.y = yMin;
+    // });
 
-    if (!app.config.useBasicMaterials) {
+    if (!POOLVR.config.useBasicMaterials) {
         // would rather add the spot lights via three.py generated JSON_SCENE, but I'm having problems getting shadows frm them:
         var centerSpotLight = new THREE.SpotLight(0xffffee, 1, 10, 90);
         centerSpotLight.position.set(0, 3, 0);
@@ -947,18 +952,9 @@ function onLoad() {
 
     CrapLoader.CANNONize(scene, app.world);
 
-    // TODO: load from JSON config
-    var ballMaterial            = new CANNON.Material();
-    var ballBallContactMaterial = new CANNON.ContactMaterial(ballMaterial, ballMaterial, {restitution: 0.91, friction: 0.08});
     app.world.addContactMaterial(ballBallContactMaterial);
-    var playableSurfaceMaterial            = new CANNON.Material();
-    var ballPlayableSurfaceContactMaterial = new CANNON.ContactMaterial(ballMaterial, playableSurfaceMaterial, {restitution: 0.3, friction: 0.1});
     app.world.addContactMaterial(ballPlayableSurfaceContactMaterial);
-    var cushionMaterial            = new CANNON.Material();
-    var ballCushionContactMaterial = new CANNON.ContactMaterial(ballMaterial, cushionMaterial, {restitution: 0.8, friction: 0.4});
     app.world.addContactMaterial(ballCushionContactMaterial);
-    var floorMaterial            = new CANNON.Material();
-    var floorBallContactMaterial = new CANNON.ContactMaterial(floorMaterial, ballMaterial, {restitution: 0.88, friction: 0.4});
     app.world.addContactMaterial(floorBallContactMaterial);
 
     scene.traverse(function (node) {
@@ -980,41 +976,51 @@ function onLoad() {
         }
     });
 
+    var textGeomLogger = new TextGeomLogger();
+    app.textGeomLogger = textGeomLogger;
+    textGeomLogger.root.position.set(-2.5, 1, -3);
+    avatar.add(textGeomLogger.root);
+    textGeomLogger.log("HELLO.  WELCOME TO POOLVR.");
+
     var toolOptions = {
         // ##### Desktop mode (default): #####
-        transformOptions : app.config.transformOptions || {vr: 'desktop'},
-        leapDisabled     : app.config.leapDisabled,
-        leapHandsDisabled: app.config.leapHandsDisabled,
-        useBasicMaterials: app.config.useBasicMaterials,
-        toolLength       : app.config.toolLength || 0.5,
-        toolRadius       : app.config.toolRadius || 0.013
+        transformOptions : POOLVR.config.transformOptions, // || {vr: 'desktop'},
+        leapDisabled     : POOLVR.config.leapDisabled,
+        leapHandsDisabled: POOLVR.config.leapHandsDisabled,
+        useBasicMaterials: POOLVR.config.useBasicMaterials,
+        toolLength       : POOLVR.config.toolLength || 0.5,
+        toolRadius       : POOLVR.config.toolRadius || 0.013
     };
-    // if (app.config.leapVR) {
-    //     // ##### Leap Motion VR tracking mode: #####
-    //     toolOptions.transformOptions = {vr: true, effectiveParent: app.camera};
-    // }
 
-    pyserver.log('adding tool...');
+    if (POOLVR.config.leapVR) {
+        // ##### Leap Motion VR tracking mode: #####
+        toolOptions.transformOptions = {vr: true, effectiveParent: app.camera};
+    }
+
     pyserver.log('toolOptions =\n' + JSON.stringify(toolOptions, undefined, 2));
 
+    toolOptions.onDeviceConnected = function () { textGeomLogger.log("YOUR LEAP MOTION CONTROLLER IS CONNECTED.  GOOD JOB."); };
+    toolOptions.onDeviceDisconnected = function () { textGeomLogger.log("YOUR LEAP MOTION CONTROLLER IS DISCONNECTED!  HOW WILL YOU PLAY?!"); };
+
     var toolStuff = addTool(avatar, app.world, toolOptions);
-    stickMesh = toolStuff.stickMesh;
-    tipMesh   = toolStuff.tipMesh;
-    tipBody   = toolStuff.tipBody;
-    toolRoot  = toolStuff.toolRoot;
+    stickMesh      = toolStuff.stickMesh;
+    tipMesh        = toolStuff.tipMesh;
+    tipBody        = toolStuff.tipBody;
+    toolRoot       = toolStuff.toolRoot;
+    leapController = toolStuff.leapController;
+    animateLeap    = toolStuff.animateLeap;
 
     if (!app.config.shadowMap) {
         // create shadow mesh from projection:
         stickShadow = new THREE.Object3D();
         stickShadow.position.y = -avatar.position.y - toolRoot.position.y + H_table + 0.001;
-        stickShadow.scale.set(1, 0.0004, 1);
+        stickShadow.scale.set(1, 0.001, 1);
         toolRoot.add(stickShadow);
 
         var stickShadowMaterial = new THREE.MeshBasicMaterial({color: 0x002200});
 
         var stickShadowGeom = stickMesh.geometry.clone();
-        var toolLength = toolOptions.toolLength || 0.5;
-        stickShadowGeom.translate(0, -toolLength / 2, 0); // have to do this again because not buffergeometry???
+        var toolLength = toolOptions.toolLength;
 
         stickShadowMesh = new THREE.Mesh(stickShadowGeom, stickShadowMaterial);
         stickShadowMesh.quaternion.copy(stickMesh.quaternion);
@@ -1026,7 +1032,7 @@ function onLoad() {
         stickShadow.add(tipShadowMesh);
     }
 
-    dynamicBodies = app.world.bodies.filter(function(body) { return body.mesh && body.type !== CANNON.Body.STATIC; });
+    dynamicBodies = app.world.bodies.filter(function(body) { return body.mesh && body.type === CANNON.Body.DYNAMIC; });
     ballBodies = dynamicBodies.filter(function(body) { return body.mesh.name.startsWith('ballMesh'); });
 
     var ballBallBuffer;
@@ -1050,6 +1056,8 @@ function onLoad() {
         source.start(0);
     };
 
+    // setupMenu(avatar);
+
     app.start(animate);
 }
 
@@ -1066,6 +1074,7 @@ var UP = new THREE.Vector3(0, 1, 0),
     floatSpeed = 0.1,
     toolDrive, toolStrafe, toolFloat;
 var raycaster = new THREE.Raycaster();
+var lastFrameID;
 function animate(t) {
     "use strict";
     requestAnimationFrame(animate);
@@ -1118,8 +1127,14 @@ function animate(t) {
         toolDrive -= app.gamepad.getValue("toolDrive");
     }
 
-    // TODO: resolve CANNON issues w/ initial low framerate
-    app.world.step(Math.min(dt, 1/60));
+    var frame = leapController.frame();
+    if (frame.valid && frame.id != lastFrameID) {
+        animateLeap(frame);
+        lastFrameID = frame.id;
+    }
+
+    // TODO: resolve problem where all balls randomly bounce straight up really high!!!
+    app.world.step(1/60, dt);
 
     for (var j = 0; j < dynamicBodies.length; ++j) {
         var body = dynamicBodies[j];
@@ -1142,12 +1157,10 @@ function animate(t) {
     toolRoot.position.y += 0.25  * dt * toolFloat;
 
     if (!app.config.shadowMap) {
-        // if (tipBody.position[1] > H_table - 0.0666) {
-            stickShadow.position.set(stickMesh.position.x,
-                                     H_table + 0.001 - toolRoot.position.y - avatar.position.y,
-                                     stickMesh.position.z);
-            stickShadowMesh.quaternion.copy(stickMesh.quaternion);
-        // }
+        stickShadow.position.set(stickMesh.position.x,
+                                 (H_table + 0.001 - toolRoot.position.y - avatar.position.y)/toolRoot.scale.y,
+                                 stickMesh.position.z);
+        stickShadowMesh.quaternion.copy(stickMesh.quaternion);
     }
 
     for (j = 0; j < app.world.contacts.length; j++) {
@@ -1155,11 +1168,23 @@ function animate(t) {
         var bi = contactEquation.bi,
             bj = contactEquation.bj;
         if (bi.material === bj.material) {
+            // ball-ball collision
             app.playCollisionSound();
+        } else if (bi.material === floorMaterial || bj.material === floorMaterial) {
+            // ball-floor collision
+            var ballBody = (bi.material === ballMaterial ? bi : bj);
+            if (!ballBody.bounces) {
+                app.textGeomLogger.log(ballBody.mesh.name + " HIT THE FLOOR!");
+                ballBody.bounces = 1;
+            } else if (ballBody.bounces > 5) {
+                ballBody.sleep();
+            } else {
+                ballBody.bounces++;
+            }
         }
     }
 
-    if (app.mouseParticleGroup) app.mouseParticleGroup.tick(dt);
+    //if (app.mouseParticleGroup) app.mouseParticleGroup.tick(dt);
 
 }
 
@@ -1181,5 +1206,4 @@ function animate(t) {
     //         app.picked = null;
     //     }
     // }
-
 // ################## poolvr VERSION = "v0.1.0";

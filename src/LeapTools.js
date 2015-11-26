@@ -206,33 +206,6 @@ function addTool(parent, world, options) {
         }
     }
 
-    function animateLeapSimple(frame) {
-        // TOOL ONLY VERSION:
-        if (frame.tools.length === 1) {
-            toolRoot.visible = true;
-            var tool = frame.tools[0];
-            if (tool.timeVisible > toolTime) {
-                // TODO: option to toggle stabilized or not
-                stickMesh.position.fromArray(tool.tipPosition); // stickMesh.position.fromArray(tool.stabilizedTipPosition);
-                direction.fromArray(tool.direction);
-                stickMesh.quaternion.setFromUnitVectors(UP, direction);
-
-                if (tool.timeVisible > toolTimeB) {
-                    if (tipBody.sleepState === CANNON.Body.SLEEPING) {
-                        tipBody.wakeUp();
-                    }
-                    position.set(0, 0, 0);
-                    stickMesh.localToWorld(position);
-                    tipBody.position.copy(position);
-
-                    velocity.set(tool.tipVelocity[0] * 0.001, tool.tipVelocity[1] * 0.001, tool.tipVelocity[2] * 0.001);
-                    velocity.applyQuaternion(parent.quaternion);
-                    tipBody.velocity.copy(velocity);
-                }
-            }
-        }
-    }
-
     // leapController.on('frame', animateLeap);
 
     return {
