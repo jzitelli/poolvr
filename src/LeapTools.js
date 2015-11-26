@@ -4,20 +4,29 @@ function addTool(parent, world, options) {
 
     var toolLength = options.toolLength || 0.5;
     var toolRadius = options.toolRadius || 0.013;
-    var toolMass   = options.toolMass   || 0.05;
+    var toolMass   = options.toolMass   || 0.06;
 
-    var toolOffset = options.toolOffset || new THREE.Vector3(0, -0.49, -toolLength - 0.15);
+    var toolOffset = options.toolOffset || new THREE.Vector3(0, -0.4, -toolLength - 0.2);
     var handOffset = options.handOffset || new THREE.Vector3(0, -0.25, -0.4);
 
     var toolTime      = options.toolTime  || 0.25;
     var toolTimeB     = options.toolTimeB || toolTime + 1;
     var minConfidence = options.minConfidence || 0.3;
 
-    var transformOptions = options.transformOptions || {};
+    var leapController = new Leap.Controller({frameEventName: 'animationFrame'});
 
-    if (transformOptions.vr === true) {
-        toolOffset.set(0, 0, 0);
-        handOffset.set(0, 0, 0);
+    var scalar;
+    var transformOptions = options.transformOptions;
+    if (transformOptions) {
+        leapController.use('transform', transformOptions);
+        pyserver.log("transformOptions =\n" + JSON.stringify(transformOptions, undefined, 2));
+        if (transformOptions.vr === true) {
+            toolOffset.set(0, 0, 0);
+            handOffset.set(0, 0, 0);
+        }
+        scalar = 1; // transform plugin takes care of scaling
+    } else {
+        scalar = 0.001;
     }
 
     // leap motion event callbacks:
@@ -31,14 +40,21 @@ function addTool(parent, world, options) {
         pyserver.log('Leap Motion controller disconnected');
     };
 
+    leapController.on('connect', onConnect);
+    // deprecated, use streamingStarted / streamingStopped:
+    // leapController.on('deviceConnected', onDeviceConnected);
+    // leapController.on('deviceDisconnected', onDeviceDisconnected);
 
-    // tool:
+    leapController.connect();
+
+    // three.js tool: ########################################################################
     var toolRoot = new THREE.Object3D();
     toolRoot.position.copy(toolOffset);
+    toolRoot.scale.set(scalar, scalar, scalar);
     parent.add(toolRoot);
 
-    var stickGeom = new THREE.CylinderGeometry(toolRadius, toolRadius, toolLength, 10, 1, false);
-    stickGeom.translate(0, -toolLength / 2, 0);
+    var stickGeom = new THREE.CylinderGeometry(toolRadius/scalar, toolRadius/scalar, toolLength/scalar, 10, 1, false);
+    stickGeom.translate(0, -toolLength/scalar / 2, 0);
     var bufferGeom = new THREE.BufferGeometry();
     bufferGeom.fromGeometry(stickGeom);
     stickGeom.dispose();
@@ -59,7 +75,7 @@ function addTool(parent, world, options) {
     var stickMesh = new THREE.Mesh(stickGeom, stickMaterial);
     stickMesh.castShadow = true;
     toolRoot.add(stickMesh);
-    var tipMesh = new THREE.Mesh(new THREE.SphereBufferGeometry(0.95*toolRadius, 10), tipMaterial);
+    var tipMesh = new THREE.Mesh(new THREE.SphereBufferGeometry(0.95*toolRadius/scalar, 10), tipMaterial);
     tipMesh.castShadow = true;
     stickMesh.add(tipMesh);
     // TODO: mass
@@ -68,12 +84,14 @@ function addTool(parent, world, options) {
     world.addBody(tipBody);
     toolRoot.visible = false;
 
-    // setup hands: ############################
+    // three.js hands: ############################
     // hands don't necessarily correspond the left / right labels, but doesn't matter to me because they look indistinguishable
     var leftRoot = new THREE.Object3D(),
         rightRoot = new THREE.Object3D();
     leftRoot.position.copy(handOffset);
+    leftRoot.scale.set(scalar, scalar, scalar);
     rightRoot.position.copy(handOffset);
+    rightRoot.scale.set(scalar, scalar, scalar);
     var handRoots = [leftRoot, rightRoot];
     parent.add(leftRoot);
     parent.add(rightRoot);
@@ -82,8 +100,8 @@ function addTool(parent, world, options) {
     if (!options.leapHandsDisabled) {
         var handMaterial = new THREE.MeshBasicMaterial({color: 0x113399, transparent: true, opacity: 0});
         // arms:
-        var armRadius = 0.0276,
-            armLength = 0.26;
+        var armRadius = 0.0276/scalar,
+            armLength = 0.26/scalar;
 
         var armGeom = new THREE.CylinderGeometry(armRadius, armRadius, armLength);
         bufferGeom = new THREE.BufferGeometry();
@@ -96,7 +114,7 @@ function addTool(parent, world, options) {
         leftRoot.add(arms[0]);
         rightRoot.add(arms[1]);
         // palms:
-        var radius = 0.025;
+        var radius = 0.025/scalar;
         var palmGeom = new THREE.SphereBufferGeometry(radius).scale(1, 0.5, 1);
         var palmMesh = new THREE.Mesh(palmGeom, handMaterial);
         palmMesh.castShadow = true;
@@ -104,7 +122,7 @@ function addTool(parent, world, options) {
         leftRoot.add(palms[0]);
         rightRoot.add(palms[1]);
         // fingertips:
-        radius = 0.005;
+        radius = 0.005/scalar;
         var fingerTipGeom = new THREE.SphereBufferGeometry(radius);
         var fingerTipMesh = new THREE.Mesh(fingerTipGeom, handMaterial);
         var fingerTips = [[fingerTipMesh, fingerTipMesh.clone(), fingerTipMesh.clone(), fingerTipMesh.clone(), fingerTipMesh.clone()],
@@ -127,17 +145,6 @@ function addTool(parent, world, options) {
         leftRoot.add(joint2s[0][0], joint2s[0][1], joint2s[0][2], joint2s[0][3], joint2s[0][4]);
         rightRoot.add(joint2s[1][0], joint2s[1][1], joint2s[1][2], joint2s[1][3], joint2s[1][4]);
     }
-
-    var leapController = new Leap.Controller({frameEventName: 'animationFrame'});
-
-    pyserver.log("transformOptions =\n" + JSON.stringify(transformOptions, undefined, 2));
-
-    leapController.on('connect', onConnect);
-    // deprecated, use streamingStarted / streamingStopped:
-    // leapController.on('deviceConnected', onDeviceConnected);
-    // leapController.on('deviceDisconnected', onDeviceDisconnected);
-
-    leapController.use('transform', transformOptions).connect();
 
     var UP = new THREE.Vector3(0, 1, 0);
     var direction = new THREE.Vector3();
@@ -179,7 +186,7 @@ function addTool(parent, world, options) {
             var hand = frame.hands[i];
             if (hand.confidence > minConfidence) {
                 handRoots[i].visible = true;
-                handMaterial.opacity = hand.confidence;
+                handMaterial.opacity = (hand.confidence - minConfidence) / (1 - minConfidence);
                 direction.fromArray(hand.arm.basis[2]);
                 arms[i].quaternion.setFromUnitVectors(UP, direction);
                 var center = hand.arm.center();

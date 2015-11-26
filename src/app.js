@@ -148,7 +148,7 @@ function onLoad() {
 
     var toolOptions = {
         // ##### Desktop mode (default): #####
-        transformOptions : POOLVR.config.transformOptions || {vr: 'desktop'},
+        transformOptions : POOLVR.config.transformOptions, // || {vr: 'desktop'},
         leapDisabled     : POOLVR.config.leapDisabled,
         leapHandsDisabled: POOLVR.config.leapHandsDisabled,
         useBasicMaterials: POOLVR.config.useBasicMaterials,
@@ -178,7 +178,7 @@ function onLoad() {
         // create shadow mesh from projection:
         stickShadow = new THREE.Object3D();
         stickShadow.position.y = -avatar.position.y - toolRoot.position.y + H_table + 0.001;
-        stickShadow.scale.set(1, 0.0004, 1);
+        stickShadow.scale.set(1, 0.001, 1);
         toolRoot.add(stickShadow);
 
         var stickShadowMaterial = new THREE.MeshBasicMaterial({color: 0x002200});
@@ -196,7 +196,7 @@ function onLoad() {
         stickShadow.add(tipShadowMesh);
     }
 
-    dynamicBodies = app.world.bodies.filter(function(body) { return body.mesh && body.type !== CANNON.Body.STATIC; });
+    dynamicBodies = app.world.bodies.filter(function(body) { return body.mesh && body.type === CANNON.Body.DYNAMIC; });
     ballBodies = dynamicBodies.filter(function(body) { return body.mesh.name.startsWith('ballMesh'); });
 
     var ballBallBuffer;
@@ -297,8 +297,8 @@ function animate(t) {
         lastFrameID = frame.id;
     }
 
-    // TODO: resolve CANNON issues w/ initial low framerate
-    app.world.step(Math.min(dt, 1/60));
+    // TODO: resolve problem where all balls randomly bounce straight up really high!!!
+    app.world.step(1/60, dt);
 
     for (var j = 0; j < dynamicBodies.length; ++j) {
         var body = dynamicBodies[j];
@@ -322,7 +322,7 @@ function animate(t) {
 
     if (!app.config.shadowMap) {
         stickShadow.position.set(stickMesh.position.x,
-                                 H_table + 0.001 - toolRoot.position.y - avatar.position.y,
+                                 (H_table + 0.001 - toolRoot.position.y - avatar.position.y)/toolRoot.scale.y,
                                  stickMesh.position.z);
         stickShadowMesh.quaternion.copy(stickMesh.quaternion);
     }
@@ -338,7 +338,7 @@ function animate(t) {
             // ball-floor collision
             var ballBody = (bi.material === ballMaterial ? bi : bj);
             if (!ballBody.bounces) {
-                app.textGeomLogger.log("A BALL HIT THE FLOOR!");
+                app.textGeomLogger.log(ballBody.mesh.name + " HIT THE FLOOR!");
                 ballBody.bounces = 1;
             } else if (ballBody.bounces > 5) {
                 ballBody.sleep();

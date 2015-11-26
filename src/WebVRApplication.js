@@ -101,10 +101,10 @@ WebVRApplication = ( function () {
             world = new CANNON.World();
             world.gravity.set( 0, -config.gravity, 0 );
             world.broadphase = new CANNON.SAPBroadphase( world );
-            world.defaultContactMaterial.contactEquationStiffness = 1e8;
-            world.defaultContactMaterial.frictionEquationStiffness = 1e8;
-            world.defaultContactMaterial.contactEquationRelaxation = 3;
-            world.defaultContactMaterial.frictionEquationRelaxation = 3;
+            world.defaultContactMaterial.contactEquationStiffness   = config.contactEquationStiffness || 1e7;
+            world.defaultContactMaterial.frictionEquationStiffness  = config.frictionEquationStiffness || 1e7;
+            world.defaultContactMaterial.contactEquationRelaxation  = config.contactEquationRelaxation || 3;
+            world.defaultContactMaterial.frictionEquationRelaxation = config.frictionEquationRelaxation || 3;
             world.solver.iterations = 10;
         }
         this.world = world;
