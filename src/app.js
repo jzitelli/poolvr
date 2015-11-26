@@ -50,6 +50,9 @@ function setupMenu(parent) {
     parent.add(textMesh);
 }
 
+var leapController;
+var animateLeap;
+
 function onLoad() {
     "use strict";
     pyserver.log("starting poolvr...");
@@ -153,22 +156,23 @@ function onLoad() {
         toolRadius       : POOLVR.config.toolRadius || 0.013
     };
 
-    // if (app.config.leapVR) {
-    //     // ##### Leap Motion VR tracking mode: #####
-    //     toolOptions.transformOptions = {vr: true, effectiveParent: app.camera};
-    // }
+    if (POOLVR.config.leapVR) {
+        // ##### Leap Motion VR tracking mode: #####
+        toolOptions.transformOptions = {vr: true, effectiveParent: app.camera};
+    }
 
     pyserver.log('toolOptions =\n' + JSON.stringify(toolOptions, undefined, 2));
 
-    // toolOptions.onConnect = function () { textGeomLogger.log("YOUR LEAP MOTION CONTROLLER IS CONNECTED.  GOOD JOB."); };
     toolOptions.onDeviceConnected = function () { textGeomLogger.log("YOUR LEAP MOTION CONTROLLER IS CONNECTED.  GOOD JOB."); };
     toolOptions.onDeviceDisconnected = function () { textGeomLogger.log("YOUR LEAP MOTION CONTROLLER IS DISCONNECTED!  HOW WILL YOU PLAY?!"); };
 
     var toolStuff = addTool(avatar, app.world, toolOptions);
-    stickMesh = toolStuff.stickMesh;
-    tipMesh   = toolStuff.tipMesh;
-    tipBody   = toolStuff.tipBody;
-    toolRoot  = toolStuff.toolRoot;
+    stickMesh      = toolStuff.stickMesh;
+    tipMesh        = toolStuff.tipMesh;
+    tipBody        = toolStuff.tipBody;
+    toolRoot       = toolStuff.toolRoot;
+    leapController = toolStuff.leapController;
+    animateLeap    = toolStuff.animateLeap;
 
     if (!app.config.shadowMap) {
         // create shadow mesh from projection:
@@ -180,8 +184,7 @@ function onLoad() {
         var stickShadowMaterial = new THREE.MeshBasicMaterial({color: 0x002200});
 
         var stickShadowGeom = stickMesh.geometry.clone();
-        var toolLength = toolOptions.toolLength || 0.5;
-        // stickShadowGeom.translate(0, -toolLength / 2, 0); // have to do this again because not buffergeometry???
+        var toolLength = toolOptions.toolLength;
 
         stickShadowMesh = new THREE.Mesh(stickShadowGeom, stickShadowMaterial);
         stickShadowMesh.quaternion.copy(stickMesh.quaternion);
@@ -235,6 +238,7 @@ var UP = new THREE.Vector3(0, 1, 0),
     floatSpeed = 0.1,
     toolDrive, toolStrafe, toolFloat;
 var raycaster = new THREE.Raycaster();
+var lastFrameID;
 function animate(t) {
     "use strict";
     requestAnimationFrame(animate);
@@ -285,6 +289,12 @@ function animate(t) {
         toolFloat += app.gamepad.getValue("toolFloat");
     } else {
         toolDrive -= app.gamepad.getValue("toolDrive");
+    }
+
+    var frame = leapController.frame();
+    if (frame.valid && frame.id != lastFrameID) {
+        animateLeap(frame);
+        lastFrameID = frame.id;
     }
 
     // TODO: resolve CANNON issues w/ initial low framerate
@@ -360,4 +370,3 @@ function animate(t) {
     //         app.picked = null;
     //     }
     // }
-

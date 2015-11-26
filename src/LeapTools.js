@@ -4,8 +4,9 @@ function addTool(parent, world, options) {
 
     var toolLength = options.toolLength || 0.5;
     var toolRadius = options.toolRadius || 0.013;
+    var toolMass   = options.toolMass   || 0.05;
+
     var toolOffset = options.toolOffset || new THREE.Vector3(0, -0.49, -toolLength - 0.15);
-    var toolMass   = options.toolMass || 0.05;
     var handOffset = options.handOffset || new THREE.Vector3(0, -0.25, -0.4);
 
     var toolTime      = options.toolTime  || 0.25;
@@ -13,6 +14,11 @@ function addTool(parent, world, options) {
     var minConfidence = options.minConfidence || 0.3;
 
     var transformOptions = options.transformOptions || {};
+
+    if (transformOptions.vr === true) {
+        toolOffset.set(0, 0, 0);
+        handOffset.set(0, 0, 0);
+    }
 
     // leap motion event callbacks:
     var onConnect = options.onConnect || function () {
@@ -122,130 +128,112 @@ function addTool(parent, world, options) {
         rightRoot.add(joint2s[1][0], joint2s[1][1], joint2s[1][2], joint2s[1][3], joint2s[1][4]);
     }
 
-    var leapController;
+    var leapController = new Leap.Controller({frameEventName: 'animationFrame'});
 
-    if (!options.leapDisabled) {
+    pyserver.log("transformOptions =\n" + JSON.stringify(transformOptions, undefined, 2));
 
-        leapController = new Leap.Controller({frameEventName: 'animationFrame'});
-        if (transformOptions.vr === true) {
-            toolTime *= 2;
-        }
-        pyserver.log("transformOptions =\n" + JSON.stringify(transformOptions, undefined, 2));
+    leapController.on('connect', onConnect);
+    // deprecated, use streamingStarted / streamingStopped:
+    // leapController.on('deviceConnected', onDeviceConnected);
+    // leapController.on('deviceDisconnected', onDeviceDisconnected);
 
-        leapController.on('connect', onConnect);
-        leapController.on('deviceConnected', onDeviceConnected);
-        leapController.on('deviceDisconnected', onDeviceDisconnected);
+    leapController.use('transform', transformOptions).connect();
 
-        leapController.use('transform', transformOptions).connect();
+    var UP = new THREE.Vector3(0, 1, 0);
+    var direction = new THREE.Vector3();
+    var position = new THREE.Vector3();
+    var velocity = new THREE.Vector3();
 
-        var onFrame = (function () {
+    function animateLeap(frame) {
+        // TOOL + HANDS VERSION:
+        if (frame.tools.length === 1) {
+            toolRoot.visible = true;
+            var tool = frame.tools[0];
+            if (tool.timeVisible > toolTime) {
+                stickMesh.position.fromArray(tool.tipPosition); // stickMesh.position.fromArray(tool.stabilizedTipPosition);
+                direction.fromArray(tool.direction);
+                stickMesh.quaternion.setFromUnitVectors(UP, direction);
 
-            var UP = new THREE.Vector3(0, 1, 0);
-            var direction = new THREE.Vector3();
-            var position = new THREE.Vector3();
-            var velocity = new THREE.Vector3();
-
-            // onFrame: ############################################################################3
-
-            if (options.leapHandsDisabled) {
-
-                // TOOL ONLY VERSION:
-                return function (frame) {
-                    if (frame.tools.length === 1) {
-                        toolRoot.visible = true;
-                        var tool = frame.tools[0];
-                        if (tool.timeVisible > toolTime) {
-                            // TODO: option to toggle stabilized or not
-                            stickMesh.position.fromArray(tool.tipPosition); // stickMesh.position.fromArray(tool.stabilizedTipPosition);
-                            direction.fromArray(tool.direction);
-                            stickMesh.quaternion.setFromUnitVectors(UP, direction);
-
-                            if (tool.timeVisible > toolTimeB) {
-                                if (tipBody.sleepState === CANNON.Body.SLEEPING) {
-                                    tipBody.wakeUp();
-                                }
-                                position.set(0, 0, 0);
-                                stickMesh.localToWorld(position);
-                                tipBody.position.copy(position);
-
-                                velocity.set(tool.tipVelocity[0] * 0.001, tool.tipVelocity[1] * 0.001, tool.tipVelocity[2] * 0.001);
-                                velocity.applyQuaternion(parent.quaternion);
-                                tipBody.velocity.copy(velocity);
-                            }
-                        }
+                if (tool.timeVisible > toolTimeB) {
+                    if (tipBody.sleepState === CANNON.Body.SLEEPING) {
+                        // cue becomes collidable
+                        tipBody.wakeUp();
+                        // TODO: indicator (particle effect)
+                        tipMaterial.color.setHex(0xff0000);
                     }
-                };
+                    position.set(0, 0, 0);
+                    stickMesh.localToWorld(position);
+                    tipBody.position.copy(position);
 
-            } else {
-
-                // TOOL + HANDS VERSION:
-                return function (frame) {
-                    if (frame.tools.length === 1) {
-                        toolRoot.visible = true;
-                        var tool = frame.tools[0];
-                        if (tool.timeVisible > toolTime) {
-                            stickMesh.position.fromArray(tool.tipPosition); // stickMesh.position.fromArray(tool.stabilizedTipPosition);
-                            direction.fromArray(tool.direction);
-                            stickMesh.quaternion.setFromUnitVectors(UP, direction);
-
-                            if (tool.timeVisible > toolTimeB) {
-                                if (tipBody.sleepState === CANNON.Body.SLEEPING) {
-                                    // cue becomes collidable
-                                    tipBody.wakeUp();
-                                    // TODO: indicator (particle effect)
-                                    tipMaterial.color.setHex(0xff0000);
-                                }
-                                position.set(0, 0, 0);
-                                stickMesh.localToWorld(position);
-                                tipBody.position.copy(position);
-
-                                velocity.set(tool.tipVelocity[0] * 0.001, tool.tipVelocity[1] * 0.001, tool.tipVelocity[2] * 0.001);
-                                velocity.applyQuaternion(parent.quaternion);
-                                tipBody.velocity.copy(velocity);
-                            }
-                        }
-                    } else if (tipBody.sleepState === CANNON.Body.AWAKE) {
-                        tipBody.sleep();
-                        tipMaterial.color.setHex(tipColor);
-                    }
-                    leftRoot.visible = rightRoot.visible = false;
-                    for (var i = 0; i < frame.hands.length; i++) {
-                        var hand = frame.hands[i];
-                        if (hand.confidence > minConfidence) {
-                            handRoots[i].visible = true;
-                            handMaterial.opacity = hand.confidence;
-                            direction.fromArray(hand.arm.basis[2]);
-                            arms[i].quaternion.setFromUnitVectors(UP, direction);
-                            var center = hand.arm.center();
-                            arms[i].position.fromArray(center);
-
-                            direction.fromArray(hand.palmNormal);
-                            palms[i].quaternion.setFromUnitVectors(UP, direction);
-                            palms[i].position.fromArray(hand.palmPosition);
-
-                            for (var j = 0; j < hand.fingers.length; j++) {
-                                var finger = hand.fingers[j];
-                                fingerTips[i][j].position.fromArray(finger.tipPosition);
-                                joints[i][j].position.fromArray(finger.bones[1].nextJoint);
-                                joint2s[i][j].position.fromArray(finger.bones[2].nextJoint);
-                            }
-                        }
-                    }
-                };
-
+                    velocity.set(tool.tipVelocity[0] * 0.001, tool.tipVelocity[1] * 0.001, tool.tipVelocity[2] * 0.001);
+                    velocity.applyQuaternion(parent.quaternion);
+                    tipBody.velocity.copy(velocity);
+                }
             }
+        } else if (tipBody.sleepState === CANNON.Body.AWAKE) {
+            tipBody.sleep();
+            tipMaterial.color.setHex(tipColor);
+        }
+        leftRoot.visible = rightRoot.visible = false;
+        for (var i = 0; i < frame.hands.length; i++) {
+            var hand = frame.hands[i];
+            if (hand.confidence > minConfidence) {
+                handRoots[i].visible = true;
+                handMaterial.opacity = hand.confidence;
+                direction.fromArray(hand.arm.basis[2]);
+                arms[i].quaternion.setFromUnitVectors(UP, direction);
+                var center = hand.arm.center();
+                arms[i].position.fromArray(center);
 
-        })();
+                direction.fromArray(hand.palmNormal);
+                palms[i].quaternion.setFromUnitVectors(UP, direction);
+                palms[i].position.fromArray(hand.palmPosition);
 
-        leapController.on('frame', onFrame);
-
+                for (var j = 0; j < hand.fingers.length; j++) {
+                    var finger = hand.fingers[j];
+                    fingerTips[i][j].position.fromArray(finger.tipPosition);
+                    joints[i][j].position.fromArray(finger.bones[1].nextJoint);
+                    joint2s[i][j].position.fromArray(finger.bones[2].nextJoint);
+                }
+            }
+        }
     }
+
+    function animateLeapSimple(frame) {
+        // TOOL ONLY VERSION:
+        if (frame.tools.length === 1) {
+            toolRoot.visible = true;
+            var tool = frame.tools[0];
+            if (tool.timeVisible > toolTime) {
+                // TODO: option to toggle stabilized or not
+                stickMesh.position.fromArray(tool.tipPosition); // stickMesh.position.fromArray(tool.stabilizedTipPosition);
+                direction.fromArray(tool.direction);
+                stickMesh.quaternion.setFromUnitVectors(UP, direction);
+
+                if (tool.timeVisible > toolTimeB) {
+                    if (tipBody.sleepState === CANNON.Body.SLEEPING) {
+                        tipBody.wakeUp();
+                    }
+                    position.set(0, 0, 0);
+                    stickMesh.localToWorld(position);
+                    tipBody.position.copy(position);
+
+                    velocity.set(tool.tipVelocity[0] * 0.001, tool.tipVelocity[1] * 0.001, tool.tipVelocity[2] * 0.001);
+                    velocity.applyQuaternion(parent.quaternion);
+                    tipBody.velocity.copy(velocity);
+                }
+            }
+        }
+    }
+
+    // leapController.on('frame', animateLeap);
 
     return {
         stickMesh: stickMesh,
         tipMesh: tipMesh,
         tipBody: tipBody,
         toolRoot: toolRoot,
-        leapController: leapController
+        leapController: leapController,
+        animateLeap: animateLeap
     };
 }

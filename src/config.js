@@ -63,6 +63,7 @@ POOLVR.gamepadCommands = {
 };
 
 POOLVR.config.mouseEnabled = URL_PARAMS.mouseEnabled || POOLVR.config.mouseEnabled;
+POOLVR.config.leapVR = URL_PARAMS.vr;
 
 window.WebVRConfig = window.WebVRConfig || {
     FORCE_ENABLE_VR: URL_PARAMS.forceEnableVR,

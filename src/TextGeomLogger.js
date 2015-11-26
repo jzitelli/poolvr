@@ -26,7 +26,7 @@ var TextGeomLogger = (function () {
         }
 
         var nrows = options.nrows || 20;
-        var ncols = options.ncols || 80;
+        //var ncols = options.ncols || 80;
 
         var lineMeshBuffer = {};
 
