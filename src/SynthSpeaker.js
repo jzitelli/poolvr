@@ -21,7 +21,7 @@ var SynthSpeaker = ( function() {
                 if (onBegin) {
                     onBegin();
                 }
-                speechSynthesis.speak(this.msg);
+                speechSynthesis.speak(this.utterance);
             } else {
                 this.speaking = false;
             }

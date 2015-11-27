@@ -144,7 +144,6 @@ function onLoad() {
     app.textGeomLogger = textGeomLogger;
     textGeomLogger.root.position.set(-2.5, 1, -3);
     avatar.add(textGeomLogger.root);
-    textGeomLogger.log("HELLO.  WELCOME TO POOLVR.");
 
     var toolOptions = {
         // ##### Desktop mode (default): #####
@@ -222,8 +221,13 @@ function onLoad() {
 
     // setupMenu(avatar);
 
-    app.synthSpeaker = new SynthSpeaker({volume: 0.5});
+    app.synthSpeaker = new SynthSpeaker({volume: 0.5, rate: 0.8, pitch: 0.7});
+
+    textGeomLogger.log("HELLO.  WELCOME TO POOLVR.");
     app.synthSpeaker.speak("Hello.  Welcome to pool-ver");
+    textGeomLogger.log("WAVE A STICK-LIKE OBJECT IN FRONT OF YOUR LEAP MOTION CONTROLLER.");
+    app.synthSpeaker.speak("Wave a stick-like object in front of your Leap Motion controller.");
+
     app.start(animate);
 }
 

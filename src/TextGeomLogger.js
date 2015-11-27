@@ -6,6 +6,7 @@ var TextGeomLogger = (function () {
     var chars = alphas + digits + symbols;
 
     function TextGeomLogger(material, options) {
+        material = material || new THREE.MeshBasicMaterial({color: 0xee2200});
         options = options || {};
         var textGeomParams = {
             size:          options.size || 0.12,
@@ -68,7 +69,7 @@ var TextGeomLogger = (function () {
             }
         }.bind(this);
     }
-    
+
     return TextGeomLogger;
 
 })();

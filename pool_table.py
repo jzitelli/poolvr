@@ -279,7 +279,7 @@ def pool_hall(useBasicMaterials=True,
     # x_positions = [0] + list(x_positions)
     # z_positions = [L_table / 4] + list(z_positions)
 
-    d = 0.1*ball_radius # separation between racked balls
+    d = 0.05*ball_radius # separation between racked balls
     side_length = 4 * (ball_diameter + d)
     x_positions = np.concatenate([np.linspace(0,                        0.5 * side_length,                         5),
                                   np.linspace(-0.5*(ball_diameter + d), 0.5 * side_length - (ball_diameter + d),   4),
