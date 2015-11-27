@@ -1,5 +1,5 @@
 /*
-  poolvr v0.1.0 2015-11-26
+  poolvr v0.1.0 2015-11-27
   
   Copyright (C) 2015 Jeffrey Zitelli <jeffrey.zitelli@gmail.com> (http://subvr.info)
   http://subvr.info/poolvr
@@ -441,6 +441,15 @@ function addTool(parent, world, options) {
     toolRoot.scale.set(scalar, scalar, scalar);
     parent.add(toolRoot);
 
+    // interaction box visual guide:
+    var interactionBoxGeom = new THREE.BufferGeometry();
+    var boxGeom = new THREE.BoxGeometry(1/scalar, 1/scalar, 1/scalar);
+    interactionBoxGeom.fromGeometry(boxGeom);
+    boxGeom.dispose();
+    var interactionBoxMaterial = new THREE.MeshBasicMaterial({color: 0x992222, transparent: true, opacity: 0.4});
+    var interactionBoxMesh = new THREE.Mesh(interactionBoxGeom, interactionBoxMaterial);
+    toolRoot.add(interactionBoxMesh);
+
     var stickGeom = new THREE.CylinderGeometry(toolRadius/scalar, toolRadius/scalar, toolLength/scalar, 10, 1, false);
     stickGeom.translate(0, -toolLength/scalar / 2, 0);
     var bufferGeom = new THREE.BufferGeometry();
@@ -539,12 +548,18 @@ function addTool(parent, world, options) {
     var position = new THREE.Vector3();
     var velocity = new THREE.Vector3();
 
-    function animateLeap(frame) {
-        // TOOL + HANDS VERSION:
+    function animateLeap(frame, dt) {
+
+        var interactionBox = frame.interactionBox;
+        if (interactionBox.valid) {
+            interactionBoxMesh.position.fromArray(interactionBox.center);
+            interactionBoxMesh.scale.set(interactionBox.width*scalar, interactionBox.height*scalar, interactionBox.depth*scalar);
+        }
+
         if (frame.tools.length === 1) {
-            toolRoot.visible = true;
             var tool = frame.tools[0];
             if (tool.timeVisible > toolTime) {
+                toolRoot.visible = true;
                 stickMesh.position.fromArray(tool.tipPosition); // stickMesh.position.fromArray(tool.stabilizedTipPosition);
                 direction.fromArray(tool.direction);
                 stickMesh.quaternion.setFromUnitVectors(UP, direction);
@@ -569,6 +584,7 @@ function addTool(parent, world, options) {
             tipBody.sleep();
             tipMaterial.color.setHex(tipColor);
         }
+
         leftRoot.visible = rightRoot.visible = false;
         for (var i = 0; i < frame.hands.length; i++) {
             var hand = frame.hands[i];
@@ -592,6 +608,7 @@ function addTool(parent, world, options) {
                 }
             }
         }
+
     }
 
     // leapController.on('frame', animateLeap);
@@ -680,6 +697,61 @@ var TextGeomLogger = (function () {
     return TextGeomLogger;
 
 })();
+;
+var SynthSpeaker = ( function() {
+
+    function SynthSpeaker(options) {
+        this.queue = [];
+        this.onBegins = [];
+        this.onEnds = [];
+        this.speaking = false;
+        this.utterance = new SpeechSynthesisUtterance();
+        options = options || {};
+        this.utterance.volume = options.volume || 1;
+        this.utterance.rate = options.rate || 1;
+        this.utterance.pitch = options.pitch || 1;
+        this.utterance.onend = function(event) {
+            var onEnd = this.onEnds.shift();
+            if (onEnd) {
+                onEnd();
+            }
+            if (this.queue.length > 0) {
+                this.utterance.text = this.queue.shift();
+                var onBegin = this.onBegins.shift();
+                if (onBegin) {
+                    onBegin();
+                }
+                speechSynthesis.speak(this.msg);
+            } else {
+                this.speaking = false;
+            }
+        }.bind(this);
+    }
+
+    SynthSpeaker.prototype.speak = function(text, onEnd, onBegin) {
+        this.onEnds.push(onEnd);
+        if (this.speaking) {
+            this.queue.push(text);
+            this.onBegins.push(onBegin);
+        } else {
+            if (onBegin) {
+                onBegin();
+            }
+            this.utterance.text = text;
+            this.speaking = true;
+            speechSynthesis.speak(this.utterance);
+        }
+    };
+
+    if (window.speechSynthesis) {
+        return SynthSpeaker;
+    } else {
+        console.log("speechSynthesis not supported (Chrome only)");
+        return function () {
+            this.speak = function () {};
+        };
+    }
+} )();
 ;
 var pyserver;
 if (!POOLVR_CONFIG.pyserver) {
@@ -854,8 +926,8 @@ var dynamicBodies,
     ballBodies;
 
 var mouseParticleGroup = new SPE.Group({
-    texture: {value: THREE.ImageUtils.loadTexture('images/particle.png')}
-});
+    texture: {value: THREE.ImageUtils.loadTexture('images/particle.png')},
+    maxParticleCount: 50});
 var mouseParticleEmitter = new SPE.Emitter({maxAge: {value: 0.5},
                                             position: {value: new THREE.Vector3(),
                                                        spread: new THREE.Vector3()},
@@ -1058,6 +1130,8 @@ function onLoad() {
 
     // setupMenu(avatar);
 
+    app.synthSpeaker = new SynthSpeaker({volume: 0.5});
+    app.synthSpeaker.speak("Hello.  Welcome to pool-ver");
     app.start(animate);
 }
 
@@ -1129,7 +1203,7 @@ function animate(t) {
 
     var frame = leapController.frame();
     if (frame.valid && frame.id != lastFrameID) {
-        animateLeap(frame);
+        animateLeap(frame, dt);
         lastFrameID = frame.id;
     }
 
