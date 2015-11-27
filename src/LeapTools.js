@@ -53,6 +53,15 @@ function addTool(parent, world, options) {
     toolRoot.scale.set(scalar, scalar, scalar);
     parent.add(toolRoot);
 
+    // interaction box visual guide:
+    var interactionBoxGeom = new THREE.BufferGeometry();
+    var boxGeom = new THREE.BoxGeometry(1/scalar, 1/scalar, 1/scalar);
+    interactionBoxGeom.fromGeometry(boxGeom);
+    boxGeom.dispose();
+    var interactionBoxMaterial = new THREE.MeshBasicMaterial({color: 0x992222, transparent: true, opacity: 0.4});
+    var interactionBoxMesh = new THREE.Mesh(interactionBoxGeom, interactionBoxMaterial);
+    toolRoot.add(interactionBoxMesh);
+
     var stickGeom = new THREE.CylinderGeometry(toolRadius/scalar, toolRadius/scalar, toolLength/scalar, 10, 1, false);
     stickGeom.translate(0, -toolLength/scalar / 2, 0);
     var bufferGeom = new THREE.BufferGeometry();
@@ -151,12 +160,18 @@ function addTool(parent, world, options) {
     var position = new THREE.Vector3();
     var velocity = new THREE.Vector3();
 
-    function animateLeap(frame) {
-        // TOOL + HANDS VERSION:
+    function animateLeap(frame, dt) {
+
+        var interactionBox = frame.interactionBox;
+        if (interactionBox.valid) {
+            interactionBoxMesh.position.fromArray(interactionBox.center);
+            interactionBoxMesh.scale.set(interactionBox.width*scalar, interactionBox.height*scalar, interactionBox.depth*scalar);
+        }
+
         if (frame.tools.length === 1) {
-            toolRoot.visible = true;
             var tool = frame.tools[0];
             if (tool.timeVisible > toolTime) {
+                toolRoot.visible = true;
                 stickMesh.position.fromArray(tool.tipPosition); // stickMesh.position.fromArray(tool.stabilizedTipPosition);
                 direction.fromArray(tool.direction);
                 stickMesh.quaternion.setFromUnitVectors(UP, direction);
@@ -181,6 +196,7 @@ function addTool(parent, world, options) {
             tipBody.sleep();
             tipMaterial.color.setHex(tipColor);
         }
+
         leftRoot.visible = rightRoot.visible = false;
         for (var i = 0; i < frame.hands.length; i++) {
             var hand = frame.hands[i];
@@ -204,6 +220,7 @@ function addTool(parent, world, options) {
                 }
             }
         }
+
     }
 
     // leapController.on('frame', animateLeap);

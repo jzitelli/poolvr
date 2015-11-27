@@ -18,8 +18,8 @@ var dynamicBodies,
     ballBodies;
 
 var mouseParticleGroup = new SPE.Group({
-    texture: {value: THREE.ImageUtils.loadTexture('images/particle.png')}
-});
+    texture: {value: THREE.ImageUtils.loadTexture('images/particle.png')},
+    maxParticleCount: 50});
 var mouseParticleEmitter = new SPE.Emitter({maxAge: {value: 0.5},
                                             position: {value: new THREE.Vector3(),
                                                        spread: new THREE.Vector3()},
@@ -293,7 +293,7 @@ function animate(t) {
 
     var frame = leapController.frame();
     if (frame.valid && frame.id != lastFrameID) {
-        animateLeap(frame);
+        animateLeap(frame, dt);
         lastFrameID = frame.id;
     }
 
