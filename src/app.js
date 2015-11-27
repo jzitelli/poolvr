@@ -222,6 +222,8 @@ function onLoad() {
 
     // setupMenu(avatar);
 
+    app.synthSpeaker = new SynthSpeaker({volume: 0.5});
+    app.synthSpeaker.speak("Hello.  Welcome to pool-ver");
     app.start(animate);
 }
 

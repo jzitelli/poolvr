@@ -1,69 +1,54 @@
 var SynthSpeaker = ( function() {
+
     function SynthSpeaker(options) {
         this.queue = [];
-    }
-
-    return SynthSpeaker;
-} )();
-
-/*
-    function SynthSpeaker(volume, rate, pitch) {
-        //this.queue = []; // e.g. {text: "Hello", caption: "Hello!!!!!!!!!!!!!!!", onbegin: function () {console.log("speaking...");}, onend: function () {console.log("finished speaking");}}
-        this.queue = [];
-        this.ends = [];
-        this.begins = [];
-        this.captions = [];
-        // only chrome supports
-        if (SPEECH) {
-            this.msg = new SpeechSynthesisUtterance();
-        } else {
-            this.msg = {};
-        }
-        this.msg.volume = volume || 1;
-        this.msg.rate = rate || 1;
-        this.msg.pitch = pitch || 1;
+        this.onBegins = [];
+        this.onEnds = [];
         this.speaking = false;
-        this.msg.onend = function(event) {
+        this.utterance = new SpeechSynthesisUtterance();
+        options = options || {};
+        this.utterance.volume = options.volume || 1;
+        this.utterance.rate = options.rate || 1;
+        this.utterance.pitch = options.pitch || 1;
+        this.utterance.onend = function(event) {
+            var onEnd = this.onEnds.shift();
+            if (onEnd) {
+                onEnd();
+            }
             if (this.queue.length > 0) {
-                this.msg.text = this.queue.shift();
-                var caption = this.captions.shift();
-                application.log(caption);
-                var onbegin = this.begins.shift();
-                if (onbegin) {
-                    onbegin();
+                this.utterance.text = this.queue.shift();
+                var onBegin = this.onBegins.shift();
+                if (onBegin) {
+                    onBegin();
                 }
-                if (SPEECH) {
-                    speechSynthesis.speak(this.msg);
-                }
+                speechSynthesis.speak(this.msg);
             } else {
                 this.speaking = false;
             }
-            var onend = this.ends.shift();
-            if (onend) {
-                onend();
-            }
         }.bind(this);
     }
-    SynthSpeak.prototype.speak = function(text, caption, onend, onbegin) {
-        caption = (caption === true) ? text : (caption || "");
-        text = text.replace('\n', ' ');
-        this.ends.push(onend);
+
+    SynthSpeaker.prototype.speak = function(text, onEnd, onBegin) {
+        this.onEnds.push(onEnd);
         if (this.speaking) {
-            this.begins.push(onbegin);
             this.queue.push(text);
-            this.captions.push(caption);
+            this.onBegins.push(onBegin);
         } else {
-            if (onbegin) {
-                onbegin();
+            if (onBegin) {
+                onBegin();
             }
-            application.log(caption);
-            this.msg.text = text;
-            if (SPEECH) {
-                this.speaking = true;
-                speechSynthesis.speak(this.msg);
-            }
+            this.utterance.text = text;
+            this.speaking = true;
+            speechSynthesis.speak(this.utterance);
         }
     };
-    return SynthSpeak;
-})();
-*/
+
+    if (window.speechSynthesis) {
+        return SynthSpeaker;
+    } else {
+        console.log("speechSynthesis not supported (Chrome only)");
+        return function () {
+            this.speak = function () {};
+        };
+    }
+} )();
