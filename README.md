@@ -1,10 +1,8 @@
-![screenshot](http://jzitelli.github.io/poolvr/images/screenshot4b.png)
-
 # **poolvr**
 
 Play pool / billiards with your [Leap Motion sensor](https://www.leapmotion.com) in VR (or fullscreen mode), in a web browser!
 
-![screenshot](http://jzitelli.github.io/poolvr/images/screenshot.png)
+![screenshot](http://jzitelli.github.io/poolvr/images/screenshot6.png)
 
 
 
@@ -38,6 +36,8 @@ It's been improved since the [Leap Motion 3D Jam](http://itch.io/jam/leapmotion3
     - using Python 3: `python -m http.server`
 2. Point your browser to `http://127.0.0.1:8000` (desktop tracking) or `http://127.0.0.1:8000?vr=1` (VR tracking)
 
+
+
 ### Method B (Flask application serving dynamically generated HTML):
 
 This method requires some extra Python packages.  I recommend using the [Miniconda Python distribution](http://conda.pydata.org/miniconda.html), which will let you easily install the Python dependencies.
@@ -57,6 +57,7 @@ The default stick tracking mode (aka 'desktop') assumes that the Leap Motion sen
 The VR stick tracking mode assumes that the sensor is [mounted to your HMD](https://developer.leapmotion.com/vr-setup).
 Currently this mode is selected using a `vr` URL parameter, e.g. you would point your browser to `http://127.0.0.1:5000?vr=1`.
 
+**I recommend using desktop tracking at the moment - in my experience it provides much better tool tracking in the context of cue stick in/out motions.**
 
 
 ## Building **poolvr**:
@@ -71,22 +72,13 @@ the included `Gruntfile.js` may be used to build packaged versions of **poolvr**
 
 ## TODO list:
 
-- finish the pool table
-  a. ball labels
-  b. initial positions
-  c. rails
-- sounds
-  a. collisions
-  b. speech synthesis
+- auto-positioning system
+- Leap Motion hand interactions (e.g. point at the ball you want to pocket next)
+- ball labels
+- improve and add more sounds
+  a. collisions (volume and variations based on velocities)
 - menu / menus for options / settings:
-  a. Leap Motion settings
-  b. keyboard controls
-  c. mouse controls
-  d. gamepad controls
-  e. volume controls
-  f. physics parameters
 - friction, collision response physics parameters
-- hand interactions / auto-positioning
 - improve Leap Motion tracking robustness
 
 
