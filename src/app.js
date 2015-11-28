@@ -162,8 +162,8 @@ function onLoad() {
 
     pyserver.log('toolOptions =\n' + JSON.stringify(toolOptions, undefined, 2));
 
-    toolOptions.onDeviceConnected = function () { textGeomLogger.log("YOUR LEAP MOTION CONTROLLER IS CONNECTED.  GOOD JOB."); };
-    toolOptions.onDeviceDisconnected = function () { textGeomLogger.log("YOUR LEAP MOTION CONTROLLER IS DISCONNECTED!  HOW WILL YOU PLAY?!"); };
+    // toolOptions.onStreamingStarted = function () { textGeomLogger.log("YOUR LEAP MOTION CONTROLLER IS CONNECTED.  GOOD JOB."); };
+    // toolOptions.onStreamingStopped = function () { textGeomLogger.log("YOUR LEAP MOTION CONTROLLER IS DISCONNECTED!  HOW WILL YOU PLAY?!"); };
 
     var toolStuff = addTool(avatar, app.world, toolOptions);
     stickMesh      = toolStuff.stickMesh;
@@ -225,8 +225,8 @@ function onLoad() {
 
     textGeomLogger.log("HELLO.  WELCOME TO POOLVR.");
     app.synthSpeaker.speak("Hello.  Welcome to pool-ver");
-    textGeomLogger.log("WAVE A STICK-LIKE OBJECT IN FRONT OF YOUR LEAP MOTION CONTROLLER.");
-    app.synthSpeaker.speak("Wave a stick-like object in front of your Leap Motion controller.");
+    textGeomLogger.log("PLEASE WAVE A STICK-LIKE OBJECT IN FRONT OF YOUR LEAP MOTION CONTROLLER.");
+    app.synthSpeaker.speak("Please wave a stick-like object in front of your Leap Motion controller.");
 
     app.start(animate);
 }

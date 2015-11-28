@@ -33,17 +33,13 @@ function addTool(parent, world, options) {
     var onConnect = options.onConnect || function () {
         pyserver.log('Leap Motion WebSocket connected');
     };
-    var onDeviceConnected = options.onDeviceConnected || function () {
-        pyserver.log('Leap Motion controller connected');
-    };
-    var onDeviceDisconnected = options.onDeviceDisconnected || function () {
-        pyserver.log('Leap Motion controller disconnected');
-    };
-
     leapController.on('connect', onConnect);
-    // deprecated, use streamingStarted / streamingStopped:
-    // leapController.on('deviceConnected', onDeviceConnected);
-    // leapController.on('deviceDisconnected', onDeviceDisconnected);
+    if (options.onStreamingStarted) {
+        leapController.on('streamingStarted', options.onStreamingStarted);
+    }
+    if (options.onStreamingStopped) {
+        leapController.on('streamingStopped', options.onStreamingStopped);
+    }
 
     leapController.connect();
 
