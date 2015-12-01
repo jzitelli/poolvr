@@ -142,7 +142,7 @@ function onLoad() {
 
     var textGeomLogger = new TextGeomLogger();
     app.textGeomLogger = textGeomLogger;
-    textGeomLogger.root.position.set(-2.5, 1, -3);
+    textGeomLogger.root.position.set(-2.75, 1.5, -3.5);
     avatar.add(textGeomLogger.root);
 
     var toolOptions = {
