@@ -23,19 +23,24 @@ import poolvr
 from poolvr.pool_table import pool_hall
 from poolvr import three
 
-POOLVR_CONFIG = {
-    'pyserver'              : True,
-    'gravity'               : 9.8,
-    'useBasicMaterials'     : True,
-    'useLambertMaterials'   : None,
-    'usePhongMaterials'     : None,
-    'shadowMap'             : None,
-    'pointLight'            : None
+
+POOLVR = {
+    'config': {
+        'pyserver'              : True,
+        'gravity'               : 9.8,
+        'useBasicMaterials'     : True,
+        'useLambertMaterials'   : None,
+        'usePhongMaterials'     : None,
+        'shadowMap'             : None,
+        'pointLight'            : None,
+        'H_table'               : 0.74295
+    },
+    'version': 'poolvr-0.1.0'
 }
 
 
 def get_poolvr_config(version=None):
-    config = deepcopy(POOLVR_CONFIG)
+    config = deepcopy(POOLVR['config'])
     args = dict({k: v for k, v in request.args.items()
                  if k in config})
     config.update(args)
@@ -105,9 +110,10 @@ def poolvr_app():
         template = 'poolvr.html'
     return render_template(template,
                            json_config=Markup(r"""<script>
-var POOLVR_CONFIG = %s;
+var POOLVR = %s;
+
 var JSON_SCENE = %s;
-</script>""" % (json.dumps(config, indent=(2 if app.debug else None)),
+</script>""" % (json.dumps(POOLVR, indent=2),
                 json.dumps(pool_hall(**config), indent=(2 if app.debug else None)))), **config)
 
 

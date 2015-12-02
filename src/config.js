@@ -21,16 +21,8 @@ var URL_PARAMS = (function () {
     return params;
 })();
 
-var POOLVR_VERSION = POOLVR_VERSION || 'poolvr-0.1.0';
 
-var POOLVR = {
-    config: POOLVR_CONFIG,
-    version: POOLVR_VERSION
-};
-// POOLVR.config.mouseEnabled = URL_PARAMS.mouseEnabled;
-// POOLVR.config.leapVR = URL_PARAMS.vr;
-
-POOLVR.keyboardCommands = {
+POOLVR.config.keyboardCommands = {
     turnLeft: {buttons: [-Primrose.Input.Keyboard.LEFTARROW]},
     turnRight: {buttons: [Primrose.Input.Keyboard.RIGHTARROW]},
     driveForward: {buttons: [-Primrose.Input.Keyboard.W]},
@@ -48,7 +40,7 @@ POOLVR.keyboardCommands = {
 };
 
 var DEADZONE = 0.2;
-POOLVR.gamepadCommands = {
+POOLVR.config.gamepadCommands = {
     strafe: {axes: [Primrose.Input.Gamepad.LSX], deadzone: DEADZONE},
     drive: {axes: [Primrose.Input.Gamepad.LSY], deadzone: DEADZONE},
     dheading: {axes: [-Primrose.Input.Gamepad.LSX], deadzone: DEADZONE},
@@ -65,6 +57,43 @@ POOLVR.gamepadCommands = {
                           commandDown: function () { avatar.toolMode = true; },
                           commandUp: function () { avatar.toolMode = false; } }
 };
+
+
+
+// TODO: load from JSON config
+POOLVR.ballMaterial            = new CANNON.Material();
+POOLVR.ballBallContactMaterial = new CANNON.ContactMaterial(POOLVR.ballMaterial, POOLVR.ballMaterial, {
+    restitution: 0.91,
+    friction: 0.15
+});
+POOLVR.playableSurfaceMaterial            = new CANNON.Material();
+POOLVR.ballPlayableSurfaceContactMaterial = new CANNON.ContactMaterial(POOLVR.ballMaterial, POOLVR.playableSurfaceMaterial, {
+    restitution: 0.33,
+    friction: 0.17
+});
+POOLVR.cushionMaterial            = new CANNON.Material();
+POOLVR.ballCushionContactMaterial = new CANNON.ContactMaterial(POOLVR.ballMaterial, POOLVR.cushionMaterial, {
+    restitution: 0.8,
+    friction: 0.13
+});
+POOLVR.floorMaterial            = new CANNON.Material();
+POOLVR.floorBallContactMaterial = new CANNON.ContactMaterial(POOLVR.floorMaterial, POOLVR.ballMaterial, {
+    restitution: 0.88,
+    friction: 0.4
+});
+
+POOLVR.config.mouseEnabled = URL_PARAMS.mouseEnabled || POOLVR.config.mouseEnabled;
+POOLVR.config.vrLeap       = URL_PARAMS.vrLeap       || POOLVR.config.vrLeap;
+
+POOLVR.config.toolLength   = URL_PARAMS.toolLength || POOLVR.config.toolLength || 0.5;
+POOLVR.config.toolRadius   = URL_PARAMS.toolRadius || POOLVR.config.toolRadius || 0.013;
+POOLVR.config.toolMass     = URL_PARAMS.toolMass || POOLVR.config.toolMass || 0.06;
+if (URL_PARAMS.toolOffset) {
+    POOLVR.config.toolOffset = new THREE.Vector3();
+    POOLVR.config.toolOffset.fromArray(URL_PARAMS.toolOffset);
+} else {
+    POOLVR.config.toolOffset = new THREE.Vector3(0, -0.42, -POOLVR.config.toolLength - 0.15);
+}
 
 
 var WebVRConfig = WebVRConfig || {};

@@ -1,5 +1,5 @@
 var pyserver;
-if (!POOLVR_CONFIG.pyserver) {
+if (!POOLVR.config.pyserver) {
     pyserver = {log: function (msg) { console.log('pyserver.log: ' + msg); },
                 readFile: function () {},
                 writeFile: function () {}};

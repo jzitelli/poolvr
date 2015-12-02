@@ -222,6 +222,8 @@ def pool_hall(useBasicMaterials=True,
               shadowMap=False,
               pointLight=None,
               url_prefix="",
+              L_table=2.3368,
+              H_table=0.74295,
               **kwargs):
     scene = Scene()
     L_room, W_room = 10, 10
@@ -240,10 +242,8 @@ def pool_hall(useBasicMaterials=True,
         scene.add(light)
 
     ball_diameter = 2.25 * IN2METER
-    L_table = 2.3368
-    W_table = L_table / 2
-    H_table = 0.74295
-    poolTable = pool_table(H_table=H_table, ball_diameter=ball_diameter,
+
+    poolTable = pool_table(L_table=L_table, H_table=H_table, ball_diameter=ball_diameter,
                            useBasicMaterials=useBasicMaterials, shadowMap=shadowMap, pointLight=pointLight, **kwargs)
     scene.add(poolTable)
 
@@ -270,15 +270,17 @@ def pool_hall(useBasicMaterials=True,
         ball_materials = [MeshPhongMaterial(color=color, shading=SmoothShading) for color in ball_colors]
 
     ballData = {'cannonData': {'mass': 0.17, 'shapes': ['Sphere'],
-                               'linearDamping': 0.3, 'angularDamping': 0.3}}
+                               'linearDamping': 0.25, 'angularDamping': 0.25}}
 
     y_position = H_table + ball_radius + 0.0001 # epsilon distance which the ball will fall from initial position
 
+    # diagonal line:
     # z_positions = 0.8 * np.linspace(-L_table / 2, L_table / 2, num_balls - 1)
     # x_positions = 0.5 * z_positions
     # x_positions = [0] + list(x_positions)
     # z_positions = [L_table / 4] + list(z_positions)
 
+    # triangle racked:
     d = 0.05*ball_radius # separation between racked balls
     side_length = 4 * (ball_diameter + d)
     x_positions = np.concatenate([np.linspace(0,                        0.5 * side_length,                         5),
@@ -294,6 +296,7 @@ def pool_hall(useBasicMaterials=True,
     z_positions *= -1
     z_positions -= L_table / 8
 
+    # cue ball at head spot:
     x_positions = [0] + list(x_positions)
     z_positions = [L_table / 4] + list(z_positions)
 

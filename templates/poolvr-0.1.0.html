@@ -2,9 +2,13 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=0">
 
-    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+    <link rel="shortcut icon" href="favicon.ico">
 
     <title>poolvr</title>
 
@@ -27,32 +31,32 @@
 
   <body onload="onLoad()">
 
-    <script src="{{ url_for('static', filename='bin/three-r73'      + js_suffix) }}"></script>
-    <script src="{{ url_for('static', filename='bin/TextGeometry'   + js_suffix) }}"></script>
-    <script src="{{ url_for('static', filename='bin/FontUtils'      + js_suffix) }}"></script>
+    <script src="{{ 'bin/three-r73'      + js_suffix }}"></script>
+    <script src="{{ 'bin/TextGeometry'   + js_suffix }}"></script>
+    <script src="{{ 'bin/FontUtils'      + js_suffix }}"></script>
 
-    <script src="{{ url_for('static', filename='bin/VREffect'       + js_suffix) }}"></script>
-    <script src="{{ url_for('static', filename='bin/VRControls'     + js_suffix) }}"></script>
+    <script src="{{ 'bin/VRControls'     + js_suffix }}"></script>
+    <script src="{{ 'bin/VREffect'       + js_suffix }}"></script>
 
-    <script src="{{ url_for('static', filename='bin/webvr-polyfill' + js_suffix) }}"></script>
-    <script src="{{ url_for('static', filename='bin/webvr-manager'  + js_suffix) }}"></script>
+    <script src="{{ 'bin/webvr-polyfill' + js_suffix }}"></script>
+    <script src="{{ 'bin/webvr-manager'  + js_suffix }}"></script>
 
-    <script src="{{ url_for('static', filename='bin/socket.io'      + js_suffix) }}"></script>
-    <script src="{{ url_for('static', filename='bin/cannon'         + js_suffix) }}"></script>
-    <script src="{{ url_for('static', filename='bin/leap-0.6.4'     + js_suffix) }}"></script>
+    <script src="{{ 'bin/socket.io'      + js_suffix }}"></script>
+    <script src="{{ 'bin/cannon'         + js_suffix }}"></script>
+    <script src="{{ 'bin/leap-0.6.4'     + js_suffix }}"></script>
 
     <!-- enhanced version w/ tool tracking: -->
-    <script src="{{ url_for('static', filename='bin/leap.transform' + js_suffix) }}"></script>
+    <script src="{{ 'bin/leap.transform' + js_suffix }}"></script>
 
-    <script src="{{ url_for('static', filename='bin/ColladaLoader'  + js_suffix) }}"></script>
-    <script src="{{ url_for('static', filename='bin/Primrose'       + js_suffix) }}"></script>
+    <script src="{{ 'bin/ColladaLoader'  + js_suffix }}"></script>
+    <script src="{{ 'bin/Primrose'       + js_suffix }}"></script>
 
-    <script src="{{ url_for('static', filename='bin/SPE' + js_suffix) }}"></script>
+    <script src="{{ 'bin/SPE'            + js_suffix }}"></script>
 
-    <script src="{{ url_for('static', filename='fonts/Anonymous Pro_Regular.js'      ) }}"></script>
-    <script src="{{ url_for('static', filename='fonts/helvetiker_regular.typeface.js') }}"></script>
+    <script src="fonts/Anonymous Pro_Regular.js"></script>
+    <script src="fonts/helvetiker_regular.typeface.js"></script>
 
-    <script src="{{ url_for('static', filename='bin/poolvr' + js_suffix) }}"></script>
+    <script src="{{ 'bin/poolvr' + js_suffix }}"></script>
 
   </body>
 </html>
