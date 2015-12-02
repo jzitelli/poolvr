@@ -1,4 +1,5 @@
 var WebVRSound = (function (numGainNodes) {
+    "use strict";
     numGainNodes = numGainNodes || 4;
 
     var audioContext = new AudioContext();

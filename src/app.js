@@ -6,9 +6,8 @@ var scene = CrapLoader.parse(JSON_SCENE);
 var avatar = avatar || new THREE.Object3D();
 avatar.position.y = 1.1;
 avatar.position.z = 1.86;
-var toolRoot;
-var leapController;
-
+var textGeomLogger;
+var synthSpeaker;
 
 POOLVR.mouseParticleGroup = new SPE.Group({
     texture: {value: THREE.ImageUtils.loadTexture('images/particle.png')},
@@ -47,6 +46,86 @@ function onLoad() {
     avatar.add(app.camera);
     scene.add(avatar);
 
+    if (!POOLVR.config.useBasicMaterials) {
+        // would rather add the spot lights via three.py generated JSON_SCENE, but I'm having problems getting shadows frm them:
+        var centerSpotLight = new THREE.SpotLight(0xffffee, 1, 10, 90);
+        centerSpotLight.position.set(0, 3, 0);
+        centerSpotLight.castShadow = true;
+        centerSpotLight.shadowCameraNear = 0.01;
+        centerSpotLight.shadowCameraFar = 4;
+        centerSpotLight.shadowCameraFov = 90;
+        scene.add(centerSpotLight);
+        // var centerSpotLightHelper = new THREE.SpotLightHelper(centerSpotLight);
+        // scene.add(centerSpotLightHelper);
+        // centerSpotLightHelper.visible = false;
+    }
+
+    CrapLoader.CANNONize(scene, app.world);
+
+    app.world.addContactMaterial(POOLVR.ballBallContactMaterial);
+    app.world.addContactMaterial(POOLVR.ballPlayableSurfaceContactMaterial);
+    app.world.addContactMaterial(POOLVR.ballCushionContactMaterial);
+    app.world.addContactMaterial(POOLVR.floorBallContactMaterial);
+
+    var ballMeshes       = [];
+    var ballStripeMeshes = [];
+    scene.traverse(function (node) {
+        if (node.name.startsWith('ballMesh')) {
+            node.body.material = POOLVR.ballMaterial;
+            ballMeshes.push(node);
+        }
+        else if (node.name.startsWith('ballStripeMesh')) {
+            ballStripeMeshes.push(node);
+        }
+        else if (node.name.startsWith('playableSurfaceMesh')) {
+            node.body.material = POOLVR.playableSurfaceMaterial;
+        }
+        else if (node.name.endsWith('CushionMesh')) {
+            node.body.material = POOLVR.cushionMaterial;
+        }
+        else if (node.name === 'floorMesh') {
+            node.body.material = POOLVR.floorMaterial;
+        }
+    });
+
+    textGeomLogger = new TextGeomLogger();
+    avatar.add(textGeomLogger.root);
+    textGeomLogger.root.position.set(-2.75, 1.5, -3.5);
+
+    synthSpeaker = new SynthSpeaker({volume: 0.5, rate: 0.8, pitch: 0.7});
+
+    var toolOptions = {
+        // ##### Desktop mode (default): #####
+        transformOptions : POOLVR.config.transformOptions, // || {vr: 'desktop'},
+        useBasicMaterials: POOLVR.config.useBasicMaterials,
+        toolLength       : POOLVR.config.toolLength,
+        toolRadius       : POOLVR.config.toolRadius,
+        toolMass         : POOLVR.config.toolMass,
+        toolOffset       : POOLVR.config.toolOffset
+    };
+    if (POOLVR.config.vrLeap) {
+        // ##### Leap Motion VR tracking mode: #####
+        toolOptions.transformOptions = {vr: true, effectiveParent: app.camera};
+    }
+    pyserver.log('toolOptions =\n' + JSON.stringify(toolOptions, undefined, 2));
+    // toolOptions.onStreamingStarted = function () { textGeomLogger.log("YOUR LEAP MOTION CONTROLLER IS CONNECTED.  GOOD JOB."); };
+    // toolOptions.onStreamingStopped = function () { textGeomLogger.log("YOUR LEAP MOTION CONTROLLER IS DISCONNECTED!  HOW WILL YOU PLAY?!"); };
+
+    var toolStuff = addTool(avatar, app.world, toolOptions);
+    var toolRoot       = toolStuff.toolRoot;
+    var leapController = toolStuff.leapController;
+    var stickMesh   = toolStuff.stickMesh;
+    var animateLeap = toolStuff.animateLeap;
+
+    var dynamicBodies = app.world.bodies.filter(function(body) { return body.mesh && body.type === CANNON.Body.DYNAMIC; });
+
+    // setupMenu(avatar);
+
+    textGeomLogger.log("HELLO.  WELCOME TO POOLVR.");
+    synthSpeaker.speak("Hello.  Welcome to pool-ver");
+    textGeomLogger.log("PLEASE WAVE A STICK-LIKE OBJECT IN FRONT OF YOUR LEAP MOTION CONTROLLER.");
+    synthSpeaker.speak("Please wave a stick-like object in front of your Leap Motion controller.");
+
     // function lockChangeAlert() {
     //     if ( document.pointerLockElement || document.mozPointerLockElement || document.webkitPointerLockElement ) {
     //         pyserver.log('pointer lock status is now locked');
@@ -80,97 +159,17 @@ function onLoad() {
     //     else if (mousePointerMesh.position.y < yMin) mousePointerMesh.position.y = yMin;
     // });
 
-    if (!POOLVR.config.useBasicMaterials) {
-        // would rather add the spot lights via three.py generated JSON_SCENE, but I'm having problems getting shadows frm them:
-        var centerSpotLight = new THREE.SpotLight(0xffffee, 1, 10, 90);
-        centerSpotLight.position.set(0, 3, 0);
-        centerSpotLight.castShadow = true;
-        centerSpotLight.shadowCameraNear = 0.01;
-        centerSpotLight.shadowCameraFar = 4;
-        centerSpotLight.shadowCameraFov = 90;
-        scene.add(centerSpotLight);
-        // var centerSpotLightHelper = new THREE.SpotLightHelper(centerSpotLight);
-        // scene.add(centerSpotLightHelper);
-        // centerSpotLightHelper.visible = false;
-    }
+    app.start( animate(leapController, animateLeap,
+                       dynamicBodies, ballStripeMeshes,
+                       toolRoot, POOLVR.config.shadowMap,
+                       toolStuff.stickMesh, toolStuff.tipMesh,
+                       POOLVR.config.H_table, POOLVR.floorMaterial, POOLVR.ballMaterial) );
 
-    CrapLoader.CANNONize(scene, app.world);
+}
 
-    app.world.addContactMaterial(POOLVR.ballBallContactMaterial);
-    app.world.addContactMaterial(POOLVR.ballPlayableSurfaceContactMaterial);
-    app.world.addContactMaterial(POOLVR.ballCushionContactMaterial);
-    app.world.addContactMaterial(POOLVR.floorBallContactMaterial);
 
-    var ballMeshes       = [];
-    var ballStripeMeshes = [];
-
-    scene.traverse(function (node) {
-        if (node.name.startsWith('ballMesh')) {
-            node.body.material = POOLVR.ballMaterial;
-            ballMeshes.push(node);
-        }
-        else if (node.name.startsWith('ballStripeMesh')) {
-            ballStripeMeshes.push(node);
-        }
-        else if (node.name.startsWith('playableSurfaceMesh')) {
-            node.body.material = POOLVR.playableSurfaceMaterial;
-        }
-        else if (node.name.endsWith('CushionMesh')) {
-            node.body.material = POOLVR.cushionMaterial;
-        }
-        else if (node.name === 'floorMesh') {
-            node.body.material = POOLVR.floorMaterial;
-        }
-    });
-
-    var textGeomLogger = new TextGeomLogger();
-    avatar.add(textGeomLogger.root);
-    textGeomLogger.root.position.set(-2.75, 1.5, -3.5);
-
-    var toolOptions = {
-        // ##### Desktop mode (default): #####
-        transformOptions : POOLVR.config.transformOptions, // || {vr: 'desktop'},
-        useBasicMaterials: POOLVR.config.useBasicMaterials,
-        toolLength       : POOLVR.config.toolLength,
-        toolRadius       : POOLVR.config.toolRadius,
-        toolMass         : POOLVR.config.toolMass,
-        toolOffset       : POOLVR.config.toolOffset
-    };
-    if (POOLVR.config.vrLeap) {
-        // ##### Leap Motion VR tracking mode: #####
-        toolOptions.transformOptions = {vr: true, effectiveParent: app.camera};
-    }
-    pyserver.log('toolOptions =\n' + JSON.stringify(toolOptions, undefined, 2));
-    // toolOptions.onStreamingStarted = function () { textGeomLogger.log("YOUR LEAP MOTION CONTROLLER IS CONNECTED.  GOOD JOB."); };
-    // toolOptions.onStreamingStopped = function () { textGeomLogger.log("YOUR LEAP MOTION CONTROLLER IS DISCONNECTED!  HOW WILL YOU PLAY?!"); };
-
-    var toolStuff = addTool(avatar, app.world, toolOptions);
-    toolRoot       = toolStuff.toolRoot;
-    leapController = toolStuff.leapController;
-    var stickMesh   = toolStuff.stickMesh;
-    var animateLeap = toolStuff.animateLeap;
-
-    if (!app.config.shadowMap) {
-        // create shadow mesh from projection:
-        var stickShadow = new THREE.Object3D();
-        stickShadow.position.set(stickMesh.position.x,
-            (POOLVR.config.H_table + 0.001 - toolRoot.position.y - avatar.position.y) / toolRoot.scale.y,
-            stickMesh.position.z);
-        stickShadow.scale.set(1, 0.001, 1);
-        toolRoot.add(stickShadow);
-        var stickShadowMaterial = new THREE.MeshBasicMaterial({color: 0x002200});
-        var stickShadowGeom = stickMesh.geometry.clone();
-        var stickShadowMesh = new THREE.Mesh(stickShadowGeom, stickShadowMaterial);
-        stickShadowMesh.quaternion.copy(stickMesh.quaternion);
-        stickShadow.add(stickShadowMesh);
-        toolStuff.tipMesh.geometry.computeBoundingSphere();
-        var tipShadowGeom = new THREE.CircleBufferGeometry(toolStuff.tipMesh.geometry.boundingSphere.radius).rotateX(-Math.PI / 2);
-        var tipShadowMesh = new THREE.Mesh(tipShadowGeom, stickShadowMaterial);
-        stickShadow.add(tipShadowMesh);
-    }
-
-    var dynamicBodies = app.world.bodies.filter(function(body) { return body.mesh && body.type === CANNON.Body.DYNAMIC; });
-
+var playCollisionSound = (function () {
+    "use strict";
     var ballBallBuffer;
     var request = new XMLHttpRequest();
     request.responseType = 'arraybuffer';
@@ -184,34 +183,46 @@ function onLoad() {
     var playCollisionSound = function (v) {
         var source = WebVRSound.audioContext.createBufferSource();
         var gainNode = WebVRSound.getNextGainNode();
-        gainNode.gain.value = v / 3;
+        gainNode.gain.value = Math.min(1, v / 5);
         source.connect(gainNode);
         source.buffer = ballBallBuffer;
         source.start(0);
     };
+    return playCollisionSound;
+})();
 
-    // setupMenu(avatar);
 
-    var synthSpeaker = new SynthSpeaker({volume: 0.5, rate: 0.8, pitch: 0.7});
-
-    textGeomLogger.log("HELLO.  WELCOME TO POOLVR.");
-    synthSpeaker.speak("Hello.  Welcome to pool-ver");
-    textGeomLogger.log("PLEASE WAVE A STICK-LIKE OBJECT IN FRONT OF YOUR LEAP MOTION CONTROLLER.");
-    synthSpeaker.speak("Please wave a stick-like object in front of your Leap Motion controller.");
-
-    app.start(animate);
-
+var animate = function (leapController, animateLeap,
+                        dynamicBodies, ballStripeMeshes,
+                        toolRoot, shadowMap,
+                        stickMesh, tipMesh,
+                        H_table, floorMaterial, ballMaterial) {
+    "use strict";
+    if (!shadowMap) {
+        // create shadow mesh from projection:
+        var stickShadow = new THREE.Object3D();
+        stickShadow.position.set(stickMesh.position.x,
+            (H_table + 0.001 - toolRoot.position.y - avatar.position.y) / toolRoot.scale.y,
+            stickMesh.position.z);
+        stickShadow.scale.set(1, 0.001, 1);
+        toolRoot.add(stickShadow);
+        var stickShadowMaterial = new THREE.MeshBasicMaterial({color: 0x002200});
+        var stickShadowGeom = stickMesh.geometry.clone();
+        var stickShadowMesh = new THREE.Mesh(stickShadowGeom, stickShadowMaterial);
+        stickShadowMesh.quaternion.copy(stickMesh.quaternion);
+        stickShadow.add(stickShadowMesh);
+        tipMesh.geometry.computeBoundingSphere();
+        var tipShadowGeom = new THREE.CircleBufferGeometry(tipMesh.geometry.boundingSphere.radius).rotateX(-Math.PI / 2);
+        var tipShadowMesh = new THREE.Mesh(tipShadowGeom, stickShadowMaterial);
+        stickShadow.add(tipShadowMesh);
+    }
 
     var UP = new THREE.Vector3(0, 1, 0),
         RIGHT = new THREE.Vector3(1, 0, 0),
         pitchQuat = new THREE.Quaternion(),
         headingQuat = new THREE.Quaternion(),
-        strafe,
-        drive,
-        floatUp,
-        walkSpeed = 0.3,
-        floatSpeed = 0.1,
-        toolDrive, toolStrafe, toolFloat;
+        walkSpeed = 0.333,
+        floatSpeed = 0.1;
     var raycaster = new THREE.Raycaster();
     var lastFrameID;
     function animate(t) {
@@ -226,9 +237,9 @@ function onLoad() {
         app.keyboard.update(dt);
         app.gamepad.update(dt);
 
-        floatUp = app.keyboard.getValue("floatUp") + app.keyboard.getValue("floatDown");
-        drive = app.keyboard.getValue("driveBack") + app.keyboard.getValue("driveForward");
-        strafe = app.keyboard.getValue("strafeRight") + app.keyboard.getValue("strafeLeft");
+        var floatUp = app.keyboard.getValue("floatUp") + app.keyboard.getValue("floatDown");
+        var drive = app.keyboard.getValue("driveBack") + app.keyboard.getValue("driveForward");
+        var strafe = app.keyboard.getValue("strafeRight") + app.keyboard.getValue("strafeLeft");
         avatar.heading += -0.8 * dt * (app.keyboard.getValue("turnLeft") + app.keyboard.getValue("turnRight"));
         if (avatar.floatMode) {
             floatUp += app.gamepad.getValue("float");
@@ -256,9 +267,9 @@ function onLoad() {
             drive = 0;
         }
 
-        toolDrive = app.keyboard.getValue("moveToolForwards") - app.keyboard.getValue("moveToolBackwards");
-        toolFloat = app.keyboard.getValue("moveToolUp") - app.keyboard.getValue("moveToolDown");
-        toolStrafe = app.keyboard.getValue("moveToolRight") - app.keyboard.getValue("moveToolLeft");
+        var toolDrive = app.keyboard.getValue("moveToolForwards") - app.keyboard.getValue("moveToolBackwards");
+        var toolFloat = app.keyboard.getValue("moveToolUp") - app.keyboard.getValue("moveToolDown");
+        var toolStrafe = app.keyboard.getValue("moveToolRight") - app.keyboard.getValue("moveToolLeft");
         toolStrafe += app.gamepad.getValue("toolStrafe");
         if (avatar.toolMode) {
             toolFloat += app.gamepad.getValue("toolFloat");
@@ -295,9 +306,9 @@ function onLoad() {
         toolRoot.position.z += -0.25 * dt * toolDrive;
         toolRoot.position.y += 0.25  * dt * toolFloat;
 
-        if (!POOLVR.config.shadowMap) {
+        if (!shadowMap) {
             stickShadow.position.set(stickMesh.position.x,
-                (POOLVR.config.H_table + 0.001 - toolRoot.position.y - avatar.position.y) / toolRoot.scale.y,
+                (H_table + 0.001 - toolRoot.position.y - avatar.position.y) / toolRoot.scale.y,
                 stickMesh.position.z);
             stickShadowMesh.quaternion.copy(stickMesh.quaternion);
         }
@@ -308,13 +319,13 @@ function onLoad() {
                 bj = contactEquation.bj;
             if (bi.material === bj.material) {
                 // ball-ball collision
-                // TODO: get relative velocity
-                playCollisionSound(1);
-            } else if (bi.material === POOLVR.floorMaterial || bj.material === POOLVR.floorMaterial) {
+                var impactVelocity = contactEquation.getImpactVelocityAlongNormal();
+                playCollisionSound(impactVelocity);
+            } else if (bi.material === floorMaterial || bj.material === floorMaterial) {
                 // ball-floor collision
-                var ballBody = (bi.material === POOLVR.ballMaterial ? bi : bj);
+                var ballBody = (bi.material === ballMaterial ? bi : bj);
                 if (!ballBody.bounces) {
-                    textGeomLogger.log(ballBody.mesh.name + " HIT THE FLOOR!");
+                    //textGeomLogger.log(ballBody.mesh.name + " HIT THE FLOOR!");
                     ballBody.bounces = 1;
                 } else if (ballBody.bounces > 5) {
                     ballBody.sleep();
@@ -328,8 +339,8 @@ function onLoad() {
 
     }
 
-}
-
+    return animate;
+};
 
 
     // if (app.mousePointerMesh && avatar.picking) {

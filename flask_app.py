@@ -35,11 +35,11 @@ POOLVR = {
         'pointLight'            : None,
         'H_table'               : 0.74295
     },
-    'version': 'poolvr-0.1.0'
+    'version': '0.1.0dev'
 }
 
 
-def get_poolvr_config(version=None):
+def get_poolvr_config():
     config = deepcopy(POOLVR['config'])
     args = dict({k: v for k, v in request.args.items()
                  if k in config})
@@ -102,18 +102,20 @@ var JSON_SCENE = %s
 @app.route('/poolvr')
 def poolvr_app():
     """Serves the poolvr HTML app"""
-    version = request.args.get('version')
     config = get_poolvr_config()
+    version = request.args.get('version')
     if version is not None:
-        template = '%s.html' % version
+        template = 'poolvr-%s.html' % version
     else:
         template = 'poolvr.html'
+        version = POOLVR['version']
     return render_template(template,
                            json_config=Markup(r"""<script>
 var POOLVR = %s;
 
 var JSON_SCENE = %s;
-</script>""" % (json.dumps(POOLVR, indent=2),
+</script>""" % (json.dumps({'config' : config,
+                            'version': version}, indent=2),
                 json.dumps(pool_hall(**config), indent=(2 if app.debug else None)))), **config)
 
 
