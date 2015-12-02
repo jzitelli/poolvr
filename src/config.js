@@ -22,10 +22,14 @@ var URL_PARAMS = (function () {
 })();
 
 var POOLVR_VERSION = POOLVR_VERSION || 'poolvr-0.1.0';
+
 var POOLVR = {
     config: POOLVR_CONFIG,
     version: POOLVR_VERSION
 };
+// POOLVR.config.mouseEnabled = URL_PARAMS.mouseEnabled;
+// POOLVR.config.leapVR = URL_PARAMS.vr;
+
 POOLVR.keyboardCommands = {
     turnLeft: {buttons: [-Primrose.Input.Keyboard.LEFTARROW]},
     turnRight: {buttons: [Primrose.Input.Keyboard.RIGHTARROW]},
@@ -62,13 +66,10 @@ POOLVR.gamepadCommands = {
                           commandUp: function () { avatar.toolMode = false; } }
 };
 
-POOLVR.config.mouseEnabled = URL_PARAMS.mouseEnabled || POOLVR.config.mouseEnabled;
-POOLVR.config.leapVR = URL_PARAMS.vr;
 
-window.WebVRConfig = window.WebVRConfig || {
-    FORCE_ENABLE_VR: URL_PARAMS.forceEnableVR,
-    FORCE_DISTORTION: URL_PARAMS.forceDistortion || true
-};
+var WebVRConfig = WebVRConfig || {};
+// WebVRConfig.FORCE_DISTORTION = true;
+// WebVRConfig.FORCE_ENABLE_VR = true;
 
 pyserver.log('WebVRConfig =\n' + JSON.stringify(WebVRConfig, undefined, 2));
 var userAgent = navigator.userAgent;
@@ -77,7 +78,7 @@ var vrDevices = [];
 if (navigator.getVRDevices) {
     navigator.getVRDevices().then(function (devices) {
         devices.forEach(function (device, i) {
-            pyserver.log('VR device ' + i + ': ' + device.deviceName);
+            pyserver.log('\nVR device ' + i + ': ' + device.deviceName);
             console.log(device);
             vrDevices[i] = device;
         });

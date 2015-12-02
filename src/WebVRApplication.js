@@ -17,9 +17,7 @@ WebVRApplication = ( function () {
         });
         this.renderer = renderer;
         this.renderer.setPixelRatio(window.devicePixelRatio);
-        if (config.backgroundColor !== undefined)
-            this.renderer.setClearColor(config.backgroundColor);
-        this.renderer.setSize(window.innerWidth, window.innerHeight);
+
         if (config.shadowMap) {
             console.log("shadow mapping enabled");
             this.renderer.shadowMap.enabled = true;
@@ -28,9 +26,12 @@ WebVRApplication = ( function () {
         document.body.appendChild(this.renderer.domElement);
 
         this.vrEffect = new THREE.VREffect(this.renderer);
+        this.vrEffect.setSize(window.innerWidth, window.innerHeight);
+
         this.vrManager = new WebVRManager(this.renderer, this.vrEffect, {
             hideButton: false
         });
+
         this.vrControls = new THREE.VRControls(this.camera);
         this.vrControls.enabled = false;
 
@@ -111,11 +112,11 @@ WebVRApplication = ( function () {
 
         // TODO: needed?
         window.addEventListener("resize", function () {
-            var canvasWidth = window.innerWidth,
-                canvasHeight = window.innerHeight;
-            this.camera.aspect = canvasWidth / canvasHeight;
-            this.camera.updateProjectionMatrix();
-            this.renderer.setSize(canvasWidth, canvasHeight);
+            // var canvasWidth = window.innerWidth,
+            //     canvasHeight = window.innerHeight;
+            // this.camera.aspect = canvasWidth / canvasHeight;
+            // this.camera.updateProjectionMatrix();
+            // this.renderer.setSize(canvasWidth, canvasHeight);
             if (this.vrManager.isVRMode()) {
                 this.vrControls.enabled = true;
             }
@@ -127,14 +128,12 @@ WebVRApplication = ( function () {
             function waitForResources(t) {
                 if (CrapLoader.isLoaded()) {
                     CrapLoader.CANNONize(scene, world);
-                    // to let physics settle down first with small time steps:
                     for (var i = 0; i < 240*2; i++) {
                         world.step(1/240);
                     }
                     this.lt = t;
                     requestAnimationFrame(animate);
                 } else {
-                    // renderer.render(loadingScene, loadingCamera);
                     requestAnimationFrame(waitForResources);
                 }
             }

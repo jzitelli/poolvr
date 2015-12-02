@@ -17,20 +17,20 @@ var stickShadow, stickShadowMesh;
 var dynamicBodies,
     ballBodies;
 
-var mouseParticleGroup = new SPE.Group({
-    texture: {value: THREE.ImageUtils.loadTexture('images/particle.png')},
-    maxParticleCount: 50});
-var mouseParticleEmitter = new SPE.Emitter({maxAge: {value: 0.5},
-                                            position: {value: new THREE.Vector3(),
-                                                       spread: new THREE.Vector3()},
-                                            velocity: {value: new THREE.Vector3(0, 0, 0),
-                                                       spread: new THREE.Vector3(0.3, 0.3, 0.3)},
-                                            color: {value: [new THREE.Color('white'), new THREE.Color('red')]},
-                                            size: {value: 0.1},
-                                            particleCount: 50});
-mouseParticleGroup.addEmitter(mouseParticleEmitter);
-var mousePointer = mouseParticleGroup.mesh;
-mousePointer.visible = false;
+// var mouseParticleGroup = new SPE.Group({
+//     texture: {value: THREE.ImageUtils.loadTexture('images/particle.png')},
+//     maxParticleCount: 50});
+// var mouseParticleEmitter = new SPE.Emitter({maxAge: {value: 0.5},
+//                                             position: {value: new THREE.Vector3(),
+//                                                        spread: new THREE.Vector3()},
+//                                             velocity: {value: new THREE.Vector3(0, 0, 0),
+//                                                        spread: new THREE.Vector3(0.3, 0.3, 0.3)},
+//                                             color: {value: [new THREE.Color('white'), new THREE.Color('red')]},
+//                                             size: {value: 0.1},
+//                                             particleCount: 50});
+// mouseParticleGroup.addEmitter(mouseParticleEmitter);
+// var mousePointer = mouseParticleGroup.mesh;
+// mousePointer.visible = false;
 
 // TODO: load from JSON config
 var ballMaterial            = new CANNON.Material();
@@ -66,28 +66,29 @@ function onLoad() {
     avatar.add(app.camera);
     scene.add(avatar);
 
-    function lockChangeAlert() {
-        if ( document.pointerLockElement || document.mozPointerLockElement || document.webkitPointerLockElement ) {
-            pyserver.log('pointer lock status is now locked');
-            // mousePointer.visible = true;
-        } else {
-            pyserver.log('pointer lock status is now unlocked');
-            // mousePointer.visible = false;
-        }
-    }
-    if ("onpointerlockchange" in document) {
-      document.addEventListener('pointerlockchange', lockChangeAlert, false);
-    } else if ("onmozpointerlockchange" in document) {
-      document.addEventListener('mozpointerlockchange', lockChangeAlert, false);
-    } else if ("onwebkitpointerlockchange" in document) {
-      document.addEventListener('webkitpointerlockchange', lockChangeAlert, false);
-    }
-    avatar.add(mousePointer);
-    mousePointer.position.set(0, 0, -2);
-    app.mousePointer = mousePointer;
-    app.mouseParticleGroup = mouseParticleGroup;
-    var xMax = 2, xMin = -2,
-        yMax = 1, yMin = -1;
+    // function lockChangeAlert() {
+    //     if ( document.pointerLockElement || document.mozPointerLockElement || document.webkitPointerLockElement ) {
+    //         pyserver.log('pointer lock status is now locked');
+    //         // mousePointer.visible = true;
+    //     } else {
+    //         pyserver.log('pointer lock status is now unlocked');
+    //         // mousePointer.visible = false;
+    //     }
+    // }
+    // if ("onpointerlockchange" in document) {
+    //   document.addEventListener('pointerlockchange', lockChangeAlert, false);
+    // } else if ("onmozpointerlockchange" in document) {
+    //   document.addEventListener('mozpointerlockchange', lockChangeAlert, false);
+    // } else if ("onwebkitpointerlockchange" in document) {
+    //   document.addEventListener('webkitpointerlockchange', lockChangeAlert, false);
+    // }
+
+    // avatar.add(mousePointer);
+    // mousePointer.position.set(0, 0, -2);
+    // app.mousePointer = mousePointer;
+    // app.mouseParticleGroup = mouseParticleGroup;
+    // var xMax = 2, xMin = -2,
+    //     yMax = 1, yMin = -1;
     // window.addEventListener("mousemove", function (evt) {
     //     if (!mousePointer.visible) return;
     //     var dx = evt.movementX,
@@ -254,6 +255,7 @@ function animate(t) {
         app.vrControls.update();
     }
     app.vrManager.render(app.scene, app.camera, t);
+
     app.keyboard.update(dt);
     app.gamepad.update(dt);
 
