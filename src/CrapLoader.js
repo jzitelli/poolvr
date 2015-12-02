@@ -27,7 +27,10 @@ var CrapLoader = ( function () {
                     if (node.userData && node.userData.visible === false) {
                         node.visible = false;
                     }
-                    node.geometry.computeVertexNormals();
+                    if (!(node.geometry instanceof THREE.SphereBufferGeometry)) {
+                        // makes seams appear on spherebuffergeometries due to doubled vertices at phi=0=2*pi
+                        node.geometry.computeVertexNormals();
+                    }
                     if (node.material.shading === THREE.FlatShading)
                         node.geometry.computeFaceNormals();
                 }

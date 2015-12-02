@@ -19,9 +19,19 @@ var WebVRSound = (function (numGainNodes) {
         return node;
     }
 
+    var playBuffer = function (buffer, vol) {
+        var source = audioContext.createBufferSource();
+        var gainNode = getNextGainNode();
+        gainNode.gain.value = vol;
+        source.connect(gainNode);
+        source.buffer = buffer;
+        source.start(0);
+    };
+
     return {
         audioContext: audioContext,
-        getNextGainNode: getNextGainNode
+        getNextGainNode: getNextGainNode,
+        playBuffer: playBuffer
     };
 
 })();

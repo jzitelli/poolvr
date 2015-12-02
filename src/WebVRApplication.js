@@ -3,10 +3,8 @@ WebVRApplication = ( function () {
         this.name = name;
         this.avatar = avatar;
         this.scene = scene;
+        // TODO: copy
         this.config = config;
-
-        avatar.heading = avatar.heading || 0;
-        avatar.pitch = avatar.pitch || 0;
 
         var camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
         this.camera = camera;
@@ -19,7 +17,6 @@ WebVRApplication = ( function () {
         this.renderer.setPixelRatio(window.devicePixelRatio);
 
         if (config.shadowMap) {
-            console.log("shadow mapping enabled");
             this.renderer.shadowMap.enabled = true;
             this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         }
@@ -53,10 +50,8 @@ WebVRApplication = ( function () {
         var wireframeMaterial = new THREE.MeshBasicMaterial({color: 0xeeddaa, wireframe: true});
         this.toggleWireframe = function () {
             if (this.scene.overrideMaterial) {
-                console.log("wireframe: off");
                 this.scene.overrideMaterial = null;
             } else {
-                console.log("wireframe: on");
                 this.scene.overrideMaterial = wireframeMaterial;
             }
         }.bind(this);
@@ -110,34 +105,27 @@ WebVRApplication = ( function () {
         }
         this.world = world;
 
-        // TODO: needed?
-        window.addEventListener("resize", function () {
-            // var canvasWidth = window.innerWidth,
-            //     canvasHeight = window.innerHeight;
-            // this.camera.aspect = canvasWidth / canvasHeight;
-            // this.camera.updateProjectionMatrix();
-            // this.renderer.setSize(canvasWidth, canvasHeight);
+        var fullscreenchange = this.renderer.domElement.mozRequestFullScreen ? 'mozfullscreenchange' : 'webkitfullscreenchange';
+        document.addEventListener( fullscreenchange, function ( event ) {
             if (this.vrManager.isVRMode()) {
                 this.vrControls.enabled = true;
             }
-        }.bind(this), false);
+        }.bind(this), false );
 
-        this.lt = 0;
 
         this.start = function(animate) {
-            function waitForResources(t) {
+            function waitForResources() {
                 if (CrapLoader.isLoaded()) {
                     CrapLoader.CANNONize(scene, world);
                     for (var i = 0; i < 240*2; i++) {
                         world.step(1/240);
                     }
-                    this.lt = t;
                     requestAnimationFrame(animate);
                 } else {
                     requestAnimationFrame(waitForResources);
                 }
             }
-            waitForResources(0);
+            waitForResources();
         };
 
     }

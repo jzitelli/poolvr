@@ -1,40 +1,10 @@
-// TODO requires three.js, CANNON.js, settings.js, cardboard.js, WebVRApplication.js, CrapLoader.js, LeapTools.js, pyserver.js
-// TODO restructure fdsgbfng
-
 var app;
 var scene = CrapLoader.parse(JSON_SCENE);
 var avatar = avatar || new THREE.Object3D();
 avatar.position.y = 1.1;
 avatar.position.z = 1.86;
 var textGeomLogger;
-var synthSpeaker;
-
-POOLVR.mouseParticleGroup = new SPE.Group({
-    texture: {value: THREE.ImageUtils.loadTexture('images/particle.png')},
-    maxParticleCount: 50
-});
-POOLVR.mouseParticleEmitter = new SPE.Emitter({
-    maxAge: {value: 0.5},
-    position: {value: new THREE.Vector3(),
-               spread: new THREE.Vector3()},
-    velocity: {value: new THREE.Vector3(0, 0, 0),
-               spread: new THREE.Vector3(0.3, 0.3, 0.3)},
-    color: {value: [new THREE.Color('white'), new THREE.Color('red')]},
-    size: {value: 0.075},
-    particleCount: 50
-});
-POOLVR.mouseParticleGroup.addEmitter(POOLVR.mouseParticleEmitter);
-POOLVR.mousePointerMesh = POOLVR.mouseParticleGroup.mesh;
-POOLVR.mousePointerMesh.visible = false;
-
-
-function setupMenu(parent) {
-    "use strict";
-    var textGeom = new THREE.TextGeometry('RESET TABLE', {font: 'anonymous pro', size: 0.2, height: 0});
-    var textMesh = new THREE.Mesh(textGeom);
-    textMesh.position.set(0, 1, -2);
-    parent.add(textMesh);
-}
+var synthSpeaker = new SynthSpeaker({volume: 0.25, rate: 0.8, pitch: 0.8});
 
 
 function onLoad() {
@@ -67,12 +37,11 @@ function onLoad() {
     app.world.addContactMaterial(POOLVR.ballCushionContactMaterial);
     app.world.addContactMaterial(POOLVR.floorBallContactMaterial);
 
-    var ballMeshes       = [];
     var ballStripeMeshes = [];
     scene.traverse(function (node) {
         if (node.name.startsWith('ballMesh')) {
             node.body.material = POOLVR.ballMaterial;
-            ballMeshes.push(node);
+            node.body.bounces = 0;
         }
         else if (node.name.startsWith('ballStripeMesh')) {
             ballStripeMeshes.push(node);
@@ -91,8 +60,6 @@ function onLoad() {
     textGeomLogger = new TextGeomLogger();
     avatar.add(textGeomLogger.root);
     textGeomLogger.root.position.set(-2.75, 1.5, -3.5);
-
-    synthSpeaker = new SynthSpeaker({volume: 0.5, rate: 0.8, pitch: 0.7});
 
     var toolOptions = {
         // ##### Desktop mode (default): #####
@@ -123,9 +90,14 @@ function onLoad() {
 
     textGeomLogger.log("HELLO.  WELCOME TO POOLVR.");
     synthSpeaker.speak("Hello.  Welcome to pool-ver");
+
     textGeomLogger.log("PLEASE WAVE A STICK-LIKE OBJECT IN FRONT OF YOUR LEAP MOTION CONTROLLER.");
     synthSpeaker.speak("Please wave a stick-like object in front of your Leap Motion controller.");
 
+    synthSpeaker.speak("Keep the stick within the interaction box when you want to make contact with a ball.");
+
+    // synthSpeaker.speak("You moved a ball.  Good job.");
+    
     // function lockChangeAlert() {
     //     if ( document.pointerLockElement || document.mozPointerLockElement || document.webkitPointerLockElement ) {
     //         pyserver.log('pointer lock status is now locked');
@@ -181,15 +153,38 @@ var playCollisionSound = (function () {
     };
     request.send();
     var playCollisionSound = function (v) {
-        var source = WebVRSound.audioContext.createBufferSource();
-        var gainNode = WebVRSound.getNextGainNode();
-        gainNode.gain.value = Math.min(1, v / 5);
-        source.connect(gainNode);
-        source.buffer = ballBallBuffer;
-        source.start(0);
+        WebVRSound.playBuffer(ballBallBuffer, Math.min(1, v / 5));
     };
     return playCollisionSound;
 })();
+
+
+function setupMenu(parent) {
+    "use strict";
+    var textGeom = new THREE.TextGeometry('RESET TABLE', {font: 'anonymous pro', size: 0.2, height: 0});
+    var textMesh = new THREE.Mesh(textGeom);
+    textMesh.position.set(0, 1, -2);
+    parent.add(textMesh);
+}
+
+
+// POOLVR.mouseParticleGroup = new SPE.Group({
+//     texture: {value: THREE.ImageUtils.loadTexture('images/particle.png')},
+//     maxParticleCount: 50
+// });
+// POOLVR.mouseParticleEmitter = new SPE.Emitter({
+//     maxAge: {value: 0.5},
+//     position: {value: new THREE.Vector3(),
+//                spread: new THREE.Vector3()},
+//     velocity: {value: new THREE.Vector3(0, 0, 0),
+//                spread: new THREE.Vector3(0.3, 0.3, 0.3)},
+//     color: {value: [new THREE.Color('white'), new THREE.Color('red')]},
+//     size: {value: 0.075},
+//     particleCount: 50
+// });
+// POOLVR.mouseParticleGroup.addEmitter(POOLVR.mouseParticleEmitter);
+// POOLVR.mousePointerMesh = POOLVR.mouseParticleGroup.mesh;
+// POOLVR.mousePointerMesh.visible = false;
 
 
 var animate = function (leapController, animateLeap,
@@ -219,16 +214,19 @@ var animate = function (leapController, animateLeap,
 
     var UP = new THREE.Vector3(0, 1, 0),
         RIGHT = new THREE.Vector3(1, 0, 0),
-        pitchQuat = new THREE.Quaternion(),
+        // pitch = 0,
+        // pitchQuat = new THREE.Quaternion(),
+        heading = 0,
         headingQuat = new THREE.Quaternion(),
         walkSpeed = 0.333,
         floatSpeed = 0.1;
-    var raycaster = new THREE.Raycaster();
     var lastFrameID;
+    var lt = 0;
+    var raycaster = new THREE.Raycaster();
     function animate(t) {
         requestAnimationFrame(animate);
-        var dt = (t - app.lt) * 0.001;
-        app.lt = t;
+        var dt = (t - lt) * 0.001;
+        lt = t;
         if (app.vrControls.enabled) {
             app.vrControls.update();
         }
@@ -240,22 +238,14 @@ var animate = function (leapController, animateLeap,
         var floatUp = app.keyboard.getValue("floatUp") + app.keyboard.getValue("floatDown");
         var drive = app.keyboard.getValue("driveBack") + app.keyboard.getValue("driveForward");
         var strafe = app.keyboard.getValue("strafeRight") + app.keyboard.getValue("strafeLeft");
-        avatar.heading += -0.8 * dt * (app.keyboard.getValue("turnLeft") + app.keyboard.getValue("turnRight"));
+        heading += -0.8 * dt * (app.keyboard.getValue("turnLeft") + app.keyboard.getValue("turnRight"));
         if (avatar.floatMode) {
             floatUp += app.gamepad.getValue("float");
             strafe += app.gamepad.getValue("strafe");
         } else {
             drive += app.gamepad.getValue("drive");
-            avatar.heading += 0.8 * dt * app.gamepad.getValue("dheading");
+            heading += 0.8 * dt * app.gamepad.getValue("dheading");
         }
-        var cosHeading = Math.cos(avatar.heading),
-            sinHeading = Math.sin(avatar.heading);
-        if (!app.vrControls.enabled) {
-            avatar.pitch -= 0.8 * dt * (app.keyboard.getValue("pitchUp") + app.keyboard.getValue("pitchDown"));
-            pitchQuat.setFromAxisAngle(RIGHT, avatar.pitch);
-        }
-        var cosPitch = Math.cos(avatar.pitch),
-            sinPitch = Math.sin(avatar.pitch);
         floatUp *= floatSpeed;
         if (strafe || drive) {
             var len = walkSpeed * Math.min(1, 1 / Math.sqrt(drive * drive +
@@ -266,6 +256,14 @@ var animate = function (leapController, animateLeap,
             strafe = 0;
             drive = 0;
         }
+        var cosHeading = Math.cos(heading),
+            sinHeading = Math.sin(heading);
+        // if (!app.vrControls.enabled) {
+        //     pitch -= 0.8 * dt * (app.keyboard.getValue("pitchUp") + app.keyboard.getValue("pitchDown"));
+        //     pitchQuat.setFromAxisAngle(RIGHT, pitch);
+        // }
+        // var cosPitch = Math.cos(pitch),
+        //     sinPitch = Math.sin(pitch);
 
         var toolDrive = app.keyboard.getValue("moveToolForwards") - app.keyboard.getValue("moveToolBackwards");
         var toolFloat = app.keyboard.getValue("moveToolUp") - app.keyboard.getValue("moveToolDown");
@@ -296,8 +294,9 @@ var animate = function (leapController, animateLeap,
             mesh.quaternion.copy(mesh.parent.body.quaternion);
         }
 
-        avatar.quaternion.setFromAxisAngle(UP, avatar.heading);
-        avatar.quaternion.multiply(pitchQuat);
+        avatar.quaternion.setFromAxisAngle(UP, heading);
+        // avatar.quaternion.multiply(pitchQuat);
+
         avatar.position.x += dt * (strafe * cosHeading + drive * sinHeading);
         avatar.position.z += dt * (drive * cosHeading - strafe * sinHeading);
         avatar.position.y += dt * floatUp;
@@ -324,18 +323,16 @@ var animate = function (leapController, animateLeap,
             } else if (bi.material === floorMaterial || bj.material === floorMaterial) {
                 // ball-floor collision
                 var ballBody = (bi.material === ballMaterial ? bi : bj);
-                if (!ballBody.bounces) {
+                ballBody.bounces++;
+                if (ballBody.bounces === 1) {
                     //textGeomLogger.log(ballBody.mesh.name + " HIT THE FLOOR!");
-                    ballBody.bounces = 1;
-                } else if (ballBody.bounces > 5) {
+                } else if (ballBody.bounces === 7) {
                     ballBody.sleep();
-                } else {
-                    ballBody.bounces++;
                 }
             }
         }
 
-        //if (app.mouseParticleGroup) app.mouseParticleGroup.tick(dt);
+        // if (mouseParticleGroup) mouseParticleGroup.tick(dt);
 
     }
 
@@ -343,7 +340,7 @@ var animate = function (leapController, animateLeap,
 };
 
 
-    // if (app.mousePointerMesh && avatar.picking) {
+    // if (mousePointerMesh && avatar.picking) {
     //     origin.set(0, 0, 0);
     //     direction.set(0, 0, 0);
     //     direction.subVectors(mousePointerMesh.localToWorld(direction), camera.localToWorld(origin)).normalize();
