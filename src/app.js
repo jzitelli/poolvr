@@ -97,7 +97,7 @@ function onLoad() {
     synthSpeaker.speak("Keep the stick within the interaction box when you want to make contact with a ball.");
 
     // synthSpeaker.speak("You moved a ball.  Good job.");
-    
+
     // function lockChangeAlert() {
     //     if ( document.pointerLockElement || document.mozPointerLockElement || document.webkitPointerLockElement ) {
     //         pyserver.log('pointer lock status is now locked');
@@ -206,10 +206,11 @@ var animate = function (leapController, animateLeap,
         var stickShadowMesh = new THREE.Mesh(stickShadowGeom, stickShadowMaterial);
         stickShadowMesh.quaternion.copy(stickMesh.quaternion);
         stickShadow.add(stickShadowMesh);
-        tipMesh.geometry.computeBoundingSphere();
-        var tipShadowGeom = new THREE.CircleBufferGeometry(tipMesh.geometry.boundingSphere.radius).rotateX(-Math.PI / 2);
-        var tipShadowMesh = new THREE.Mesh(tipShadowGeom, stickShadowMaterial);
-        stickShadow.add(tipShadowMesh);
+        // TODO: new projection approach for ellipsoid tip
+        // tipMesh.geometry.computeBoundingSphere();
+        // var tipShadowGeom = new THREE.CircleBufferGeometry(tipMesh.geometry.boundingSphere.radius).rotateX(-Math.PI / 2);
+        // var tipShadowMesh = new THREE.Mesh(tipShadowGeom, stickShadowMaterial);
+        // stickShadow.add(tipShadowMesh);
     }
 
     var UP = new THREE.Vector3(0, 1, 0),

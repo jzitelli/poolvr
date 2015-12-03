@@ -256,7 +256,7 @@ def pool_hall(useBasicMaterials=True,
                                   heightSegments=12)
     stripeGeom = SphereBufferGeometry(radius=1.023*ball_radius,
                                       widthSegments=16,
-                                      heightSegments=4,
+                                      heightSegments=8,
                                       thetaStart=np.pi/3,
                                       thetaLength=np.pi/3)
     shadowGeom = CircleBufferGeometry(name='shadowGeom',

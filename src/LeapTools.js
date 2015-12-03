@@ -7,7 +7,7 @@ function addTool(parent, world, options) {
     var toolMass   = options.toolMass   || 0.06;
 
     var tipRadius      = options.tipRadius || 0.95 * toolRadius;
-    var tipMinorRadius = options.tipMinorRadius || 0.25 * toolRadius;
+    var tipMinorRadius = options.tipMinorRadius || 0.4 * toolRadius;
 
     var toolOffset = options.toolOffset || new THREE.Vector3(0, -0.4, -toolLength - 0.2);
     var handOffset = options.handOffset || new THREE.Vector3(0, -0.25, -0.4);
@@ -57,7 +57,7 @@ function addTool(parent, world, options) {
     var boxGeom = new THREE.BoxGeometry(1/scalar, 1/scalar, 1/scalar);
     interactionBoxGeom.fromGeometry(boxGeom);
     boxGeom.dispose();
-    var interactionBoxMaterial = new THREE.MeshBasicMaterial({color: 0x992222, transparent: true, opacity: 0.4});
+    var interactionBoxMaterial = new THREE.MeshBasicMaterial({color: 0x992222, transparent: true, opacity: 0.2});
     var interactionBoxMesh = new THREE.Mesh(interactionBoxGeom, interactionBoxMaterial);
     toolRoot.add(interactionBoxMesh);
 
@@ -83,15 +83,15 @@ function addTool(parent, world, options) {
     var stickMesh = new THREE.Mesh(stickGeom, stickMaterial);
     stickMesh.castShadow = true;
     toolRoot.add(stickMesh);
-    // TODO: use ellipsoid shape:
+    // TODO: verify ellipsoid shape:
     var tipGeom = new THREE.SphereBufferGeometry(tipRadius/scalar, 10);
-    //tipGeom.scale(1, 1, tipMinorRadius / tipRadius);
+    tipGeom.scale(1, tipMinorRadius / tipRadius, 1);
     var tipMesh = new THREE.Mesh(tipGeom, tipMaterial);
     tipMesh.castShadow = true;
     stickMesh.add(tipMesh);
     var tipBody = new CANNON.Body({mass: toolMass, type: CANNON.Body.KINEMATIC});
-    tipBody.addShape(new CANNON.Sphere(tipRadius));
-    //tipBody.addShape(new CANNON.Ellipsoid(tipRadius, tipRadius, tipMinorRadius));
+    //tipBody.addShape(new CANNON.Sphere(tipRadius));
+    tipBody.addShape(new CANNON.Ellipsoid(tipRadius, tipMinorRadius, tipRadius));
     world.addBody(tipBody);
     toolRoot.visible = false;
 
