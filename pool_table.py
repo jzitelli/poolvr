@@ -99,7 +99,7 @@ def pool_table(L_table=2.3368, W_table=None, H_table=0.74295,
     #                                                 [ 0.5*W_playable,                        0,          0.5*W_cushion],
     #                                                 [ 0.5*W_playable,                        H_cushion,  0.5*W_cushion],
     #                                                 [ 0.5*W_playable - np.sqrt(2)*W_cushion, H_cushion, -0.5*W_cushion]][::-1])
-    noseSize = 0.25 * H_cushion
+    noseSize = 0.4 * H_cushion
     headCushionGeom = HexaBufferGeometry(vertices=[# bottom quad:
                                                    [-0.5*W_playable,                        0,                     0.5*W_cushion],
                                                    [ 0.5*W_playable,                        0,                     0.5*W_cushion],
