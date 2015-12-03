@@ -57,8 +57,12 @@ function addTool(parent, world, options) {
     var boxGeom = new THREE.BoxGeometry(1/scalar, 1/scalar, 1/scalar);
     interactionBoxGeom.fromGeometry(boxGeom);
     boxGeom.dispose();
-    var interactionBoxMaterial = new THREE.MeshBasicMaterial({color: 0x992222, transparent: true, opacity: 0.2});
+    var interactionBoxMaterial = new THREE.MeshBasicMaterial({color: 0xaa8800, transparent: true, opacity: 0.25, side: THREE.BackSide});
     var interactionBoxMesh = new THREE.Mesh(interactionBoxGeom, interactionBoxMaterial);
+    var zeroPlaneGeom = new THREE.PlaneBufferGeometry(1/scalar, 1/scalar);
+    var zeroPlaneMaterial = new THREE.MeshBasicMaterial({color: 0x00dd44, transparent: true, opacity: 0.25});
+    var zeroPlaneMesh = new THREE.Mesh(zeroPlaneGeom, zeroPlaneMaterial);
+    interactionBoxMesh.add(zeroPlaneMesh);
     toolRoot.add(interactionBoxMesh);
 
     var stickGeom = new THREE.CylinderGeometry(toolRadius/scalar, toolRadius/scalar, toolLength/scalar, 10, 1, false);
@@ -73,12 +77,12 @@ function addTool(parent, world, options) {
     var tipColor = 0x004488;
     var tipMaterial;
     if (options.useBasicMaterials) {
-        stickMaterial = new THREE.MeshBasicMaterial({color: stickColor, side: THREE.DoubleSide});
-        tipMaterial = new THREE.MeshBasicMaterial({color: tipColor});
+        stickMaterial = new THREE.MeshBasicMaterial({color: stickColor, side: THREE.DoubleSide, transparent: true});
+        tipMaterial = new THREE.MeshBasicMaterial({color: tipColor, transparent: true});
     }
     else {
-        stickMaterial = new THREE.MeshLambertMaterial({color: stickColor, side: THREE.DoubleSide});
-        tipMaterial = new THREE.MeshLambertMaterial({color: tipColor});
+        stickMaterial = new THREE.MeshLambertMaterial({color: stickColor, side: THREE.DoubleSide, transparent: true});
+        tipMaterial = new THREE.MeshLambertMaterial({color: tipColor, transparent: true});
     }
     var stickMesh = new THREE.Mesh(stickGeom, stickMaterial);
     stickMesh.castShadow = true;
@@ -106,62 +110,61 @@ function addTool(parent, world, options) {
     var handRoots = [leftRoot, rightRoot];
     parent.add(leftRoot);
     parent.add(rightRoot);
-    leftRoot.visible = rightRoot.visible = false;
+    // leftRoot.visible = rightRoot.visible = false;
 
-    if (!options.leapHandsDisabled) {
-        var handMaterial = new THREE.MeshBasicMaterial({color: 0x113399, transparent: true, opacity: 0});
-        // arms:
-        var armRadius = 0.0276/scalar,
-            armLength = 0.26/scalar;
+    var handMaterial = new THREE.MeshBasicMaterial({color: 0x113399, transparent: true, opacity: 0});
+    // arms:
+    var armRadius = 0.0276/scalar,
+        armLength = 0.26/scalar;
 
-        var armGeom = new THREE.CylinderGeometry(armRadius, armRadius, armLength);
-        bufferGeom = new THREE.BufferGeometry();
-        bufferGeom.fromGeometry(armGeom);
-        armGeom.dispose();
-        armGeom = bufferGeom;
+    var armGeom = new THREE.CylinderGeometry(armRadius, armRadius, armLength);
+    bufferGeom = new THREE.BufferGeometry();
+    bufferGeom.fromGeometry(armGeom);
+    armGeom.dispose();
+    armGeom = bufferGeom;
 
-        var armMesh = new THREE.Mesh(armGeom, handMaterial);
-        var arms = [armMesh, armMesh.clone()];
-        leftRoot.add(arms[0]);
-        rightRoot.add(arms[1]);
-        // palms:
-        var radius = 0.025/scalar;
-        var palmGeom = new THREE.SphereBufferGeometry(radius).scale(1, 0.5, 1);
-        var palmMesh = new THREE.Mesh(palmGeom, handMaterial);
-        palmMesh.castShadow = true;
-        var palms = [palmMesh, palmMesh.clone()];
-        leftRoot.add(palms[0]);
-        rightRoot.add(palms[1]);
-        // fingertips:
-        radius = 0.005/scalar;
-        var fingerTipGeom = new THREE.SphereBufferGeometry(radius);
-        var fingerTipMesh = new THREE.Mesh(fingerTipGeom, handMaterial);
-        var fingerTips = [[fingerTipMesh, fingerTipMesh.clone(), fingerTipMesh.clone(), fingerTipMesh.clone(), fingerTipMesh.clone()],
-                          [fingerTipMesh.clone(), fingerTipMesh.clone(), fingerTipMesh.clone(), fingerTipMesh.clone(), fingerTipMesh.clone()]];
-        leftRoot.add(fingerTips[0][0], fingerTips[0][1], fingerTips[0][2], fingerTips[0][3], fingerTips[0][4]);
-        rightRoot.add(fingerTips[1][0], fingerTips[1][1], fingerTips[1][2], fingerTips[1][3], fingerTips[1][4]);
-        // finger joints:
-        var jointMesh = fingerTipMesh.clone();
-        jointMesh.scale.set(7/5, 7/5, 7/5);
-        var joints = [[jointMesh, jointMesh.clone(), jointMesh.clone(), jointMesh.clone(), jointMesh.clone()],
-                      [jointMesh.clone(), jointMesh.clone(), jointMesh.clone(), jointMesh.clone(), jointMesh.clone()]];
-        leftRoot.add(joints[0][0], joints[0][1], joints[0][2], joints[0][3], joints[0][4]);
-        rightRoot.add(joints[1][0], joints[1][1], joints[1][2], joints[1][3], joints[1][4]);
-        // TODO: use the anatomical names
-        // TODO: reduce fractions
-        var joint2Mesh = fingerTipMesh.clone();
-        joint2Mesh.scale.set(55/50, 55/50, 55/50);
-        var joint2s = [[joint2Mesh, joint2Mesh.clone(), joint2Mesh.clone(), joint2Mesh.clone(), joint2Mesh.clone()],
-                      [joint2Mesh.clone(), joint2Mesh.clone(), joint2Mesh.clone(), joint2Mesh.clone(), joint2Mesh.clone()]];
-        leftRoot.add(joint2s[0][0], joint2s[0][1], joint2s[0][2], joint2s[0][3], joint2s[0][4]);
-        rightRoot.add(joint2s[1][0], joint2s[1][1], joint2s[1][2], joint2s[1][3], joint2s[1][4]);
-    }
+    var armMesh = new THREE.Mesh(armGeom, handMaterial);
+    var arms = [armMesh, armMesh.clone()];
+    leftRoot.add(arms[0]);
+    rightRoot.add(arms[1]);
+    // palms:
+    var radius = 0.025/scalar;
+    var palmGeom = new THREE.SphereBufferGeometry(radius).scale(1, 0.5, 1);
+    var palmMesh = new THREE.Mesh(palmGeom, handMaterial);
+    palmMesh.castShadow = true;
+    var palms = [palmMesh, palmMesh.clone()];
+    leftRoot.add(palms[0]);
+    rightRoot.add(palms[1]);
+    // fingertips:
+    radius = 0.005/scalar;
+    var fingerTipGeom = new THREE.SphereBufferGeometry(radius);
+    var fingerTipMesh = new THREE.Mesh(fingerTipGeom, handMaterial);
+    var fingerTips = [[fingerTipMesh, fingerTipMesh.clone(), fingerTipMesh.clone(), fingerTipMesh.clone(), fingerTipMesh.clone()],
+                      [fingerTipMesh.clone(), fingerTipMesh.clone(), fingerTipMesh.clone(), fingerTipMesh.clone(), fingerTipMesh.clone()]];
+    leftRoot.add(fingerTips[0][0], fingerTips[0][1], fingerTips[0][2], fingerTips[0][3], fingerTips[0][4]);
+    rightRoot.add(fingerTips[1][0], fingerTips[1][1], fingerTips[1][2], fingerTips[1][3], fingerTips[1][4]);
+    // finger joints:
+    var jointMesh = fingerTipMesh.clone();
+    jointMesh.scale.set(7/5, 7/5, 7/5);
+    var joints = [[jointMesh, jointMesh.clone(), jointMesh.clone(), jointMesh.clone(), jointMesh.clone()],
+                  [jointMesh.clone(), jointMesh.clone(), jointMesh.clone(), jointMesh.clone(), jointMesh.clone()]];
+    leftRoot.add(joints[0][0], joints[0][1], joints[0][2], joints[0][3], joints[0][4]);
+    rightRoot.add(joints[1][0], joints[1][1], joints[1][2], joints[1][3], joints[1][4]);
+    // TODO: use the anatomical names
+    // TODO: reduce fractions
+    var joint2Mesh = fingerTipMesh.clone();
+    joint2Mesh.scale.set(55/50, 55/50, 55/50);
+    var joint2s = [[joint2Mesh, joint2Mesh.clone(), joint2Mesh.clone(), joint2Mesh.clone(), joint2Mesh.clone()],
+                  [joint2Mesh.clone(), joint2Mesh.clone(), joint2Mesh.clone(), joint2Mesh.clone(), joint2Mesh.clone()]];
+    leftRoot.add(joint2s[0][0], joint2s[0][1], joint2s[0][2], joint2s[0][3], joint2s[0][4]);
+    rightRoot.add(joint2s[1][0], joint2s[1][1], joint2s[1][2], joint2s[1][3], joint2s[1][4]);
 
     var UP = new THREE.Vector3(0, 1, 0);
     var direction = new THREE.Vector3();
     var position = new THREE.Vector3();
     var velocity = new THREE.Vector3();
 
+    // TODO: restructure w/ mixin pattern
     function animateLeap(frame, dt) {
 
         var interactionBox = frame.interactionBox;
@@ -174,6 +177,7 @@ function addTool(parent, world, options) {
             var tool = frame.tools[0];
             if (tool.timeVisible > toolTime) {
                 toolRoot.visible = true;
+                stickMaterial.opacity = tipMaterial.opacity = 1;
                 stickMesh.position.fromArray(tool.tipPosition); // stickMesh.position.fromArray(tool.stabilizedTipPosition);
                 direction.fromArray(tool.direction);
                 stickMesh.quaternion.setFromUnitVectors(UP, direction);
@@ -197,6 +201,13 @@ function addTool(parent, world, options) {
         } else if (tipBody.sleepState === CANNON.Body.AWAKE) {
             tipBody.sleep();
             tipMaterial.color.setHex(tipColor);
+        } else {
+            // fade out stick
+            tipMaterial.opacity *= 0.9;
+            stickMaterial.opacity *= 0.9;
+            if (tipMaterial.opacity < 0.1) {
+                toolRoot.visible = false;
+            }
         }
 
         leftRoot.visible = rightRoot.visible = false;
