@@ -6,6 +6,9 @@ function addTool(parent, world, options) {
     var toolRadius = options.toolRadius || 0.013;
     var toolMass   = options.toolMass   || 0.06;
 
+    var tipRadius      = options.tipRadius || 0.95 * toolRadius;
+    var tipMinorRadius = options.tipMinorRadius || 0.25 * toolRadius;
+
     var toolOffset = options.toolOffset || new THREE.Vector3(0, -0.4, -toolLength - 0.2);
     var handOffset = options.handOffset || new THREE.Vector3(0, -0.25, -0.4);
 
@@ -80,12 +83,15 @@ function addTool(parent, world, options) {
     var stickMesh = new THREE.Mesh(stickGeom, stickMaterial);
     stickMesh.castShadow = true;
     toolRoot.add(stickMesh);
-    var tipMesh = new THREE.Mesh(new THREE.SphereBufferGeometry(0.95*toolRadius/scalar, 10), tipMaterial);
+    // TODO: use ellipsoid shape:
+    var tipGeom = new THREE.SphereBufferGeometry(tipRadius/scalar, 10);
+    //tipGeom.scale(1, 1, tipMinorRadius / tipRadius);
+    var tipMesh = new THREE.Mesh(tipGeom, tipMaterial);
     tipMesh.castShadow = true;
     stickMesh.add(tipMesh);
-    // TODO: mass
     var tipBody = new CANNON.Body({mass: toolMass, type: CANNON.Body.KINEMATIC});
-    tipBody.addShape(new CANNON.Sphere(toolRadius));
+    tipBody.addShape(new CANNON.Sphere(tipRadius));
+    //tipBody.addShape(new CANNON.Ellipsoid(tipRadius, tipRadius, tipMinorRadius));
     world.addBody(tipBody);
     toolRoot.visible = false;
 
