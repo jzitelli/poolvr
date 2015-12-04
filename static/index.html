@@ -27,29 +27,21 @@
 <!-- three.js scene definition is embedded here -->
 <script>
 var POOLVR = {
+  "version": "0.1.0",
   "config": {
     "pyserver": false,
-    "H_table": 0.74295,
-    "useBasicMaterials": true,
+    "shadowMap": null,
     "useLambertMaterials": null,
     "gravity": 9.8,
-    "shadowMap": null,
+    "useBasicMaterials": true,
     "usePhongMaterials": null,
-    "pointLight": null
-  },
-  "version": "0.1.0"
+    "pointLight": null,
+    "H_table": 0.74295
+  }
 };
 
 var JSON_SCENE = {
   "object": {
-    "type": "Scene",
-    "rotation": [
-      0.0,
-      0.0,
-      0.0
-    ],
-    "uuid": "049e7baf-4cf7-4aff-aaa1-b4477649f2b4",
-    "name": "unnamed Scene 1",
     "scale": [
       1.0,
       1.0,
@@ -62,45 +54,37 @@ var JSON_SCENE = {
     ],
     "children": [
       {
-        "type": "Mesh",
-        "rotation": [
+        "position": [
           0.0,
           0.0,
           0.0
         ],
-        "name": "floorMesh",
         "children": [],
-        "geometry": "cd37216a-3f43-4bc2-bd3a-0db2ba5089f7",
-        "userData": {
-          "cannonData": {
-            "shapes": [
-              "Plane"
-            ],
-            "mass": 0
-          }
-        },
-        "uuid": "c07063c0-b241-495b-b281-508bb195e35b",
-        "material": "2b589f93-a269-4426-ac54-6ebc0f5f5f1f",
+        "type": "Mesh",
+        "name": "floorMesh",
+        "uuid": "37c77d84-dbf3-462a-9077-e244803718ba",
         "scale": [
           10.0,
           1.0,
           10.0
         ],
-        "position": [
-          0.0,
-          0.0,
-          0.0
-        ]
-      },
-      {
-        "type": "Object3D",
+        "geometry": "f01d9750-b1ba-4a5f-a5d3-26a32093c1f0",
+        "material": "75a61d4f-e63e-4238-9881-c003de07b21a",
         "rotation": [
           0.0,
           0.0,
           0.0
         ],
-        "uuid": "9418690f-023a-4575-8d28-de9ef3c96629",
-        "name": "poolTable",
+        "userData": {
+          "cannonData": {
+            "mass": 0,
+            "shapes": [
+              "Plane"
+            ]
+          }
+        }
+      },
+      {
         "scale": [
           1.0,
           1.0,
@@ -113,524 +97,464 @@ var JSON_SCENE = {
         ],
         "children": [
           {
-            "type": "Mesh",
-            "rotation": [
-              0.0,
-              0.0,
-              0.0
-            ],
-            "name": "playableSurfaceMesh",
-            "children": [],
-            "geometry": "ac957c19-5b22-47b7-b755-4c94dc892754",
-            "userData": {
-              "cannonData": {
-                "shapes": [
-                  "Box"
-                ],
-                "mass": 0
-              }
-            },
-            "uuid": "9bd0b2b3-2625-4b1d-951b-2baa3fe457bb",
-            "receiveShadow": true,
-            "material": "f668d9a9-fa6c-4520-a9c4-187a908be99d",
-            "scale": [
-              1.0,
-              1.0,
-              1.0
-            ],
             "position": [
               0.0,
               0.371475,
               0.0
-            ]
-          },
-          {
-            "type": "Mesh",
-            "rotation": [
-              -1.5707963267948966,
-              0.0,
-              0.0
             ],
-            "name": "unnamed Mesh 7",
-            "children": [],
-            "geometry": "14afe1eb-9d9b-4c5c-9641-22b863342dcd",
-            "uuid": "146653bf-6560-4872-97b8-dd5a0be0232e",
             "receiveShadow": true,
-            "material": "1dabbc57-9444-4662-aab4-bb449b867f71",
+            "children": [],
+            "type": "Mesh",
+            "name": "playableSurfaceMesh",
+            "uuid": "fadb4b0a-5a63-441b-9244-b47331c0b08b",
             "scale": [
               1.0,
               1.0,
               1.0
             ],
+            "geometry": "41077d51-1a8f-4726-8c99-4e0efbe5d77a",
+            "material": "3a7e4a9c-5762-40a2-bd77-a0bb79ffc04d",
+            "rotation": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "userData": {
+              "cannonData": {
+                "mass": 0,
+                "shapes": [
+                  "Box"
+                ]
+              }
+            }
+          },
+          {
             "position": [
               0.0,
               0.74315,
               0.5842
-            ]
-          },
-          {
-            "type": "Mesh",
-            "rotation": [
-              0.0,
-              0.0,
-              0.0
             ],
-            "name": "headCushionMesh",
-            "children": [],
-            "geometry": "787e092e-ff02-43a7-bcbf-af7f28b5558e",
-            "userData": {
-              "cannonData": {
-                "shapes": [
-                  "ConvexPolyhedron"
-                ],
-                "mass": 0
-              }
-            },
-            "uuid": "287e4c24-9570-4fc3-ae7b-9eec0ac76b9c",
             "receiveShadow": true,
-            "material": "d67608ad-58cb-4352-b5f7-436f5d20b91a",
+            "children": [],
+            "type": "Mesh",
+            "name": "unnamed Mesh 14",
+            "uuid": "fae15022-0677-4f41-8db7-1b7106114230",
             "scale": [
               1.0,
               1.0,
               1.0
             ],
+            "geometry": "bb3f9ec6-a1db-46a9-be27-31b998ff1080",
+            "material": "e910597c-2222-46be-b101-a5e2b8a40bc2",
+            "rotation": [
+              -1.5707963267948966,
+              0.0,
+              0.0
+            ]
+          },
+          {
             "position": [
               0.0,
               0.74295,
               1.143
-            ]
-          },
-          {
-            "type": "Mesh",
-            "rotation": [
-              0.0,
-              3.141592653589793,
-              0.0
             ],
-            "name": "footCushionMesh",
-            "children": [],
-            "geometry": "787e092e-ff02-43a7-bcbf-af7f28b5558e",
-            "userData": {
-              "cannonData": {
-                "shapes": [
-                  "ConvexPolyhedron"
-                ],
-                "mass": 0
-              }
-            },
-            "uuid": "e18f237d-92fa-45d4-8af3-82962959a04a",
             "receiveShadow": true,
-            "material": "d67608ad-58cb-4352-b5f7-436f5d20b91a",
+            "children": [],
+            "type": "Mesh",
+            "name": "headCushionMesh",
+            "uuid": "0d965910-8e11-487b-912b-44b2b440d690",
             "scale": [
               1.0,
               1.0,
               1.0
             ],
+            "geometry": "3090a8b7-8cb8-4585-a067-a46a307f1703",
+            "material": "43d6015d-af80-4edb-b48d-0c77c6778208",
+            "rotation": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "userData": {
+              "cannonData": {
+                "mass": 0,
+                "shapes": [
+                  "ConvexPolyhedron"
+                ]
+              }
+            }
+          },
+          {
             "position": [
               0.0,
               0.74295,
               -1.143
-            ]
-          },
-          {
-            "type": "Mesh",
-            "rotation": [
-              0.0,
-              -1.5707963267948966,
-              0.0
             ],
-            "name": "leftHeadCushionMesh",
-            "children": [],
-            "geometry": "787e092e-ff02-43a7-bcbf-af7f28b5558e",
-            "userData": {
-              "cannonData": {
-                "shapes": [
-                  "ConvexPolyhedron"
-                ],
-                "mass": 0
-              }
-            },
-            "uuid": "6627d12d-56d9-4eb7-b907-72174c19d287",
             "receiveShadow": true,
-            "material": "d67608ad-58cb-4352-b5f7-436f5d20b91a",
+            "children": [],
+            "type": "Mesh",
+            "name": "footCushionMesh",
+            "uuid": "c4a89580-cb7b-44e5-a564-89cc55161e97",
             "scale": [
               1.0,
               1.0,
               1.0
             ],
-            "position": [
-              -0.5588000000000001,
-              0.74295,
-              0.5842
-            ]
-          },
-          {
-            "type": "Mesh",
-            "rotation": [
-              0.0,
-              -1.5707963267948966,
-              0.0
-            ],
-            "name": "leftFootCushionMesh",
-            "children": [],
-            "geometry": "787e092e-ff02-43a7-bcbf-af7f28b5558e",
-            "userData": {
-              "cannonData": {
-                "shapes": [
-                  "ConvexPolyhedron"
-                ],
-                "mass": 0
-              }
-            },
-            "uuid": "c3ae45af-f3a3-4fc4-82d4-c4150a50f72f",
-            "receiveShadow": true,
-            "material": "d67608ad-58cb-4352-b5f7-436f5d20b91a",
-            "scale": [
-              1.0,
-              1.0,
-              1.0
-            ],
-            "position": [
-              -0.5588000000000001,
-              0.74295,
-              -0.5842
-            ]
-          },
-          {
-            "type": "Mesh",
-            "rotation": [
-              0.0,
-              1.5707963267948966,
-              0.0
-            ],
-            "name": "rightHeadCushionMesh",
-            "children": [],
-            "geometry": "787e092e-ff02-43a7-bcbf-af7f28b5558e",
-            "userData": {
-              "cannonData": {
-                "shapes": [
-                  "ConvexPolyhedron"
-                ],
-                "mass": 0
-              }
-            },
-            "uuid": "a9e57151-d8ae-49c7-b922-93e5503928f5",
-            "receiveShadow": true,
-            "material": "d67608ad-58cb-4352-b5f7-436f5d20b91a",
-            "scale": [
-              1.0,
-              1.0,
-              1.0
-            ],
-            "position": [
-              0.5588000000000001,
-              0.74295,
-              0.5842
-            ]
-          },
-          {
-            "type": "Mesh",
-            "rotation": [
-              0.0,
-              1.5707963267948966,
-              0.0
-            ],
-            "name": "rightFootCushionMesh",
-            "children": [],
-            "geometry": "787e092e-ff02-43a7-bcbf-af7f28b5558e",
-            "userData": {
-              "cannonData": {
-                "shapes": [
-                  "ConvexPolyhedron"
-                ],
-                "mass": 0
-              }
-            },
-            "uuid": "5f7a934a-9d65-4c96-817d-18de777a8f78",
-            "receiveShadow": true,
-            "material": "d67608ad-58cb-4352-b5f7-436f5d20b91a",
-            "scale": [
-              1.0,
-              1.0,
-              1.0
-            ],
-            "position": [
-              0.5588000000000001,
-              0.74295,
-              -0.5842
-            ]
-          },
-          {
-            "type": "Mesh",
-            "rotation": [
-              0.0,
-              0.0,
-              0.0
-            ],
-            "name": "unnamed Mesh 8",
-            "children": [],
-            "geometry": "7fd1fb3b-adda-4a54-b558-8495b038ac63",
-            "userData": {
-              "cannonData": {
-                "shapes": [
-                  "Box"
-                ],
-                "mass": 0
-              }
-            },
-            "uuid": "c9585fa8-60b3-499b-80d2-fa2bbe4da396",
-            "receiveShadow": true,
-            "material": "ea5c3cd6-d6c4-422d-9f17-7ed3b0bcb086",
-            "scale": [
-              1.0,
-              1.0,
-              1.0
-            ],
-            "position": [
-              0.0,
-              0.761095125,
-              1.2065000000000001
-            ]
-          },
-          {
-            "type": "Mesh",
+            "geometry": "3090a8b7-8cb8-4585-a067-a46a307f1703",
+            "material": "43d6015d-af80-4edb-b48d-0c77c6778208",
             "rotation": [
               0.0,
               3.141592653589793,
               0.0
             ],
-            "name": "unnamed Mesh 9",
-            "children": [],
-            "geometry": "7fd1fb3b-adda-4a54-b558-8495b038ac63",
             "userData": {
               "cannonData": {
+                "mass": 0,
                 "shapes": [
-                  "Box"
-                ],
-                "mass": 0
+                  "ConvexPolyhedron"
+                ]
               }
-            },
-            "uuid": "815a2bad-19f9-4ef0-adc1-1ea6e27a1670",
+            }
+          },
+          {
+            "position": [
+              -0.5588000000000001,
+              0.74295,
+              0.5842
+            ],
             "receiveShadow": true,
-            "material": "ea5c3cd6-d6c4-422d-9f17-7ed3b0bcb086",
+            "children": [],
+            "type": "Mesh",
+            "name": "leftHeadCushionMesh",
+            "uuid": "1e16fdeb-440e-4f02-91b6-366b8365810d",
             "scale": [
               1.0,
               1.0,
               1.0
             ],
+            "geometry": "3090a8b7-8cb8-4585-a067-a46a307f1703",
+            "material": "43d6015d-af80-4edb-b48d-0c77c6778208",
+            "rotation": [
+              0.0,
+              -1.5707963267948966,
+              0.0
+            ],
+            "userData": {
+              "cannonData": {
+                "mass": 0,
+                "shapes": [
+                  "ConvexPolyhedron"
+                ]
+              }
+            }
+          },
+          {
+            "position": [
+              -0.5588000000000001,
+              0.74295,
+              -0.5842
+            ],
+            "receiveShadow": true,
+            "children": [],
+            "type": "Mesh",
+            "name": "leftFootCushionMesh",
+            "uuid": "7328960e-fb3b-482f-975a-4be8bf266900",
+            "scale": [
+              1.0,
+              1.0,
+              1.0
+            ],
+            "geometry": "3090a8b7-8cb8-4585-a067-a46a307f1703",
+            "material": "43d6015d-af80-4edb-b48d-0c77c6778208",
+            "rotation": [
+              0.0,
+              -1.5707963267948966,
+              0.0
+            ],
+            "userData": {
+              "cannonData": {
+                "mass": 0,
+                "shapes": [
+                  "ConvexPolyhedron"
+                ]
+              }
+            }
+          },
+          {
+            "position": [
+              0.5588000000000001,
+              0.74295,
+              0.5842
+            ],
+            "receiveShadow": true,
+            "children": [],
+            "type": "Mesh",
+            "name": "rightHeadCushionMesh",
+            "uuid": "789e209f-306c-49d3-844a-f7e07f16f2d0",
+            "scale": [
+              1.0,
+              1.0,
+              1.0
+            ],
+            "geometry": "3090a8b7-8cb8-4585-a067-a46a307f1703",
+            "material": "43d6015d-af80-4edb-b48d-0c77c6778208",
+            "rotation": [
+              0.0,
+              1.5707963267948966,
+              0.0
+            ],
+            "userData": {
+              "cannonData": {
+                "mass": 0,
+                "shapes": [
+                  "ConvexPolyhedron"
+                ]
+              }
+            }
+          },
+          {
+            "position": [
+              0.5588000000000001,
+              0.74295,
+              -0.5842
+            ],
+            "receiveShadow": true,
+            "children": [],
+            "type": "Mesh",
+            "name": "rightFootCushionMesh",
+            "uuid": "1db74003-7c85-4500-8f35-a2aaf87a4dae",
+            "scale": [
+              1.0,
+              1.0,
+              1.0
+            ],
+            "geometry": "3090a8b7-8cb8-4585-a067-a46a307f1703",
+            "material": "43d6015d-af80-4edb-b48d-0c77c6778208",
+            "rotation": [
+              0.0,
+              1.5707963267948966,
+              0.0
+            ],
+            "userData": {
+              "cannonData": {
+                "mass": 0,
+                "shapes": [
+                  "ConvexPolyhedron"
+                ]
+              }
+            }
+          },
+          {
+            "position": [
+              0.0,
+              0.761095125,
+              1.2065000000000001
+            ],
+            "receiveShadow": true,
+            "children": [],
+            "type": "Mesh",
+            "name": "unnamed Mesh 15",
+            "uuid": "b778f47d-e4fc-4ce2-8693-5d908cad7e00",
+            "scale": [
+              1.0,
+              1.0,
+              1.0
+            ],
+            "geometry": "129d8676-196e-4a66-ad72-f545eef8f637",
+            "material": "9a9eb828-9ef6-479a-a8cf-668c5cd0df08",
+            "rotation": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "userData": {
+              "cannonData": {
+                "mass": 0,
+                "shapes": [
+                  "Box"
+                ]
+              }
+            }
+          },
+          {
             "position": [
               0.0,
               0.761095125,
               -1.2065000000000001
-            ]
-          },
-          {
-            "type": "Mesh",
-            "rotation": [
-              0.0,
-              1.5707963267948966,
-              0.0
             ],
-            "name": "unnamed Mesh 10",
-            "children": [],
-            "geometry": "7fd1fb3b-adda-4a54-b558-8495b038ac63",
-            "userData": {
-              "cannonData": {
-                "shapes": [
-                  "Box"
-                ],
-                "mass": 0
-              }
-            },
-            "uuid": "24cde39d-fcdf-4950-bf88-0d0b05c34baa",
             "receiveShadow": true,
-            "material": "ea5c3cd6-d6c4-422d-9f17-7ed3b0bcb086",
+            "children": [],
+            "type": "Mesh",
+            "name": "unnamed Mesh 16",
+            "uuid": "93db3f69-cef6-4bba-a98e-3a2a072b7212",
             "scale": [
               1.0,
               1.0,
               1.0
             ],
+            "geometry": "129d8676-196e-4a66-ad72-f545eef8f637",
+            "material": "9a9eb828-9ef6-479a-a8cf-668c5cd0df08",
+            "rotation": [
+              0.0,
+              3.141592653589793,
+              0.0
+            ],
+            "userData": {
+              "cannonData": {
+                "mass": 0,
+                "shapes": [
+                  "Box"
+                ]
+              }
+            }
+          },
+          {
             "position": [
               -0.6223000000000001,
               0.761095125,
               0.5842
-            ]
-          },
-          {
-            "type": "Mesh",
-            "rotation": [
-              0.0,
-              1.5707963267948966,
-              0.0
             ],
-            "name": "unnamed Mesh 11",
-            "children": [],
-            "geometry": "7fd1fb3b-adda-4a54-b558-8495b038ac63",
-            "userData": {
-              "cannonData": {
-                "shapes": [
-                  "Box"
-                ],
-                "mass": 0
-              }
-            },
-            "uuid": "94f9b93f-e8e8-47fa-bcc2-101ab7ffd1d6",
             "receiveShadow": true,
-            "material": "ea5c3cd6-d6c4-422d-9f17-7ed3b0bcb086",
+            "children": [],
+            "type": "Mesh",
+            "name": "unnamed Mesh 17",
+            "uuid": "c2997ea3-48fc-48ec-a1ed-dbee8fd71c7c",
             "scale": [
               1.0,
               1.0,
               1.0
             ],
+            "geometry": "129d8676-196e-4a66-ad72-f545eef8f637",
+            "material": "9a9eb828-9ef6-479a-a8cf-668c5cd0df08",
+            "rotation": [
+              0.0,
+              1.5707963267948966,
+              0.0
+            ],
+            "userData": {
+              "cannonData": {
+                "mass": 0,
+                "shapes": [
+                  "Box"
+                ]
+              }
+            }
+          },
+          {
             "position": [
               0.6223000000000001,
               0.761095125,
               0.5842
-            ]
-          },
-          {
-            "type": "Mesh",
-            "rotation": [
-              0.0,
-              1.5707963267948966,
-              0.0
             ],
-            "name": "unnamed Mesh 12",
-            "children": [],
-            "geometry": "7fd1fb3b-adda-4a54-b558-8495b038ac63",
-            "userData": {
-              "cannonData": {
-                "shapes": [
-                  "Box"
-                ],
-                "mass": 0
-              }
-            },
-            "uuid": "d60ecd52-c06e-4c53-b60a-fb304a9085c2",
             "receiveShadow": true,
-            "material": "ea5c3cd6-d6c4-422d-9f17-7ed3b0bcb086",
+            "children": [],
+            "type": "Mesh",
+            "name": "unnamed Mesh 18",
+            "uuid": "9ade47cd-18f5-4746-83ce-ddb5e01d7acb",
             "scale": [
               1.0,
               1.0,
               1.0
             ],
+            "geometry": "129d8676-196e-4a66-ad72-f545eef8f637",
+            "material": "9a9eb828-9ef6-479a-a8cf-668c5cd0df08",
+            "rotation": [
+              0.0,
+              1.5707963267948966,
+              0.0
+            ],
+            "userData": {
+              "cannonData": {
+                "mass": 0,
+                "shapes": [
+                  "Box"
+                ]
+              }
+            }
+          },
+          {
             "position": [
               -0.6223000000000001,
               0.761095125,
               -0.5842
-            ]
-          },
-          {
-            "type": "Mesh",
-            "rotation": [
-              0.0,
-              1.5707963267948966,
-              0.0
             ],
-            "name": "unnamed Mesh 13",
-            "children": [],
-            "geometry": "7fd1fb3b-adda-4a54-b558-8495b038ac63",
-            "userData": {
-              "cannonData": {
-                "shapes": [
-                  "Box"
-                ],
-                "mass": 0
-              }
-            },
-            "uuid": "4d880c0d-6b2b-4276-b606-bd9dd7c8e6a8",
             "receiveShadow": true,
-            "material": "ea5c3cd6-d6c4-422d-9f17-7ed3b0bcb086",
+            "children": [],
+            "type": "Mesh",
+            "name": "unnamed Mesh 19",
+            "uuid": "d1ec0c29-9ed7-4152-b677-e07925391afe",
             "scale": [
               1.0,
               1.0,
               1.0
             ],
+            "geometry": "129d8676-196e-4a66-ad72-f545eef8f637",
+            "material": "9a9eb828-9ef6-479a-a8cf-668c5cd0df08",
+            "rotation": [
+              0.0,
+              1.5707963267948966,
+              0.0
+            ],
+            "userData": {
+              "cannonData": {
+                "mass": 0,
+                "shapes": [
+                  "Box"
+                ]
+              }
+            }
+          },
+          {
             "position": [
               0.6223000000000001,
               0.761095125,
               -0.5842
-            ]
+            ],
+            "receiveShadow": true,
+            "children": [],
+            "type": "Mesh",
+            "name": "unnamed Mesh 20",
+            "uuid": "a7d5a676-d2a2-4e2a-92bf-afaf9157a380",
+            "scale": [
+              1.0,
+              1.0,
+              1.0
+            ],
+            "geometry": "129d8676-196e-4a66-ad72-f545eef8f637",
+            "material": "9a9eb828-9ef6-479a-a8cf-668c5cd0df08",
+            "rotation": [
+              0.0,
+              1.5707963267948966,
+              0.0
+            ],
+            "userData": {
+              "cannonData": {
+                "mass": 0,
+                "shapes": [
+                  "Box"
+                ]
+              }
+            }
           }
-        ]
-      },
-      {
-        "type": "Mesh",
+        ],
+        "type": "Object3D",
+        "uuid": "0fe7a7f8-f230-4a83-8b5a-582e600c51fe",
+        "name": "poolTable",
         "rotation": [
           0.0,
           0.0,
           0.0
-        ],
-        "name": "ballMesh 0",
-        "children": [
-          {
-            "type": "Mesh",
-            "rotation": [
-              -1.5707963267948966,
-              0.0,
-              0.0
-            ],
-            "uuid": "5c24b1f0-560f-42a3-a6de-8be040ac4ed9",
-            "name": "ballShadowMesh 0",
-            "material": "361e5e15-5cce-4fb2-a234-47288dd1f46c",
-            "scale": [
-              1.0,
-              1.0,
-              1.0
-            ],
-            "position": [
-              0.0,
-              -0.027575,
-              0.0
-            ],
-            "children": [],
-            "geometry": "3f118319-e2ec-406f-9427-01033a9bb5ae"
-          }
-        ],
-        "geometry": "b6eb58ed-e6a1-4935-9c4c-ae866e4d5b9e",
+        ]
+      },
+      {
         "castShadow": true,
-        "userData": {
-          "cannonData": {
-            "shapes": [
-              "Sphere"
-            ],
-            "angularDamping": 0.25,
-            "linearDamping": 0.2,
-            "mass": 0.17
-          }
-        },
-        "uuid": "dfeea23a-bbfb-4f06-b86f-9be63bd094a6",
-        "material": "8cbce3e4-90b7-475e-8eaf-2415fc869a57",
-        "scale": [
-          1.0,
-          1.0,
-          1.0
-        ],
         "position": [
           0.0,
           0.771625,
           0.5842
-        ]
-      },
-      {
-        "type": "Mesh",
-        "rotation": [
-          0.0,
-          0.0,
-          0.0
         ],
-        "name": "ballMesh 1",
         "children": [
           {
-            "type": "Mesh",
-            "rotation": [
-              -1.5707963267948966,
-              0.0,
-              0.0
-            ],
-            "uuid": "42e95570-83b8-4227-bcd2-ee65448896ec",
-            "name": "ballShadowMesh 1",
-            "material": "361e5e15-5cce-4fb2-a234-47288dd1f46c",
             "scale": [
               1.0,
               1.0,
@@ -641,54 +565,54 @@ var JSON_SCENE = {
               -0.027575,
               0.0
             ],
+            "material": "70cdadd7-706a-42a0-a39f-08fe2af06a74",
             "children": [],
-            "geometry": "3f118319-e2ec-406f-9427-01033a9bb5ae"
+            "geometry": "b81f37c3-2805-4a55-bbbf-c84d4985dceb",
+            "type": "Mesh",
+            "uuid": "dbb1682d-1fd2-4dad-a67a-3a0928c9574e",
+            "name": "ballShadowMesh 0",
+            "rotation": [
+              -1.5707963267948966,
+              0.0,
+              0.0
+            ]
           }
         ],
-        "geometry": "b6eb58ed-e6a1-4935-9c4c-ae866e4d5b9e",
-        "castShadow": true,
-        "userData": {
-          "cannonData": {
-            "shapes": [
-              "Sphere"
-            ],
-            "angularDamping": 0.25,
-            "linearDamping": 0.2,
-            "mass": 0.17
-          }
-        },
-        "uuid": "bf3b30ea-1334-4d3e-8eec-c14af7f1e6ec",
-        "material": "300bbd22-c730-4803-a119-3dbb95a9ba84",
+        "type": "Mesh",
+        "name": "ballMesh 0",
+        "uuid": "4556025e-a674-4401-bc9c-9ab4980ddba2",
         "scale": [
           1.0,
           1.0,
           1.0
         ],
+        "geometry": "7ff21a6c-c26a-4f31-977f-13a3c23fc1f0",
+        "material": "11a7686d-39d3-42b0-b2dc-bf55c2a506d6",
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "userData": {
+          "cannonData": {
+            "angularDamping": 0.25,
+            "linearDamping": 0.2,
+            "mass": 0.17,
+            "shapes": [
+              "Sphere"
+            ]
+          }
+        }
+      },
+      {
+        "castShadow": true,
         "position": [
           0.0,
           0.771625,
           -0.2921
-        ]
-      },
-      {
-        "type": "Mesh",
-        "rotation": [
-          0.0,
-          0.0,
-          0.0
         ],
-        "name": "ballMesh 2",
         "children": [
           {
-            "type": "Mesh",
-            "rotation": [
-              -1.5707963267948966,
-              0.0,
-              0.0
-            ],
-            "uuid": "990d72f9-9194-467f-9f93-d966a78c1593",
-            "name": "ballShadowMesh 2",
-            "material": "361e5e15-5cce-4fb2-a234-47288dd1f46c",
             "scale": [
               1.0,
               1.0,
@@ -699,54 +623,54 @@ var JSON_SCENE = {
               -0.027575,
               0.0
             ],
+            "material": "70cdadd7-706a-42a0-a39f-08fe2af06a74",
             "children": [],
-            "geometry": "3f118319-e2ec-406f-9427-01033a9bb5ae"
+            "geometry": "b81f37c3-2805-4a55-bbbf-c84d4985dceb",
+            "type": "Mesh",
+            "uuid": "8f4ba2ac-f6a5-4bb9-beb5-75ae7667186c",
+            "name": "ballShadowMesh 1",
+            "rotation": [
+              -1.5707963267948966,
+              0.0,
+              0.0
+            ]
           }
         ],
-        "geometry": "b6eb58ed-e6a1-4935-9c4c-ae866e4d5b9e",
-        "castShadow": true,
-        "userData": {
-          "cannonData": {
-            "shapes": [
-              "Sphere"
-            ],
-            "angularDamping": 0.25,
-            "linearDamping": 0.2,
-            "mass": 0.17
-          }
-        },
-        "uuid": "01e446b9-c6b5-49f3-b033-70d4fa7c1c79",
-        "material": "a4a1ba4e-f383-4adb-a81d-39da9fa84bbe",
+        "type": "Mesh",
+        "name": "ballMesh 1",
+        "uuid": "49bcbdf2-f5dd-4938-b129-8af1ac960555",
         "scale": [
           1.0,
           1.0,
           1.0
         ],
+        "geometry": "7ff21a6c-c26a-4f31-977f-13a3c23fc1f0",
+        "material": "abfefb9e-81d1-498c-8aa0-f7b8a482e1ca",
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "userData": {
+          "cannonData": {
+            "angularDamping": 0.25,
+            "linearDamping": 0.2,
+            "mass": 0.17,
+            "shapes": [
+              "Sphere"
+            ]
+          }
+        }
+      },
+      {
+        "castShadow": true,
         "position": [
           0.029289375,
           0.771625,
           -0.3428306856219377
-        ]
-      },
-      {
-        "type": "Mesh",
-        "rotation": [
-          0.0,
-          0.0,
-          0.0
         ],
-        "name": "ballMesh 3",
         "children": [
           {
-            "type": "Mesh",
-            "rotation": [
-              -1.5707963267948966,
-              0.0,
-              0.0
-            ],
-            "uuid": "5f6459ab-f766-449a-9cfc-9be8ec3b6f0e",
-            "name": "ballShadowMesh 3",
-            "material": "361e5e15-5cce-4fb2-a234-47288dd1f46c",
             "scale": [
               1.0,
               1.0,
@@ -757,54 +681,54 @@ var JSON_SCENE = {
               -0.027575,
               0.0
             ],
+            "material": "70cdadd7-706a-42a0-a39f-08fe2af06a74",
             "children": [],
-            "geometry": "3f118319-e2ec-406f-9427-01033a9bb5ae"
+            "geometry": "b81f37c3-2805-4a55-bbbf-c84d4985dceb",
+            "type": "Mesh",
+            "uuid": "ffe9c2ab-9d7c-4726-9c31-026533a15494",
+            "name": "ballShadowMesh 2",
+            "rotation": [
+              -1.5707963267948966,
+              0.0,
+              0.0
+            ]
           }
         ],
-        "geometry": "b6eb58ed-e6a1-4935-9c4c-ae866e4d5b9e",
-        "castShadow": true,
-        "userData": {
-          "cannonData": {
-            "shapes": [
-              "Sphere"
-            ],
-            "angularDamping": 0.25,
-            "linearDamping": 0.2,
-            "mass": 0.17
-          }
-        },
-        "uuid": "ef8133d7-a3d2-4044-90a0-b5dc00bdf0da",
-        "material": "0c5c44ac-c4f2-458d-bbdd-b04fe539a896",
+        "type": "Mesh",
+        "name": "ballMesh 2",
+        "uuid": "f38e1bc6-e8fb-43f6-a53e-f76cf8ea4bb2",
         "scale": [
           1.0,
           1.0,
           1.0
         ],
+        "geometry": "7ff21a6c-c26a-4f31-977f-13a3c23fc1f0",
+        "material": "e76e6b0d-0d31-478e-904f-c467047cbace",
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "userData": {
+          "cannonData": {
+            "angularDamping": 0.25,
+            "linearDamping": 0.2,
+            "mass": 0.17,
+            "shapes": [
+              "Sphere"
+            ]
+          }
+        }
+      },
+      {
+        "castShadow": true,
         "position": [
           0.05857875,
           0.771625,
           -0.39356137124387536
-        ]
-      },
-      {
-        "type": "Mesh",
-        "rotation": [
-          0.0,
-          0.0,
-          0.0
         ],
-        "name": "ballMesh 4",
         "children": [
           {
-            "type": "Mesh",
-            "rotation": [
-              -1.5707963267948966,
-              0.0,
-              0.0
-            ],
-            "uuid": "ebb4862a-1dd5-4fc8-a851-d2a436f0dacf",
-            "name": "ballShadowMesh 4",
-            "material": "361e5e15-5cce-4fb2-a234-47288dd1f46c",
             "scale": [
               1.0,
               1.0,
@@ -815,54 +739,54 @@ var JSON_SCENE = {
               -0.027575,
               0.0
             ],
+            "material": "70cdadd7-706a-42a0-a39f-08fe2af06a74",
             "children": [],
-            "geometry": "3f118319-e2ec-406f-9427-01033a9bb5ae"
+            "geometry": "b81f37c3-2805-4a55-bbbf-c84d4985dceb",
+            "type": "Mesh",
+            "uuid": "49aa9edd-8cc5-4f00-bdab-2f9935b01d33",
+            "name": "ballShadowMesh 3",
+            "rotation": [
+              -1.5707963267948966,
+              0.0,
+              0.0
+            ]
           }
         ],
-        "geometry": "b6eb58ed-e6a1-4935-9c4c-ae866e4d5b9e",
-        "castShadow": true,
-        "userData": {
-          "cannonData": {
-            "shapes": [
-              "Sphere"
-            ],
-            "angularDamping": 0.25,
-            "linearDamping": 0.2,
-            "mass": 0.17
-          }
-        },
-        "uuid": "799840b5-9015-44e3-8b2c-56e3bc9a07de",
-        "material": "07bdc970-f289-4fb8-a320-9d7ef429220a",
+        "type": "Mesh",
+        "name": "ballMesh 3",
+        "uuid": "09f81e00-65c0-48f4-a553-7f87e7365d46",
         "scale": [
           1.0,
           1.0,
           1.0
         ],
+        "geometry": "7ff21a6c-c26a-4f31-977f-13a3c23fc1f0",
+        "material": "970e372e-7c2a-4e6f-9173-408dfe394025",
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "userData": {
+          "cannonData": {
+            "angularDamping": 0.25,
+            "linearDamping": 0.2,
+            "mass": 0.17,
+            "shapes": [
+              "Sphere"
+            ]
+          }
+        }
+      },
+      {
+        "castShadow": true,
         "position": [
           0.08786812499999999,
           0.771625,
           -0.4442920568658131
-        ]
-      },
-      {
-        "type": "Mesh",
-        "rotation": [
-          0.0,
-          0.0,
-          0.0
         ],
-        "name": "ballMesh 5",
         "children": [
           {
-            "type": "Mesh",
-            "rotation": [
-              -1.5707963267948966,
-              0.0,
-              0.0
-            ],
-            "uuid": "b5453315-f679-4f4d-b34a-091e4d5422a8",
-            "name": "ballShadowMesh 5",
-            "material": "361e5e15-5cce-4fb2-a234-47288dd1f46c",
             "scale": [
               1.0,
               1.0,
@@ -873,54 +797,54 @@ var JSON_SCENE = {
               -0.027575,
               0.0
             ],
+            "material": "70cdadd7-706a-42a0-a39f-08fe2af06a74",
             "children": [],
-            "geometry": "3f118319-e2ec-406f-9427-01033a9bb5ae"
+            "geometry": "b81f37c3-2805-4a55-bbbf-c84d4985dceb",
+            "type": "Mesh",
+            "uuid": "1078fb22-e8a4-4337-856c-2ee0ac91aeae",
+            "name": "ballShadowMesh 4",
+            "rotation": [
+              -1.5707963267948966,
+              0.0,
+              0.0
+            ]
           }
         ],
-        "geometry": "b6eb58ed-e6a1-4935-9c4c-ae866e4d5b9e",
-        "castShadow": true,
-        "userData": {
-          "cannonData": {
-            "shapes": [
-              "Sphere"
-            ],
-            "angularDamping": 0.25,
-            "linearDamping": 0.2,
-            "mass": 0.17
-          }
-        },
-        "uuid": "91a09152-c6e8-4f03-8094-11150fc0388b",
-        "material": "21e7fd5f-bedd-4c86-92d7-04e193685f48",
+        "type": "Mesh",
+        "name": "ballMesh 4",
+        "uuid": "53894889-3a05-4724-85ab-95797790f991",
         "scale": [
           1.0,
           1.0,
           1.0
         ],
+        "geometry": "7ff21a6c-c26a-4f31-977f-13a3c23fc1f0",
+        "material": "eb30ec75-4822-4de0-9d6b-ebe5217d74c4",
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "userData": {
+          "cannonData": {
+            "angularDamping": 0.25,
+            "linearDamping": 0.2,
+            "mass": 0.17,
+            "shapes": [
+              "Sphere"
+            ]
+          }
+        }
+      },
+      {
+        "castShadow": true,
         "position": [
           0.1171575,
           0.771625,
           -0.49502274248775074
-        ]
-      },
-      {
-        "type": "Mesh",
-        "rotation": [
-          0.0,
-          0.0,
-          0.0
         ],
-        "name": "ballMesh 6",
         "children": [
           {
-            "type": "Mesh",
-            "rotation": [
-              -1.5707963267948966,
-              0.0,
-              0.0
-            ],
-            "uuid": "cf4f89d0-7bb5-4ed1-b69c-2fecad4d42da",
-            "name": "ballShadowMesh 6",
-            "material": "361e5e15-5cce-4fb2-a234-47288dd1f46c",
             "scale": [
               1.0,
               1.0,
@@ -931,54 +855,54 @@ var JSON_SCENE = {
               -0.027575,
               0.0
             ],
+            "material": "70cdadd7-706a-42a0-a39f-08fe2af06a74",
             "children": [],
-            "geometry": "3f118319-e2ec-406f-9427-01033a9bb5ae"
+            "geometry": "b81f37c3-2805-4a55-bbbf-c84d4985dceb",
+            "type": "Mesh",
+            "uuid": "83f9a729-c9a5-4a00-88ad-9bb7c62ce5b0",
+            "name": "ballShadowMesh 5",
+            "rotation": [
+              -1.5707963267948966,
+              0.0,
+              0.0
+            ]
           }
         ],
-        "geometry": "b6eb58ed-e6a1-4935-9c4c-ae866e4d5b9e",
-        "castShadow": true,
-        "userData": {
-          "cannonData": {
-            "shapes": [
-              "Sphere"
-            ],
-            "angularDamping": 0.25,
-            "linearDamping": 0.2,
-            "mass": 0.17
-          }
-        },
-        "uuid": "0419a02a-30fe-4af4-a264-ade68c8de999",
-        "material": "8dabe01a-3a5b-4311-b0ef-e0fd5616b458",
+        "type": "Mesh",
+        "name": "ballMesh 5",
+        "uuid": "a2c28015-3cc9-4a18-98cc-4d2044992471",
         "scale": [
           1.0,
           1.0,
           1.0
         ],
+        "geometry": "7ff21a6c-c26a-4f31-977f-13a3c23fc1f0",
+        "material": "d1f33039-94c0-4ed1-a2fd-70afc9ce13e2",
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "userData": {
+          "cannonData": {
+            "angularDamping": 0.25,
+            "linearDamping": 0.2,
+            "mass": 0.17,
+            "shapes": [
+              "Sphere"
+            ]
+          }
+        }
+      },
+      {
+        "castShadow": true,
         "position": [
           -0.029289375,
           0.771625,
           -0.3428306856219377
-        ]
-      },
-      {
-        "type": "Mesh",
-        "rotation": [
-          0.0,
-          0.0,
-          0.0
         ],
-        "name": "ballMesh 7",
         "children": [
           {
-            "type": "Mesh",
-            "rotation": [
-              -1.5707963267948966,
-              0.0,
-              0.0
-            ],
-            "uuid": "ad9e2fdb-f5a6-4181-80c2-69bf6b9adda6",
-            "name": "ballShadowMesh 7",
-            "material": "361e5e15-5cce-4fb2-a234-47288dd1f46c",
             "scale": [
               1.0,
               1.0,
@@ -989,54 +913,54 @@ var JSON_SCENE = {
               -0.027575,
               0.0
             ],
+            "material": "70cdadd7-706a-42a0-a39f-08fe2af06a74",
             "children": [],
-            "geometry": "3f118319-e2ec-406f-9427-01033a9bb5ae"
+            "geometry": "b81f37c3-2805-4a55-bbbf-c84d4985dceb",
+            "type": "Mesh",
+            "uuid": "74b294f2-3d23-4f11-a7a5-f2da4d631647",
+            "name": "ballShadowMesh 6",
+            "rotation": [
+              -1.5707963267948966,
+              0.0,
+              0.0
+            ]
           }
         ],
-        "geometry": "b6eb58ed-e6a1-4935-9c4c-ae866e4d5b9e",
-        "castShadow": true,
-        "userData": {
-          "cannonData": {
-            "shapes": [
-              "Sphere"
-            ],
-            "angularDamping": 0.25,
-            "linearDamping": 0.2,
-            "mass": 0.17
-          }
-        },
-        "uuid": "639b4f5a-ffb5-43ab-9e3d-c3693395671d",
-        "material": "2b056df7-fcd4-4f61-93e7-bc16c38a8542",
+        "type": "Mesh",
+        "name": "ballMesh 6",
+        "uuid": "aeb6029f-ae21-4189-8c22-1b549e08031d",
         "scale": [
           1.0,
           1.0,
           1.0
         ],
+        "geometry": "7ff21a6c-c26a-4f31-977f-13a3c23fc1f0",
+        "material": "4ca6b5fb-c525-4df8-a389-7abca37d03de",
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "userData": {
+          "cannonData": {
+            "angularDamping": 0.25,
+            "linearDamping": 0.2,
+            "mass": 0.17,
+            "shapes": [
+              "Sphere"
+            ]
+          }
+        }
+      },
+      {
+        "castShadow": true,
         "position": [
           -3.469446951953614e-18,
           0.771625,
           -0.39356137124387536
-        ]
-      },
-      {
-        "type": "Mesh",
-        "rotation": [
-          0.0,
-          0.0,
-          0.0
         ],
-        "name": "ballMesh 8",
         "children": [
           {
-            "type": "Mesh",
-            "rotation": [
-              -1.5707963267948966,
-              0.0,
-              0.0
-            ],
-            "uuid": "0badeb45-e9be-4312-b2b1-0ec7c945d15f",
-            "name": "ballShadowMesh 8",
-            "material": "361e5e15-5cce-4fb2-a234-47288dd1f46c",
             "scale": [
               1.0,
               1.0,
@@ -1047,77 +971,54 @@ var JSON_SCENE = {
               -0.027575,
               0.0
             ],
+            "material": "70cdadd7-706a-42a0-a39f-08fe2af06a74",
             "children": [],
-            "geometry": "3f118319-e2ec-406f-9427-01033a9bb5ae"
+            "geometry": "b81f37c3-2805-4a55-bbbf-c84d4985dceb",
+            "type": "Mesh",
+            "uuid": "5b67c558-4b18-4088-bf5e-c142367f84b6",
+            "name": "ballShadowMesh 7",
+            "rotation": [
+              -1.5707963267948966,
+              0.0,
+              0.0
+            ]
           }
         ],
-        "geometry": "b6eb58ed-e6a1-4935-9c4c-ae866e4d5b9e",
-        "castShadow": true,
-        "userData": {
-          "cannonData": {
-            "shapes": [
-              "Sphere"
-            ],
-            "angularDamping": 0.25,
-            "linearDamping": 0.2,
-            "mass": 0.17
-          }
-        },
-        "uuid": "ec5e3b25-d7f9-4240-ab2f-20de9387336a",
-        "material": "545596a6-3876-4bb0-bf15-db195d523b8b",
+        "type": "Mesh",
+        "name": "ballMesh 7",
+        "uuid": "8ec5608d-7dd2-499b-810b-47d2c0a39c93",
         "scale": [
           1.0,
           1.0,
           1.0
         ],
+        "geometry": "7ff21a6c-c26a-4f31-977f-13a3c23fc1f0",
+        "material": "9e9f8e78-e200-4e99-aa9b-5455d8fe5d58",
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "userData": {
+          "cannonData": {
+            "angularDamping": 0.25,
+            "linearDamping": 0.2,
+            "mass": 0.17,
+            "shapes": [
+              "Sphere"
+            ]
+          }
+        }
+      },
+      {
+        "castShadow": true,
         "position": [
           0.029289374999999992,
           0.771625,
           -0.4442920568658131
-        ]
-      },
-      {
-        "type": "Mesh",
-        "rotation": [
-          0.0,
-          0.0,
-          0.0
         ],
-        "name": "ballMesh 9",
         "children": [
           {
-            "type": "Mesh",
-            "rotation": [
-              0.0,
-              0.0,
-              0.0
-            ],
-            "uuid": "2cd16e74-31fd-4897-b8b3-4f5e97438b81",
-            "name": "ballStripeMesh 9",
-            "material": "300bbd22-c730-4803-a119-3dbb95a9ba84",
-            "scale": [
-              1.0,
-              1.0,
-              1.0
-            ],
-            "position": [
-              0.0,
-              0.0,
-              0.0
-            ],
-            "children": [],
-            "geometry": "5d8e03ce-bd69-4064-9bc8-3788783c5566"
-          },
-          {
-            "type": "Mesh",
-            "rotation": [
-              -1.5707963267948966,
-              0.0,
-              0.0
-            ],
-            "uuid": "f0e608ae-6d1c-43f8-ba0f-cc4228cf34d4",
-            "name": "ballShadowMesh 9",
-            "material": "361e5e15-5cce-4fb2-a234-47288dd1f46c",
             "scale": [
               1.0,
               1.0,
@@ -1128,54 +1029,54 @@ var JSON_SCENE = {
               -0.027575,
               0.0
             ],
+            "material": "70cdadd7-706a-42a0-a39f-08fe2af06a74",
             "children": [],
-            "geometry": "3f118319-e2ec-406f-9427-01033a9bb5ae"
+            "geometry": "b81f37c3-2805-4a55-bbbf-c84d4985dceb",
+            "type": "Mesh",
+            "uuid": "47412a58-4588-4f5c-bb63-ca8d6ad0dd3b",
+            "name": "ballShadowMesh 8",
+            "rotation": [
+              -1.5707963267948966,
+              0.0,
+              0.0
+            ]
           }
         ],
-        "geometry": "b6eb58ed-e6a1-4935-9c4c-ae866e4d5b9e",
-        "castShadow": true,
-        "userData": {
-          "cannonData": {
-            "shapes": [
-              "Sphere"
-            ],
-            "angularDamping": 0.25,
-            "linearDamping": 0.2,
-            "mass": 0.17
-          }
-        },
-        "uuid": "fa0cfa10-e9aa-4e7b-85b4-2f3accfa8259",
-        "material": "8cbce3e4-90b7-475e-8eaf-2415fc869a57",
+        "type": "Mesh",
+        "name": "ballMesh 8",
+        "uuid": "ace40b6f-d303-4f31-9000-1678a0b63be1",
         "scale": [
           1.0,
           1.0,
           1.0
         ],
+        "geometry": "7ff21a6c-c26a-4f31-977f-13a3c23fc1f0",
+        "material": "1284c76b-4d47-4f00-bc1c-3ea1415a2459",
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "userData": {
+          "cannonData": {
+            "angularDamping": 0.25,
+            "linearDamping": 0.2,
+            "mass": 0.17,
+            "shapes": [
+              "Sphere"
+            ]
+          }
+        }
+      },
+      {
+        "castShadow": true,
         "position": [
           0.05857875,
           0.771625,
           -0.49502274248775074
-        ]
-      },
-      {
-        "type": "Mesh",
-        "rotation": [
-          0.0,
-          0.0,
-          0.0
         ],
-        "name": "ballMesh 10",
         "children": [
           {
-            "type": "Mesh",
-            "rotation": [
-              0.0,
-              0.0,
-              0.0
-            ],
-            "uuid": "587ac5ef-4cc3-4a2d-857a-1134e28bcc02",
-            "name": "ballStripeMesh 10",
-            "material": "a4a1ba4e-f383-4adb-a81d-39da9fa84bbe",
             "scale": [
               1.0,
               1.0,
@@ -1186,19 +1087,19 @@ var JSON_SCENE = {
               0.0,
               0.0
             ],
+            "material": "abfefb9e-81d1-498c-8aa0-f7b8a482e1ca",
             "children": [],
-            "geometry": "5d8e03ce-bd69-4064-9bc8-3788783c5566"
-          },
-          {
+            "geometry": "7a97b4f3-eb41-4041-bfe8-1ba5b93b7127",
             "type": "Mesh",
+            "uuid": "b046d866-29c9-408c-b941-794a8415ae18",
+            "name": "ballStripeMesh 9",
             "rotation": [
-              -1.5707963267948966,
+              0.0,
               0.0,
               0.0
-            ],
-            "uuid": "0bfc0c1b-1463-45e7-ab77-29d1082c510f",
-            "name": "ballShadowMesh 10",
-            "material": "361e5e15-5cce-4fb2-a234-47288dd1f46c",
+            ]
+          },
+          {
             "scale": [
               1.0,
               1.0,
@@ -1209,54 +1110,54 @@ var JSON_SCENE = {
               -0.027575,
               0.0
             ],
+            "material": "70cdadd7-706a-42a0-a39f-08fe2af06a74",
             "children": [],
-            "geometry": "3f118319-e2ec-406f-9427-01033a9bb5ae"
+            "geometry": "b81f37c3-2805-4a55-bbbf-c84d4985dceb",
+            "type": "Mesh",
+            "uuid": "09768564-9cbd-4ebe-be94-83380af27b14",
+            "name": "ballShadowMesh 9",
+            "rotation": [
+              -1.5707963267948966,
+              0.0,
+              0.0
+            ]
           }
         ],
-        "geometry": "b6eb58ed-e6a1-4935-9c4c-ae866e4d5b9e",
-        "castShadow": true,
-        "userData": {
-          "cannonData": {
-            "shapes": [
-              "Sphere"
-            ],
-            "angularDamping": 0.25,
-            "linearDamping": 0.2,
-            "mass": 0.17
-          }
-        },
-        "uuid": "9fada242-e352-4e23-81db-268d7cda9329",
-        "material": "8cbce3e4-90b7-475e-8eaf-2415fc869a57",
+        "type": "Mesh",
+        "name": "ballMesh 9",
+        "uuid": "372e74e9-6df2-4909-9dc7-011e11de163f",
         "scale": [
           1.0,
           1.0,
           1.0
         ],
+        "geometry": "7ff21a6c-c26a-4f31-977f-13a3c23fc1f0",
+        "material": "11a7686d-39d3-42b0-b2dc-bf55c2a506d6",
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "userData": {
+          "cannonData": {
+            "angularDamping": 0.25,
+            "linearDamping": 0.2,
+            "mass": 0.17,
+            "shapes": [
+              "Sphere"
+            ]
+          }
+        }
+      },
+      {
+        "castShadow": true,
         "position": [
           -0.05857875,
           0.771625,
           -0.39356137124387536
-        ]
-      },
-      {
-        "type": "Mesh",
-        "rotation": [
-          0.0,
-          0.0,
-          0.0
         ],
-        "name": "ballMesh 11",
         "children": [
           {
-            "type": "Mesh",
-            "rotation": [
-              0.0,
-              0.0,
-              0.0
-            ],
-            "uuid": "1f4974e4-7c73-42e8-bb31-574dbc938df5",
-            "name": "ballStripeMesh 11",
-            "material": "0c5c44ac-c4f2-458d-bbdd-b04fe539a896",
             "scale": [
               1.0,
               1.0,
@@ -1267,19 +1168,19 @@ var JSON_SCENE = {
               0.0,
               0.0
             ],
+            "material": "e76e6b0d-0d31-478e-904f-c467047cbace",
             "children": [],
-            "geometry": "5d8e03ce-bd69-4064-9bc8-3788783c5566"
-          },
-          {
+            "geometry": "7a97b4f3-eb41-4041-bfe8-1ba5b93b7127",
             "type": "Mesh",
+            "uuid": "f79d0d35-5798-4e27-a893-938607e618d0",
+            "name": "ballStripeMesh 10",
             "rotation": [
-              -1.5707963267948966,
+              0.0,
               0.0,
               0.0
-            ],
-            "uuid": "41d722c8-e215-4003-9ee7-ebbb26e785a7",
-            "name": "ballShadowMesh 11",
-            "material": "361e5e15-5cce-4fb2-a234-47288dd1f46c",
+            ]
+          },
+          {
             "scale": [
               1.0,
               1.0,
@@ -1290,54 +1191,54 @@ var JSON_SCENE = {
               -0.027575,
               0.0
             ],
+            "material": "70cdadd7-706a-42a0-a39f-08fe2af06a74",
             "children": [],
-            "geometry": "3f118319-e2ec-406f-9427-01033a9bb5ae"
+            "geometry": "b81f37c3-2805-4a55-bbbf-c84d4985dceb",
+            "type": "Mesh",
+            "uuid": "7fa0933d-4986-4f9d-9f44-4afa1c83fa95",
+            "name": "ballShadowMesh 10",
+            "rotation": [
+              -1.5707963267948966,
+              0.0,
+              0.0
+            ]
           }
         ],
-        "geometry": "b6eb58ed-e6a1-4935-9c4c-ae866e4d5b9e",
-        "castShadow": true,
-        "userData": {
-          "cannonData": {
-            "shapes": [
-              "Sphere"
-            ],
-            "angularDamping": 0.25,
-            "linearDamping": 0.2,
-            "mass": 0.17
-          }
-        },
-        "uuid": "5ed52974-dfaa-4603-a698-4aad43a93242",
-        "material": "8cbce3e4-90b7-475e-8eaf-2415fc869a57",
+        "type": "Mesh",
+        "name": "ballMesh 10",
+        "uuid": "4a6ab835-01d5-446f-ac5d-c55621d8770e",
         "scale": [
           1.0,
           1.0,
           1.0
         ],
+        "geometry": "7ff21a6c-c26a-4f31-977f-13a3c23fc1f0",
+        "material": "11a7686d-39d3-42b0-b2dc-bf55c2a506d6",
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "userData": {
+          "cannonData": {
+            "angularDamping": 0.25,
+            "linearDamping": 0.2,
+            "mass": 0.17,
+            "shapes": [
+              "Sphere"
+            ]
+          }
+        }
+      },
+      {
+        "castShadow": true,
         "position": [
           -0.029289375,
           0.771625,
           -0.4442920568658131
-        ]
-      },
-      {
-        "type": "Mesh",
-        "rotation": [
-          0.0,
-          0.0,
-          0.0
         ],
-        "name": "ballMesh 12",
         "children": [
           {
-            "type": "Mesh",
-            "rotation": [
-              0.0,
-              0.0,
-              0.0
-            ],
-            "uuid": "a826090e-b156-45f7-b4c3-8a51c22a8f59",
-            "name": "ballStripeMesh 12",
-            "material": "07bdc970-f289-4fb8-a320-9d7ef429220a",
             "scale": [
               1.0,
               1.0,
@@ -1348,19 +1249,19 @@ var JSON_SCENE = {
               0.0,
               0.0
             ],
+            "material": "970e372e-7c2a-4e6f-9173-408dfe394025",
             "children": [],
-            "geometry": "5d8e03ce-bd69-4064-9bc8-3788783c5566"
-          },
-          {
+            "geometry": "7a97b4f3-eb41-4041-bfe8-1ba5b93b7127",
             "type": "Mesh",
+            "uuid": "45a61f41-b6ca-473d-9cb5-b4f6c20a5883",
+            "name": "ballStripeMesh 11",
             "rotation": [
-              -1.5707963267948966,
+              0.0,
               0.0,
               0.0
-            ],
-            "uuid": "4743fc83-17d5-435f-8fec-fe4eac930b85",
-            "name": "ballShadowMesh 12",
-            "material": "361e5e15-5cce-4fb2-a234-47288dd1f46c",
+            ]
+          },
+          {
             "scale": [
               1.0,
               1.0,
@@ -1371,54 +1272,54 @@ var JSON_SCENE = {
               -0.027575,
               0.0
             ],
+            "material": "70cdadd7-706a-42a0-a39f-08fe2af06a74",
             "children": [],
-            "geometry": "3f118319-e2ec-406f-9427-01033a9bb5ae"
+            "geometry": "b81f37c3-2805-4a55-bbbf-c84d4985dceb",
+            "type": "Mesh",
+            "uuid": "9b262a96-f06b-40cd-9c9f-f7ddf18dcbb4",
+            "name": "ballShadowMesh 11",
+            "rotation": [
+              -1.5707963267948966,
+              0.0,
+              0.0
+            ]
           }
         ],
-        "geometry": "b6eb58ed-e6a1-4935-9c4c-ae866e4d5b9e",
-        "castShadow": true,
-        "userData": {
-          "cannonData": {
-            "shapes": [
-              "Sphere"
-            ],
-            "angularDamping": 0.25,
-            "linearDamping": 0.2,
-            "mass": 0.17
-          }
-        },
-        "uuid": "f5f97c61-1f5a-4084-a97f-45b6c72fb9b7",
-        "material": "8cbce3e4-90b7-475e-8eaf-2415fc869a57",
+        "type": "Mesh",
+        "name": "ballMesh 11",
+        "uuid": "c49c2756-af99-468c-adc4-4f0154ded5c6",
         "scale": [
           1.0,
           1.0,
           1.0
         ],
+        "geometry": "7ff21a6c-c26a-4f31-977f-13a3c23fc1f0",
+        "material": "11a7686d-39d3-42b0-b2dc-bf55c2a506d6",
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "userData": {
+          "cannonData": {
+            "angularDamping": 0.25,
+            "linearDamping": 0.2,
+            "mass": 0.17,
+            "shapes": [
+              "Sphere"
+            ]
+          }
+        }
+      },
+      {
+        "castShadow": true,
         "position": [
           0.0,
           0.771625,
           -0.49502274248775074
-        ]
-      },
-      {
-        "type": "Mesh",
-        "rotation": [
-          0.0,
-          0.0,
-          0.0
         ],
-        "name": "ballMesh 13",
         "children": [
           {
-            "type": "Mesh",
-            "rotation": [
-              0.0,
-              0.0,
-              0.0
-            ],
-            "uuid": "e0dd0fa8-aede-48b7-8232-3b386e944851",
-            "name": "ballStripeMesh 13",
-            "material": "21e7fd5f-bedd-4c86-92d7-04e193685f48",
             "scale": [
               1.0,
               1.0,
@@ -1429,19 +1330,19 @@ var JSON_SCENE = {
               0.0,
               0.0
             ],
+            "material": "eb30ec75-4822-4de0-9d6b-ebe5217d74c4",
             "children": [],
-            "geometry": "5d8e03ce-bd69-4064-9bc8-3788783c5566"
-          },
-          {
+            "geometry": "7a97b4f3-eb41-4041-bfe8-1ba5b93b7127",
             "type": "Mesh",
+            "uuid": "01af03ca-8c35-4695-bcfe-530aadeced84",
+            "name": "ballStripeMesh 12",
             "rotation": [
-              -1.5707963267948966,
+              0.0,
               0.0,
               0.0
-            ],
-            "uuid": "b2d085ef-ad86-4998-8ca2-6e58c9e18dc2",
-            "name": "ballShadowMesh 13",
-            "material": "361e5e15-5cce-4fb2-a234-47288dd1f46c",
+            ]
+          },
+          {
             "scale": [
               1.0,
               1.0,
@@ -1452,54 +1353,54 @@ var JSON_SCENE = {
               -0.027575,
               0.0
             ],
+            "material": "70cdadd7-706a-42a0-a39f-08fe2af06a74",
             "children": [],
-            "geometry": "3f118319-e2ec-406f-9427-01033a9bb5ae"
+            "geometry": "b81f37c3-2805-4a55-bbbf-c84d4985dceb",
+            "type": "Mesh",
+            "uuid": "8b250834-246f-44db-9e6a-c8855481c48f",
+            "name": "ballShadowMesh 12",
+            "rotation": [
+              -1.5707963267948966,
+              0.0,
+              0.0
+            ]
           }
         ],
-        "geometry": "b6eb58ed-e6a1-4935-9c4c-ae866e4d5b9e",
-        "castShadow": true,
-        "userData": {
-          "cannonData": {
-            "shapes": [
-              "Sphere"
-            ],
-            "angularDamping": 0.25,
-            "linearDamping": 0.2,
-            "mass": 0.17
-          }
-        },
-        "uuid": "e98c29cf-a3c5-450e-8c77-8c256a11e985",
-        "material": "8cbce3e4-90b7-475e-8eaf-2415fc869a57",
+        "type": "Mesh",
+        "name": "ballMesh 12",
+        "uuid": "d881e24a-5316-442f-a39c-96104bb47644",
         "scale": [
           1.0,
           1.0,
           1.0
         ],
+        "geometry": "7ff21a6c-c26a-4f31-977f-13a3c23fc1f0",
+        "material": "11a7686d-39d3-42b0-b2dc-bf55c2a506d6",
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "userData": {
+          "cannonData": {
+            "angularDamping": 0.25,
+            "linearDamping": 0.2,
+            "mass": 0.17,
+            "shapes": [
+              "Sphere"
+            ]
+          }
+        }
+      },
+      {
+        "castShadow": true,
         "position": [
           -0.08786812499999999,
           0.771625,
           -0.4442920568658131
-        ]
-      },
-      {
-        "type": "Mesh",
-        "rotation": [
-          0.0,
-          0.0,
-          0.0
         ],
-        "name": "ballMesh 14",
         "children": [
           {
-            "type": "Mesh",
-            "rotation": [
-              0.0,
-              0.0,
-              0.0
-            ],
-            "uuid": "6e4c1420-65a4-4d76-bf4d-f6b8de40954e",
-            "name": "ballStripeMesh 14",
-            "material": "8dabe01a-3a5b-4311-b0ef-e0fd5616b458",
             "scale": [
               1.0,
               1.0,
@@ -1510,19 +1411,19 @@ var JSON_SCENE = {
               0.0,
               0.0
             ],
+            "material": "d1f33039-94c0-4ed1-a2fd-70afc9ce13e2",
             "children": [],
-            "geometry": "5d8e03ce-bd69-4064-9bc8-3788783c5566"
-          },
-          {
+            "geometry": "7a97b4f3-eb41-4041-bfe8-1ba5b93b7127",
             "type": "Mesh",
+            "uuid": "4bdad337-6253-47f3-9034-383d8dcb43ba",
+            "name": "ballStripeMesh 13",
             "rotation": [
-              -1.5707963267948966,
+              0.0,
               0.0,
               0.0
-            ],
-            "uuid": "d4a0eda8-0d27-4aa7-a15c-0a847c3038ab",
-            "name": "ballShadowMesh 14",
-            "material": "361e5e15-5cce-4fb2-a234-47288dd1f46c",
+            ]
+          },
+          {
             "scale": [
               1.0,
               1.0,
@@ -1533,54 +1434,54 @@ var JSON_SCENE = {
               -0.027575,
               0.0
             ],
+            "material": "70cdadd7-706a-42a0-a39f-08fe2af06a74",
             "children": [],
-            "geometry": "3f118319-e2ec-406f-9427-01033a9bb5ae"
+            "geometry": "b81f37c3-2805-4a55-bbbf-c84d4985dceb",
+            "type": "Mesh",
+            "uuid": "bc4d863e-4678-4764-af97-738c88dcc913",
+            "name": "ballShadowMesh 13",
+            "rotation": [
+              -1.5707963267948966,
+              0.0,
+              0.0
+            ]
           }
         ],
-        "geometry": "b6eb58ed-e6a1-4935-9c4c-ae866e4d5b9e",
-        "castShadow": true,
-        "userData": {
-          "cannonData": {
-            "shapes": [
-              "Sphere"
-            ],
-            "angularDamping": 0.25,
-            "linearDamping": 0.2,
-            "mass": 0.17
-          }
-        },
-        "uuid": "96f68935-aed0-413e-8b8d-24229e44c4ea",
-        "material": "8cbce3e4-90b7-475e-8eaf-2415fc869a57",
+        "type": "Mesh",
+        "name": "ballMesh 13",
+        "uuid": "ecb11e91-884a-4b45-8d79-d0013fa4baac",
         "scale": [
           1.0,
           1.0,
           1.0
         ],
+        "geometry": "7ff21a6c-c26a-4f31-977f-13a3c23fc1f0",
+        "material": "11a7686d-39d3-42b0-b2dc-bf55c2a506d6",
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "userData": {
+          "cannonData": {
+            "angularDamping": 0.25,
+            "linearDamping": 0.2,
+            "mass": 0.17,
+            "shapes": [
+              "Sphere"
+            ]
+          }
+        }
+      },
+      {
+        "castShadow": true,
         "position": [
           -0.058578749999999985,
           0.771625,
           -0.49502274248775074
-        ]
-      },
-      {
-        "type": "Mesh",
-        "rotation": [
-          0.0,
-          0.0,
-          0.0
         ],
-        "name": "ballMesh 15",
         "children": [
           {
-            "type": "Mesh",
-            "rotation": [
-              0.0,
-              0.0,
-              0.0
-            ],
-            "uuid": "fafaf845-6b43-4276-8814-a250178e6b76",
-            "name": "ballStripeMesh 15",
-            "material": "2b056df7-fcd4-4f61-93e7-bc16c38a8542",
             "scale": [
               1.0,
               1.0,
@@ -1591,19 +1492,19 @@ var JSON_SCENE = {
               0.0,
               0.0
             ],
+            "material": "4ca6b5fb-c525-4df8-a389-7abca37d03de",
             "children": [],
-            "geometry": "5d8e03ce-bd69-4064-9bc8-3788783c5566"
-          },
-          {
+            "geometry": "7a97b4f3-eb41-4041-bfe8-1ba5b93b7127",
             "type": "Mesh",
+            "uuid": "fb611141-3c0e-4c3c-a3b0-b4a3bfcc84e2",
+            "name": "ballStripeMesh 14",
             "rotation": [
-              -1.5707963267948966,
+              0.0,
               0.0,
               0.0
-            ],
-            "uuid": "9387110c-b41a-442e-a863-61a0de56698c",
-            "name": "ballShadowMesh 15",
-            "material": "361e5e15-5cce-4fb2-a234-47288dd1f46c",
+            ]
+          },
+          {
             "scale": [
               1.0,
               1.0,
@@ -1614,286 +1515,172 @@ var JSON_SCENE = {
               -0.027575,
               0.0
             ],
+            "material": "70cdadd7-706a-42a0-a39f-08fe2af06a74",
             "children": [],
-            "geometry": "3f118319-e2ec-406f-9427-01033a9bb5ae"
+            "geometry": "b81f37c3-2805-4a55-bbbf-c84d4985dceb",
+            "type": "Mesh",
+            "uuid": "12039e16-c916-4b03-a4c5-dd06f6681fe0",
+            "name": "ballShadowMesh 14",
+            "rotation": [
+              -1.5707963267948966,
+              0.0,
+              0.0
+            ]
           }
         ],
-        "geometry": "b6eb58ed-e6a1-4935-9c4c-ae866e4d5b9e",
-        "castShadow": true,
-        "userData": {
-          "cannonData": {
-            "shapes": [
-              "Sphere"
-            ],
-            "angularDamping": 0.25,
-            "linearDamping": 0.2,
-            "mass": 0.17
-          }
-        },
-        "uuid": "e60cbc22-5a3d-4312-a4a8-669ba78a8dd4",
-        "material": "8cbce3e4-90b7-475e-8eaf-2415fc869a57",
+        "type": "Mesh",
+        "name": "ballMesh 14",
+        "uuid": "e5dcee7a-9ab1-43b9-b500-c36223308e4b",
         "scale": [
           1.0,
           1.0,
           1.0
         ],
+        "geometry": "7ff21a6c-c26a-4f31-977f-13a3c23fc1f0",
+        "material": "11a7686d-39d3-42b0-b2dc-bf55c2a506d6",
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "userData": {
+          "cannonData": {
+            "angularDamping": 0.25,
+            "linearDamping": 0.2,
+            "mass": 0.17,
+            "shapes": [
+              "Sphere"
+            ]
+          }
+        }
+      },
+      {
+        "castShadow": true,
         "position": [
           -0.1171575,
           0.771625,
           -0.49502274248775074
-        ]
-      }
-    ]
-  },
-  "images": [
-    {
-      "name": "unnamed Image 1",
-      "url": "images/deck.png",
-      "type": "Image",
-      "uuid": "4fd285e0-941c-4805-897c-f382178ebef4"
-    }
-  ],
-  "textures": [
-    {
-      "type": "Texture",
-      "repeat": [
-        40,
-        40
-      ],
-      "name": "unnamed Texture 1",
-      "wrap": [
-        1000,
-        1000
-      ],
-      "magFilter": 1006,
-      "minFilter": 1008,
-      "uuid": "783f60e2-bb37-4365-8800-772ca3deddd2",
-      "anisotropy": 1,
-      "image": "4fd285e0-941c-4805-897c-f382178ebef4",
-      "mapping": 300
-    }
-  ],
-  "materials": [
-    {
-      "name": "unnamed MeshBasicMaterial 36",
-      "type": "MeshBasicMaterial",
-      "color": 1118481,
-      "uuid": "545596a6-3876-4bb0-bf15-db195d523b8b"
-    },
-    {
-      "name": "unnamed MeshBasicMaterial 30",
-      "type": "MeshBasicMaterial",
-      "color": 238,
-      "uuid": "a4a1ba4e-f383-4adb-a81d-39da9fa84bbe"
-    },
-    {
-      "name": "unnamed MeshBasicMaterial 24",
-      "type": "MeshBasicMaterial",
-      "color": 2201942,
-      "uuid": "d67608ad-58cb-4352-b5f7-436f5d20b91a"
-    },
-    {
-      "name": "unnamed MeshBasicMaterial 31",
-      "type": "MeshBasicMaterial",
-      "color": 15597568,
-      "uuid": "0c5c44ac-c4f2-458d-bbdd-b04fe539a896"
-    },
-    {
-      "name": "unnamed MeshBasicMaterial 34",
-      "type": "MeshBasicMaterial",
-      "color": 60928,
-      "uuid": "8dabe01a-3a5b-4311-b0ef-e0fd5616b458"
-    },
-    {
-      "name": "unnamed MeshBasicMaterial 25",
-      "type": "MeshBasicMaterial",
-      "color": 11184810,
-      "uuid": "1dabbc57-9444-4662-aab4-bb449b867f71"
-    },
-    {
-      "name": "unnamed MeshBasicMaterial 27",
-      "type": "MeshBasicMaterial",
-      "color": 8704,
-      "uuid": "361e5e15-5cce-4fb2-a234-47288dd1f46c"
-    },
-    {
-      "name": "unnamed MeshBasicMaterial 29",
-      "type": "MeshBasicMaterial",
-      "color": 15658496,
-      "uuid": "300bbd22-c730-4803-a119-3dbb95a9ba84"
-    },
-    {
-      "name": "unnamed MeshBasicMaterial 32",
-      "type": "MeshBasicMaterial",
-      "color": 15597806,
-      "uuid": "07bdc970-f289-4fb8-a320-9d7ef429220a"
-    },
-    {
-      "name": "unnamed MeshBasicMaterial 28",
-      "type": "MeshBasicMaterial",
-      "color": 14540254,
-      "uuid": "8cbce3e4-90b7-475e-8eaf-2415fc869a57"
-    },
-    {
-      "name": "unnamed MeshBasicMaterial 33",
-      "type": "MeshBasicMaterial",
-      "color": 15628032,
-      "uuid": "21e7fd5f-bedd-4c86-92d7-04e193685f48"
-    },
-    {
-      "name": "unnamed MeshBasicMaterial 35",
-      "type": "MeshBasicMaterial",
-      "color": 12264004,
-      "uuid": "2b056df7-fcd4-4f61-93e7-bc16c38a8542"
-    },
-    {
-      "name": "unnamed MeshBasicMaterial 23",
-      "type": "MeshBasicMaterial",
-      "color": 43520,
-      "uuid": "f668d9a9-fa6c-4520-a9c4-187a908be99d"
-    },
-    {
-      "name": "unnamed MeshBasicMaterial 26",
-      "type": "MeshBasicMaterial",
-      "color": 14525440,
-      "uuid": "ea5c3cd6-d6c4-422d-9f17-7ed3b0bcb086"
-    },
-    {
-      "name": "unnamed MeshBasicMaterial 22",
-      "color": 16777215,
-      "type": "MeshBasicMaterial",
-      "map": "783f60e2-bb37-4365-8800-772ca3deddd2",
-      "uuid": "2b589f93-a269-4426-ac54-6ebc0f5f5f1f"
-    }
-  ],
-  "geometries": [
-    {
-      "name": "unnamed QuadBufferGeometry 1",
-      "data": {
-        "attributes": {
-          "uv": {
-            "type": "Float32Array",
-            "itemSize": 2,
-            "array": [
-              0,
-              1,
-              0,
-              0,
-              1,
-              0,
-              1,
-              1
+        ],
+        "children": [
+          {
+            "scale": [
+              1.0,
+              1.0,
+              1.0
+            ],
+            "position": [
+              0.0,
+              0.0,
+              0.0
+            ],
+            "material": "9e9f8e78-e200-4e99-aa9b-5455d8fe5d58",
+            "children": [],
+            "geometry": "7a97b4f3-eb41-4041-bfe8-1ba5b93b7127",
+            "type": "Mesh",
+            "uuid": "b97c37cf-9835-4758-ab3a-0d9bf9ea61b1",
+            "name": "ballStripeMesh 15",
+            "rotation": [
+              0.0,
+              0.0,
+              0.0
             ]
           },
-          "position": {
-            "type": "Float32Array",
-            "itemSize": 3,
-            "array": [
-              -0.5,
+          {
+            "scale": [
+              1.0,
+              1.0,
+              1.0
+            ],
+            "position": [
               0.0,
-              -0.5,
-              -0.5,
+              -0.027575,
+              0.0
+            ],
+            "material": "70cdadd7-706a-42a0-a39f-08fe2af06a74",
+            "children": [],
+            "geometry": "b81f37c3-2805-4a55-bbbf-c84d4985dceb",
+            "type": "Mesh",
+            "uuid": "c00b164e-5f4e-4d01-9a70-12018357f7e9",
+            "name": "ballShadowMesh 15",
+            "rotation": [
+              -1.5707963267948966,
               0.0,
-              0.5,
-              0.5,
-              0.0,
-              0.5,
-              0.5,
-              0.0,
-              -0.5
+              0.0
             ]
           }
-        },
-        "index": {
-          "itemSize": 1,
-          "type": "Uint16Array",
-          "array": [
-            0,
-            1,
-            2,
-            0,
-            2,
-            3
-          ]
+        ],
+        "type": "Mesh",
+        "name": "ballMesh 15",
+        "uuid": "4eec3c89-6a23-4174-a7a9-f831a59e0178",
+        "scale": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "geometry": "7ff21a6c-c26a-4f31-977f-13a3c23fc1f0",
+        "material": "11a7686d-39d3-42b0-b2dc-bf55c2a506d6",
+        "rotation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "userData": {
+          "cannonData": {
+            "angularDamping": 0.25,
+            "linearDamping": 0.2,
+            "mass": 0.17,
+            "shapes": [
+              "Sphere"
+            ]
+          }
         }
-      },
-      "type": "BufferGeometry",
-      "uuid": "cd37216a-3f43-4bc2-bd3a-0db2ba5089f7"
-    },
+      }
+    ],
+    "type": "Scene",
+    "uuid": "8a1268bf-9912-4b0e-a756-688035e6fb4e",
+    "name": "unnamed Scene 2",
+    "rotation": [
+      0.0,
+      0.0,
+      0.0
+    ]
+  },
+  "geometries": [
     {
-      "type": "SphereBufferGeometry",
-      "uuid": "b6eb58ed-e6a1-4935-9c4c-ae866e4d5b9e",
-      "name": "unnamed SphereBufferGeometry 2",
-      "heightSegments": 12,
-      "radius": 0.028575,
-      "widthSegments": 16
-    },
-    {
-      "type": "SphereBufferGeometry",
-      "thetaLength": 1.0471975511965976,
-      "name": "unnamed SphereBufferGeometry 3",
-      "heightSegments": 8,
-      "thetaStart": 1.0471975511965976,
-      "radius": 0.029232224999999997,
-      "uuid": "5d8e03ce-bd69-4064-9bc8-3788783c5566",
-      "widthSegments": 16
-    },
-    {
-      "name": "spotGeom",
-      "type": "CircleBufferGeometry",
-      "segments": 8,
-      "radius": 0.028575,
-      "uuid": "14afe1eb-9d9b-4c5c-9641-22b863342dcd"
-    },
-    {
-      "type": "BoxGeometry",
-      "name": "unnamed BoxGeometry 3",
       "heightSegments": 1,
-      "width": 1.0668000000000002,
-      "height": 0.03629025,
       "depthSegments": 1,
-      "uuid": "7fd1fb3b-adda-4a54-b558-8495b038ac63",
+      "widthSegments": 1,
+      "type": "BoxGeometry",
+      "name": "unnamed BoxGeometry 5",
       "depth": 0.07619999999999999,
-      "widthSegments": 1
+      "uuid": "129d8676-196e-4a66-ad72-f545eef8f637",
+      "height": 0.03629025,
+      "width": 1.0668000000000002
     },
     {
-      "name": "unnamed HexaBufferGeometry 1",
+      "thetaStart": 1.0471975511965976,
+      "heightSegments": 8,
+      "radius": 0.029232224999999997,
+      "widthSegments": 16,
+      "type": "SphereBufferGeometry",
+      "name": "unnamed SphereBufferGeometry 5",
+      "uuid": "7a97b4f3-eb41-4041-bfe8-1ba5b93b7127",
+      "thetaLength": 1.0471975511965976
+    },
+    {
+      "type": "CircleBufferGeometry",
+      "segments": 16,
+      "name": "shadowGeom",
+      "radius": 0.028575,
+      "uuid": "b81f37c3-2805-4a55-bbbf-c84d4985dceb"
+    },
+    {
+      "type": "BufferGeometry",
+      "name": "unnamed HexaBufferGeometry 2",
       "data": {
-        "attributes": {
-          "position": {
-            "type": "Float32Array",
-            "itemSize": 3,
-            "array": [
-              -0.5334000000000001,
-              0.0,
-              0.0254,
-              0.5334000000000001,
-              0.0,
-              0.0254,
-              0.46155795103144687,
-              0.02177415,
-              -0.0254,
-              -0.46155795103144687,
-              0.02177415,
-              -0.0254,
-              -0.5334000000000001,
-              0.03629025,
-              0.0254,
-              0.5334000000000001,
-              0.03629025,
-              0.0254,
-              0.46155795103144687,
-              0.03629025,
-              -0.0254,
-              -0.46155795103144687,
-              0.03629025,
-              -0.0254
-            ]
-          }
-        },
         "index": {
-          "itemSize": 1,
           "type": "Uint16Array",
+          "itemSize": 1,
           "array": [
             3,
             2,
@@ -1932,28 +1719,241 @@ var JSON_SCENE = {
             4,
             7
           ]
+        },
+        "attributes": {
+          "position": {
+            "type": "Float32Array",
+            "itemSize": 3,
+            "array": [
+              -0.5334000000000001,
+              0.0,
+              0.0254,
+              0.5334000000000001,
+              0.0,
+              0.0254,
+              0.46155795103144687,
+              0.02177415,
+              -0.0254,
+              -0.46155795103144687,
+              0.02177415,
+              -0.0254,
+              -0.5334000000000001,
+              0.03629025,
+              0.0254,
+              0.5334000000000001,
+              0.03629025,
+              0.0254,
+              0.46155795103144687,
+              0.03629025,
+              -0.0254,
+              -0.46155795103144687,
+              0.03629025,
+              -0.0254
+            ]
+          }
         }
       },
+      "uuid": "3090a8b7-8cb8-4585-a067-a46a307f1703"
+    },
+    {
       "type": "BufferGeometry",
-      "uuid": "787e092e-ff02-43a7-bcbf-af7f28b5558e"
+      "name": "unnamed QuadBufferGeometry 0",
+      "data": {
+        "index": {
+          "type": "Uint16Array",
+          "itemSize": 1,
+          "array": [
+            0,
+            1,
+            2,
+            0,
+            2,
+            3
+          ]
+        },
+        "attributes": {
+          "uv": {
+            "type": "Float32Array",
+            "itemSize": 2,
+            "array": [
+              0,
+              1,
+              0,
+              0,
+              1,
+              0,
+              1,
+              1
+            ]
+          },
+          "position": {
+            "type": "Float32Array",
+            "itemSize": 3,
+            "array": [
+              -0.5,
+              0.0,
+              -0.5,
+              -0.5,
+              0.0,
+              0.5,
+              0.5,
+              0.0,
+              0.5,
+              0.5,
+              0.0,
+              -0.5
+            ]
+          }
+        }
+      },
+      "uuid": "f01d9750-b1ba-4a5f-a5d3-26a32093c1f0"
     },
     {
-      "type": "BoxGeometry",
-      "name": "unnamed BoxGeometry 2",
-      "heightSegments": 1,
-      "width": 1.0668000000000002,
-      "height": 0.74295,
-      "depthSegments": 1,
-      "uuid": "ac957c19-5b22-47b7-b755-4c94dc892754",
-      "depth": 2.2352000000000003,
-      "widthSegments": 1
-    },
-    {
-      "name": "shadowGeom",
-      "type": "CircleBufferGeometry",
-      "segments": 16,
+      "heightSegments": 12,
       "radius": 0.028575,
-      "uuid": "3f118319-e2ec-406f-9427-01033a9bb5ae"
+      "widthSegments": 16,
+      "type": "SphereBufferGeometry",
+      "name": "unnamed SphereBufferGeometry 4",
+      "uuid": "7ff21a6c-c26a-4f31-977f-13a3c23fc1f0"
+    },
+    {
+      "type": "CircleBufferGeometry",
+      "segments": 8,
+      "name": "spotGeom",
+      "radius": 0.028575,
+      "uuid": "bb3f9ec6-a1db-46a9-be27-31b998ff1080"
+    },
+    {
+      "heightSegments": 1,
+      "depthSegments": 1,
+      "widthSegments": 1,
+      "type": "BoxGeometry",
+      "name": "unnamed BoxGeometry 4",
+      "depth": 2.2352000000000003,
+      "uuid": "41077d51-1a8f-4726-8c99-4e0efbe5d77a",
+      "height": 0.74295,
+      "width": 1.0668000000000002
+    }
+  ],
+  "textures": [
+    {
+      "wrap": [
+        1000,
+        1000
+      ],
+      "image": "ab7d7ab2-88de-48a7-948d-4fd1b31459df",
+      "magFilter": 1006,
+      "mapping": 300,
+      "anisotropy": 1,
+      "type": "Texture",
+      "name": "unnamed Texture 2",
+      "repeat": [
+        40,
+        40
+      ],
+      "uuid": "67ea047a-4870-4a3a-97dc-57f9d9e59161",
+      "minFilter": 1008
+    }
+  ],
+  "images": [
+    {
+      "type": "Image",
+      "name": "unnamed Image 2",
+      "url": "images/deck.png",
+      "uuid": "ab7d7ab2-88de-48a7-948d-4fd1b31459df"
+    }
+  ],
+  "materials": [
+    {
+      "color": 14540254,
+      "type": "MeshBasicMaterial",
+      "name": "unnamed MeshBasicMaterial 50",
+      "uuid": "11a7686d-39d3-42b0-b2dc-bf55c2a506d6"
+    },
+    {
+      "color": 14525440,
+      "type": "MeshBasicMaterial",
+      "name": "unnamed MeshBasicMaterial 48",
+      "uuid": "9a9eb828-9ef6-479a-a8cf-668c5cd0df08"
+    },
+    {
+      "color": 60928,
+      "type": "MeshBasicMaterial",
+      "name": "unnamed MeshBasicMaterial 56",
+      "uuid": "4ca6b5fb-c525-4df8-a389-7abca37d03de"
+    },
+    {
+      "color": 11184810,
+      "type": "MeshBasicMaterial",
+      "name": "unnamed MeshBasicMaterial 47",
+      "uuid": "e910597c-2222-46be-b101-a5e2b8a40bc2"
+    },
+    {
+      "color": 12264004,
+      "type": "MeshBasicMaterial",
+      "name": "unnamed MeshBasicMaterial 57",
+      "uuid": "9e9f8e78-e200-4e99-aa9b-5455d8fe5d58"
+    },
+    {
+      "color": 16777215,
+      "type": "MeshBasicMaterial",
+      "name": "unnamed MeshBasicMaterial 44",
+      "map": "67ea047a-4870-4a3a-97dc-57f9d9e59161",
+      "uuid": "75a61d4f-e63e-4238-9881-c003de07b21a"
+    },
+    {
+      "color": 15597568,
+      "type": "MeshBasicMaterial",
+      "name": "unnamed MeshBasicMaterial 53",
+      "uuid": "970e372e-7c2a-4e6f-9173-408dfe394025"
+    },
+    {
+      "color": 15628032,
+      "type": "MeshBasicMaterial",
+      "name": "unnamed MeshBasicMaterial 55",
+      "uuid": "d1f33039-94c0-4ed1-a2fd-70afc9ce13e2"
+    },
+    {
+      "color": 43520,
+      "type": "MeshBasicMaterial",
+      "name": "unnamed MeshBasicMaterial 45",
+      "uuid": "3a7e4a9c-5762-40a2-bd77-a0bb79ffc04d"
+    },
+    {
+      "color": 15597806,
+      "type": "MeshBasicMaterial",
+      "name": "unnamed MeshBasicMaterial 54",
+      "uuid": "eb30ec75-4822-4de0-9d6b-ebe5217d74c4"
+    },
+    {
+      "color": 8704,
+      "type": "MeshBasicMaterial",
+      "name": "unnamed MeshBasicMaterial 49",
+      "uuid": "70cdadd7-706a-42a0-a39f-08fe2af06a74"
+    },
+    {
+      "color": 2201942,
+      "type": "MeshBasicMaterial",
+      "name": "unnamed MeshBasicMaterial 46",
+      "uuid": "43d6015d-af80-4edb-b48d-0c77c6778208"
+    },
+    {
+      "color": 1118481,
+      "type": "MeshBasicMaterial",
+      "name": "unnamed MeshBasicMaterial 58",
+      "uuid": "1284c76b-4d47-4f00-bc1c-3ea1415a2459"
+    },
+    {
+      "color": 15658496,
+      "type": "MeshBasicMaterial",
+      "name": "unnamed MeshBasicMaterial 51",
+      "uuid": "abfefb9e-81d1-498c-8aa0-f7b8a482e1ca"
+    },
+    {
+      "color": 238,
+      "type": "MeshBasicMaterial",
+      "name": "unnamed MeshBasicMaterial 52",
+      "uuid": "e76e6b0d-0d31-478e-904f-c467047cbace"
     }
   ]
 };
