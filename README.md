@@ -1,22 +1,25 @@
 # **poolvr**
 
-Play pool / billiards with your [Leap Motion sensor](https://www.leapmotion.com) in VR (or fullscreen mode), in a web browser!
+Play pool / billiards with your [Leap Motion controller](https://www.leapmotion.com) in VR (or fullscreen mode), in a web browser!
 
 ![screenshot](http://jzitelli.github.io/poolvr/images/screenshot6.png)
 
 
 
+
 ## About:
 
-**poolvr** uses [three.js](https://github.com/mrdoob/three.js) to provide WebGL graphics and [Cannon.js](https://github.com/schteppe/cannon.js) to provide real-time physics.
+**poolvr** uses [three.js](http://threejs.org) to provide WebGL graphics and [Cannon.js](http://www.cannonjs.org) to provide real-time physics.
 If you use a WebVR-enabled browser, you can play in VR!  This feature uses [webvr-boilerplate](https://github.com/borismus/webvr-boilerplate).
 The three.js pool table scene and Cannon.js world is defined procedurally via a Python script.
 
 
 This project began as an experimental example that I introduced into
-my fork of [Primrose](https://github.com/capnmidnight/Primrose), which was my
-own starting point for WebVR development.  **poolvr** became my [entry]() into the [Leap Motion 3D Jam](http://itch.io/jam/leapmotion3djam) (at literally the last minute).  **poolvr** is the main WebVR project that I'm working on now.
+my fork of [Primrose](http://www.primroseeditor.com), which was my own starting point for WebVR development.
+[**poolvr** became my entry](http://subvr.itch.io/poolvr) into the [Leap Motion 3D Jam](http://itch.io/jam/leapmotion3djam) (at literally the last minute).
+**poolvr** is the main WebVR project that I'm working on now.
 It's been improved since the [Leap Motion 3D Jam](http://itch.io/jam/leapmotion3djam) ended!  Some amazing features are planned!
+
 
 
 
@@ -27,6 +30,19 @@ It's been improved since the [Leap Motion 3D Jam](http://itch.io/jam/leapmotion3
 
 
 
+
+## Desktop and VR tracking modes:
+
+The default stick tracking mode (aka 'desktop') assumes that the Leap Motion sensor is stationary, facing up.
+
+The VR stick tracking mode assumes that the sensor is [mounted to your HMD](https://developer.leapmotion.com/vr-setup).
+Currently this mode is selected using a `vrLeap` URL parameter, e.g. you would point your browser to `http://127.0.0.1:5000?vrLeap=true`.
+
+**I highly recommend using desktop tracking at the moment - in my experience it provides much better tool tracking in the context of cue stick in/out motions.**
+
+
+
+
 ## How to run locally (tested under (64 bit) Windows 7, Windows 10, Ubuntu 14, Fedora 22):
 
 ### Method A (serving the static file `index.html`):
@@ -34,30 +50,27 @@ It's been improved since the [Leap Motion 3D Jam](http://itch.io/jam/leapmotion3
 1. Start a Python HTTP server in the root directory:
     - using Python 2: `python -m SimpleHTTPServer`
     - using Python 3: `python -m http.server`
-2. Point your browser to `http://127.0.0.1:8000` (desktop tracking) or `http://127.0.0.1:8000?vr=1` (VR tracking)
+2. Point your browser to `http://127.0.0.1:8000`
 
 
+### Method B (Tornado/Flask application serving dynamically generated HTML):
 
-### Method B (Flask application serving dynamically generated HTML):
+This method requires some extra Python packages, but offers more functionality.  I recommend using the [Miniconda Python distribution](http://conda.pydata.org/miniconda.html), which will let you easily install the Python dependencies.
 
-This method requires some extra Python packages.  I recommend using the [Miniconda Python distribution](http://conda.pydata.org/miniconda.html), which will let you easily install the Python dependencies.
+1. Run the Python script `pyserver/tornado_app.py`: ```bash
+python pyserver/tornado_app.py```
+2. Point your browser to `http://127.0.0.1:5000`
 
-1. Run the Python script `flask_app.py`: `python flask_app.py`
-2. Point your browser to `http://127.0.0.1:5000` (desktop tracking) or `http://127.0.0.1:5000?vr=1` (VR tracking)
-
-The Flask application is configured to also serve any file within the project tree (nice for local development, but probably a bad idea to deploy to an actual web server).
+The Tornado server is configured to also serve any file within the project tree (nice for local development, but probably a bad idea to deploy to an actual web server).
 For instance, you can access the static `index.html` that you would obtain with method A via `http://127.0.0.1:5000/index.html`.
 
 
+Currently, you can configure the graphics and other aspects of **poolvr** via URL parameters.  Some of the recognized URL parameters are:
 
-## Desktop and VR tracking modes:
+- `useBasicMaterials`: defaults to `true`, which configures bare-bones, low-expectation setting "EGA" graphics for max performance and compatibility
+- `shadowMap`: defaults to `false`, shadows will be rendered as projected meshes.  If `true`, shadows are rendered via three.js shadow maps.
 
-The default stick tracking mode (aka 'desktop') assumes that the Leap Motion sensor is stationary, facing up.
 
-The VR stick tracking mode assumes that the sensor is [mounted to your HMD](https://developer.leapmotion.com/vr-setup).
-Currently this mode is selected using a `vr` URL parameter, e.g. you would point your browser to `http://127.0.0.1:5000?vr=1`.
-
-**I recommend using desktop tracking at the moment - in my experience it provides much better tool tracking in the context of cue stick in/out motions.**
 
 
 ## Building **poolvr**:
@@ -65,21 +78,9 @@ Currently this mode is selected using a `vr` URL parameter, e.g. you would point
 If you have [Node.js](https://nodejs.org) and [Grunt](http://www.gruntjs.com) installed,
 the included `Gruntfile.js` may be used to build packaged versions of **poolvr**:
 
-1. Install grunt dependencies via Node Package Manager - from the root directory: `npm install`
+1. From the root directory, install grunt dependencies via Node Package Manager: `npm install`
 2. From the root directory: `grunt`
 
-
-
-## TODO list:
-
-- auto-positioning system
-- Leap Motion hand interactions (e.g. point at the ball you want to pocket next)
-- ball labels
-- improve and add more sounds
-  a. collisions (volume and variations based on velocities)
-- menu / menus for options / settings:
-- friction, collision response physics parameters
-- improve Leap Motion tracking robustness
 
 
 
@@ -90,11 +91,28 @@ The following amazing open-source projects have helped make **poolvr** possible:
 JavaScript libraries:
   - [Leap Motion JavaScript framework](https://github.com/leapmotion/leapjs)
   - [LeapJS-Plugins](https://github.com/leapmotion/leapjs-plugins)
-  - [three.js](https://github.com/mrdoob/three.js)
-  - [Cannon.js](https://github.com/schteppe/cannon.js)
-  - [Primrose](https://github.com/capnmidnight/Primrose)
+  - [three.js](http://threejs.org)
+  - [Cannon.js](http://www.cannonjs.org)
+  - [Primrose](https://www.primroseeditor.com)
   - [webvr-boilerplate](https://github.com/borismus/webvr-boilerplate)
+  - [Shader Particle Engine](https://github.com/squarefeet/ShaderParticleEngine)
 
 Python packages:
+  - [Tornado](http://www.tornadoweb.org)
   - [Flask](http://flask.pocoo.org/)
   - [NumPy](http://www.numpy.org)
+
+
+
+
+## TODO list:
+
+- add 8-ball / other pool/billiards game logic
+- auto-positioning system
+- Leap Motion hand interactions (e.g. point at the ball you want to pocket next)
+- ball labels
+- improve and add more sounds
+- menu / menus
+- tweak friction, collision response physics parameters
+- improve Leap Motion tracking robustness
+- multi-user
