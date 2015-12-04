@@ -1,5 +1,5 @@
 /*
-  poolvr v0.1.0 2015-12-03
+  poolvr v0.1.0 2015-12-04
   
   Copyright (C) 2015 Jeffrey Zitelli <jeffrey.zitelli@gmail.com> (http://subvr.info)
   http://subvr.info/poolvr
@@ -759,6 +759,10 @@ var SynthSpeaker = ( function() {
     "use strict";
     function SynthSpeaker(options) {
         options = options || {};
+        this.volume = options.volume || 1;
+        this.rate   = options.rate || 1;
+        this.pitch  = options.pitch || 1;
+
         this.queue = [];
         this.onBegins = [];
         this.onEnds = [];
@@ -771,12 +775,11 @@ var SynthSpeaker = ( function() {
             }
             if (this.queue.length > 0) {
                 this.utterance = new SpeechSynthesisUtterance();
-                this.utterance.volume = options.volume || 1;
-                this.utterance.rate = options.rate || 1;
-                this.utterance.pitch = options.pitch || 1;
+                this.utterance.volume = this.volume;
+                this.utterance.rate = this.rate;
+                this.utterance.pitch = this.pitch;
                 this.utterance.onend = onend;
                 this.utterance.text = this.queue.shift();
-                console.log(this.utterance.text);
                 var onBegin = this.onBegins.shift();
                 if (onBegin) {
                     onBegin();
@@ -788,14 +791,14 @@ var SynthSpeaker = ( function() {
         }.bind(this);
 
         this.utterance = new SpeechSynthesisUtterance();
-        this.utterance.volume = options.volume || 1;
-        this.utterance.rate = options.rate || 1;
-        this.utterance.pitch = options.pitch || 1;
         this.utterance.onend = onend;
+        this.utterance.volume = this.volume;
+        this.utterance.rate = this.rate;
+        this.utterance.pitch = this.pitch;
 
     }
 
-    SynthSpeaker.prototype.speak = function(text, onEnd, onBegin) {
+    SynthSpeaker.prototype.speak = function(text, onBegin, onEnd) {
         this.onEnds.push(onEnd);
         if (this.speaking) {
             this.queue.push(text);
@@ -815,7 +818,13 @@ var SynthSpeaker = ( function() {
     } else {
         console.log("speechSynthesis not supported");
         return function () {
-            this.speak = function () {};
+            this.volume = 0;
+            this.rate = 1;
+            this.pitch = 1;
+            this.speak = function (text, onBegin, onEnd) {
+                if (onBegin) onBegin();
+                if (onEnd) onEnd();
+            };
         };
     }
 } )();
@@ -1004,12 +1013,18 @@ if (navigator.getVRDevices) {
 }
 ;
 var app;
+
 var scene = CrapLoader.parse(JSON_SCENE);
+
 var avatar = avatar || new THREE.Object3D();
 avatar.position.y = 1.1;
 avatar.position.z = 1.86;
-var textGeomLogger;
-var synthSpeaker = new SynthSpeaker({volume: 0.25, rate: 0.8, pitch: 0.8});
+
+var textGeomLogger = new TextGeomLogger();
+avatar.add(textGeomLogger.root);
+textGeomLogger.root.position.set(-2.75, 1.5, -3.5);
+
+var synthSpeaker = new SynthSpeaker({volume: 0.4, rate: 0.8, pitch: 0.5});
 
 
 function onLoad() {
@@ -1062,10 +1077,6 @@ function onLoad() {
         }
     });
 
-    textGeomLogger = new TextGeomLogger();
-    avatar.add(textGeomLogger.root);
-    textGeomLogger.root.position.set(-2.75, 1.5, -3.5);
-
     var toolOptions = {
         // ##### Desktop mode (default): #####
         transformOptions : POOLVR.config.transformOptions, // || {vr: 'desktop'},
@@ -1082,27 +1093,48 @@ function onLoad() {
     pyserver.log('toolOptions =\n' + JSON.stringify(toolOptions, undefined, 2));
     // toolOptions.onStreamingStarted = function () { textGeomLogger.log("YOUR LEAP MOTION CONTROLLER IS CONNECTED.  GOOD JOB."); };
     // toolOptions.onStreamingStopped = function () { textGeomLogger.log("YOUR LEAP MOTION CONTROLLER IS DISCONNECTED!  HOW WILL YOU PLAY?!"); };
-
     var toolStuff = addTool(avatar, app.world, toolOptions);
     var toolRoot       = toolStuff.toolRoot;
     var leapController = toolStuff.leapController;
-    var stickMesh   = toolStuff.stickMesh;
-    var animateLeap = toolStuff.animateLeap;
+    var stickMesh      = toolStuff.stickMesh;
+    var animateLeap    = toolStuff.animateLeap;
 
     var dynamicBodies = app.world.bodies.filter(function(body) { return body.mesh && body.type === CANNON.Body.DYNAMIC; });
 
+    // setupMouse();
+
     // setupMenu(avatar);
 
-    textGeomLogger.log("HELLO.  WELCOME TO POOLVR.");
-    synthSpeaker.speak("Hello.  Welcome to pool-ver");
+    app.start( animate(leapController, animateLeap,
+                       dynamicBodies, ballStripeMeshes,
+                       toolRoot, POOLVR.config.shadowMap,
+                       toolStuff.stickMesh, toolStuff.tipMesh,
+                       POOLVR.config.H_table, POOLVR.floorMaterial, POOLVR.ballMaterial) );
 
-    textGeomLogger.log("PLEASE WAVE A STICK-LIKE OBJECT IN FRONT OF YOUR LEAP MOTION CONTROLLER.");
-    synthSpeaker.speak("Please wave a stick-like object in front of your Leap Motion controller.");
+    startTutorial();
+}
 
-    synthSpeaker.speak("Keep the stick within the interaction box when you want to make contact with a ball.");
 
-    // synthSpeaker.speak("You moved a ball.  Good job.");
+var playCollisionSound = (function () {
+    "use strict";
+    var ballBallBuffer;
+    var request = new XMLHttpRequest();
+    request.responseType = 'arraybuffer';
+    request.open('GET', 'sounds/ballBall.ogg', true);
+    request.onload = function() {
+        WebVRSound.audioContext.decodeAudioData(request.response, function(buffer) {
+            ballBallBuffer = buffer;
+        });
+    };
+    request.send();
+    var playCollisionSound = function (v) {
+        WebVRSound.playBuffer(ballBallBuffer, Math.min(1, v / 5));
+    };
+    return playCollisionSound;
+})();
 
+
+function setupMouse() {
     // function lockChangeAlert() {
     //     if ( document.pointerLockElement || document.mozPointerLockElement || document.webkitPointerLockElement ) {
     //         pyserver.log('pointer lock status is now locked');
@@ -1136,32 +1168,24 @@ function onLoad() {
     //     else if (mousePointerMesh.position.y < yMin) mousePointerMesh.position.y = yMin;
     // });
 
-    app.start( animate(leapController, animateLeap,
-                       dynamicBodies, ballStripeMeshes,
-                       toolRoot, POOLVR.config.shadowMap,
-                       toolStuff.stickMesh, toolStuff.tipMesh,
-                       POOLVR.config.H_table, POOLVR.floorMaterial, POOLVR.ballMaterial) );
-
+    // POOLVR.mouseParticleGroup = new SPE.Group({
+    //     texture: {value: THREE.ImageUtils.loadTexture('images/particle.png')},
+    //     maxParticleCount: 50
+    // });
+    // POOLVR.mouseParticleEmitter = new SPE.Emitter({
+    //     maxAge: {value: 0.5},
+    //     position: {value: new THREE.Vector3(),
+    //                spread: new THREE.Vector3()},
+    //     velocity: {value: new THREE.Vector3(0, 0, 0),
+    //                spread: new THREE.Vector3(0.3, 0.3, 0.3)},
+    //     color: {value: [new THREE.Color('white'), new THREE.Color('red')]},
+    //     size: {value: 0.075},
+    //     particleCount: 50
+    // });
+    // POOLVR.mouseParticleGroup.addEmitter(POOLVR.mouseParticleEmitter);
+    // POOLVR.mousePointerMesh = POOLVR.mouseParticleGroup.mesh;
+    // POOLVR.mousePointerMesh.visible = false;
 }
-
-
-var playCollisionSound = (function () {
-    "use strict";
-    var ballBallBuffer;
-    var request = new XMLHttpRequest();
-    request.responseType = 'arraybuffer';
-    request.open('GET', 'sounds/ballBall.ogg', true);
-    request.onload = function() {
-        WebVRSound.audioContext.decodeAudioData(request.response, function(buffer) {
-            ballBallBuffer = buffer;
-        });
-    };
-    request.send();
-    var playCollisionSound = function (v) {
-        WebVRSound.playBuffer(ballBallBuffer, Math.min(1, v / 5));
-    };
-    return playCollisionSound;
-})();
 
 
 function setupMenu(parent) {
@@ -1173,23 +1197,22 @@ function setupMenu(parent) {
 }
 
 
-// POOLVR.mouseParticleGroup = new SPE.Group({
-//     texture: {value: THREE.ImageUtils.loadTexture('images/particle.png')},
-//     maxParticleCount: 50
-// });
-// POOLVR.mouseParticleEmitter = new SPE.Emitter({
-//     maxAge: {value: 0.5},
-//     position: {value: new THREE.Vector3(),
-//                spread: new THREE.Vector3()},
-//     velocity: {value: new THREE.Vector3(0, 0, 0),
-//                spread: new THREE.Vector3(0.3, 0.3, 0.3)},
-//     color: {value: [new THREE.Color('white'), new THREE.Color('red')]},
-//     size: {value: 0.075},
-//     particleCount: 50
-// });
-// POOLVR.mouseParticleGroup.addEmitter(POOLVR.mouseParticleEmitter);
-// POOLVR.mousePointerMesh = POOLVR.mouseParticleGroup.mesh;
-// POOLVR.mousePointerMesh.visible = false;
+function startTutorial() {
+    "use strict";
+    synthSpeaker.speak("Hello.  Welcome to pool-ver", function () {
+        textGeomLogger.log("HELLO.  WELCOME TO POOLVR.");
+    });
+
+    synthSpeaker.speak("Please wave a stick-like object in front of your Leap Motion controller.", function () {
+        textGeomLogger.log("PLEASE WAVE A STICK-LIKE OBJECT IN FRONT OF YOUR LEAP MOTION CONTROLLER.");
+    });
+
+    synthSpeaker.speak("Keep the stick within the interaction box when you want to make contact with a ball.", function () {
+        textGeomLogger.log("KEEP THE STICK WITHIN THE INTERACTION BOX WHEN YOU WANT TO MAKE CONTACT WITH A BALL.");
+    });
+
+    // synthSpeaker.speak("You moved a ball.  Good job.");
+}
 
 
 var animate = function (leapController, animateLeap,
@@ -1287,7 +1310,6 @@ var animate = function (leapController, animateLeap,
             lastFrameID = frame.id;
         }
 
-        // TODO: resolve problem where all balls randomly bounce straight up really high!!!
         app.world.step(1/60, dt);
 
         for (var j = 0; j < dynamicBodies.length; ++j) {

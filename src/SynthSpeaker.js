@@ -2,6 +2,10 @@ var SynthSpeaker = ( function() {
     "use strict";
     function SynthSpeaker(options) {
         options = options || {};
+        this.volume = options.volume || 1;
+        this.rate   = options.rate || 1;
+        this.pitch  = options.pitch || 1;
+
         this.queue = [];
         this.onBegins = [];
         this.onEnds = [];
@@ -14,12 +18,11 @@ var SynthSpeaker = ( function() {
             }
             if (this.queue.length > 0) {
                 this.utterance = new SpeechSynthesisUtterance();
-                this.utterance.volume = options.volume || 1;
-                this.utterance.rate = options.rate || 1;
-                this.utterance.pitch = options.pitch || 1;
+                this.utterance.volume = this.volume;
+                this.utterance.rate = this.rate;
+                this.utterance.pitch = this.pitch;
                 this.utterance.onend = onend;
                 this.utterance.text = this.queue.shift();
-                console.log(this.utterance.text);
                 var onBegin = this.onBegins.shift();
                 if (onBegin) {
                     onBegin();
@@ -31,14 +34,14 @@ var SynthSpeaker = ( function() {
         }.bind(this);
 
         this.utterance = new SpeechSynthesisUtterance();
-        this.utterance.volume = options.volume || 1;
-        this.utterance.rate = options.rate || 1;
-        this.utterance.pitch = options.pitch || 1;
         this.utterance.onend = onend;
+        this.utterance.volume = this.volume;
+        this.utterance.rate = this.rate;
+        this.utterance.pitch = this.pitch;
 
     }
 
-    SynthSpeaker.prototype.speak = function(text, onEnd, onBegin) {
+    SynthSpeaker.prototype.speak = function(text, onBegin, onEnd) {
         this.onEnds.push(onEnd);
         if (this.speaking) {
             this.queue.push(text);
@@ -58,7 +61,13 @@ var SynthSpeaker = ( function() {
     } else {
         console.log("speechSynthesis not supported");
         return function () {
-            this.speak = function () {};
+            this.volume = 0;
+            this.rate = 1;
+            this.pitch = 1;
+            this.speak = function (text, onBegin, onEnd) {
+                if (onBegin) onBegin();
+                if (onEnd) onEnd();
+            };
         };
     }
 } )();
