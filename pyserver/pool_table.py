@@ -1,12 +1,10 @@
 """three.js/Cannon.js pool table definition
 """
 from copy import deepcopy
-import logging
 import numpy as np
 
 from three import *
 
-_logger = logging.getLogger(__name__)
 
 IN2METER = 0.0254
 FT2METER = IN2METER / 12

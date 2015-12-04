@@ -12,16 +12,14 @@ STATIC_FOLDER = os.getcwd()
 TEMPLATE_FOLDER = os.path.join(os.getcwd(), 'templates')
 app = Flask(__name__,
             static_folder=STATIC_FOLDER,
-            template_folder=TEMPLATE_FOLDER,
+            #template_folder=TEMPLATE_FOLDER,
             static_url_path='')
 import site_settings
 app.config.from_object(site_settings)
 
-POOLVR_PYTHONPATH = os.environ.get('POOLVR_PYTHONPATH', os.path.join(os.getcwd(), os.path.pardir))
-sys.path.append(POOLVR_PYTHONPATH)
-import poolvr
-from poolvr.pool_table import pool_hall
-from poolvr import three
+
+import pool_table
+import three
 
 
 POOLVR = {
@@ -115,8 +113,10 @@ var POOLVR = %s;
 
 var JSON_SCENE = %s;
 </script>""" % (json.dumps({'config' : config,
-                            'version': version}, indent=2),
-                json.dumps(pool_hall(**config), indent=(2 if app.debug else None)))), **config)
+                            'version': version},
+                           indent=2),
+                json.dumps(pool_table.pool_hall(**config),
+                           indent=(2 if app.debug else None)))), **config)
 
 
 
