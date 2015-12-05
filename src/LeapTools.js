@@ -235,7 +235,7 @@ function addTool(parent, world, options) {
             var hand = frame.hands[i];
             if (hand.confidence > minConfidence) {
                 handRoots[i].visible = true;
-                handMaterial.opacity = (hand.confidence - minConfidence) / (1 - minConfidence);
+                handMaterial.opacity = 0.5*handMaterial.opacity + 0.5*(hand.confidence - minConfidence) / (1 - minConfidence);
                 direction.fromArray(hand.arm.basis[2]);
                 arms[i].quaternion.setFromUnitVectors(UP, direction);
                 var center = hand.arm.center();
