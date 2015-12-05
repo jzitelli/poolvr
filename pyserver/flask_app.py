@@ -16,8 +16,9 @@ import site_settings
 app.config.from_object(site_settings)
 
 
-import pool_table
+sys.path.insert(0, os.path.join(os.getcwd(), 'three.py'))
 import three
+import pool_table
 
 
 POOLVR = {
@@ -130,10 +131,19 @@ def log():
 
 
 def main():
-    _logger.info("app.config:\n%s" % '\n'.join(['%s: %s' % (k, str(v))
+    _logger.info("app.config =\n%s" % '\n'.join(['%s: %s' % (k, str(v))
                                                 for k, v in sorted(app.config.items(),
                                                                    key=lambda i: i[0])]))
-    _logger.info("STARTING FLASK APP!!!!!!!!!!!!!")
+    _logger.info("three.THREE_VERSION = %s" % three.THREE_VERSION)
+    _logger.info("""
+          ***********
+   *************************
+*******************************
+STARTING FLASK APP!!!!!!!!!!!!!
+*******************************
+   *************************
+          ***********
+""")
     app.run(host='0.0.0.0')
 
 

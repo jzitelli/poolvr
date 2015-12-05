@@ -9,7 +9,7 @@ from tornado.wsgi import WSGIContainer
 from tornado.web import Application, FallbackHandler, StaticFileHandler
 from tornado.ioloop import IOLoop
 
-from flask_app import app, site_settings, STATIC_FOLDER
+from flask_app import app, site_settings, STATIC_FOLDER, three
 app_flask = app
 
 # from PointerEventHandler import PointerEventHandler
@@ -40,8 +40,20 @@ def main():
 
     _logger.info("STATIC_FOLDER   = %s" % STATIC_FOLDER)
     _logger.info("listening on port %d" % port)
-    _logger.info("starting IO loop...")
+    _logger.info("three.THREE_VERSION = %s" % three.THREE_VERSION)
     _logger.info("press CTRL-C to terminate the server")
+    _logger.info("""
+                *
+           ***********
+    *************************
+*********************************
+STARTING TORNADO APP!!!!!!!!!!!!!
+*********************************
+    *************************
+           ***********
+                *
+""")
+
     IOLoop.instance().start()
 
 
