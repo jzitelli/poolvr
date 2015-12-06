@@ -1,4 +1,12 @@
 function addTool(parent, world, options) {
+    /*
+
+    parent: THREE.Object3D
+    world : CANNON.World
+
+    returns: stuff
+
+    */
     "use strict";
     options = options || {};
 
@@ -65,6 +73,13 @@ function addTool(parent, world, options) {
     var zeroPlaneGeom = new THREE.PlaneBufferGeometry(1/scalar, 1/scalar);
     var zeroPlaneMaterial = new THREE.MeshBasicMaterial({color: 0x00dd44, transparent: true, opacity: interactionPlaneOpacity});
     var zeroPlaneMesh = new THREE.Mesh(zeroPlaneGeom, zeroPlaneMaterial);
+    zeroPlaneMesh.position.z = 1/2/scalar - 1/3/scalar;
+    interactionBoxMesh.add(zeroPlaneMesh);
+    zeroPlaneMesh = zeroPlaneMesh.clone();
+    zeroPlaneMesh.position.z = 1/2/scalar - 2/3/scalar;
+    interactionBoxMesh.add(zeroPlaneMesh);
+    zeroPlaneMesh = zeroPlaneMesh.clone();
+    zeroPlaneMesh.position.z = 1/2/scalar - 1/scalar;
     interactionBoxMesh.add(zeroPlaneMesh);
     toolRoot.add(interactionBoxMesh);
 
@@ -264,6 +279,8 @@ function addTool(parent, world, options) {
         tipBody: tipBody,
         toolRoot: toolRoot,
         leapController: leapController,
-        animateLeap: animateLeap
+        animateLeap: animateLeap,
+        leftRoot: leftRoot,
+        rightRoot: rightRoot
     };
 }

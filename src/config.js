@@ -53,6 +53,8 @@ POOLVR.config.gamepadCommands = {
     toolStrafe: {axes: [Primrose.Input.Gamepad.RSX], deadzone: DEADZONE},
     toolDrive: {axes: [Primrose.Input.Gamepad.RSY], deadzone: DEADZONE},
     toolFloat: {axes: [-Primrose.Input.Gamepad.RSY], deadzone: DEADZONE},
+    toolRotY: {axes: [Primrose.Input.Gamepad.RSY], integrate: true, deadzone: DEADZONE,
+               max: 2 * Math.PI, min: 0},
     toggleToolFloatMode: {buttons: [Primrose.Input.Gamepad.XBOX_BUTTONS.rightStick],
                           commandDown: function () { avatar.toolMode = true; },
                           commandUp: function () { avatar.toolMode = false; } }

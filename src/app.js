@@ -2,11 +2,11 @@ var app;
 
 var scene = THREE.py.parse(JSON_SCENE);
 
-var avatar = avatar || new THREE.Object3D();
+var avatar = window.avatar || new THREE.Object3D();
 avatar.position.y = 1.1;
 avatar.position.z = 1.86;
 
-var textGeomLogger = new TextGeomLogger();
+var textGeomLogger = window.textGeomLogger || new TextGeomLogger();
 avatar.add(textGeomLogger.root);
 textGeomLogger.root.position.set(-2.75, 1.5, -3.5);
 
@@ -17,6 +17,11 @@ function onLoad() {
     "use strict";
     pyserver.log("starting poolvr...");
     pyserver.log("POOLVR.config =\n" + JSON.stringify(POOLVR.config, undefined, 2));
+
+    POOLVR.config.onfullscreenchange = function (fullscreen) { if (fullscreen) autoPosition(avatar, POOLVR.nextBall); };
+
+    var menu = setupMenu(avatar);
+    POOLVR.config.menu = menu;
 
     app = new WebVRApplication("poolvr", avatar, scene, POOLVR.config);
     avatar.add(app.camera);
@@ -44,10 +49,15 @@ function onLoad() {
     app.world.addContactMaterial(POOLVR.floorBallContactMaterial);
 
     var ballStripeMeshes = [];
+    POOLVR.ballBodies = [];
+    POOLVR.ballMeshes = [];
     scene.traverse(function (node) {
         if (node.name.startsWith('ballMesh')) {
             node.body.material = POOLVR.ballMaterial;
             node.body.bounces = 0;
+            POOLVR.ballMeshes.push(node);
+            POOLVR.ballBodies.push(node.body);
+            node.name = "ball " + node.name.split(' ')[-1];
         }
         else if (node.name.startsWith('ballStripeMesh')) {
             ballStripeMeshes.push(node);
@@ -84,19 +94,21 @@ function onLoad() {
     var leapController = toolStuff.leapController;
     var stickMesh      = toolStuff.stickMesh;
     var animateLeap    = toolStuff.animateLeap;
+    var leftRoot       = toolStuff.leftRoot;
+    var rightRoot      = toolStuff.rightRoot;
 
     var dynamicBodies = app.world.bodies.filter(function(body) { return body.mesh && body.type === CANNON.Body.DYNAMIC; });
 
     var animateMousePointer = setupMouse(avatar);
-
-    // setupMenu(avatar);
 
     app.start( animate(leapController, animateLeap,
                        dynamicBodies, ballStripeMeshes,
                        toolRoot, POOLVR.config.shadowMap,
                        toolStuff.stickMesh, toolStuff.tipMesh,
                        POOLVR.config.H_table, POOLVR.floorMaterial, POOLVR.ballMaterial,
-                       animateMousePointer) );
+                       animateMousePointer, leftRoot, rightRoot) );
+
+    autoPosition(avatar, POOLVR.nextBall);
 
     startTutorial();
 }
@@ -104,10 +116,14 @@ function onLoad() {
 
 function setupMenu(parent) {
     "use strict";
+    var menu = new THREE.Object3D();
     var textGeom = new THREE.TextGeometry('RESET TABLE', {font: 'anonymous pro', size: 0.2, height: 0});
     var textMesh = new THREE.Mesh(textGeom);
     textMesh.position.set(0, 1, -2);
-    parent.add(textMesh);
+    menu.add(textMesh);
+    parent.add(menu);
+    menu.visible = false;
+    return menu;
 }
 
 
@@ -134,7 +150,8 @@ var animate = function (leapController, animateLeap,
                         toolRoot, shadowMap,
                         stickMesh, tipMesh,
                         H_table, floorMaterial, ballMaterial,
-                        animateMousePointer) {
+                        animateMousePointer,
+                        leftRoot, rightRoot) {
     "use strict";
     if (!shadowMap) {
         // create shadow mesh from projection:
@@ -158,7 +175,6 @@ var animate = function (leapController, animateLeap,
 
     var UP = new THREE.Vector3(0, 1, 0),
         RIGHT = new THREE.Vector3(1, 0, 0),
-        heading = 0,
         headingQuat = new THREE.Quaternion(),
         // pitch = 0,
         // pitchQuat = new THREE.Quaternion(),
@@ -166,6 +182,8 @@ var animate = function (leapController, animateLeap,
         floatSpeed = 0.1;
     var lastFrameID;
     var lt = 0;
+    POOLVR.deadBalls = [];
+    avatar.heading = avatar.heading || 0;
     function animate(t) {
         var dt = (t - lt) * 0.001;
         requestAnimationFrame(animate);
@@ -180,6 +198,8 @@ var animate = function (leapController, animateLeap,
         var floatUp = app.keyboard.getValue("floatUp") + app.keyboard.getValue("floatDown");
         var drive = app.keyboard.getValue("driveBack") + app.keyboard.getValue("driveForward");
         var strafe = app.keyboard.getValue("strafeRight") + app.keyboard.getValue("strafeLeft");
+
+        var heading = avatar.heading;
         heading += -0.8 * dt * (app.keyboard.getValue("turnLeft") + app.keyboard.getValue("turnRight"));
         if (avatar.floatMode) {
             floatUp += app.gamepad.getValue("float");
@@ -188,6 +208,7 @@ var animate = function (leapController, animateLeap,
             drive += app.gamepad.getValue("drive");
             heading += 0.8 * dt * app.gamepad.getValue("dheading");
         }
+        avatar.heading = heading;
         floatUp *= floatSpeed;
         if (strafe || drive) {
             var len = walkSpeed * Math.min(1, 1 / Math.sqrt(drive * drive +
@@ -210,11 +231,13 @@ var animate = function (leapController, animateLeap,
         var toolDrive = app.keyboard.getValue("moveToolForwards") - app.keyboard.getValue("moveToolBackwards");
         var toolFloat = app.keyboard.getValue("moveToolUp") - app.keyboard.getValue("moveToolDown");
         var toolStrafe = app.keyboard.getValue("moveToolRight") - app.keyboard.getValue("moveToolLeft");
-        toolStrafe += app.gamepad.getValue("toolStrafe");
+        var toolRotY = 0;
         if (avatar.toolMode) {
             toolFloat += app.gamepad.getValue("toolFloat");
+            toolStrafe += app.gamepad.getValue("toolStrafe");
         } else {
             toolDrive -= app.gamepad.getValue("toolDrive");
+            toolRotY += app.gamepad.getValue("toolStrafe");
         }
 
         var frame = leapController.frame();
@@ -223,7 +246,7 @@ var animate = function (leapController, animateLeap,
             lastFrameID = frame.id;
         }
 
-        app.world.step(1/60, dt);
+        app.world.step(1/75, dt, 4);
 
         for (var j = 0; j < dynamicBodies.length; ++j) {
             var body = dynamicBodies[j];
@@ -246,6 +269,11 @@ var animate = function (leapController, animateLeap,
         toolRoot.position.z += -0.25 * dt * toolDrive;
         toolRoot.position.y += 0.25  * dt * toolFloat;
 
+        toolRoot.rotation.y += 0.1 * dt * toolRotY;
+
+        leftRoot.position.copy(toolRoot.position);
+        rightRoot.position.copy(toolRoot.position);
+
         if (!shadowMap) {
             stickShadow.position.set(stickMesh.position.x,
                 (H_table + 0.001 - toolRoot.position.y - avatar.position.y) / toolRoot.scale.y,
@@ -267,9 +295,16 @@ var animate = function (leapController, animateLeap,
                 var ballBody = (bi.material === ballMaterial ? bi : bj);
                 ballBody.bounces++;
                 if (ballBody.bounces === 1) {
-                    //textGeomLogger.log(ballBody.mesh.name + " HIT THE FLOOR!");
+                    // synthSpeaker.speak(ballBody.mesh.name + " hit the floor.");
+                    // textGeomLogger.log(ballBody.mesh.name + " HIT THE FLOOR!");
                 } else if (ballBody.bounces === 7) {
                     ballBody.sleep();
+                    POOLVR.deadBalls.push(POOLVR.ballBodies.indexOf(ballBody));
+                    POOLVR.nextBall = POOLVR.deadBalls[0] + 1;
+                    for (var iball = 1; iball < POOLVR.deadBalls.length; iball++) {
+                        POOLVR.nextBall = Math.min(POOLVR.nextBall, POOLVR.deadBalls[iball] + 1);
+                    }
+                    autoPosition(avatar, POOLVR.nextBall, 5);
                 }
             }
         }
@@ -281,3 +316,36 @@ var animate = function (leapController, animateLeap,
 
     return animate;
 };
+
+
+POOLVR.nextBall = 1;
+POOLVR.nextVector = new THREE.Vector3();
+POOLVR.horizontal = new THREE.Vector3();
+function autoPosition(avatar, nextBall, timeout) {
+    "use strict";
+    setTimeout(function () {
+        textGeomLogger.log("YOU ARE BEING AUTO-POSITIONED.");
+        if (synthSpeaker.speaking === false) {
+            synthSpeaker.speak("You are being auto-positioned.");
+        }
+        textGeomLogger.log("NEXT BALL: " + POOLVR.nextBall);
+        nextBall = nextBall || POOLVR.nextBall;
+        POOLVR.nextVector.copy(POOLVR.ballMeshes[nextBall].position);
+        POOLVR.nextVector.sub(POOLVR.ballMeshes[0].position);
+        POOLVR.nextVector.y = 0;
+        POOLVR.nextVector.normalize();
+        // reposition and move back:
+        avatar.position.x = POOLVR.ballMeshes[0].position.x;
+        avatar.position.z = POOLVR.ballMeshes[0].position.z;
+        POOLVR.nextVector.multiplyScalar(0.5);
+        avatar.position.sub(POOLVR.nextVector);
+        avatar.position.y = POOLVR.config.H_table + 0.3;
+        avatar.updateMatrix();
+        // look at next ball:
+        POOLVR.horizontal.copy(POOLVR.ballMeshes[nextBall].position);
+        POOLVR.horizontal.y = avatar.position.y;
+        avatar.lookAt(POOLVR.horizontal);
+        avatar.updateMatrix();
+        avatar.heading = avatar.rotation.y;
+    }, timeout || 0);
+}

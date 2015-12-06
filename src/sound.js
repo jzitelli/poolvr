@@ -11,7 +11,7 @@ var playCollisionSound = (function () {
     };
     request.send();
     var playCollisionSound = function (v) {
-        WebVRSound.playBuffer(ballBallBuffer, Math.min(1, v / 5));
+        WebVRSound.playBuffer(ballBallBuffer, Math.min(1, v / 4));
     };
     return playCollisionSound;
 })();

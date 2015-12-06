@@ -54,13 +54,18 @@ WebVRApplication = ( function () {
         }.bind(this);
 
 
+        this.menu = this.config.menu;
+
+
         var keyboardCommands = {
             toggleVRControls: {buttons: [Primrose.Input.Keyboard.V],
                                commandDown: this.toggleVRControls.bind(this), dt: 0.25},
             toggleWireframe: {buttons: [Primrose.Input.Keyboard.NUMBER0],
                               commandDown: this.toggleWireframe.bind(this), dt: 0.25},
             resetVRSensor: {buttons: [Primrose.Input.Keyboard.Z],
-                            commandDown: this.resetVRSensor.bind(this), dt: 0.25}
+                            commandDown: this.resetVRSensor.bind(this), dt: 0.25},
+            toggleMenu: {buttons: [Primrose.Input.Keyboard.SPACEBAR],
+                         commandDown: function () { this.menu.visible = !this.menu.visible; }.bind(this), dt: 0.5}
         };
         config.keyboardCommands = combineDefaults(config.keyboardCommands || {}, keyboardCommands);
         config.keyboardCommands = Object.keys(config.keyboardCommands).map(function (k) {
@@ -71,7 +76,9 @@ WebVRApplication = ( function () {
 
         var gamepadCommands = {
             resetVRSensor: {buttons: [Primrose.Input.Gamepad.XBOX_BUTTONS.back],
-                            commandDown: this.resetVRSensor.bind(this), dt: 0.25}
+                            commandDown: this.resetVRSensor.bind(this), dt: 0.25},
+            toggleMenu: {buttons: [Primrose.Input.Gamepad.XBOX_BUTTONS.start],
+                         commandDown: function () { this.menu.visible = !this.menu.visible; }.bind(this), dt: 0.5}
         };
         config.gamepadCommands = combineDefaults(config.gamepadCommands || {}, gamepadCommands);
         config.gamepadCommands = Object.keys(config.gamepadCommands).map(function (k) {
@@ -93,10 +100,10 @@ WebVRApplication = ( function () {
             world = new CANNON.World();
             world.gravity.set( 0, -config.gravity, 0 );
             world.broadphase = new CANNON.SAPBroadphase( world );
-            world.defaultContactMaterial.contactEquationStiffness   = config.contactEquationStiffness || 1e7;
-            world.defaultContactMaterial.frictionEquationStiffness  = config.frictionEquationStiffness || 1e7;
-            world.defaultContactMaterial.contactEquationRelaxation  = config.contactEquationRelaxation || 3;
-            world.defaultContactMaterial.frictionEquationRelaxation = config.frictionEquationRelaxation || 3;
+            world.defaultContactMaterial.contactEquationStiffness   = config.contactEquationStiffness || 1e6;
+            world.defaultContactMaterial.frictionEquationStiffness  = config.frictionEquationStiffness || 1e6;
+            world.defaultContactMaterial.contactEquationRelaxation  = config.contactEquationRelaxation || 4;
+            world.defaultContactMaterial.frictionEquationRelaxation = config.frictionEquationRelaxation || 4;
             world.solver.iterations = 10;
         }
         this.world = world;
@@ -119,10 +126,15 @@ WebVRApplication = ( function () {
             if (this.vrManager.isVRMode()) {
                 this.vrControls.enabled = true;
             }
-            if (document.webkitFullscreenElement === null || document.mozFullScreenElement === null) {
+            var fullscreen = !(document.webkitFullscreenElement === null || document.mozFullScreenElement === null);
+            if (!fullscreen) {
                 releasePointerLock();
             } else {
                 requestPointerLock();
+            }
+            if (config.onfullscreenchange) {
+                console.log("WebVRApplication: calling config.onfullscreenchange...");
+                config.onfullscreenchange(fullscreen);
             }
         }.bind(this));
 
