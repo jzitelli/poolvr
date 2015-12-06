@@ -53,13 +53,15 @@ module.exports = function ( grunt ) {
         files: {
           "obj/poolvr.js": [
               "src/WebVRApplication.js",
-              "src/CrapLoader.js",
+              "three.py/js/three.py.js",
               "src/LeapTools.js",
               "src/TextGeomLogger.js",
               "src/WebVRSound.js",
               "src/SynthSpeaker.js",
+              "src/MouseStuff.js",
               "src/pyserver.js",
               "src/config.js",
+              "src/sound.js",
               "src/app.js"
           ]
         }

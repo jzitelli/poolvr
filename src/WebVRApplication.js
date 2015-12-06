@@ -6,35 +6,28 @@ WebVRApplication = ( function () {
         // TODO: copy
         this.config = config;
 
+
         var camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
         this.camera = camera;
-
         var renderer = new THREE.WebGLRenderer({
             antialias: true,
             alpha: true
         });
         this.renderer = renderer;
         this.renderer.setPixelRatio(window.devicePixelRatio);
-
         if (config.shadowMap) {
             this.renderer.shadowMap.enabled = true;
             this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         }
         document.body.appendChild(this.renderer.domElement);
-
         this.vrEffect = new THREE.VREffect(this.renderer);
         this.vrEffect.setSize(window.innerWidth, window.innerHeight);
-
         this.vrManager = new WebVRManager(this.renderer, this.vrEffect, {
             hideButton: false
         });
-
         this.vrControls = new THREE.VRControls(this.camera);
         this.vrControls.enabled = false;
 
-        this.resetVRSensor = function () {
-            this.vrControls.resetSensor();
-        }.bind(this);
 
         this.toggleVRControls = function () {
             if (this.vrControls.enabled) {
@@ -47,6 +40,10 @@ WebVRApplication = ( function () {
             }
         }.bind(this);
 
+        this.resetVRSensor = function () {
+            this.vrControls.resetSensor();
+        }.bind(this);
+
         var wireframeMaterial = new THREE.MeshBasicMaterial({color: 0xeeddaa, wireframe: true});
         this.toggleWireframe = function () {
             if (this.scene.overrideMaterial) {
@@ -56,7 +53,7 @@ WebVRApplication = ( function () {
             }
         }.bind(this);
 
-        // keyboard controls:
+
         var keyboardCommands = {
             toggleVRControls: {buttons: [Primrose.Input.Keyboard.V],
                                commandDown: this.toggleVRControls.bind(this), dt: 0.25},
@@ -71,7 +68,7 @@ WebVRApplication = ( function () {
         });
         this.keyboard = new Primrose.Input.Keyboard("keyboard", window, config.keyboardCommands);
 
-        // gamepad controls:
+
         var gamepadCommands = {
             resetVRSensor: {buttons: [Primrose.Input.Gamepad.XBOX_BUTTONS.back],
                             commandDown: this.resetVRSensor.bind(this), dt: 0.25}
@@ -88,7 +85,6 @@ WebVRApplication = ( function () {
             }
         }.bind(this), false);
 
-        this.listeners = {'update': []};
 
         var world;
         if (config.world) {
@@ -105,18 +101,36 @@ WebVRApplication = ( function () {
         }
         this.world = world;
 
+
+        renderer.domElement.requestPointerLock = renderer.domElement.requestPointerLock || renderer.domElement.mozRequestPointerLock || renderer.domElement.webkitRequestPointerLock;
+        function requestPointerLock() {
+            if (renderer.domElement.requestPointerLock) {
+                renderer.domElement.requestPointerLock();
+            }
+        }
+        function releasePointerLock() {
+            document.exitPointerLock = document.exitPointerLock || document.mozExitPointerLock || document.webkitExitPointerLock;
+            if (document.exitPointerLock) {
+                document.exitPointerLock();
+            }
+        }
         var fullscreenchange = this.renderer.domElement.mozRequestFullScreen ? 'mozfullscreenchange' : 'webkitfullscreenchange';
-        document.addEventListener( fullscreenchange, function ( event ) {
+        document.addEventListener(fullscreenchange, function ( event ) {
             if (this.vrManager.isVRMode()) {
                 this.vrControls.enabled = true;
             }
-        }.bind(this), false );
+            if (document.webkitFullscreenElement === null || document.mozFullScreenElement === null) {
+                releasePointerLock();
+            } else {
+                requestPointerLock();
+            }
+        }.bind(this));
 
 
         this.start = function(animate) {
             function waitForResources() {
-                if (CrapLoader.isLoaded()) {
-                    CrapLoader.CANNONize(scene, world);
+                if (THREE.py.isLoaded()) {
+                    THREE.py.CANNONize(scene, world);
                     for (var i = 0; i < 240*2; i++) {
                         world.step(1/240);
                     }
