@@ -1,5 +1,5 @@
 /*
-  poolvr v0.1.0 2015-12-04
+  poolvr v0.1.0 2015-12-05
   
   Copyright (C) 2015 Jeffrey Zitelli <jeffrey.zitelli@gmail.com> (http://subvr.info)
   http://subvr.info/poolvr
@@ -13,35 +13,28 @@ WebVRApplication = ( function () {
         // TODO: copy
         this.config = config;
 
+
         var camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
         this.camera = camera;
-
         var renderer = new THREE.WebGLRenderer({
             antialias: true,
             alpha: true
         });
         this.renderer = renderer;
         this.renderer.setPixelRatio(window.devicePixelRatio);
-
         if (config.shadowMap) {
             this.renderer.shadowMap.enabled = true;
             this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         }
         document.body.appendChild(this.renderer.domElement);
-
         this.vrEffect = new THREE.VREffect(this.renderer);
         this.vrEffect.setSize(window.innerWidth, window.innerHeight);
-
         this.vrManager = new WebVRManager(this.renderer, this.vrEffect, {
             hideButton: false
         });
-
         this.vrControls = new THREE.VRControls(this.camera);
         this.vrControls.enabled = false;
 
-        this.resetVRSensor = function () {
-            this.vrControls.resetSensor();
-        }.bind(this);
 
         this.toggleVRControls = function () {
             if (this.vrControls.enabled) {
@@ -54,6 +47,10 @@ WebVRApplication = ( function () {
             }
         }.bind(this);
 
+        this.resetVRSensor = function () {
+            this.vrControls.resetSensor();
+        }.bind(this);
+
         var wireframeMaterial = new THREE.MeshBasicMaterial({color: 0xeeddaa, wireframe: true});
         this.toggleWireframe = function () {
             if (this.scene.overrideMaterial) {
@@ -63,7 +60,7 @@ WebVRApplication = ( function () {
             }
         }.bind(this);
 
-        // keyboard controls:
+
         var keyboardCommands = {
             toggleVRControls: {buttons: [Primrose.Input.Keyboard.V],
                                commandDown: this.toggleVRControls.bind(this), dt: 0.25},
@@ -78,7 +75,7 @@ WebVRApplication = ( function () {
         });
         this.keyboard = new Primrose.Input.Keyboard("keyboard", window, config.keyboardCommands);
 
-        // gamepad controls:
+
         var gamepadCommands = {
             resetVRSensor: {buttons: [Primrose.Input.Gamepad.XBOX_BUTTONS.back],
                             commandDown: this.resetVRSensor.bind(this), dt: 0.25}
@@ -95,7 +92,6 @@ WebVRApplication = ( function () {
             }
         }.bind(this), false);
 
-        this.listeners = {'update': []};
 
         var world;
         if (config.world) {
@@ -112,18 +108,36 @@ WebVRApplication = ( function () {
         }
         this.world = world;
 
+
+        renderer.domElement.requestPointerLock = renderer.domElement.requestPointerLock || renderer.domElement.mozRequestPointerLock || renderer.domElement.webkitRequestPointerLock;
+        function requestPointerLock() {
+            if (renderer.domElement.requestPointerLock) {
+                renderer.domElement.requestPointerLock();
+            }
+        }
+        function releasePointerLock() {
+            document.exitPointerLock = document.exitPointerLock || document.mozExitPointerLock || document.webkitExitPointerLock;
+            if (document.exitPointerLock) {
+                document.exitPointerLock();
+            }
+        }
         var fullscreenchange = this.renderer.domElement.mozRequestFullScreen ? 'mozfullscreenchange' : 'webkitfullscreenchange';
-        document.addEventListener( fullscreenchange, function ( event ) {
+        document.addEventListener(fullscreenchange, function ( event ) {
             if (this.vrManager.isVRMode()) {
                 this.vrControls.enabled = true;
             }
-        }.bind(this), false );
+            if (document.webkitFullscreenElement === null || document.mozFullScreenElement === null) {
+                releasePointerLock();
+            } else {
+                requestPointerLock();
+            }
+        }.bind(this));
 
 
         this.start = function(animate) {
             function waitForResources() {
-                if (CrapLoader.isLoaded()) {
-                    CrapLoader.CANNONize(scene, world);
+                if (THREE.py.isLoaded()) {
+                    THREE.py.CANNONize(scene, world);
                     for (var i = 0; i < 240*2; i++) {
                         world.step(1/240);
                     }
@@ -140,7 +154,7 @@ WebVRApplication = ( function () {
     return WebVRApplication;
 } )();
 ;
-var CrapLoader = ( function () {
+THREE.py = ( function () {
     "use strict";
     var manager = new THREE.LoadingManager();
     var isLoaded_ = true;
@@ -591,7 +605,7 @@ function addTool(parent, world, options) {
             var hand = frame.hands[i];
             if (hand.confidence > minConfidence) {
                 handRoots[i].visible = true;
-                handMaterial.opacity = (hand.confidence - minConfidence) / (1 - minConfidence);
+                handMaterial.opacity = 0.5*handMaterial.opacity + 0.5*(hand.confidence - minConfidence) / (1 - minConfidence);
                 direction.fromArray(hand.arm.basis[2]);
                 arms[i].quaternion.setFromUnitVectors(UP, direction);
                 var center = hand.arm.center();
@@ -829,6 +843,90 @@ var SynthSpeaker = ( function() {
     }
 } )();
 ;
+function setupMouse(parent, position) {
+    position = position || new THREE.Vector3(0, 0, -2);
+    var numParticles = 50;
+    var particleTexture = 'images/particle.png';
+    var mouseParticleGroup = new SPE.Group({
+        texture: {value: THREE.ImageUtils.loadTexture(particleTexture)},
+        maxParticleCount: numParticles
+    });
+    var mouseParticleEmitter = new SPE.Emitter({
+        maxAge: {value: 0.5},
+        position: {value: new THREE.Vector3(),
+                   spread: new THREE.Vector3()},
+        velocity: {value: new THREE.Vector3(0, 0, 0),
+                   spread: new THREE.Vector3(0.3, 0.3, 0.3)},
+        color: {value: [new THREE.Color('blue'), new THREE.Color('red')]},
+        opacity: {value: [1, 0.1]},
+        size: {value: 0.0666},
+        particleCount: numParticles
+    });
+    mouseParticleGroup.addEmitter(mouseParticleEmitter);
+    var mousePointerMesh = mouseParticleGroup.mesh;
+    parent.add(mousePointerMesh);
+    mousePointerMesh.position.copy(position);
+
+    mousePointerMesh.visible = false;
+    if ("onpointerlockchange" in document) {
+      document.addEventListener('pointerlockchange', lockChangeAlert, false);
+    } else if ("onmozpointerlockchange" in document) {
+      document.addEventListener('mozpointerlockchange', lockChangeAlert, false);
+    } else if ("onwebkitpointerlockchange" in document) {
+      document.addEventListener('webkitpointerlockchange', lockChangeAlert, false);
+    }
+    function lockChangeAlert() {
+        if ( document.pointerLockElement || document.mozPointerLockElement || document.webkitPointerLockElement ) {
+            pyserver.log('pointer lock status is now locked');
+            mousePointerMesh.visible = true;
+        } else {
+            pyserver.log('pointer lock status is now unlocked');
+            mousePointerMesh.visible = false;
+        }
+    }
+
+    var xMax = 2, xMin = -2,
+        yMax = 1, yMin = -1;
+    window.addEventListener("mousemove", function (evt) {
+        if (!mousePointerMesh.visible) return;
+        var dx = evt.movementX,
+            dy = evt.movementY;
+        mousePointerMesh.position.x += 0.0004*dx;
+        mousePointerMesh.position.y -= 0.0004*dy;
+        if (mousePointerMesh.position.x > xMax) mousePointerMesh.position.x = xMax;
+        else if (mousePointerMesh.position.x < xMin) mousePointerMesh.position.x = xMin;
+        if (mousePointerMesh.position.y > yMax) mousePointerMesh.position.y = yMax;
+        else if (mousePointerMesh.position.y < yMin) mousePointerMesh.position.y = yMin;
+    });
+
+    var lt;
+    function animateMousePointer(t) {
+        var dt = 0.001*(t - lt);
+        if (mousePointerMesh.visible) mouseParticleGroup.tick(dt);
+        // if (mousePointerMesh && avatar.picking) {
+        //     origin.set(0, 0, 0);
+        //     direction.set(0, 0, 0);
+        //     direction.subVectors(mousePointerMesh.localToWorld(direction), camera.localToWorld(origin)).normalize();
+        //     raycaster.set(origin, direction);
+        //     var intersects = raycaster.intersectObjects(app.pickables);
+        //     if (intersects.length > 0) {
+        //         if (app.picked != intersects[0].object) {
+        //             if (app.picked) app.picked.material.color.setHex(app.picked.currentHex);
+        //             app.picked = intersects[0].object;
+        //             app.picked.currentHex = app.picked.material.color.getHex();
+        //             app.picked.material.color.setHex(0xff4444); //0x44ff44);
+        //         }
+        //     } else {
+        //         if (app.picked) app.picked.material.color.setHex(app.picked.currentHex);
+        //         app.picked = null;
+        //     }
+        // }
+        lt = t;
+    }
+
+    return animateMousePointer;
+}
+;
 var pyserver;
 if (!POOLVR.config.pyserver) {
     pyserver = {log: function (msg) { console.log('pyserver.log: ' + msg); },
@@ -1012,9 +1110,27 @@ if (navigator.getVRDevices) {
     });
 }
 ;
+var playCollisionSound = (function () {
+    "use strict";
+    var ballBallBuffer;
+    var request = new XMLHttpRequest();
+    request.responseType = 'arraybuffer';
+    request.open('GET', 'sounds/ballBall.ogg', true);
+    request.onload = function() {
+        WebVRSound.audioContext.decodeAudioData(request.response, function(buffer) {
+            ballBallBuffer = buffer;
+        });
+    };
+    request.send();
+    var playCollisionSound = function (v) {
+        WebVRSound.playBuffer(ballBallBuffer, Math.min(1, v / 5));
+    };
+    return playCollisionSound;
+})();
+;
 var app;
 
-var scene = CrapLoader.parse(JSON_SCENE);
+var scene = THREE.py.parse(JSON_SCENE);
 
 var avatar = avatar || new THREE.Object3D();
 avatar.position.y = 1.1;
@@ -1050,7 +1166,7 @@ function onLoad() {
         // centerSpotLightHelper.visible = false;
     }
 
-    CrapLoader.CANNONize(scene, app.world);
+    THREE.py.CANNONize(scene, app.world);
 
     app.world.addContactMaterial(POOLVR.ballBallContactMaterial);
     app.world.addContactMaterial(POOLVR.ballPlayableSurfaceContactMaterial);
@@ -1101,7 +1217,7 @@ function onLoad() {
 
     var dynamicBodies = app.world.bodies.filter(function(body) { return body.mesh && body.type === CANNON.Body.DYNAMIC; });
 
-    // setupMouse();
+    var animateMousePointer = setupMouse(avatar);
 
     // setupMenu(avatar);
 
@@ -1109,82 +1225,10 @@ function onLoad() {
                        dynamicBodies, ballStripeMeshes,
                        toolRoot, POOLVR.config.shadowMap,
                        toolStuff.stickMesh, toolStuff.tipMesh,
-                       POOLVR.config.H_table, POOLVR.floorMaterial, POOLVR.ballMaterial) );
+                       POOLVR.config.H_table, POOLVR.floorMaterial, POOLVR.ballMaterial,
+                       animateMousePointer) );
 
     startTutorial();
-}
-
-
-var playCollisionSound = (function () {
-    "use strict";
-    var ballBallBuffer;
-    var request = new XMLHttpRequest();
-    request.responseType = 'arraybuffer';
-    request.open('GET', 'sounds/ballBall.ogg', true);
-    request.onload = function() {
-        WebVRSound.audioContext.decodeAudioData(request.response, function(buffer) {
-            ballBallBuffer = buffer;
-        });
-    };
-    request.send();
-    var playCollisionSound = function (v) {
-        WebVRSound.playBuffer(ballBallBuffer, Math.min(1, v / 5));
-    };
-    return playCollisionSound;
-})();
-
-
-function setupMouse() {
-    // function lockChangeAlert() {
-    //     if ( document.pointerLockElement || document.mozPointerLockElement || document.webkitPointerLockElement ) {
-    //         pyserver.log('pointer lock status is now locked');
-    //         // mousePointerMesh.visible = true;
-    //     } else {
-    //         pyserver.log('pointer lock status is now unlocked');
-    //         // mousePointerMesh.visible = false;
-    //     }
-    // }
-    // if ("onpointerlockchange" in document) {
-    //   document.addEventListener('pointerlockchange', lockChangeAlert, false);
-    // } else if ("onmozpointerlockchange" in document) {
-    //   document.addEventListener('mozpointerlockchange', lockChangeAlert, false);
-    // } else if ("onwebkitpointerlockchange" in document) {
-    //   document.addEventListener('webkitpointerlockchange', lockChangeAlert, false);
-    // }
-
-    // avatar.add(mousePointerMesh);
-    // mousePointerMesh.position.set(0, 0, -2);
-    // var xMax = 2, xMin = -2,
-    //     yMax = 1, yMin = -1;
-    // window.addEventListener("mousemove", function (evt) {
-    //     if (!mousePointerMesh.visible) return;
-    //     var dx = evt.movementX,
-    //         dy = evt.movementY;
-    //     mousePointerMesh.position.x += 0.0004*dx;
-    //     mousePointerMesh.position.y -= 0.0004*dy;
-    //     if (mousePointerMesh.position.x > xMax) mousePointerMesh.position.x = xMax;
-    //     else if (mousePointerMesh.position.x < xMin) mousePointerMesh.position.x = xMin;
-    //     if (mousePointerMesh.position.y > yMax) mousePointerMesh.position.y = yMax;
-    //     else if (mousePointerMesh.position.y < yMin) mousePointerMesh.position.y = yMin;
-    // });
-
-    // POOLVR.mouseParticleGroup = new SPE.Group({
-    //     texture: {value: THREE.ImageUtils.loadTexture('images/particle.png')},
-    //     maxParticleCount: 50
-    // });
-    // POOLVR.mouseParticleEmitter = new SPE.Emitter({
-    //     maxAge: {value: 0.5},
-    //     position: {value: new THREE.Vector3(),
-    //                spread: new THREE.Vector3()},
-    //     velocity: {value: new THREE.Vector3(0, 0, 0),
-    //                spread: new THREE.Vector3(0.3, 0.3, 0.3)},
-    //     color: {value: [new THREE.Color('white'), new THREE.Color('red')]},
-    //     size: {value: 0.075},
-    //     particleCount: 50
-    // });
-    // POOLVR.mouseParticleGroup.addEmitter(POOLVR.mouseParticleEmitter);
-    // POOLVR.mousePointerMesh = POOLVR.mouseParticleGroup.mesh;
-    // POOLVR.mousePointerMesh.visible = false;
 }
 
 
@@ -1207,7 +1251,7 @@ function startTutorial() {
         textGeomLogger.log("PLEASE WAVE A STICK-LIKE OBJECT IN FRONT OF YOUR LEAP MOTION CONTROLLER.");
     });
 
-    synthSpeaker.speak("Keep the stick within the interaction box when you want to make contact with a ball.", function () {
+    synthSpeaker.speak("Keep the stick within the interaction box when you want to make contact with.  A ball.", function () {
         textGeomLogger.log("KEEP THE STICK WITHIN THE INTERACTION BOX WHEN YOU WANT TO MAKE CONTACT WITH A BALL.");
     });
 
@@ -1219,7 +1263,8 @@ var animate = function (leapController, animateLeap,
                         dynamicBodies, ballStripeMeshes,
                         toolRoot, shadowMap,
                         stickMesh, tipMesh,
-                        H_table, floorMaterial, ballMaterial) {
+                        H_table, floorMaterial, ballMaterial,
+                        animateMousePointer) {
     "use strict";
     if (!shadowMap) {
         // create shadow mesh from projection:
@@ -1243,19 +1288,17 @@ var animate = function (leapController, animateLeap,
 
     var UP = new THREE.Vector3(0, 1, 0),
         RIGHT = new THREE.Vector3(1, 0, 0),
-        // pitch = 0,
-        // pitchQuat = new THREE.Quaternion(),
         heading = 0,
         headingQuat = new THREE.Quaternion(),
+        // pitch = 0,
+        // pitchQuat = new THREE.Quaternion(),
         walkSpeed = 0.333,
         floatSpeed = 0.1;
     var lastFrameID;
     var lt = 0;
-    var raycaster = new THREE.Raycaster();
     function animate(t) {
-        requestAnimationFrame(animate);
         var dt = (t - lt) * 0.001;
-        lt = t;
+        requestAnimationFrame(animate);
         if (app.vrControls.enabled) {
             app.vrControls.update();
         }
@@ -1340,6 +1383,7 @@ var animate = function (leapController, animateLeap,
             stickShadowMesh.quaternion.copy(stickMesh.quaternion);
         }
 
+        // TODO: use callbacks
         for (j = 0; j < app.world.contacts.length; j++) {
             var contactEquation = app.world.contacts[j];
             var bi = contactEquation.bi,
@@ -1360,30 +1404,11 @@ var animate = function (leapController, animateLeap,
             }
         }
 
-        // if (mouseParticleGroup) mouseParticleGroup.tick(dt);
+        if (animateMousePointer) animateMousePointer(t);
 
+        lt = t;
     }
 
     return animate;
 };
-
-
-    // if (mousePointerMesh && avatar.picking) {
-    //     origin.set(0, 0, 0);
-    //     direction.set(0, 0, 0);
-    //     direction.subVectors(mousePointerMesh.localToWorld(direction), camera.localToWorld(origin)).normalize();
-    //     raycaster.set(origin, direction);
-    //     var intersects = raycaster.intersectObjects(app.pickables);
-    //     if (intersects.length > 0) {
-    //         if (app.picked != intersects[0].object) {
-    //             if (app.picked) app.picked.material.color.setHex(app.picked.currentHex);
-    //             app.picked = intersects[0].object;
-    //             app.picked.currentHex = app.picked.material.color.getHex();
-    //             app.picked.material.color.setHex(0xff4444); //0x44ff44);
-    //         }
-    //     } else {
-    //         if (app.picked) app.picked.material.color.setHex(app.picked.currentHex);
-    //         app.picked = null;
-    //     }
-    // }
 // ################## poolvr VERSION = "v0.1.0";
