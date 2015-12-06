@@ -42,6 +42,9 @@ WebVRApplication = ( function () {
 
         this.resetVRSensor = function () {
             this.vrControls.resetSensor();
+            if (this.config.onResetVRSensor) {
+                this.config.onResetVRSensor();
+            }
         }.bind(this);
 
         var wireframeMaterial = new THREE.MeshBasicMaterial({color: 0xeeddaa, wireframe: true});
@@ -104,7 +107,7 @@ WebVRApplication = ( function () {
             world.defaultContactMaterial.frictionEquationStiffness  = config.frictionEquationStiffness || 1e6;
             world.defaultContactMaterial.contactEquationRelaxation  = config.contactEquationRelaxation || 4;
             world.defaultContactMaterial.frictionEquationRelaxation = config.frictionEquationRelaxation || 4;
-            world.solver.iterations = 10;
+            world.solver.iterations = 8;
         }
         this.world = world;
 

@@ -57,7 +57,15 @@ POOLVR.config.gamepadCommands = {
                max: 2 * Math.PI, min: 0},
     toggleToolFloatMode: {buttons: [Primrose.Input.Gamepad.XBOX_BUTTONS.rightStick],
                           commandDown: function () { avatar.toolMode = true; },
-                          commandUp: function () { avatar.toolMode = false; } }
+                          commandUp: function () { avatar.toolMode = false; } },
+    nextBall: {buttons: [Primrose.Input.Gamepad.XBOX_BUTTONS.rightBumper],
+               commandDown: function () { window.POOLVR.nextBall = Math.max(1, (window.POOLVR.nextBall + 1) % 15); },
+               dt: 0.5},
+    prevBall: {buttons: [Primrose.Input.Gamepad.XBOX_BUTTONS.leftBumper],
+               commandDown: function () { window.POOLVR.nextBall = Math.max(1, (window.POOLVR.nextBall - 1) % 15); },
+               dt: 0.5},
+    autoPosition: {buttons: [Primrose.Input.Gamepad.XBOX_BUTTONS.Y],
+                   commandDown: function () { window.autoPosition(window.avatar); }, dt: 0.5}
 };
 
 
@@ -89,7 +97,7 @@ POOLVR.config.vrLeap       = URL_PARAMS.vrLeap       || POOLVR.config.vrLeap;
 
 POOLVR.config.toolLength   = URL_PARAMS.toolLength || POOLVR.config.toolLength || 0.5;
 POOLVR.config.toolRadius   = URL_PARAMS.toolRadius || POOLVR.config.toolRadius || 0.013;
-POOLVR.config.toolMass     = URL_PARAMS.toolMass || POOLVR.config.toolMass || 0.06;
+POOLVR.config.toolMass     = URL_PARAMS.toolMass || POOLVR.config.toolMass || 0.04;
 if (URL_PARAMS.toolOffset) {
     POOLVR.config.toolOffset = new THREE.Vector3();
     POOLVR.config.toolOffset.fromArray(URL_PARAMS.toolOffset);

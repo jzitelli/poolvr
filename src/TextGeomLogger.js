@@ -12,7 +12,7 @@ var TextGeomLogger = (function () {
             size:          options.size || 0.12,
             font:          options.font || 'anonymous pro',
             height:        options.height || 0,
-            curveSegments: options.curveSegments || 2
+            curveSegments: options.curveSegments || 1
         };
         this.geometries = {};
         this.meshes = {};
@@ -26,7 +26,7 @@ var TextGeomLogger = (function () {
             this.meshes[c] = new THREE.Mesh(geom, material);
         }
 
-        var nrows = options.nrows || 20;
+        var nrows = options.nrows || 7;
         //var ncols = options.ncols || 80;
 
         var lineMeshBuffer = {};
@@ -63,10 +63,10 @@ var TextGeomLogger = (function () {
                     }
                 }
             }
-            // remove rows exceeding max display
-            while (this.root.children.length > nrows) {
-                this.root.remove(this.root.children[-1]);
-            }
+            // // remove rows exceeding max display
+            // while (this.root.children.length > nrows) {
+            //     this.root.remove(this.root.children[-1]);
+            // }
         }.bind(this);
     }
 

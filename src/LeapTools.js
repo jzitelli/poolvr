@@ -64,24 +64,39 @@ function addTool(parent, world, options) {
     parent.add(toolRoot);
 
     // interaction box visual guide:
-    var interactionBoxGeom = new THREE.BufferGeometry();
     var boxGeom = new THREE.BoxGeometry(1/scalar, 1/scalar, 1/scalar);
+    var interactionBoxGeom = new THREE.BufferGeometry();
     interactionBoxGeom.fromGeometry(boxGeom);
     boxGeom.dispose();
-    var interactionBoxMaterial = new THREE.MeshBasicMaterial({color: 0xaa8800, transparent: true, opacity: interactionBoxOpacity, side: THREE.BackSide});
+    //var interactionBoxMaterial = new THREE.MeshBasicMaterial({color: 0xaa8800, transparent: true, opacity: interactionBoxOpacity, side: THREE.BackSide});
+    var interactionBoxMaterial = new THREE.MeshBasicMaterial({color: 0x00dd44, transparent: true, opacity: interactionPlaneOpacity, side: THREE.BackSide});
     var interactionBoxMesh = new THREE.Mesh(interactionBoxGeom, interactionBoxMaterial);
-    var zeroPlaneGeom = new THREE.PlaneBufferGeometry(1/scalar, 1/scalar);
-    var zeroPlaneMaterial = new THREE.MeshBasicMaterial({color: 0x00dd44, transparent: true, opacity: interactionPlaneOpacity});
-    var zeroPlaneMesh = new THREE.Mesh(zeroPlaneGeom, zeroPlaneMaterial);
-    zeroPlaneMesh.position.z = 1/2/scalar - 1/3/scalar;
-    interactionBoxMesh.add(zeroPlaneMesh);
-    zeroPlaneMesh = zeroPlaneMesh.clone();
-    zeroPlaneMesh.position.z = 1/2/scalar - 2/3/scalar;
-    interactionBoxMesh.add(zeroPlaneMesh);
-    zeroPlaneMesh = zeroPlaneMesh.clone();
-    zeroPlaneMesh.position.z = 1/2/scalar - 1/scalar;
-    interactionBoxMesh.add(zeroPlaneMesh);
     toolRoot.add(interactionBoxMesh);
+    var zeroPlaneMaterial = new THREE.MeshBasicMaterial({color: 0x00dd44, transparent: true, opacity: interactionPlaneOpacity});
+    var zeroPlaneGeom = new THREE.PlaneBufferGeometry(1/scalar, 1/scalar);
+    var zeroPlaneMesh = new THREE.Mesh(zeroPlaneGeom, zeroPlaneMaterial);
+    zeroPlaneMesh.position.z = 1/2/scalar - 0.9/3/scalar;
+    interactionBoxMesh.add(zeroPlaneMesh);
+    zeroPlaneMesh = zeroPlaneMesh.clone();
+    zeroPlaneMesh.position.z = 1/2/scalar - 2*0.9/3/scalar;
+    interactionBoxMesh.add(zeroPlaneMesh);
+    zeroPlaneMesh = zeroPlaneMesh.clone();
+    zeroPlaneMesh.position.z = 1/2/scalar - 0.9/scalar;
+    interactionBoxMesh.add(zeroPlaneMesh);
+
+    boxGeom = new THREE.BoxGeometry(0.0254*3/scalar, 0.0254*0.5/scalar, 0.0254*1.2/scalar);
+    var leapGeom = new THREE.BufferGeometry();
+    leapGeom.fromGeometry(boxGeom);
+    boxGeom.dispose();
+    var leapMaterial;
+    if (options.useBasicMaterials) {
+        leapMaterial = new THREE.MeshBasicMaterial({color: 0x777777});
+    } else {
+        leapMaterial = new THREE.MeshLambertMaterial({color: 0x777777});
+    }
+    var leapMesh = new THREE.Mesh(leapGeom, leapMaterial);
+    leapMesh.position.y = 0.0254*0.25/scalar;
+    toolRoot.add(leapMesh);
 
     var stickGeom = new THREE.CylinderGeometry(toolRadius/scalar, toolRadius/scalar, toolLength/scalar, 10, 1, false);
     stickGeom.translate(0, -toolLength/scalar / 2, 0);
@@ -197,11 +212,6 @@ function addTool(parent, world, options) {
 
             if (tool.timeVisible > toolTime) {
 
-                toolRoot.visible = true;
-                stickMaterial.opacity = tipMaterial.opacity = 1;
-                interactionBoxMaterial.opacity = interactionBoxOpacity;
-                zeroPlaneMaterial.opacity = interactionPlaneOpacity;
-
                 stickMesh.position.fromArray(tool.tipPosition); // stickMesh.position.fromArray(tool.stabilizedTipPosition);
                 direction.fromArray(tool.direction);
                 stickMesh.quaternion.setFromUnitVectors(UP, direction);
@@ -223,6 +233,22 @@ function addTool(parent, world, options) {
                     velocity.applyQuaternion(parent.quaternion);
                     tipBody.velocity.copy(velocity);
 
+                    if (interactionBoxMaterial.opacity > 0.1 && tool.timeVisible > toolTimeB + 1.5) {
+                        interactionBoxMaterial.opacity *= 0.92;
+                        zeroPlaneMaterial.opacity *= 0.92;
+                    }
+                    //  else if (interactionBoxMesh.visible === true) {
+                    //     interactionBoxMesh.visible = false;
+                    // }
+
+                }
+
+                if (toolRoot.visible === false) {
+                    toolRoot.visible = true;
+                    interactionBoxMesh.visible = true;
+                    stickMaterial.opacity = tipMaterial.opacity = 1;
+                    interactionBoxMaterial.opacity = interactionBoxOpacity;
+                    zeroPlaneMaterial.opacity = interactionPlaneOpacity;
                 }
 
             }
@@ -235,11 +261,12 @@ function addTool(parent, world, options) {
         } else {
 
             // fade out stick
-            tipMaterial.opacity *= 0.9;
-            stickMaterial.opacity *= 0.9;
-            interactionBoxMaterial.opacity *= 0.9;
-            zeroPlaneMaterial.opacity *= 0.9;
-            if (tipMaterial.opacity < 0.1) {
+            if (tipMaterial.opacity > 0.1) {
+                tipMaterial.opacity *= 0.9;
+                stickMaterial.opacity *= 0.9;
+                interactionBoxMaterial.opacity *= 0.9;
+                zeroPlaneMaterial.opacity *= 0.9;
+            } else {
                 toolRoot.visible = false;
             }
 

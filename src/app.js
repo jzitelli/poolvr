@@ -18,7 +18,13 @@ function onLoad() {
     pyserver.log("starting poolvr...");
     pyserver.log("POOLVR.config =\n" + JSON.stringify(POOLVR.config, undefined, 2));
 
-    POOLVR.config.onfullscreenchange = function (fullscreen) { if (fullscreen) autoPosition(avatar, POOLVR.nextBall); };
+    //POOLVR.config.onfullscreenchange = function (fullscreen) { if (fullscreen) autoPosition(avatar, 2); };
+
+    var UP = new THREE.Vector3(0, 1, 0);
+    POOLVR.config.onResetVRSensor = function () {
+        toolRoot.position.applyAxisAngle(UP, -avatar.heading);
+        scene.updateMatrixWorld();
+    };
 
     var menu = setupMenu(avatar);
     POOLVR.config.menu = menu;
@@ -52,12 +58,11 @@ function onLoad() {
     POOLVR.ballBodies = [];
     POOLVR.ballMeshes = [];
     scene.traverse(function (node) {
-        if (node.name.startsWith('ballMesh')) {
+        if (node.name.startsWith('ball ')) {
             node.body.material = POOLVR.ballMaterial;
             node.body.bounces = 0;
             POOLVR.ballMeshes.push(node);
             POOLVR.ballBodies.push(node.body);
-            node.name = "ball " + node.name.split(' ')[-1];
         }
         else if (node.name.startsWith('ballStripeMesh')) {
             ballStripeMeshes.push(node);
@@ -108,7 +113,6 @@ function onLoad() {
                        POOLVR.config.H_table, POOLVR.floorMaterial, POOLVR.ballMaterial,
                        animateMousePointer, leftRoot, rightRoot) );
 
-    autoPosition(avatar, POOLVR.nextBall);
 
     startTutorial();
 }
@@ -117,7 +121,7 @@ function onLoad() {
 function setupMenu(parent) {
     "use strict";
     var menu = new THREE.Object3D();
-    var textGeom = new THREE.TextGeometry('RESET TABLE', {font: 'anonymous pro', size: 0.2, height: 0});
+    var textGeom = new THREE.TextGeometry('RESET TABLE', {font: 'anonymous pro', size: 0.2, height: 0, curveSegments: 2});
     var textMesh = new THREE.Mesh(textGeom);
     textMesh.position.set(0, 1, -2);
     menu.add(textMesh);
@@ -134,11 +138,13 @@ function startTutorial() {
     });
 
     synthSpeaker.speak("Please wave a stick-like object in front of your Leap Motion controller.", function () {
-        textGeomLogger.log("PLEASE WAVE A STICK-LIKE OBJECT IN FRONT OF YOUR LEAP MOTION CONTROLLER.");
+        textGeomLogger.log("PLEASE WAVE A STICK-LIKE OBJECT IN FRONT OF YOUR");
+        textGeomLogger.log("LEAP MOTION CONTROLLER.");
     });
 
     synthSpeaker.speak("Keep the stick within the interaction box when you want to make contact with.  A ball.", function () {
-        textGeomLogger.log("KEEP THE STICK WITHIN THE INTERACTION BOX WHEN YOU WANT TO MAKE CONTACT WITH A BALL.");
+        textGeomLogger.log("KEEP THE STICK WITHIN THE INTERACTION BOX WHEN YOU WANT");
+        textGeomLogger.log("TO MAKE CONTACT WITH A BALL.");
     });
 
     // synthSpeaker.speak("You moved a ball.  Good job.");
@@ -176,14 +182,13 @@ var animate = function (leapController, animateLeap,
     var UP = new THREE.Vector3(0, 1, 0),
         RIGHT = new THREE.Vector3(1, 0, 0),
         headingQuat = new THREE.Quaternion(),
-        // pitch = 0,
         // pitchQuat = new THREE.Quaternion(),
         walkSpeed = 0.333,
         floatSpeed = 0.1;
     var lastFrameID;
     var lt = 0;
-    POOLVR.deadBalls = [];
     avatar.heading = avatar.heading || 0;
+    var doAutoPosition = true;
     function animate(t) {
         var dt = (t - lt) * 0.001;
         requestAnimationFrame(animate);
@@ -199,16 +204,14 @@ var animate = function (leapController, animateLeap,
         var drive = app.keyboard.getValue("driveBack") + app.keyboard.getValue("driveForward");
         var strafe = app.keyboard.getValue("strafeRight") + app.keyboard.getValue("strafeLeft");
 
-        var heading = avatar.heading;
-        heading += -0.8 * dt * (app.keyboard.getValue("turnLeft") + app.keyboard.getValue("turnRight"));
+        avatar.heading += -0.8 * dt * (app.keyboard.getValue("turnLeft") + app.keyboard.getValue("turnRight"));
         if (avatar.floatMode) {
             floatUp += app.gamepad.getValue("float");
             strafe += app.gamepad.getValue("strafe");
         } else {
             drive += app.gamepad.getValue("drive");
-            heading += 0.8 * dt * app.gamepad.getValue("dheading");
+            avatar.heading += 0.8 * dt * app.gamepad.getValue("dheading");
         }
-        avatar.heading = heading;
         floatUp *= floatSpeed;
         if (strafe || drive) {
             var len = walkSpeed * Math.min(1, 1 / Math.sqrt(drive * drive +
@@ -219,8 +222,8 @@ var animate = function (leapController, animateLeap,
             strafe = 0;
             drive = 0;
         }
-        var cosHeading = Math.cos(heading),
-            sinHeading = Math.sin(heading);
+        var cosHeading = Math.cos(avatar.heading),
+            sinHeading = Math.sin(avatar.heading);
         // if (!app.vrControls.enabled) {
         //     pitch -= 0.8 * dt * (app.keyboard.getValue("pitchUp") + app.keyboard.getValue("pitchDown"));
         //     pitchQuat.setFromAxisAngle(RIGHT, pitch);
@@ -246,41 +249,19 @@ var animate = function (leapController, animateLeap,
             lastFrameID = frame.id;
         }
 
+
         app.world.step(1/75, dt, 4);
 
+        // var awakes = false;
         for (var j = 0; j < dynamicBodies.length; ++j) {
             var body = dynamicBodies[j];
             body.mesh.position.copy(body.position);
+            // if (body.sleepState === CANNON.Body.AWAKE) {
+            //     awakes = true;
+            //     body.mesh.position.copy(body.position);
+            //     doAutoPosition = true;
+            // }
         }
-
-        for (j = 0; j < ballStripeMeshes.length; j++) {
-            var mesh = ballStripeMeshes[j];
-            mesh.quaternion.copy(mesh.parent.body.quaternion);
-        }
-
-        avatar.quaternion.setFromAxisAngle(UP, heading);
-        // avatar.quaternion.multiply(pitchQuat);
-
-        avatar.position.x += dt * (strafe * cosHeading + drive * sinHeading);
-        avatar.position.z += dt * (drive * cosHeading - strafe * sinHeading);
-        avatar.position.y += dt * floatUp;
-
-        toolRoot.position.x += 0.25  * dt * toolStrafe;
-        toolRoot.position.z += -0.25 * dt * toolDrive;
-        toolRoot.position.y += 0.25  * dt * toolFloat;
-
-        toolRoot.rotation.y += 0.1 * dt * toolRotY;
-
-        leftRoot.position.copy(toolRoot.position);
-        rightRoot.position.copy(toolRoot.position);
-
-        if (!shadowMap) {
-            stickShadow.position.set(stickMesh.position.x,
-                (H_table + 0.001 - toolRoot.position.y - avatar.position.y) / toolRoot.scale.y,
-                stickMesh.position.z);
-            stickShadowMesh.quaternion.copy(stickMesh.quaternion);
-        }
-
         // TODO: use callbacks
         for (j = 0; j < app.world.contacts.length; j++) {
             var contactEquation = app.world.contacts[j];
@@ -295,21 +276,51 @@ var animate = function (leapController, animateLeap,
                 var ballBody = (bi.material === ballMaterial ? bi : bj);
                 ballBody.bounces++;
                 if (ballBody.bounces === 1) {
-                    // synthSpeaker.speak(ballBody.mesh.name + " hit the floor.");
+                    if (!synthSpeaker.speaking) {
+                        synthSpeaker.speak(ballBody.mesh.name + " hit the floor.");
+                    }
                     // textGeomLogger.log(ballBody.mesh.name + " HIT THE FLOOR!");
                 } else if (ballBody.bounces === 7) {
                     ballBody.sleep();
                     POOLVR.deadBalls.push(POOLVR.ballBodies.indexOf(ballBody));
-                    POOLVR.nextBall = POOLVR.deadBalls[0] + 1;
-                    for (var iball = 1; iball < POOLVR.deadBalls.length; iball++) {
-                        POOLVR.nextBall = Math.min(POOLVR.nextBall, POOLVR.deadBalls[iball] + 1);
-                    }
-                    autoPosition(avatar, POOLVR.nextBall, 5);
+                    // autoPosition(avatar, 5);
                 }
             }
         }
+        // if (doAutoPosition && awakes === false) {
+        //     autoPosition(avatar);
+        //     doAutoPosition = false;
+        // }
 
-        if (animateMousePointer) animateMousePointer(t);
+        for (j = 0; j < ballStripeMeshes.length; j++) {
+            var mesh = ballStripeMeshes[j];
+            mesh.quaternion.copy(mesh.parent.body.quaternion);
+        }
+
+        avatar.quaternion.setFromAxisAngle(UP, avatar.heading);
+        // avatar.quaternion.multiply(pitchQuat);
+
+        avatar.position.x += dt * (strafe * cosHeading + drive * sinHeading);
+        avatar.position.z += dt * (drive * cosHeading - strafe * sinHeading);
+        avatar.position.y += dt * floatUp;
+
+        toolRoot.position.x += 0.25  * dt * toolStrafe;
+        toolRoot.position.z += -0.25 * dt * toolDrive;
+        toolRoot.position.y += 0.25  * dt * toolFloat;
+        leftRoot.position.copy(toolRoot.position);
+        rightRoot.position.copy(toolRoot.position);
+
+        toolRoot.rotation.y += 0.1 * dt * toolRotY;
+        leftRoot.rotation.y = rightRoot.rotation.y = toolRoot.rotation.y;
+
+        if (!shadowMap) {
+            stickShadow.position.set(stickMesh.position.x,
+                (H_table + 0.001 - toolRoot.position.y - avatar.position.y) / toolRoot.scale.y,
+                stickMesh.position.z);
+            stickShadowMesh.quaternion.copy(stickMesh.quaternion);
+        }
+
+        //if (animateMousePointer) animateMousePointer(t);
 
         lt = t;
     }
@@ -321,31 +332,38 @@ var animate = function (leapController, animateLeap,
 POOLVR.nextBall = 1;
 POOLVR.nextVector = new THREE.Vector3();
 POOLVR.horizontal = new THREE.Vector3();
-function autoPosition(avatar, nextBall, timeout) {
+POOLVR.deadBalls = [];
+function autoPosition(avatar) {
     "use strict";
-    setTimeout(function () {
-        textGeomLogger.log("YOU ARE BEING AUTO-POSITIONED.");
-        if (synthSpeaker.speaking === false) {
-            synthSpeaker.speak("You are being auto-positioned.");
+
+    if (POOLVR.deadBalls.length > 0) {
+        POOLVR.nextBall = POOLVR.deadBalls[0] + 1;
+        for (var iball = 1; iball < POOLVR.deadBalls.length; iball++) {
+            POOLVR.nextBall = Math.min(POOLVR.nextBall, POOLVR.deadBalls[iball] + 1);
         }
-        textGeomLogger.log("NEXT BALL: " + POOLVR.nextBall);
-        nextBall = nextBall || POOLVR.nextBall;
-        POOLVR.nextVector.copy(POOLVR.ballMeshes[nextBall].position);
-        POOLVR.nextVector.sub(POOLVR.ballMeshes[0].position);
-        POOLVR.nextVector.y = 0;
-        POOLVR.nextVector.normalize();
-        // reposition and move back:
-        avatar.position.x = POOLVR.ballMeshes[0].position.x;
-        avatar.position.z = POOLVR.ballMeshes[0].position.z;
-        POOLVR.nextVector.multiplyScalar(0.5);
-        avatar.position.sub(POOLVR.nextVector);
-        avatar.position.y = POOLVR.config.H_table + 0.3;
-        avatar.updateMatrix();
-        // look at next ball:
-        POOLVR.horizontal.copy(POOLVR.ballMeshes[nextBall].position);
-        POOLVR.horizontal.y = avatar.position.y;
-        avatar.lookAt(POOLVR.horizontal);
-        avatar.updateMatrix();
-        avatar.heading = avatar.rotation.y;
-    }, timeout || 0);
+    }
+
+    textGeomLogger.log("YOU ARE BEING AUTO-POSITIONED.");
+    textGeomLogger.log("NEXT BALL: " + POOLVR.nextBall);
+    if (synthSpeaker.speaking === false) {
+        synthSpeaker.speak("You are being auto-positioned.");
+    }
+    pyserver.log("autoPositioning, next ball: " + POOLVR.nextBall);
+    //pyserver.log(JSON.stringify(POOLVR.ballMeshes[POOLVR.nextBall], undefined, 2));
+    POOLVR.nextVector.copy(POOLVR.ballMeshes[POOLVR.nextBall].position);
+    POOLVR.nextVector.sub(POOLVR.ballMeshes[0].position);
+    POOLVR.nextVector.y = 0;
+    POOLVR.nextVector.normalize();
+    // reposition and move back:
+    avatar.position.x = POOLVR.ballMeshes[0].position.x;
+    avatar.position.z = POOLVR.ballMeshes[0].position.z;
+    POOLVR.nextVector.multiplyScalar(0.5);
+    avatar.position.sub(POOLVR.nextVector);
+    avatar.position.y = POOLVR.config.H_table + 0.3;
+    // look at next ball:
+    POOLVR.horizontal.copy(POOLVR.ballMeshes[POOLVR.nextBall].position);
+    POOLVR.horizontal.y = avatar.position.y;
+    avatar.lookAt(POOLVR.horizontal);
+    scene.updateWorldMatrix();
+    avatar.heading = -avatar.rotation.y;
 }

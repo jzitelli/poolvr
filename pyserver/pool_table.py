@@ -300,7 +300,7 @@ def pool_hall(useBasicMaterials=True,
 
     for i, material in enumerate(ball_materials[:9] + 7*[ball_materials[0]]):
         rotation = [0, 0, 0]
-        ballMesh = Mesh(name="ballMesh %d" % i,
+        ballMesh = Mesh(name="ball %d" % i,
                         geometry=sphere,
                         position=[x_positions[i], y_position, z_positions[i]],
                         rotation=rotation,
