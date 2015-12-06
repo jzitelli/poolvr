@@ -34,10 +34,8 @@ def main():
     app = make_app()
     _logger.info("app.settings:\n%s" % '\n'.join(['%s: %s' % (k, str(v))
                                                   for k, v in sorted(app.settings.items(), key=itemgetter(0))]))
-
     port = app_flask.config.get('PORT', 5000)
     app.listen(port)
-
     _logger.info("STATIC_FOLDER   = %s" % STATIC_FOLDER)
     _logger.info("listening on port %d" % port)
     _logger.info("three.THREE_VERSION = %s" % three.THREE_VERSION)
@@ -53,7 +51,6 @@ STARTING TORNADO APP!!!!!!!!!!!!!
            ***********
                 *
 """)
-
     IOLoop.instance().start()
 
 
