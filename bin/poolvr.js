@@ -1103,7 +1103,9 @@ POOLVR.keyboardCommands = {
     moveToolLeft:      {buttons: [Primrose.Input.Keyboard.J]},
     moveToolRight:     {buttons: [Primrose.Input.Keyboard.L]},
     rotateToolCW:    {buttons: [Primrose.Input.Keyboard.U]},
-    rotateToolCCW:   {buttons: [Primrose.Input.Keyboard.Y]}
+    rotateToolCCW:   {buttons: [Primrose.Input.Keyboard.Y]},
+    autoPosition: {buttons: [Primrose.Input.Keyboard.R],
+                   commandDown: function () { autoPosition(avatar); }, dt: 0.5}
 };
 
 var DEADZONE = 0.2;
@@ -1236,30 +1238,34 @@ POOLVR.config.onfullscreenchange = function (fullscreen) {
 };
 
 
-POOLVR.nextVector = new THREE.Vector3();
-POOLVR.horizontal = new THREE.Vector3();
-function autoPosition(avatar) {
+var autoPosition = ( function () {
     "use strict";
-    textGeomLogger.log("YOU ARE BEING AUTO-POSITIONED.");
-    if (synthSpeaker.speaking === false) {
-        synthSpeaker.speak("You are being auto-positioned.");
+    var nextVector = new THREE.Vector3();
+    var horizontal = new THREE.Vector3();
+    function autoPosition(avatar) {
+        textGeomLogger.log("YOU ARE BEING AUTO-POSITIONED.");
+        if (synthSpeaker.speaking === false) {
+            synthSpeaker.speak("You are being auto-positioned.");
+        }
+        nextVector.copy(POOLVR.ballMeshes[POOLVR.nextBall].position);
+        nextVector.sub(POOLVR.ballMeshes[0].position);
+        nextVector.y = 0;
+        nextVector.normalize();
+        // reposition and move back:
+        avatar.position.x = POOLVR.ballMeshes[0].position.x;
+        avatar.position.z = POOLVR.ballMeshes[0].position.z;
+        nextVector.multiplyScalar(0.75);
+        avatar.position.sub(nextVector);
+        avatar.position.y = POOLVR.config.H_table + 0.32;
+        // look at next ball:
+        horizontal.copy(POOLVR.ballMeshes[POOLVR.nextBall].position);
+        horizontal.y = avatar.position.y;
+        avatar.lookAt(horizontal);
+        avatar.rotation.y += Math.PI;
+        avatar.updateMatrix();
     }
-    POOLVR.nextVector.copy(POOLVR.ballMeshes[POOLVR.nextBall].position);
-    POOLVR.nextVector.sub(POOLVR.ballMeshes[0].position);
-    POOLVR.nextVector.y = 0;
-    POOLVR.nextVector.normalize();
-    // reposition and move back:
-    avatar.position.x = POOLVR.ballMeshes[0].position.x;
-    avatar.position.z = POOLVR.ballMeshes[0].position.z;
-    POOLVR.nextVector.multiplyScalar(0.5);
-    avatar.position.sub(POOLVR.nextVector);
-    avatar.position.y = POOLVR.config.H_table + 0.3;
-    // look at next ball:
-    POOLVR.horizontal.copy(POOLVR.ballMeshes[POOLVR.nextBall].position);
-    POOLVR.horizontal.y = avatar.position.y;
-    avatar.lookAt(POOLVR.horizontal);
-    scene.updateMatrixWorld();
-}
+    return autoPosition;
+} )();
 
 
 function setupMenu(parent) {
@@ -1347,7 +1353,7 @@ var animate = function (leapController, animateLeap,
         var drive = app.keyboard.getValue("driveBack") + app.keyboard.getValue("driveForward");
         var strafe = app.keyboard.getValue("strafeRight") + app.keyboard.getValue("strafeLeft");
 
-        var heading = avatar.rotation.y;
+        var heading = 0;
         heading += -0.8 * dt * (app.keyboard.getValue("turnLeft") + app.keyboard.getValue("turnRight"));
         if (avatar.floatMode) {
             floatUp += app.gamepad.getValue("float");
@@ -1396,8 +1402,13 @@ var animate = function (leapController, animateLeap,
 
         app.world.step(1/75, dt, 5);
 
-        avatar.quaternion.setFromAxisAngle(UP, heading);
+
+        headingQuat.setFromAxisAngle(UP, heading);
+        avatar.quaternion.multiply(headingQuat);
+        // avatar.quaternion.setFromAxisAngle(UP, heading);
         // avatar.quaternion.multiply(pitchQuat);
+        // avatar.rotation.y = heading;
+
 
         avatar.position.x += dt * (strafe * cosHeading + drive * sinHeading);
         avatar.position.z += dt * (drive * cosHeading - strafe * sinHeading);
@@ -1631,7 +1642,6 @@ function onLoad() {
 
     var mouseStuff = setupMouse(avatar);
     var animateMousePointer = mouseStuff.animateMousePointer;
-    var mousePointerMesh    = mouseStuff.mousePointerMesh;
 
     app.start( animate(leapController, animateLeap,
                        POOLVR.ballBodies, ballStripeMeshes,

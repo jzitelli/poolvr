@@ -38,7 +38,9 @@ POOLVR.keyboardCommands = {
     moveToolLeft:      {buttons: [Primrose.Input.Keyboard.J]},
     moveToolRight:     {buttons: [Primrose.Input.Keyboard.L]},
     rotateToolCW:    {buttons: [Primrose.Input.Keyboard.U]},
-    rotateToolCCW:   {buttons: [Primrose.Input.Keyboard.Y]}
+    rotateToolCCW:   {buttons: [Primrose.Input.Keyboard.Y]},
+    autoPosition: {buttons: [Primrose.Input.Keyboard.R],
+                   commandDown: function () { autoPosition(avatar); }, dt: 0.5}
 };
 
 var DEADZONE = 0.2;
