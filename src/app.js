@@ -2,15 +2,15 @@ var app;
 
 var scene = THREE.py.parse(JSON_SCENE);
 
-var avatar = window.avatar || new THREE.Object3D();
+var avatar = avatar || new THREE.Object3D();
 avatar.position.y = 1.1;
 avatar.position.z = 1.86;
 
-var textGeomLogger = window.textGeomLogger || new TextGeomLogger();
+var textGeomLogger = textGeomLogger || new TextGeomLogger();
 avatar.add(textGeomLogger.root);
 textGeomLogger.root.position.set(-2.75, 1.5, -3.5);
 
-var synthSpeaker = new SynthSpeaker({volume: 0.4, rate: 0.8, pitch: 0.5});
+var synthSpeaker = new SynthSpeaker({volume: 0.5, rate: 0.8, pitch: 0.5});
 
 
 function onLoad() {
@@ -22,7 +22,7 @@ function onLoad() {
 
     var UP = new THREE.Vector3(0, 1, 0);
     POOLVR.config.onResetVRSensor = function () {
-        toolRoot.position.applyAxisAngle(UP, -avatar.heading);
+        toolRoot.position.applyAxisAngle(UP, avatar.heading);
         scene.updateMatrixWorld();
     };
 
@@ -54,27 +54,60 @@ function onLoad() {
     app.world.addContactMaterial(POOLVR.ballCushionContactMaterial);
     app.world.addContactMaterial(POOLVR.floorBallContactMaterial);
 
+    var onTable = [false,
+                   true, true, true, true, true, true, true,
+                   true,
+                   true, true, true, true, true, true, true];
     var ballStripeMeshes = [];
-    POOLVR.ballBodies = [];
-    POOLVR.ballMeshes = [];
     scene.traverse(function (node) {
-        if (node.name.startsWith('ball ')) {
-            node.body.material = POOLVR.ballMaterial;
-            node.body.bounces = 0;
-            POOLVR.ballMeshes.push(node);
-            POOLVR.ballBodies.push(node.body);
-        }
-        else if (node.name.startsWith('ballStripeMesh')) {
-            ballStripeMeshes.push(node);
-        }
-        else if (node.name.startsWith('playableSurfaceMesh')) {
-            node.body.material = POOLVR.playableSurfaceMaterial;
-        }
-        else if (node.name.endsWith('CushionMesh')) {
-            node.body.material = POOLVR.cushionMaterial;
-        }
-        else if (node.name === 'floorMesh') {
-            node.body.material = POOLVR.floorMaterial;
+        if (node instanceof THREE.Mesh) {
+            if (node.name.startsWith('ball ')) {
+                var ballNum = Number(node.name.split(' ')[1]);
+                POOLVR.ballMeshes[ballNum] = node;
+                POOLVR.initialPositions[ballNum] = new THREE.Vector3().copy(node.position);
+                node.body.material = POOLVR.ballMaterial;
+                node.body.bounces = 0;
+                node.body.ballNum = ballNum;
+                node.body.addEventListener(CANNON.Body.COLLIDE_EVENT_NAME, function(evt) {
+                    var body = evt.body;
+                    var contact = evt.contact;
+                    if (contact.bi === body && contact.bi.material === contact.bj.material) {
+                        // ball-ball collision:
+                        var impactVelocity = contact.getImpactVelocityAlongNormal();
+                        playCollisionSound(impactVelocity);
+                    }
+                });
+            }
+            else if (node.name.startsWith('ballStripeMesh')) {
+                ballStripeMeshes.push(node);
+            }
+            else if (node.name.startsWith('playableSurfaceMesh')) {
+                node.body.material = POOLVR.playableSurfaceMaterial;
+            }
+            else if (node.name.endsWith('CushionMesh')) {
+                node.body.material = POOLVR.cushionMaterial;
+            }
+            else if (node.name === 'floorMesh') {
+                node.body.material = POOLVR.floorMaterial;
+                node.body.addEventListener(CANNON.Body.COLLIDE_EVENT_NAME, function (evt) {
+                    // ball-floor collision
+                    var body = evt.body;
+                    body.bounces++;
+                    if (body.bounces === 1) {
+                        textGeomLogger.log(body.mesh.name + " HIT THE FLOOR!");
+                        playPocketedSound();
+                        onTable[body.ballNum] = false;
+                        POOLVR.nextBall = onTable.indexOf(true);
+                        if (POOLVR.nextBall === -1) {
+                            synthSpeaker.speak("You cleared the table.  Well done.");
+                            textGeomLogger.log("YOU CLEARED THE TABLE.  WELL DONE.");
+                        }
+                    } else if (body.bounces === 7) {
+                        body.sleep();
+                        // autoPosition(avatar, 5);
+                    }
+                });
+            }
         }
     });
 
@@ -262,35 +295,6 @@ var animate = function (leapController, animateLeap,
             //     doAutoPosition = true;
             // }
         }
-        // TODO: use callbacks
-        for (j = 0; j < app.world.contacts.length; j++) {
-            var contactEquation = app.world.contacts[j];
-            var bi = contactEquation.bi,
-                bj = contactEquation.bj;
-            if (bi.material === bj.material) {
-                // ball-ball collision
-                var impactVelocity = contactEquation.getImpactVelocityAlongNormal();
-                playCollisionSound(impactVelocity);
-            } else if (bi.material === floorMaterial || bj.material === floorMaterial) {
-                // ball-floor collision
-                var ballBody = (bi.material === ballMaterial ? bi : bj);
-                ballBody.bounces++;
-                if (ballBody.bounces === 1) {
-                    if (!synthSpeaker.speaking) {
-                        synthSpeaker.speak(ballBody.mesh.name + " hit the floor.");
-                    }
-                    // textGeomLogger.log(ballBody.mesh.name + " HIT THE FLOOR!");
-                } else if (ballBody.bounces === 7) {
-                    ballBody.sleep();
-                    POOLVR.deadBalls.push(POOLVR.ballBodies.indexOf(ballBody));
-                    // autoPosition(avatar, 5);
-                }
-            }
-        }
-        // if (doAutoPosition && awakes === false) {
-        //     autoPosition(avatar);
-        //     doAutoPosition = false;
-        // }
 
         for (j = 0; j < ballStripeMeshes.length; j++) {
             var mesh = ballStripeMeshes[j];
@@ -328,28 +332,19 @@ var animate = function (leapController, animateLeap,
     return animate;
 };
 
-
+POOLVR.ballMeshes = [];
+POOLVR.initialPositions = [];
 POOLVR.nextBall = 1;
 POOLVR.nextVector = new THREE.Vector3();
 POOLVR.horizontal = new THREE.Vector3();
-POOLVR.deadBalls = [];
 function autoPosition(avatar) {
     "use strict";
-
-    if (POOLVR.deadBalls.length > 0) {
-        POOLVR.nextBall = POOLVR.deadBalls[0] + 1;
-        for (var iball = 1; iball < POOLVR.deadBalls.length; iball++) {
-            POOLVR.nextBall = Math.min(POOLVR.nextBall, POOLVR.deadBalls[iball] + 1);
-        }
-    }
-
     textGeomLogger.log("YOU ARE BEING AUTO-POSITIONED.");
     textGeomLogger.log("NEXT BALL: " + POOLVR.nextBall);
     if (synthSpeaker.speaking === false) {
         synthSpeaker.speak("You are being auto-positioned.");
     }
     pyserver.log("autoPositioning, next ball: " + POOLVR.nextBall);
-    //pyserver.log(JSON.stringify(POOLVR.ballMeshes[POOLVR.nextBall], undefined, 2));
     POOLVR.nextVector.copy(POOLVR.ballMeshes[POOLVR.nextBall].position);
     POOLVR.nextVector.sub(POOLVR.ballMeshes[0].position);
     POOLVR.nextVector.y = 0;
@@ -364,6 +359,6 @@ function autoPosition(avatar) {
     POOLVR.horizontal.copy(POOLVR.ballMeshes[POOLVR.nextBall].position);
     POOLVR.horizontal.y = avatar.position.y;
     avatar.lookAt(POOLVR.horizontal);
-    scene.updateWorldMatrix();
+    scene.updateMatrixWorld();
     avatar.heading = -avatar.rotation.y;
 }

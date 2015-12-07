@@ -147,8 +147,8 @@ function addTool(parent, world, options) {
 
     var handMaterial = new THREE.MeshBasicMaterial({color: 0x113399, transparent: true, opacity: 0});
     // arms:
-    var armRadius = 0.0276/scalar,
-        armLength = 0.26/scalar;
+    var armRadius = 0.0216/scalar,
+        armLength = 0.22/scalar;
 
     var armGeom = new THREE.CylinderGeometry(armRadius, armRadius, armLength);
     bufferGeom = new THREE.BufferGeometry();
