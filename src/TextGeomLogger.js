@@ -63,10 +63,14 @@ var TextGeomLogger = (function () {
                     }
                 }
             }
-            // // remove rows exceeding max display
-            // while (this.root.children.length > nrows) {
-            //     this.root.remove(this.root.children[-1]);
-            // }
+            // remove rows exceeding max display
+            var toRemove = [];
+            for (i = 0; i < this.root.children.length - nrows; i++) {
+                toRemove.push(this.root.children[i]);
+            }
+            for (i = 0; i < toRemove.length; i++) {
+                this.root.remove(toRemove[i]);
+            }
         }.bind(this);
     }
 

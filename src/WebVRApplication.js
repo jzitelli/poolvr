@@ -40,10 +40,13 @@ WebVRApplication = ( function () {
             }
         }.bind(this);
 
+        var lastPosition = new THREE.Vector3();
         this.resetVRSensor = function () {
+            var dheading = -this.camera.rotation.y;
+            lastPosition.copy(this.camera.position);
             this.vrControls.resetSensor();
             if (this.config.onResetVRSensor) {
-                this.config.onResetVRSensor();
+                this.config.onResetVRSensor(dheading, lastPosition);
             }
         }.bind(this);
 

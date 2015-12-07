@@ -31,12 +31,14 @@ POOLVR.config.keyboardCommands = {
     strafeRight: {buttons: [Primrose.Input.Keyboard.D]},
     floatUp: {buttons: [Primrose.Input.Keyboard.E, Primrose.Input.Keyboard.NUMBER9]},
     floatDown: {buttons: [-Primrose.Input.Keyboard.C, -Primrose.Input.Keyboard.NUMBER3]},
-    moveToolUp:        {buttons: [Primrose.Input.Keyboard.O]}, //NUMBER7]},
-    moveToolDown:      {buttons: [Primrose.Input.Keyboard.PERIOD]}, //NUMBER1]},
-    moveToolForwards:  {buttons: [Primrose.Input.Keyboard.I]}, //NUMBER8]},
-    moveToolBackwards: {buttons: [Primrose.Input.Keyboard.K]}, //NUMBER5]},
-    moveToolLeft:      {buttons: [Primrose.Input.Keyboard.J]}, //NUMBER4]},
-    moveToolRight:     {buttons: [Primrose.Input.Keyboard.L]}  //NUMBER6]}
+    moveToolUp:        {buttons: [Primrose.Input.Keyboard.O]},
+    moveToolDown:      {buttons: [Primrose.Input.Keyboard.PERIOD]},
+    moveToolForwards:  {buttons: [Primrose.Input.Keyboard.I]},
+    moveToolBackwards: {buttons: [Primrose.Input.Keyboard.K]},
+    moveToolLeft:      {buttons: [Primrose.Input.Keyboard.J]},
+    moveToolRight:     {buttons: [Primrose.Input.Keyboard.L]},
+    rotateToolCW:    {buttons: [Primrose.Input.Keyboard.U]},
+    rotateToolCCW:   {buttons: [Primrose.Input.Keyboard.Y]}
 };
 
 var DEADZONE = 0.2;
@@ -59,15 +61,14 @@ POOLVR.config.gamepadCommands = {
                           commandDown: function () { avatar.toolMode = true; },
                           commandUp: function () { avatar.toolMode = false; } },
     nextBall: {buttons: [Primrose.Input.Gamepad.XBOX_BUTTONS.rightBumper],
-               commandDown: function () { window.POOLVR.nextBall = Math.max(1, (window.POOLVR.nextBall + 1) % 15); },
+               commandDown: function () { POOLVR.nextBall = Math.max(1, (POOLVR.nextBall + 1) % 15); },
                dt: 0.5},
     prevBall: {buttons: [Primrose.Input.Gamepad.XBOX_BUTTONS.leftBumper],
-               commandDown: function () { window.POOLVR.nextBall = Math.max(1, (window.POOLVR.nextBall - 1) % 15); },
+               commandDown: function () { POOLVR.nextBall = Math.max(1, (POOLVR.nextBall - 1) % 15); },
                dt: 0.5},
     autoPosition: {buttons: [Primrose.Input.Gamepad.XBOX_BUTTONS.Y],
-                   commandDown: function () { window.autoPosition(window.avatar); }, dt: 0.5}
+                   commandDown: function () { autoPosition(avatar); }, dt: 0.5}
 };
-
 
 
 // TODO: load from JSON config
