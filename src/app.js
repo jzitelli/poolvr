@@ -213,7 +213,7 @@ var animate = function (leapController, animateLeap,
     return animate;
 };
 
-
+/* jshint multistr: true */
 function onLoad() {
     "use strict";
     pyserver.log("\n\
@@ -309,8 +309,9 @@ function onLoad() {
     // first pass:
     scene.traverse(function (node) {
         if (node instanceof THREE.Mesh) {
+            var ballNum;
             if (node.name.startsWith('ball ')) {
-                var ballNum = Number(node.name.split(' ')[1]);
+                ballNum = Number(node.name.split(' ')[1]);
                 POOLVR.ballMeshes[ballNum] = node;
                 POOLVR.ballBodies[ballNum] = node.body;
                 POOLVR.initialPositions[ballNum] = new THREE.Vector3().copy(node.position);
@@ -319,11 +320,11 @@ function onLoad() {
                 node.body.material = POOLVR.ballMaterial;
             }
             else if (node.name.startsWith('ballStripeMesh')) {
-                var ballNum = Number(node.name.split(' ')[1]);
+                ballNum = Number(node.name.split(' ')[1]);
                 ballStripeMeshes[ballNum] = node;
             }
             else if (node.name.startsWith('ballShadowMesh')) {
-                var ballNum = Number(node.name.split(' ')[1]);
+                ballNum = Number(node.name.split(' ')[1]);
                 ballShadowMeshes[ballNum] = node;
             }
 
