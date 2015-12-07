@@ -1,27 +1,29 @@
 function addTool(parent, world, options) {
-    /*
+    /*************************************
 
     parent: THREE.Object3D
     world : CANNON.World
 
     returns: stuff
 
-    */
+    *************************************/
     "use strict";
     options = options || {};
 
     var toolLength = options.toolLength || 0.5;
     var toolRadius = options.toolRadius || 0.013;
-    var toolMass   = options.toolMass   || 0.06;
+    var toolMass   = options.toolMass   || 0.05;
 
     var tipRadius      = options.tipRadius || 0.95 * toolRadius;
     var tipMinorRadius = options.tipMinorRadius || 0.4 * toolRadius;
 
     var toolOffset = options.toolOffset || new THREE.Vector3(0, -0.4, -toolLength - 0.2);
-    var handOffset = options.handOffset || new THREE.Vector3(0, -0.25, -0.4);
+    var handOffset = options.handOffset || new THREE.Vector3().copy(toolOffset);
 
-    var toolTime      = options.toolTime  || 0.25;
-    var toolTimeB     = options.toolTimeB || toolTime + 1;
+    var toolTime  = options.toolTime  || 0.25;
+    var toolTimeB = options.toolTimeB || toolTime + 0.5;
+    var toolTimeC = options.toolTimeC || toolTimeB + 1.5;
+
     var minConfidence = options.minConfidence || 0.3;
 
     var interactionBoxOpacity   = options.interactionBoxOpacity || (options.useBasicMaterials === false ? 0.1 : 0.25);
@@ -233,19 +235,16 @@ function addTool(parent, world, options) {
                     velocity.applyQuaternion(parent.quaternion);
                     tipBody.velocity.copy(velocity);
 
-                    if (interactionBoxMaterial.opacity > 0.1 && tool.timeVisible > toolTimeB + 1.5) {
-                        interactionBoxMaterial.opacity *= 0.92;
-                        zeroPlaneMaterial.opacity *= 0.92;
+                    if (interactionBoxMaterial.opacity > 0.1 && tool.timeVisible > toolTimeC) {
+                        // dim the interaction box:
+                        interactionBoxMaterial.opacity *= 0.93;
+                        zeroPlaneMaterial.opacity *= 0.93;
                     }
-                    //  else if (interactionBoxMesh.visible === true) {
-                    //     interactionBoxMesh.visible = false;
-                    // }
 
                 }
 
-                if (toolRoot.visible === false) {
+                if (toolRoot.visible === false || stickMaterial.opacity !== 1) {
                     toolRoot.visible = true;
-                    interactionBoxMesh.visible = true;
                     stickMaterial.opacity = tipMaterial.opacity = 1;
                     interactionBoxMaterial.opacity = interactionBoxOpacity;
                     zeroPlaneMaterial.opacity = interactionPlaneOpacity;
@@ -262,10 +261,10 @@ function addTool(parent, world, options) {
 
             // fade out stick
             if (tipMaterial.opacity > 0.1) {
-                tipMaterial.opacity *= 0.9;
                 stickMaterial.opacity *= 0.9;
+                tipMaterial.opacity = stickMaterial.opacity;
                 interactionBoxMaterial.opacity *= 0.9;
-                zeroPlaneMaterial.opacity *= 0.9;
+                zeroPlaneMaterial.opacity = interactionBoxMaterial.opacity;
             } else {
                 toolRoot.visible = false;
             }

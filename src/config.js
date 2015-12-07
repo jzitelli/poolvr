@@ -22,7 +22,7 @@ var URL_PARAMS = (function () {
 })();
 
 
-POOLVR.config.keyboardCommands = {
+POOLVR.keyboardCommands = {
     turnLeft: {buttons: [-Primrose.Input.Keyboard.LEFTARROW]},
     turnRight: {buttons: [Primrose.Input.Keyboard.RIGHTARROW]},
     driveForward: {buttons: [-Primrose.Input.Keyboard.W]},
@@ -42,7 +42,7 @@ POOLVR.config.keyboardCommands = {
 };
 
 var DEADZONE = 0.2;
-POOLVR.config.gamepadCommands = {
+POOLVR.gamepadCommands = {
     strafe: {axes: [Primrose.Input.Gamepad.LSX], deadzone: DEADZONE},
     drive: {axes: [Primrose.Input.Gamepad.LSY], deadzone: DEADZONE},
     dheading: {axes: [-Primrose.Input.Gamepad.LSX], deadzone: DEADZONE},
@@ -93,8 +93,7 @@ POOLVR.floorBallContactMaterial = new CANNON.ContactMaterial(POOLVR.floorMateria
     friction: 0.4
 });
 
-POOLVR.config.mouseEnabled = URL_PARAMS.mouseEnabled || POOLVR.config.mouseEnabled;
-POOLVR.config.vrLeap       = URL_PARAMS.vrLeap       || POOLVR.config.vrLeap;
+POOLVR.config.vrLeap = URL_PARAMS.vrLeap || POOLVR.config.vrLeap;
 
 POOLVR.config.toolLength   = URL_PARAMS.toolLength || POOLVR.config.toolLength || 0.5;
 POOLVR.config.toolRadius   = URL_PARAMS.toolRadius || POOLVR.config.toolRadius || 0.013;
@@ -110,17 +109,4 @@ if (URL_PARAMS.toolOffset) {
 var WebVRConfig = WebVRConfig || {};
 // WebVRConfig.FORCE_DISTORTION = true;
 // WebVRConfig.FORCE_ENABLE_VR = true;
-
-pyserver.log('WebVRConfig =\n' + JSON.stringify(WebVRConfig, undefined, 2));
 var userAgent = navigator.userAgent;
-pyserver.log('userAgent = ' + userAgent);
-var vrDevices = [];
-if (navigator.getVRDevices) {
-    navigator.getVRDevices().then(function (devices) {
-        devices.forEach(function (device, i) {
-            pyserver.log('\nVR device ' + i + ': ' + device.deviceName);
-            console.log(device);
-            vrDevices[i] = device;
-        });
-    });
-}

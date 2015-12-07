@@ -222,6 +222,7 @@ def pool_hall(useBasicMaterials=True,
               url_prefix="",
               L_table=2.3368,
               H_table=0.74295,
+              ball_diameter=2.25*IN2METER,
               **kwargs):
     scene = Scene()
     L_room, W_room = 10, 10
@@ -239,8 +240,6 @@ def pool_hall(useBasicMaterials=True,
         light = PointLight(color=0xaa8866, position=[4, 5, 2.5], intensity=0.8, distance=40)
         scene.add(light)
 
-    ball_diameter = 2.25 * IN2METER
-
     poolTable = pool_table(L_table=L_table, H_table=H_table, ball_diameter=ball_diameter,
                            useBasicMaterials=useBasicMaterials, shadowMap=shadowMap, pointLight=pointLight, **kwargs)
     scene.add(poolTable)
@@ -248,7 +247,6 @@ def pool_hall(useBasicMaterials=True,
     # balls:
     num_balls = len(ball_colors)
     ball_radius = ball_diameter / 2
-
     sphere = SphereBufferGeometry(radius=ball_radius,
                                   widthSegments=16,
                                   heightSegments=12)
@@ -285,12 +283,12 @@ def pool_hall(useBasicMaterials=True,
                                   np.linspace(-0.5*(ball_diameter + d), 0.5 * side_length - (ball_diameter + d),   4),
                                   np.linspace(-(ball_diameter + d),     0.5 * side_length - 2*(ball_diameter + d), 3),
                                   np.linspace(-1.5*(ball_diameter + d), 0.5 * side_length - 3*(ball_diameter + d), 2),
-                                  np.array([-2*(ball_diameter + d)])])
+                                  np.array([  -2*(ball_diameter + d)])])
     z_positions = np.concatenate([np.linspace(0,                                    np.sqrt(3)/2 * side_length, 5),
                                   np.linspace(0.5*np.sqrt(3) * (ball_diameter + d), np.sqrt(3)/2 * side_length, 4),
                                   np.linspace(np.sqrt(3) * (ball_diameter + d),     np.sqrt(3)/2 * side_length, 3),
                                   np.linspace(1.5*np.sqrt(3) * (ball_diameter + d), np.sqrt(3)/2 * side_length, 2),
-                                  np.array([np.sqrt(3)/2 * side_length])])
+                                  np.array([  np.sqrt(3)/2 * side_length])])
     z_positions *= -1
     z_positions -= L_table / 8
 

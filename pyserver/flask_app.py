@@ -30,7 +30,8 @@ POOLVR = {
         'usePhongMaterials'     : None,
         'shadowMap'             : None,
         'pointLight'            : None,
-        'H_table'               : 0.74295
+        'H_table'               : 0.74295,
+        'ball_diameter'         : 2.25 * pool_table.IN2METER
     },
     'version': '0.1.0dev'
 }

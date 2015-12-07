@@ -2,13 +2,13 @@ var app;
 
 var scene = THREE.py.parse(JSON_SCENE);
 
-var avatar = avatar || new THREE.Object3D();
+var avatar = new THREE.Object3D();
 avatar.position.y = 1.1;
 avatar.position.z = 1.86;
 
 var textGeomLogger = textGeomLogger || new TextGeomLogger();
 avatar.add(textGeomLogger.root);
-textGeomLogger.root.position.set(-2.75, 1.5, -3.5);
+textGeomLogger.root.position.set(-2.5, 1.5, -3.5);
 
 var synthSpeaker = new SynthSpeaker({volume: 0.75, rate: 0.8, pitch: 0.5});
 
@@ -16,11 +16,36 @@ POOLVR.ballMeshes = [];
 POOLVR.ballBodies = [];
 POOLVR.initialPositions = [];
 POOLVR.nextBall = 1;
-
 POOLVR.config.onfullscreenchange = function (fullscreen) {
     if (fullscreen) pyserver.log('going fullscreen');
     else pyserver.log('exiting fullscreen');
 };
+
+
+POOLVR.nextVector = new THREE.Vector3();
+POOLVR.horizontal = new THREE.Vector3();
+function autoPosition(avatar) {
+    "use strict";
+    textGeomLogger.log("YOU ARE BEING AUTO-POSITIONED.");
+    if (synthSpeaker.speaking === false) {
+        synthSpeaker.speak("You are being auto-positioned.");
+    }
+    POOLVR.nextVector.copy(POOLVR.ballMeshes[POOLVR.nextBall].position);
+    POOLVR.nextVector.sub(POOLVR.ballMeshes[0].position);
+    POOLVR.nextVector.y = 0;
+    POOLVR.nextVector.normalize();
+    // reposition and move back:
+    avatar.position.x = POOLVR.ballMeshes[0].position.x;
+    avatar.position.z = POOLVR.ballMeshes[0].position.z;
+    POOLVR.nextVector.multiplyScalar(0.5);
+    avatar.position.sub(POOLVR.nextVector);
+    avatar.position.y = POOLVR.config.H_table + 0.3;
+    // look at next ball:
+    POOLVR.horizontal.copy(POOLVR.ballMeshes[POOLVR.nextBall].position);
+    POOLVR.horizontal.y = avatar.position.y;
+    avatar.lookAt(POOLVR.horizontal);
+    scene.updateMatrixWorld();
+}
 
 
 function setupMenu(parent) {
@@ -85,15 +110,14 @@ var animate = function (leapController, animateLeap,
     }
 
     var UP = new THREE.Vector3(0, 1, 0),
-        RIGHT = new THREE.Vector3(1, 0, 0),
         headingQuat = new THREE.Quaternion(),
+        //RIGHT = new THREE.Vector3(1, 0, 0),
         // pitchQuat = new THREE.Quaternion(),
         walkSpeed = 0.333,
         floatSpeed = 0.1;
     var lastFrameID;
     var lt = 0;
-    avatar.heading = avatar.heading || 0;
-    var doAutoPosition = true;
+    //var doAutoPosition = true;
     function animate(t) {
         var dt = (t - lt) * 0.001;
         requestAnimationFrame(animate);
@@ -109,13 +133,14 @@ var animate = function (leapController, animateLeap,
         var drive = app.keyboard.getValue("driveBack") + app.keyboard.getValue("driveForward");
         var strafe = app.keyboard.getValue("strafeRight") + app.keyboard.getValue("strafeLeft");
 
-        avatar.heading += -0.8 * dt * (app.keyboard.getValue("turnLeft") + app.keyboard.getValue("turnRight"));
+        var heading = avatar.rotation.y;
+        heading += -0.8 * dt * (app.keyboard.getValue("turnLeft") + app.keyboard.getValue("turnRight"));
         if (avatar.floatMode) {
             floatUp += app.gamepad.getValue("float");
             strafe += app.gamepad.getValue("strafe");
         } else {
             drive += app.gamepad.getValue("drive");
-            avatar.heading += 0.8 * dt * app.gamepad.getValue("dheading");
+            heading += 0.8 * dt * app.gamepad.getValue("dheading");
         }
         floatUp *= floatSpeed;
         if (strafe || drive) {
@@ -127,8 +152,8 @@ var animate = function (leapController, animateLeap,
             strafe = 0;
             drive = 0;
         }
-        var cosHeading = Math.cos(avatar.heading),
-            sinHeading = Math.sin(avatar.heading);
+        var cosHeading = Math.cos(heading),
+            sinHeading = Math.sin(heading);
         // if (!app.vrControls.enabled) {
         //     pitch -= 0.8 * dt * (app.keyboard.getValue("pitchUp") + app.keyboard.getValue("pitchDown"));
         //     pitchQuat.setFromAxisAngle(RIGHT, pitch);
@@ -157,24 +182,7 @@ var animate = function (leapController, animateLeap,
 
         app.world.step(1/75, dt, 5);
 
-        // TODO: use cannon postStep callback instead
-        // var awakes = false;
-        for (var j = 0; j < ballBodies.length; ++j) {
-            var body = ballBodies[j];
-            body.mesh.position.copy(body.position);
-            // if (body.sleepState === CANNON.Body.AWAKE) {
-            //     awakes = true;
-            //     body.mesh.position.copy(body.position);
-            //     doAutoPosition = true;
-            // }
-        }
-
-        for (var j = 0; j < ballStripeMeshes.length; j++) {
-            var mesh = ballStripeMeshes[j];
-            mesh.quaternion.copy(mesh.parent.body.quaternion);
-        }
-
-        avatar.quaternion.setFromAxisAngle(UP, avatar.heading);
+        avatar.quaternion.setFromAxisAngle(UP, heading);
         // avatar.quaternion.multiply(pitchQuat);
 
         avatar.position.x += dt * (strafe * cosHeading + drive * sinHeading);
@@ -205,54 +213,68 @@ var animate = function (leapController, animateLeap,
     return animate;
 };
 
-POOLVR.nextVector = new THREE.Vector3();
-POOLVR.horizontal = new THREE.Vector3();
-function autoPosition(avatar) {
-    "use strict";
-    textGeomLogger.log("YOU ARE BEING AUTO-POSITIONED.");
-    textGeomLogger.log("NEXT BALL: " + POOLVR.nextBall);
-    if (synthSpeaker.speaking === false) {
-        synthSpeaker.speak("You are being auto-positioned.");
-    }
-    pyserver.log("autoPositioning, next ball: " + POOLVR.nextBall);
-    POOLVR.nextVector.copy(POOLVR.ballMeshes[POOLVR.nextBall].position);
-    POOLVR.nextVector.sub(POOLVR.ballMeshes[0].position);
-    POOLVR.nextVector.y = 0;
-    POOLVR.nextVector.normalize();
-    // reposition and move back:
-    avatar.position.x = POOLVR.ballMeshes[0].position.x;
-    avatar.position.z = POOLVR.ballMeshes[0].position.z;
-    POOLVR.nextVector.multiplyScalar(0.5);
-    avatar.position.sub(POOLVR.nextVector);
-    avatar.position.y = POOLVR.config.H_table + 0.3;
-    // look at next ball:
-    POOLVR.horizontal.copy(POOLVR.ballMeshes[POOLVR.nextBall].position);
-    POOLVR.horizontal.y = avatar.position.y;
-    avatar.lookAt(POOLVR.horizontal);
-    scene.updateMatrixWorld();
-    avatar.heading = -avatar.rotation.y;
-}
-
 
 function onLoad() {
     "use strict";
-    pyserver.log("starting poolvr...");
+    pyserver.log("\n\
+*********************************************----\n\
+*********************************************----\n\
+*********************************************----\n\
+    ------ starting poolvr... -------------------\n\
+*********************************************----\n\
+*********************************************----\n\
+*********************************************----\n\
+    ---------------------------------------------\n");
+    pyserver.log('WebVRConfig =\n' + JSON.stringify(WebVRConfig, undefined, 2));
+    pyserver.log('userAgent = ' + userAgent);
+    if (navigator.getVRDevices) {
+        navigator.getVRDevices().then(function (devices) {
+            devices.forEach(function (device, i) {
+                pyserver.log('\nVR device ' + i + ': ' + device.deviceName);
+                console.log(device);
+            });
+        });
+    }
     pyserver.log("POOLVR.config =\n" + JSON.stringify(POOLVR.config, undefined, 2));
 
+    POOLVR.config.keyboardCommands = POOLVR.keyboardCommands;
+    POOLVR.config.gamepadCommands = POOLVR.gamepadCommands;
 
-    var UP = new THREE.Vector3(0, 1, 0);
+    var toolOptions = {
+        // ##### Desktop mode (default): #####
+        transformOptions : POOLVR.config.transformOptions, // || {vr: 'desktop'},
+        useBasicMaterials: POOLVR.config.useBasicMaterials,
+        toolLength       : POOLVR.config.toolLength,
+        toolRadius       : POOLVR.config.toolRadius,
+        toolMass         : POOLVR.config.toolMass,
+        toolOffset       : POOLVR.config.toolOffset
+    };
+    if (POOLVR.config.vrLeap) {
+        // ##### Leap Motion VR tracking mode: #####
+        toolOptions.transformOptions = {vr: true, effectiveParent: app.camera};
+    }
+    // toolOptions.onStreamingStarted = function () { textGeomLogger.log("YOUR LEAP MOTION CONTROLLER IS CONNECTED.  GOOD JOB."); };
+    // toolOptions.onStreamingStopped = function () { textGeomLogger.log("YOUR LEAP MOTION CONTROLLER IS DISCONNECTED!  HOW WILL YOU PLAY?!"); };
+    pyserver.log('toolOptions =\n' + JSON.stringify(toolOptions, undefined, 2));
+
+
+    //var UP = new THREE.Vector3(0, 1, 0);
     POOLVR.config.onResetVRSensor = function (dheading, lastPosition) {
+        // TODO: reposition toolRoot correctly
         // toolRoot.position.applyAxisAngle(UP, -dheading);
         // toolRoot.position.sub(lastPosition);
         scene.updateMatrixWorld();
     };
 
+
     var menu = setupMenu(avatar);
     POOLVR.config.menu = menu;
+
 
     app = new WebVRApplication("poolvr", avatar, scene, POOLVR.config);
     avatar.add(app.camera);
     scene.add(avatar);
+
 
     if (!POOLVR.config.useBasicMaterials) {
         // would rather add the spot lights via three.py generated JSON_SCENE, but I'm having problems getting shadows frm them:
@@ -268,6 +290,7 @@ function onLoad() {
         // centerSpotLightHelper.visible = false;
     }
 
+
     THREE.py.CANNONize(scene, app.world);
 
     app.world.addContactMaterial(POOLVR.ballBallContactMaterial);
@@ -275,24 +298,55 @@ function onLoad() {
     app.world.addContactMaterial(POOLVR.ballCushionContactMaterial);
     app.world.addContactMaterial(POOLVR.floorBallContactMaterial);
 
+
+    // referenced by cannon.js callbacks:
     var onTable = [false,
                    true, true, true, true, true, true, true,
                    true,
-                   true, true, true, true, true, true, true];
-    var ballStripeMeshes = [];
+                   true, true, true, true, true, true, true],
+        ballStripeMeshes = [],
+        ballShadowMeshes = [];
+    // first pass:
     scene.traverse(function (node) {
         if (node instanceof THREE.Mesh) {
-
             if (node.name.startsWith('ball ')) {
-
                 var ballNum = Number(node.name.split(' ')[1]);
                 POOLVR.ballMeshes[ballNum] = node;
                 POOLVR.ballBodies[ballNum] = node.body;
                 POOLVR.initialPositions[ballNum] = new THREE.Vector3().copy(node.position);
-
-                node.body.material = POOLVR.ballMaterial;
                 node.body.bounces = 0;
                 node.body.ballNum = ballNum;
+                node.body.material = POOLVR.ballMaterial;
+            }
+            else if (node.name.startsWith('ballStripeMesh')) {
+                var ballNum = Number(node.name.split(' ')[1]);
+                ballStripeMeshes[ballNum] = node;
+            }
+            else if (node.name.startsWith('ballShadowMesh')) {
+                var ballNum = Number(node.name.split(' ')[1]);
+                ballShadowMeshes[ballNum] = node;
+            }
+
+            else if (node.name === 'playableSurfaceMesh') {
+                node.body.material = POOLVR.playableSurfaceMaterial;
+            }
+
+            else if (node.name.endsWith('CushionMesh')) {
+                node.body.material = POOLVR.cushionMaterial;
+            }
+
+            else if (node.name === 'floorMesh') {
+                node.body.material = POOLVR.floorMaterial;
+            }
+        }
+    });
+    // second pass:
+    var H_table     = POOLVR.config.H_table,
+        ball_radius = POOLVR.config.ball_diameter / 2;
+    scene.traverse(function (node) {
+        if (node instanceof THREE.Mesh) {
+            if (node.name.startsWith('ball ')) {
+                // ball-ball collision callback:
                 node.body.addEventListener(CANNON.Body.COLLIDE_EVENT_NAME, function(evt) {
                     var body = evt.body;
                     var contact = evt.contact;
@@ -302,76 +356,56 @@ function onLoad() {
                         playCollisionSound(impactVelocity);
                     }
                 });
-
-                // app.world.addEventListener("postStep", function () {
-                //     this.position.copy(this.body.position);
-                // }.bind(node));
-
-            }
-            else if (node.name.startsWith('ballStripeMesh')) {
-                ballStripeMeshes.push(node);
-            }
-
-            else if (node.name === 'playableSurfaceMesh') {
-
-                node.body.material = POOLVR.playableSurfaceMaterial;
-
-            }
-
-            else if (node.name.endsWith('CushionMesh')) {
-
-                node.body.material = POOLVR.cushionMaterial;
-
-            }
-
-            else if (node.name === 'floorMesh') {
-
-                node.body.material = POOLVR.floorMaterial;
+                // post step callback: reposition mesh, shadow, stripe
+                app.world.addEventListener("postStep", function () {
+                    this.position.copy(this.body.position);
+                    var ballNum = this.body.ballNum;
+                    var stripeMesh = ballStripeMeshes[ballNum];
+                    if (stripeMesh !== undefined) {
+                        stripeMesh.quaternion.copy(this.body.quaternion);
+                    }
+                    var shadowMesh = ballShadowMeshes[ballNum];
+                    shadowMesh.position.y = -(this.position.y - H_table) + 0.0004;
+                    // var awakes = false;
+                    // for (var j = 0; j < ballBodies.length; ++j) {
+                    //     // if (body.sleepState === CANNON.Body.AWAKE) {
+                    //     //     awakes = true;
+                    //     //     doAutoPosition = true;
+                    //     // }
+                    // }
+                }.bind(node));
+            } else if (node.name === 'floorMesh') {
+                // ball-floor collision
                 node.body.addEventListener(CANNON.Body.COLLIDE_EVENT_NAME, function (evt) {
-                    // ball-floor collision
                     var body = evt.body;
                     if (body.ballNum === 0) {
                         textGeomLogger.log("SCRATCH.");
                         synthSpeaker.speak("Scratch.");
                         body.position.copy(POOLVR.initialPositions[0]);
                         body.velocity.set(0, 0, 0);
-                    }
-                    body.bounces++;
-                    if (body.bounces === 1) {
-                        textGeomLogger.log(body.mesh.name + " HIT THE FLOOR!");
-                        playPocketedSound();
-                        onTable[body.ballNum] = false;
-                        POOLVR.nextBall = onTable.indexOf(true);
-                        if (POOLVR.nextBall === -1) {
-                            synthSpeaker.speak("You cleared the table.  Well done.");
-                            textGeomLogger.log("YOU CLEARED THE TABLE.  WELL DONE.");
+                    } else {
+                        body.bounces++;
+                        if (body.bounces === 1) {
+                            textGeomLogger.log(body.mesh.name + " HIT THE FLOOR!");
+                            playPocketedSound();
+                            onTable[body.ballNum] = false;
+                            POOLVR.nextBall = onTable.indexOf(true);
+                            if (POOLVR.nextBall === -1) {
+                                synthSpeaker.speak("You cleared the table.  Well done.");
+                                textGeomLogger.log("YOU CLEARED THE TABLE.  WELL DONE.");
+                            }
+                        } else if (body.bounces === 7) {
+                            body.sleep();
+                            // autoPosition(avatar, 5);
                         }
-                    } else if (body.bounces === 7) {
-                        body.sleep();
-                        // autoPosition(avatar, 5);
                     }
                 });
+
             }
 
         }
     });
 
-    var toolOptions = {
-        // ##### Desktop mode (default): #####
-        transformOptions : POOLVR.config.transformOptions, // || {vr: 'desktop'},
-        useBasicMaterials: POOLVR.config.useBasicMaterials,
-        toolLength       : POOLVR.config.toolLength,
-        toolRadius       : POOLVR.config.toolRadius,
-        toolMass         : POOLVR.config.toolMass,
-        toolOffset       : POOLVR.config.toolOffset
-    };
-    if (POOLVR.config.vrLeap) {
-        // ##### Leap Motion VR tracking mode: #####
-        toolOptions.transformOptions = {vr: true, effectiveParent: app.camera};
-    }
-    pyserver.log('toolOptions =\n' + JSON.stringify(toolOptions, undefined, 2));
-    // toolOptions.onStreamingStarted = function () { textGeomLogger.log("YOUR LEAP MOTION CONTROLLER IS CONNECTED.  GOOD JOB."); };
-    // toolOptions.onStreamingStopped = function () { textGeomLogger.log("YOUR LEAP MOTION CONTROLLER IS DISCONNECTED!  HOW WILL YOU PLAY?!"); };
     var toolStuff = addTool(avatar, app.world, toolOptions);
     var toolRoot       = toolStuff.toolRoot;
     var leapController = toolStuff.leapController;
