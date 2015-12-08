@@ -19,6 +19,7 @@ app.config.from_object(site_settings)
 sys.path.insert(0, os.path.join(os.getcwd(), 'three.py'))
 import three
 import pool_table
+import config_scene
 
 
 POOLVR = {
@@ -73,13 +74,32 @@ def js_suffix():
 @app.route('/poolvr/config', methods=['GET', 'POST'])
 def poolvr_config():
     """app configurator"""
-    configScene = three.Scene().export()
     config = get_poolvr_config()
+    version = request.args.get('version', POOLVR['version'])
+
+    #configScene = three.Scene().export()
+    configScene = config_scene.config_scene(url_prefix="../", **config)
+    textGeom = three.TextGeometry(text="POOLVR", font='anonymous pro', height=0, size=0.4, curveSegments=2)
+    textMaterial = three.MeshBasicMaterial(color=0xff0000)
+    textMesh = three.Mesh(geometry=textGeom, material=textMaterial,
+                          position=[0, 0, -4])
+    configScene.add(textMesh)
+    configScene = configScene.export()
+
+    poolvr_config = json.dumps({'config' : config,
+                                'version': version},
+                               indent=2)
     return render_template('config.html',
                            json_config=Markup(r"""<script>
-var JSON_SCENE = %s
-</script>""" % configScene),
-                           poolvr_config=json.dumps(config, indent=2))
+var POOLVR = %s;
+var JSON_SCENE = %s;
+</script>""" % (poolvr_config,
+                json.dumps(configScene, indent=2))),
+                           poolvr_config=Markup(r"""<code>
+%s
+</code>""" % poolvr_config.replace('\n', '<br>')))
+
+
 # try:
 #     model_dir = os.path.join(os.getcwd(), 'models')
 #     with open(os.path.join(model_dir, 'ConfigUtilDeskScene.json')) as f:

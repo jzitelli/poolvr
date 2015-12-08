@@ -3,9 +3,14 @@
   <head>
     <meta charset="utf-8">
 
-    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 
-    <title>poolvr/config</title>
+    <link rel="shortcut icon" href="favicon.ico">
+
+    <title>poolvr config</title>
 
     <style>
       body {
@@ -32,56 +37,26 @@
     <a id='import'> Import config </a>
     <a id='export'> Export config </a>
  -->
-    <script src="{{ url_for('static', filename='lib/three-r73.js') }}"></script>
-    <script src="{{ url_for('static', filename='lib/TextGeometry.js') }}"></script>
-    <script src="{{ url_for('static', filename='lib/FontUtils.js') }}"></script>
-    <script src="{{ url_for('static', filename='lib/VREffect.js') }}"></script>
-    <script src="{{ url_for('static', filename='lib/VRControls.js') }}"></script>
-    <script src="{{ url_for('static', filename='lib/webvr-polyfill.js') }}"></script>
-    <script src="{{ url_for('static', filename='lib/webvr-manager.js') }}"></script>
 
-    <script src="{{ url_for('static', filename='lib/ColladaLoader.js') }}"></script>
-    <script src="{{ url_for('static', filename='lib/Primrose.js') }}"></script>
-    <script src="{{ url_for('static', filename='lib/cannon.js') }}"></script>
+    <script src="../lib/three-r73.js"></script>
+    <script src="../lib/TextGeometry.js"></script>
+    <script src="../lib/FontUtils.js"></script>
+    <script src="../lib/VREffect.js"></script>
+    <script src="../lib/VRControls.js"></script>
+    <script src="../lib/webvr-polyfill.js"></script>
+    <script src="../lib/webvr-manager.js"></script>
 
-    <script src="{{ url_for('static', filename='three.py/js/three.py.js') }}"></script>
-    <script src="{{ url_for('static', filename='src/WebVRApplication.js') }}"></script>
+    <script src="../lib/cannon.js"></script>
 
-    <!-- TODO: -->
-    <!-- <script src="{{ url_for('static', filename='src/Configurator.js') }}"></script> -->
-<script>
-var scene;
-var app;
-var avatar = new THREE.Object3D();
+    <script src="../lib/ColladaLoader.js"></script>
+    <script src="../lib/Primrose.js"></script>
 
-function onLoad() {
-    scene = THREE.py.parse(JSON_SCENE);
-    console.log(scene.type);
-    console.log(scene);
-    scene.scale.set(0.01, 0.01, 0.01);
-    scene.add(avatar);
-    app = new WebVRApplication('poolvr config', avatar, scene, POOLVR.config);
-    avatar.add(app.camera);
-    app.start(animate);
-}
+    <script src="../fonts/helvetiker_regular.typeface.js"></script>
+    <script src="../fonts/Anonymous Pro_Regular.js"></script>
 
-var animate = ( function () {
-    var lt = 0;
-    function animate(t) {
-        "use strict";
-        requestAnimationFrame(animate);
-        var dt = (t - lt) * 0.001;
-        lt = t;
-        if (app.vrControls.enabled) {
-            app.vrControls.update();
-        }
-        app.vrManager.render(app.scene, app.camera, t);
-        // app.keyboard.update(dt);
-        // app.gamepad.update(dt);
-    }
-    return animate;
-} )();
-</script>
+    <script src="../three.py/js/three.py.js"></script>
+    <script src="../src/WebVRApplication.js"></script>
+    <script src="../src/Configurator.js"></script>
 
   </body>
 </html>
