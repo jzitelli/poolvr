@@ -634,7 +634,7 @@ function addTool(parent, world, options) {
                     if (interactionBoxMaterial.opacity > 0.1 && tool.timeVisible > toolTimeC) {
                         // dim the interaction box:
                         interactionBoxMaterial.opacity *= 0.93;
-                        zeroPlaneMaterial.opacity *= 0.93;
+                        zeroPlaneMaterial.opacity = interactionBoxMaterial.opacity;
                     }
 
                 }
@@ -1357,7 +1357,7 @@ var animate = function (leapController, animateLeap,
     }
 
     var UP = new THREE.Vector3(0, 1, 0),
-        headingQuat = new THREE.Quaternion(),
+        //headingQuat = new THREE.Quaternion(),
         //RIGHT = new THREE.Vector3(1, 0, 0),
         // pitchQuat = new THREE.Quaternion(),
         walkSpeed = 0.333,
@@ -1371,6 +1371,14 @@ var animate = function (leapController, animateLeap,
         if (app.vrControls.enabled) {
             app.vrControls.update();
         }
+        var frame = leapController.frame();
+        if (frame.valid && frame.id != lastFrameID) {
+            animateLeap(frame, dt);
+            lastFrameID = frame.id;
+        }
+
+        app.world.step(1/75, dt, 5);
+
         app.vrManager.render(app.scene, app.camera, t);
 
         app.keyboard.update(dt);
@@ -1421,16 +1429,6 @@ var animate = function (leapController, animateLeap,
             toolDrive -= app.gamepad.getValue("toolDrive");
             rotateToolCW -= app.gamepad.getValue("toolStrafe");
         }
-
-        var frame = leapController.frame();
-        if (frame.valid && frame.id != lastFrameID) {
-            animateLeap(frame, dt);
-            lastFrameID = frame.id;
-        }
-
-
-        app.world.step(1/75, dt, 5);
-
 
         avatar.quaternion.setFromAxisAngle(UP, avatar.heading);
         // headingQuat.setFromAxisAngle(UP, heading);
@@ -1562,6 +1560,8 @@ function onLoad() {
     var leftRoot       = toolStuff.leftRoot;
     var rightRoot      = toolStuff.rightRoot;
     var tipBody        = toolStuff.tipBody;
+
+    tipBody.material = POOLVR.tipMaterial;
 
     // referenced by cannon.js callbacks:
     var onTable = [false,
