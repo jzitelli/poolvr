@@ -1221,6 +1221,7 @@ var scene = THREE.py.parse(JSON_SCENE);
 var avatar = new THREE.Object3D();
 avatar.position.y = 1.1;
 avatar.position.z = 1.86;
+avatar.heading = 0;
 
 var textGeomLogger = textGeomLogger || new TextGeomLogger();
 avatar.add(textGeomLogger.root);
@@ -1242,11 +1243,13 @@ var autoPosition = ( function () {
     "use strict";
     var nextVector = new THREE.Vector3();
     var horizontal = new THREE.Vector3();
+    var headingQuat = new THREE.Quaternion();
+    var UP = new THREE.Vector3();
     function autoPosition(avatar) {
         textGeomLogger.log("YOU ARE BEING AUTO-POSITIONED.");
-        if (synthSpeaker.speaking === false) {
-            synthSpeaker.speak("You are being auto-positioned.");
-        }
+        // if (synthSpeaker.speaking === false) {
+        //     synthSpeaker.speak("You are being auto-positioned.");
+        // }
         nextVector.copy(POOLVR.ballMeshes[POOLVR.nextBall].position);
         nextVector.sub(POOLVR.ballMeshes[0].position);
         nextVector.y = 0;
@@ -1260,12 +1263,27 @@ var autoPosition = ( function () {
         // look at next ball:
         horizontal.copy(POOLVR.ballMeshes[POOLVR.nextBall].position);
         horizontal.y = avatar.position.y;
-        avatar.lookAt(horizontal);
-        avatar.rotation.y += Math.PI;
+
+        avatar.heading = Math.atan2(
+            POOLVR.ballMeshes[POOLVR.nextBall].position.z - avatar.position.z,
+            POOLVR.ballMeshes[POOLVR.nextBall].position.x - avatar.position.x
+        );
+        avatar.quaternion.setFromAxisAngle(UP, avatar.heading);
         avatar.updateMatrix();
+
+        textGeomLogger.log("avatar.rotation.y =" + avatar.rotation.y);
     }
     return autoPosition;
 } )();
+
+
+function resetTable() {
+    "use strict";
+    POOLVR.ballBodies.forEach(function (body, ballNum) {
+        body.position.copy(POOLVR.initialPositions[ballNum]);
+        body.wake();
+    });
+}
 
 
 function setupMenu(parent) {
@@ -1353,8 +1371,7 @@ var animate = function (leapController, animateLeap,
         var drive = app.keyboard.getValue("driveBack") + app.keyboard.getValue("driveForward");
         var strafe = app.keyboard.getValue("strafeRight") + app.keyboard.getValue("strafeLeft");
 
-        var heading = 0;
-        heading += -0.8 * dt * (app.keyboard.getValue("turnLeft") + app.keyboard.getValue("turnRight"));
+        var heading = -0.8 * dt * (app.keyboard.getValue("turnLeft") + app.keyboard.getValue("turnRight"));
         if (avatar.floatMode) {
             floatUp += app.gamepad.getValue("float");
             strafe += app.gamepad.getValue("strafe");
@@ -1372,8 +1389,11 @@ var animate = function (leapController, animateLeap,
             strafe = 0;
             drive = 0;
         }
-        var cosHeading = Math.cos(heading),
-            sinHeading = Math.sin(heading);
+
+        avatar.heading += heading;
+        var cosHeading = Math.cos(avatar.heading),
+            sinHeading = Math.sin(avatar.heading);
+
         // if (!app.vrControls.enabled) {
         //     pitch -= 0.8 * dt * (app.keyboard.getValue("pitchUp") + app.keyboard.getValue("pitchDown"));
         //     pitchQuat.setFromAxisAngle(RIGHT, pitch);
@@ -1403,12 +1423,10 @@ var animate = function (leapController, animateLeap,
         app.world.step(1/75, dt, 5);
 
 
-        headingQuat.setFromAxisAngle(UP, heading);
-        avatar.quaternion.multiply(headingQuat);
-        // avatar.quaternion.setFromAxisAngle(UP, heading);
+        avatar.quaternion.setFromAxisAngle(UP, avatar.heading);
+        // headingQuat.setFromAxisAngle(UP, heading);
+        // avatar.quaternion.multiply(headingQuat);
         // avatar.quaternion.multiply(pitchQuat);
-        // avatar.rotation.y = heading;
-
 
         avatar.position.x += dt * (strafe * cosHeading + drive * sinHeading);
         avatar.position.z += dt * (drive * cosHeading - strafe * sinHeading);
@@ -1619,6 +1637,7 @@ function onLoad() {
                             if (POOLVR.nextBall === -1) {
                                 synthSpeaker.speak("You cleared the table.  Well done.");
                                 textGeomLogger.log("YOU CLEARED THE TABLE.  WELL DONE.");
+                                resetTable();
                             }
                         } else if (body.bounces === 7) {
                             body.sleep();
@@ -1650,7 +1669,6 @@ function onLoad() {
                        POOLVR.config.H_table, POOLVR.floorMaterial, POOLVR.ballMaterial,
                        animateMousePointer,
                        leftRoot, rightRoot) );
-
 
     startTutorial();
 }

@@ -12,13 +12,12 @@ from tornado.ioloop import IOLoop
 from flask_app import app, site_settings, STATIC_FOLDER, three
 app_flask = app
 
+websocket_handlers = []
+# if site_settings.GFXTABLET:
+#     from GfxTablet import GfxTabletHandler
+#     websocket_handlers.append((r'/gfxtablet', GfxTabletHandler))
 # from PointerEventHandler import PointerEventHandler
 # from TouchEventHandler import TouchEventHandler
-
-websocket_handlers = []
-if site_settings.GFXTABLET:
-    from GfxTablet import GfxTabletHandler
-    websocket_handlers.append((r'/gfxtablet', GfxTabletHandler))
 # if site_settings.POINTEREVENTS:
 #     websocket_handlers.append((r'/pointerevents', PointerEventHandler))
 handlers = websocket_handlers + [(r'.*', FallbackHandler, dict(fallback=WSGIContainer(app_flask)))]
