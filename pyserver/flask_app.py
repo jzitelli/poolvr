@@ -70,53 +70,7 @@ def js_suffix():
         return {'js_suffix': '.min.js'}
 
 
-
-@app.route('/poolvr/config', methods=['GET', 'POST'])
-def poolvr_config():
-    """app configurator"""
-    config = get_poolvr_config()
-    version = request.args.get('version', POOLVR['version'])
-
-    #configScene = three.Scene().export()
-    configScene = config_scene.config_scene(url_prefix="../", **config)
-    textGeom = three.TextGeometry(text="POOLVR", font='anonymous pro', height=0, size=0.4, curveSegments=2)
-    textMaterial = three.MeshBasicMaterial(color=0xff0000)
-    textMesh = three.Mesh(geometry=textGeom, material=textMaterial,
-                          position=[0, 0, -4])
-    configScene.add(textMesh)
-    configScene = configScene.export()
-
-    poolvr_config = json.dumps({'config' : config,
-                                'version': version},
-                               indent=2)
-    return render_template('config.html',
-                           json_config=Markup(r"""<script>
-var POOLVR = %s;
-var JSON_SCENE = %s;
-</script>""" % (poolvr_config,
-                json.dumps(configScene, indent=2))),
-                           poolvr_config=Markup(r"""<code>
-%s
-</code>""" % poolvr_config.replace('\n', '<br>')))
-
-
-# try:
-#     model_dir = os.path.join(os.getcwd(), 'models')
-#     with open(os.path.join(model_dir, 'ConfigUtilDeskScene.json')) as f:
-#         configScene = json.loads(f.read())
-#     def replace_urls(node):
-#         for k, v in node.items():
-#             if isinstance(v, str) and v[-4:] == '.png':
-#                 node[k] = os.path.join('models', v)
-#             elif isinstance(v, dict):
-#                 replace_urls(v)
-#     replace_urls(configScene)
-# except Exception as err:
-#     _logger.warning(err)
-#     configScene = three.Scene().export()
-
-
-
+    
 @app.route('/poolvr')
 def poolvr_app():
     """Serves the poolvr HTML app"""
@@ -137,6 +91,54 @@ var JSON_SCENE = %s;
                            indent=2),
                 json.dumps(pool_table.pool_hall(**config),
                            indent=(2 if app.debug else None)))), **config)
+
+
+
+@app.route('/poolvr/config', methods=['GET', 'POST'])
+def poolvr_config():
+    """app configurator"""
+    config = get_poolvr_config()
+    config['initialPosition'] = [0, 0.9, 0.9]
+    version = request.args.get('version', POOLVR['version'])
+
+    configScene = config_scene.config_scene(url_prefix="../", **config)
+    textGeom = three.TextGeometry(text="POOLVR", font='anonymous pro', height=0, size=0.4, curveSegments=2)
+    textMaterial = three.MeshBasicMaterial(color=0xff0000)
+    textMesh = three.Mesh(geometry=textGeom, material=textMaterial,
+                          position=[config['initialPosition'][0],
+                                    config['initialPosition'][1] + 0.2,
+                                    config['initialPosition'][2] + 0.4])
+    configScene.add(textMesh)
+    configScene = configScene.export()
+
+    poolvr_config = json.dumps({'config' : config,
+                                'version': version},
+                               indent=2)
+    return render_template('config.html',
+                           json_config=Markup(r"""<script>
+var POOLVR = %s;
+var JSON_SCENE = %s;
+</script>""" % (poolvr_config,
+                json.dumps(configScene, indent=2))))
+
+#                            poolvr_config=Markup(r"""<code>
+# %s
+# </code>""" % poolvr_config.replace('\n', '<br>')))
+
+# try:
+#     model_dir = os.path.join(os.getcwd(), 'models')
+#     with open(os.path.join(model_dir, 'ConfigUtilDeskScene.json')) as f:
+#         configScene = json.loads(f.read())
+#     def replace_urls(node):
+#         for k, v in node.items():
+#             if isinstance(v, str) and v[-4:] == '.png':
+#                 node[k] = os.path.join('models', v)
+#             elif isinstance(v, dict):
+#                 replace_urls(v)
+#     replace_urls(configScene)
+# except Exception as err:
+#     _logger.warning(err)
+#     configScene = three.Scene().export()
 
 
 

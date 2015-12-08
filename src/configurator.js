@@ -24,15 +24,20 @@ function onLoad() {
     "use strict";
     var avatar = new THREE.Object3D();
     avatar.heading = 0;
-    avatar.position.y = 0.9;
-    avatar.position.z = 0.9;
+    var initialPosition = POOLVR.config.initialPosition || [0, 0.9, 0.9];
+    avatar.position.fromArray(initialPosition);
+
+    var textGeomLogger = new TextGeomLogger();
+    avatar.add(textGeomLogger.root);
+    textGeomLogger.root.position.set(-2.5, 1.5, -3.5);
+
     var scene = THREE.py.parse(JSON_SCENE);
-    console.log(scene.type);
-    console.log(scene);
-    scene.scale.set(0.01, 0.01, 0.01);
     scene.add(avatar);
 
     app = new WebVRApplication('poolvr config', avatar, scene, POOLVR.config);
     avatar.add(app.camera);
+
+    textGeomLogger.log(JSON.stringify(POOLVR, undefined, 2));
+
     app.start(animate);
 }

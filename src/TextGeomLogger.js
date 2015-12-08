@@ -34,14 +34,9 @@ var TextGeomLogger = (function () {
         this.root = new THREE.Object3D();
 
         this.log = function (msg) {
-            var lines = msg.split('\n');
-            // scroll previous lines:
-            for (var i = 0; i < this.root.children.length; i++) {
-                var child = this.root.children[i];
-                child.position.y += 1.6*textGeomParams.size;
-            }
+            var lines = msg.split(/\n/);
             // create / clone new lines:
-            for (i = 0; i < lines.length; i++) {
+            for (var i = 0; i < lines.length; i++) {
                 var line = lines[i];
                 var lineMesh = lineMeshBuffer[line];
                 if (lineMesh) {
@@ -70,6 +65,11 @@ var TextGeomLogger = (function () {
             }
             for (i = 0; i < toRemove.length; i++) {
                 this.root.remove(toRemove[i]);
+            }
+            // scroll lines:
+            for (i = 1; i < this.root.children.length; i++) {
+                var child = this.root.children[i];
+                child.position.y = i * 1.6*textGeomParams.size;
             }
         }.bind(this);
     }
