@@ -26,8 +26,6 @@ POOLVR.config.onfullscreenchange = function (fullscreen) {
 var autoPosition = ( function () {
     "use strict";
     var nextVector = new THREE.Vector3();
-    var horizontal = new THREE.Vector3();
-    var headingQuat = new THREE.Quaternion();
     var UP = new THREE.Vector3();
     function autoPosition(avatar) {
         textGeomLogger.log("YOU ARE BEING AUTO-POSITIONED.");
@@ -44,18 +42,12 @@ var autoPosition = ( function () {
         nextVector.multiplyScalar(0.75);
         avatar.position.sub(nextVector);
         avatar.position.y = POOLVR.config.H_table + 0.32;
-        // look at next ball:
-        horizontal.copy(POOLVR.ballMeshes[POOLVR.nextBall].position);
-        horizontal.y = avatar.position.y;
-
         avatar.heading = Math.atan2(
-            POOLVR.ballMeshes[POOLVR.nextBall].position.z - avatar.position.z,
-            POOLVR.ballMeshes[POOLVR.nextBall].position.x - avatar.position.x
+            -(POOLVR.ballMeshes[POOLVR.nextBall].position.x - avatar.position.x),
+            -(POOLVR.ballMeshes[POOLVR.nextBall].position.z - avatar.position.z)
         );
         avatar.quaternion.setFromAxisAngle(UP, avatar.heading);
         avatar.updateMatrix();
-
-        textGeomLogger.log("avatar.rotation.y =" + avatar.rotation.y);
     }
     return autoPosition;
 } )();
@@ -65,8 +57,9 @@ function resetTable() {
     "use strict";
     POOLVR.ballBodies.forEach(function (body, ballNum) {
         body.position.copy(POOLVR.initialPositions[ballNum]);
-        body.wake();
+        body.wakeUp();
     });
+    textGeomLogger.log("TABLE RESET.");
 }
 
 
