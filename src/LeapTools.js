@@ -128,11 +128,15 @@ function addTool(parent, world, options) {
     var tipMesh = new THREE.Mesh(tipGeom, tipMaterial);
     tipMesh.castShadow = true;
     stickMesh.add(tipMesh);
+
+
     var tipBody = new CANNON.Body({mass: toolMass, type: CANNON.Body.KINEMATIC});
     //tipBody.addShape(new CANNON.Sphere(tipRadius));
+    // TODO: semi-ellipsoid shape?
     tipBody.addShape(new CANNON.Ellipsoid(tipRadius, tipMinorRadius, tipRadius));
     world.addBody(tipBody);
     toolRoot.visible = false;
+
 
     // three.js hands: ############################
     // hands don't necessarily correspond the left / right labels, but doesn't matter to me because they look indistinguishable

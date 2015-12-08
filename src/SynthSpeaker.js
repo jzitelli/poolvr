@@ -16,12 +16,12 @@ var SynthSpeaker = ( function() {
             if (onEnd) {
                 onEnd();
             }
+            this.utterance = new SpeechSynthesisUtterance();
+            this.utterance.volume = this.volume;
+            this.utterance.rate = this.rate;
+            this.utterance.pitch = this.pitch;
+            this.utterance.onend = onend;
             if (this.queue.length > 0) {
-                this.utterance = new SpeechSynthesisUtterance();
-                this.utterance.volume = this.volume;
-                this.utterance.rate = this.rate;
-                this.utterance.pitch = this.pitch;
-                this.utterance.onend = onend;
                 this.utterance.text = this.queue.shift();
                 var onBegin = this.onBegins.shift();
                 if (onBegin) {

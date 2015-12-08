@@ -78,24 +78,31 @@ POOLVR.gamepadCommands = {
 // TODO: load from JSON config
 POOLVR.ballMaterial            = new CANNON.Material();
 POOLVR.ballBallContactMaterial = new CANNON.ContactMaterial(POOLVR.ballMaterial, POOLVR.ballMaterial, {
-    restitution: 0.91,
-    friction: 0.15
+    restitution: 0.92,
+    friction: 0.17
 });
 POOLVR.playableSurfaceMaterial            = new CANNON.Material();
 POOLVR.ballPlayableSurfaceContactMaterial = new CANNON.ContactMaterial(POOLVR.ballMaterial, POOLVR.playableSurfaceMaterial, {
     restitution: 0.33,
-    friction: 0.17
+    friction: 0.19
 });
 POOLVR.cushionMaterial            = new CANNON.Material();
 POOLVR.ballCushionContactMaterial = new CANNON.ContactMaterial(POOLVR.ballMaterial, POOLVR.cushionMaterial, {
     restitution: 0.8,
-    friction: 0.13
+    friction: 0.21
 });
 POOLVR.floorMaterial            = new CANNON.Material();
 POOLVR.floorBallContactMaterial = new CANNON.ContactMaterial(POOLVR.floorMaterial, POOLVR.ballMaterial, {
-    restitution: 0.88,
+    restitution: 0.86,
     friction: 0.4
 });
+POOLVR.tipMaterial            = new CANNON.Material();
+POOLVR.tipBallContactMaterial = new CANNON.ContactMaterial(POOLVR.tipMaterial, POOLVR.ballMaterial, {
+    restitution: 0.1,
+    friction: 0.333
+});
+
+
 
 POOLVR.config.vrLeap = URL_PARAMS.vrLeap || POOLVR.config.vrLeap;
 
@@ -109,8 +116,8 @@ if (URL_PARAMS.toolOffset) {
     POOLVR.config.toolOffset = new THREE.Vector3(0, -0.42, -POOLVR.config.toolLength - 0.15);
 }
 
-
 var WebVRConfig = WebVRConfig || {};
-// WebVRConfig.FORCE_DISTORTION = true;
-// WebVRConfig.FORCE_ENABLE_VR = true;
+WebVRConfig.FORCE_DISTORTION = URL_PARAMS.FORCE_DISTORTION; //true;
+WebVRConfig.FORCE_ENABLE_VR  = URL_PARAMS.FORCE_ENABLE_VR; //true;
+
 var userAgent = navigator.userAgent;

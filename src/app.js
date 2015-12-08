@@ -9,7 +9,7 @@ avatar.heading = 0;
 
 var textGeomLogger = textGeomLogger || new TextGeomLogger();
 avatar.add(textGeomLogger.root);
-textGeomLogger.root.position.set(-2.5, 1.2, -3.5);
+textGeomLogger.root.position.set(-2.5, 1.0, -3.5);
 
 var synthSpeaker = new SynthSpeaker({volume: 0.75, rate: 0.8, pitch: 0.5});
 
@@ -29,9 +29,9 @@ var autoPosition = ( function () {
     var UP = new THREE.Vector3();
     function autoPosition(avatar) {
         textGeomLogger.log("YOU ARE BEING AUTO-POSITIONED.");
-        // if (synthSpeaker.speaking === false) {
-        //     synthSpeaker.speak("You are being auto-positioned.");
-        // }
+        if (synthSpeaker.speaking === false) {
+            synthSpeaker.speak("You are being auto-positioned.");
+        }
         nextVector.copy(POOLVR.ballMeshes[POOLVR.nextBall].position);
         nextVector.sub(POOLVR.ballMeshes[0].position);
         nextVector.y = 0;
@@ -59,6 +59,9 @@ function resetTable() {
         body.position.copy(POOLVR.initialPositions[ballNum]);
         body.wakeUp();
     });
+    if (synthSpeaker.speaking === false) {
+        synthSpeaker.speak("Table reset.");
+    }
     textGeomLogger.log("TABLE RESET.");
 }
 
@@ -91,9 +94,8 @@ function startTutorial() {
         textGeomLogger.log("KEEP THE STICK WITHIN THE INTERACTION BOX WHEN YOU WANT");
         textGeomLogger.log("TO MAKE CONTACT WITH A BALL.");
     });
-
-    // synthSpeaker.speak("You moved a ball.  Good job.");
 }
+
 
 
 var animate = function (leapController, animateLeap,
@@ -104,6 +106,7 @@ var animate = function (leapController, animateLeap,
                         animateMousePointer,
                         leftRoot, rightRoot) {
     "use strict";
+
     if (!shadowMap) {
         // create shadow mesh from projection:
         var stickShadow = new THREE.Object3D();
@@ -231,7 +234,10 @@ var animate = function (leapController, animateLeap,
     }
 
     return animate;
+
 };
+
+
 
 /* jshint multistr: true */
 function onLoad() {
@@ -317,7 +323,16 @@ function onLoad() {
     app.world.addContactMaterial(POOLVR.ballPlayableSurfaceContactMaterial);
     app.world.addContactMaterial(POOLVR.ballCushionContactMaterial);
     app.world.addContactMaterial(POOLVR.floorBallContactMaterial);
+    app.world.addContactMaterial(POOLVR.tipBallContactMaterial);
 
+    var toolStuff = addTool(avatar, app.world, toolOptions);
+    var toolRoot       = toolStuff.toolRoot;
+    var leapController = toolStuff.leapController;
+    var stickMesh      = toolStuff.stickMesh;
+    var animateLeap    = toolStuff.animateLeap;
+    var leftRoot       = toolStuff.leftRoot;
+    var rightRoot      = toolStuff.rightRoot;
+    var tipBody        = toolStuff.tipBody;
 
     // referenced by cannon.js callbacks:
     var onTable = [false,
@@ -365,76 +380,84 @@ function onLoad() {
     var H_table     = POOLVR.config.H_table,
         ball_radius = POOLVR.config.ball_diameter / 2;
     scene.traverse(function (node) {
-        if (node instanceof THREE.Mesh) {
-            if (node.name.startsWith('ball ')) {
-                // ball-ball collision callback:
-                node.body.addEventListener(CANNON.Body.COLLIDE_EVENT_NAME, function(evt) {
-                    var body = evt.body;
-                    var contact = evt.contact;
-                    if (contact.bi === body && contact.bi.material === contact.bj.material) {
-                        // ball-ball collision:
-                        var impactVelocity = contact.getImpactVelocityAlongNormal();
-                        playCollisionSound(impactVelocity);
-                    }
-                });
-                // post step callback: reposition mesh, shadow, stripe
-                app.world.addEventListener("postStep", function () {
-                    this.position.copy(this.body.position);
-                    var ballNum = this.body.ballNum;
-                    var stripeMesh = ballStripeMeshes[ballNum];
-                    if (stripeMesh !== undefined) {
-                        stripeMesh.quaternion.copy(this.body.quaternion);
-                    }
-                    var shadowMesh = ballShadowMeshes[ballNum];
-                    shadowMesh.position.y = -(this.position.y - H_table) + 0.0004;
-                    // var awakes = false;
-                    // for (var j = 0; j < ballBodies.length; ++j) {
-                    //     // if (body.sleepState === CANNON.Body.AWAKE) {
-                    //     //     awakes = true;
-                    //     //     doAutoPosition = true;
-                    //     // }
-                    // }
-                }.bind(node));
-            } else if (node.name === 'floorMesh') {
-                // ball-floor collision
-                node.body.addEventListener(CANNON.Body.COLLIDE_EVENT_NAME, function (evt) {
-                    var body = evt.body;
-                    if (body.ballNum === 0) {
-                        textGeomLogger.log("SCRATCH.");
-                        synthSpeaker.speak("Scratch.");
-                        body.position.copy(POOLVR.initialPositions[0]);
-                        body.velocity.set(0, 0, 0);
-                    } else {
-                        body.bounces++;
-                        if (body.bounces === 1) {
-                            textGeomLogger.log(body.mesh.name + " HIT THE FLOOR!");
-                            playPocketedSound();
-                            onTable[body.ballNum] = false;
-                            POOLVR.nextBall = onTable.indexOf(true);
-                            if (POOLVR.nextBall === -1) {
-                                synthSpeaker.speak("You cleared the table.  Well done.");
-                                textGeomLogger.log("YOU CLEARED THE TABLE.  WELL DONE.");
-                                resetTable();
-                            }
-                        } else if (body.bounces === 7) {
-                            body.sleep();
-                            // autoPosition(avatar, 5);
+        if (node instanceof THREE.Mesh && node.name.startsWith('ball ')) {
+            var ballBum = node.body.ballNum;
+            var body = node.body;
+            var mesh = node;
+            body.addEventListener(CANNON.Body.COLLIDE_EVENT_NAME, function(evt) {
+                var body = evt.body;
+                var contact = evt.contact;
+                // ball-ball collision:
+                if (contact.bi === body && contact.bi.material === contact.bj.material) {
+                    var impactVelocity = contact.getImpactVelocityAlongNormal();
+                    playCollisionSound(impactVelocity);
+                }
+            });
+            // post step callback: reposition mesh, shadow, stripe
+            app.world.addEventListener("postStep", function () {
+                this.position.copy(this.body.position);
+                var ballNum = this.body.ballNum;
+                var stripeMesh = ballStripeMeshes[ballNum];
+                if (stripeMesh !== undefined) {
+                    stripeMesh.quaternion.copy(this.body.quaternion);
+                }
+                var shadowMesh = ballShadowMeshes[ballNum];
+                shadowMesh.position.y = -(this.position.y - H_table) + 0.0004;
+                // var awakes = false;
+                // for (var j = 0; j < ballBodies.length; ++j) {
+                //     // if (body.sleepState === CANNON.Body.AWAKE) {
+                //     //     awakes = true;
+                //     //     doAutoPosition = true;
+                //     // }
+                // }
+            }.bind(mesh));
+        }
+        else if (node instanceof THREE.Mesh && node.name === 'floorMesh') {
+            // ball-floor collision
+            node.body.addEventListener(CANNON.Body.COLLIDE_EVENT_NAME, function (evt) {
+                var body = evt.body;
+                if (body.ballNum === 0) {
+                    textGeomLogger.log("SCRATCH.");
+                    synthSpeaker.speak("Scratch.");
+                    body.position.copy(POOLVR.initialPositions[0]);
+                    body.velocity.set(0, 0, 0);
+                } else {
+                    body.bounces++;
+                    if (body.bounces === 1) {
+                        textGeomLogger.log(body.mesh.name + " HIT THE FLOOR!");
+                        playPocketedSound();
+                        onTable[body.ballNum] = false;
+                        POOLVR.nextBall = onTable.indexOf(true);
+                        if (POOLVR.nextBall === -1) {
+                            synthSpeaker.speak("You cleared the table.  Well done.");
+                            textGeomLogger.log("YOU CLEARED THE TABLE.  WELL DONE.");
+                            resetTable();
                         }
+                    } else if (body.bounces === 7) {
+                        body.sleep();
+                        // autoPosition(avatar, 5);
                     }
-                });
-
-            }
-
+                }
+            });
+        }
+    });
+    var tipEventCounter = 0;
+    tipBody.addEventListener(CANNON.Body.COLLIDE_EVENT_NAME, function (evt) {
+        tipEventCounter++;
+        if (tipEventCounter === 1) {
+            synthSpeaker.speak("You moved a ball.  Good job.");
+        }
+        else if (tipEventCounter === 4) {
+            synthSpeaker.speak("I have something else to tell you.");
+        }
+        else if (tipEventCounter === 8) {
+            synthSpeaker.speak("I have something else to tell you. Again.");
+        }
+        else if (tipEventCounter === 30) {
+            synthSpeaker.speak("I have something else to tell you. For the third, and final time.");
         }
     });
 
-    var toolStuff = addTool(avatar, app.world, toolOptions);
-    var toolRoot       = toolStuff.toolRoot;
-    var leapController = toolStuff.leapController;
-    var stickMesh      = toolStuff.stickMesh;
-    var animateLeap    = toolStuff.animateLeap;
-    var leftRoot       = toolStuff.leftRoot;
-    var rightRoot      = toolStuff.rightRoot;
 
     var mouseStuff = setupMouse(avatar);
     var animateMousePointer = mouseStuff.animateMousePointer;
