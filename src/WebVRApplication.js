@@ -21,7 +21,8 @@ WebVRApplication = ( function () {
         }
         var domElement = this.renderer.domElement;
         document.body.appendChild(domElement);
-        domElement.id = 'renderer'
+        domElement.id = 'renderer';
+
         this.vrEffect = new THREE.VREffect(this.renderer);
         this.vrEffect.setSize(window.innerWidth, window.innerHeight);
         this.vrManager = new WebVRManager(this.renderer, this.vrEffect, {

@@ -59,9 +59,12 @@ module.exports = function ( grunt ) {
               "src/WebVRSound.js",
               "src/SynthSpeaker.js",
               "src/MouseStuff.js",
+              "src/GfxTablet.js",
               "src/pyserver.js",
               "src/config.js",
+              "src/actions.js",
               "src/sound.js",
+              //"src/configurator.js",
               "src/app.js"
           ]
         }

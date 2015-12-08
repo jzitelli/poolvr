@@ -26,7 +26,10 @@ WebVRApplication = ( function () {
             this.renderer.shadowMap.enabled = true;
             this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         }
-        document.body.appendChild(this.renderer.domElement);
+        var domElement = this.renderer.domElement;
+        document.body.appendChild(domElement);
+        domElement.id = 'renderer';
+
         this.vrEffect = new THREE.VREffect(this.renderer);
         this.vrEffect.setSize(window.innerWidth, window.innerHeight);
         this.vrManager = new WebVRManager(this.renderer, this.vrEffect, {
@@ -115,9 +118,9 @@ WebVRApplication = ( function () {
             world.broadphase = new CANNON.SAPBroadphase( world );
             world.defaultContactMaterial.contactEquationStiffness   = config.contactEquationStiffness || 1e6;
             world.defaultContactMaterial.frictionEquationStiffness  = config.frictionEquationStiffness || 1e6;
-            world.defaultContactMaterial.contactEquationRelaxation  = config.contactEquationRelaxation || 4;
-            world.defaultContactMaterial.frictionEquationRelaxation = config.frictionEquationRelaxation || 4;
-            world.solver.iterations = 8;
+            world.defaultContactMaterial.contactEquationRelaxation  = config.contactEquationRelaxation || 3;
+            world.defaultContactMaterial.frictionEquationRelaxation = config.frictionEquationRelaxation || 3;
+            world.solver.iterations = 7;
         }
         this.world = world;
 
@@ -407,9 +410,10 @@ function addTool(parent, world, options) {
     var toolMass   = options.toolMass   || 0.05;
 
     var tipRadius      = options.tipRadius || 0.95 * toolRadius;
-    var tipMinorRadius = options.tipMinorRadius || 0.4 * toolRadius;
+    var tipMinorRadius = options.tipMinorRadius || 0.25 * tipRadius;
 
-    var toolOffset = options.toolOffset || new THREE.Vector3(0, -0.4, -toolLength - 0.2);
+    var toolOffset = options.toolOffset;
+    toolOffset = new THREE.Vector3(0, -0.4, -toolLength - 0.2).fromArray(toolOffset);
     var handOffset = options.handOffset || new THREE.Vector3().copy(toolOffset);
 
     var toolTime  = options.toolTime  || 0.25;
@@ -715,7 +719,7 @@ var TextGeomLogger = (function () {
     var chars = alphas + digits + symbols;
 
     function TextGeomLogger(material, options) {
-        material = material || new THREE.MeshBasicMaterial({color: 0xee2200});
+        material = material || new THREE.MeshBasicMaterial({color: 0xff2201});
         options = options || {};
         var textGeomParams = {
             size:          options.size || 0.12,
@@ -769,7 +773,7 @@ var TextGeomLogger = (function () {
             }
             // remove rows exceeding max display
             var toRemove = [];
-            for (i = lines.length; i < this.root.children.length - nrows; i++) {
+            for (i = lines.length - 1; i < this.root.children.length - nrows; i++) {
                 toRemove.push(this.root.children[i]);
             }
             for (i = 0; i < toRemove.length; i++) {
@@ -916,10 +920,10 @@ var SynthSpeaker = ( function() {
     }
 } )();
 ;
-function setupMouse(parent, position) {
+function setupMouse(parent, position, particleTexture) {
     position = position || new THREE.Vector3(0, 0, -2);
     var numParticles = 50;
-    var particleTexture = 'images/particle.png';
+    particleTexture = particleTexture || 'images/mouseParticle.png';
     var mouseParticleGroup = new SPE.Group({
         texture: {value: THREE.ImageUtils.loadTexture(particleTexture)},
         maxParticleCount: numParticles
@@ -999,6 +1003,122 @@ function setupMouse(parent, position) {
 
     return animateMousePointer;
 }
+;
+/* global pyserver */
+function addGfxTablet(width, height, logger) {
+    "use strict";
+    if (pyserver.config.WEBSOCKETS.indexOf('/gfxtablet') == -1) {
+        pyserver.log('configure pyserver to open gfxtablet websocket at /gfxtablet');
+        return;
+    }
+    width = width || 2560 / 2;
+    height = height || 1600 / 2;
+
+    var socket = new WebSocket('ws://' + document.domain + ':' + location.port + '/gfxtablet');
+
+    var gfxtabletCanvas = document.createElement('canvas');
+    gfxtabletCanvas.width = width;
+    gfxtabletCanvas.height = height;
+    var aspect = gfxtabletCanvas.width / gfxtabletCanvas.height;
+    var texture = new THREE.Texture(gfxtabletCanvas, THREE.UVMapping, THREE.ClampToEdgeWrapping, THREE.ClampToEdgeWrapping,
+                                    THREE.LinearFilter, THREE.LinearFilter);
+
+    var paintableMaterial = new THREE.MeshBasicMaterial({color: 0xffffff, map: texture});
+
+    var image = paintableMaterial.map.image;
+    var ctx = image.getContext('2d');
+    ctx.fillStyle = 'rgb(255, 255, 255)';
+    ctx.fillRect(0, 0, gfxtabletCanvas.width, gfxtabletCanvas.height);
+
+    var scale = 2;
+    paintableMaterial.map.needsUpdate = true;
+
+    var cursorMaterial = new THREE.MeshBasicMaterial({color: 0xee9966});
+    cursorMaterial.transparent = true;
+    cursorMaterial.opacity = 0.666;
+    var cursor = new THREE.Mesh(new THREE.CircleGeometry(0.02), cursorMaterial);
+    canvasMesh.add(cursor);
+    cursor.position.z = 0.01;
+    cursor.visible = false;
+
+    ctx.lineCap = 'round';
+    //ctx.lineJoin = stroke.join;
+    //ctx.miterLimit = stroke.miterLimit;
+
+    function drawStroke (points) {
+        if (points.length === 0)
+            return;
+        var start = points[0];
+        ctx.beginPath();
+        ctx.strokeStyle = 'rgba(0,255,50,0.92)'; //stroke.color;
+        ctx.lineWidth = start.p * 10; //normalizeLineSize(stroke.size);
+        ctx.moveTo(gfxtabletCanvas.width * start.x, gfxtabletCanvas.height * start.y);
+        for (var j = 1; j < points.length; j++) {
+            var end = points[j];
+            ctx.lineTo(gfxtabletCanvas.width * end.x, gfxtabletCanvas.height * end.y);
+        }
+        ctx.stroke();
+    }
+
+    function circle(x, y, r, c, o) {
+        var opacity = o || 1;
+        ctx.beginPath();
+        var rad = ctx.createRadialGradient(x, y, r/2, x, y, r);
+        rad.addColorStop(0, 'rgba('+c+','+opacity+')');
+        rad.addColorStop(0.5, 'rgba('+c+','+opacity+')');
+        rad.addColorStop(1, 'rgba('+c+',0)');
+        ctx.fillStyle = rad;
+        ctx.arc(x, y, r, 0, Math.PI*2, false);
+        ctx.fill();
+        ctx.closePath();
+    }
+
+    socket.onopen = function () {
+        logger.log("GfxTable WebSocket opened");
+    };
+    socket.onerror = function (error) {
+        logger.log("could not connect to GfxTablet WebSocket");
+    };
+    var points = [];
+    var stroking = false;
+    var NP = 2;
+    socket.onmessage = function (message) {
+        var data = JSON.parse(message.data);
+        if (data.p > 0) {
+            points.push(data);
+            // circle(gfxtabletCanvas.width * data.x, gfxtabletCanvas.height * data.y,
+            //     2 + 50*data.p * data.p, '255,0,0', 0.1 + 0.9 * data.p);
+            if (points.length > NP) {
+                drawStroke(points);
+                paintableMaterial.map.needsUpdate = true;
+                points.splice(0, NP);
+            }
+        }
+        if (data.button !== undefined) {
+            if (data.button_down === 0) {
+                drawStroke(points);
+                stroking = false;
+                paintableMaterial.map.needsUpdate = true;
+                points = [];
+            } else {
+                stroking = true;
+            }
+        }
+        if (stroking) {
+            cursor.visible = false;
+        } else {
+            cursor.visible = true;
+            cursor.position.x = -aspect * scale / 2 + aspect * scale * data.x;
+            cursor.position.y = scale / 2 - scale * data.y;
+        }
+    };
+
+    return {paintableMaterial: paintableMaterial,
+            cursor: cursor};
+}
+
+// var canvasMesh = new THREE.Mesh(new THREE.PlaneBufferGeometry(scale * aspect, scale), paintableMaterial);
+// canvasMesh.position.z = -4;
 ;
 var pyserver;
 if (!POOLVR.config.pyserver) {
@@ -1175,21 +1295,17 @@ POOLVR.tipBallContactMaterial = new CANNON.ContactMaterial(POOLVR.tipMaterial, P
 
 POOLVR.config.vrLeap = URL_PARAMS.vrLeap || POOLVR.config.vrLeap;
 
-POOLVR.config.toolLength   = URL_PARAMS.toolLength || POOLVR.config.toolLength || 0.5;
-POOLVR.config.toolRadius   = URL_PARAMS.toolRadius || POOLVR.config.toolRadius || 0.013;
-POOLVR.config.toolMass     = URL_PARAMS.toolMass || POOLVR.config.toolMass || 0.04;
-if (URL_PARAMS.toolOffset) {
-    POOLVR.config.toolOffset = new THREE.Vector3();
-    POOLVR.config.toolOffset.fromArray(URL_PARAMS.toolOffset);
-} else {
-    POOLVR.config.toolOffset = new THREE.Vector3(0, -0.42, -POOLVR.config.toolLength - 0.15);
-}
+POOLVR.config.toolLength = URL_PARAMS.toolLength || POOLVR.config.toolLength || 0.5;
+POOLVR.config.toolRadius = URL_PARAMS.toolRadius || POOLVR.config.toolRadius || 0.013;
+POOLVR.config.toolMass   = URL_PARAMS.toolMass   || POOLVR.config.toolMass   || 0.04;
+POOLVR.config.toolOffset = URL_PARAMS.toolOffset || POOLVR.config.toolOffset || [0, -0.42, -POOLVR.config.toolLength - 0.15];
 
-var WebVRConfig = WebVRConfig || {};
+var WebVRConfig = WebVRConfig || POOLVR.config.WebVRConfig || {};
 WebVRConfig.FORCE_DISTORTION = URL_PARAMS.FORCE_DISTORTION; //true;
 WebVRConfig.FORCE_ENABLE_VR  = URL_PARAMS.FORCE_ENABLE_VR; //true;
 
 var userAgent = navigator.userAgent;
+;
 ;
 var playCollisionSound = (function () {
     "use strict";
@@ -1229,27 +1345,49 @@ var playPocketedSound = (function () {
 ;
 var app;
 
-var scene = THREE.py.parse(JSON_SCENE);
+var scene;
 
 var avatar = new THREE.Object3D();
-avatar.position.y = 1.1;
-avatar.position.z = 1.86;
+if (POOLVR.config.initialPosition) {
+    avatar.position.fromArray(POOLVR.config.initialPosition);
+} else {
+    avatar.position.y = 1.0;
+    avatar.position.z = 1.86;
+}
 avatar.heading = 0;
-
-var textGeomLogger = textGeomLogger || new TextGeomLogger();
-avatar.add(textGeomLogger.root);
-textGeomLogger.root.position.set(-2.5, 1.0, -3.5);
-
-var synthSpeaker = new SynthSpeaker({volume: 0.75, rate: 0.8, pitch: 0.5});
 
 POOLVR.ballMeshes = [];
 POOLVR.ballBodies = [];
 POOLVR.initialPositions = [];
+POOLVR.onTable = [false,
+                  true, true, true, true, true, true, true,
+                  true,
+                  true, true, true, true, true, true, true];
 POOLVR.nextBall = 1;
+
 POOLVR.config.onfullscreenchange = function (fullscreen) {
     if (fullscreen) pyserver.log('going fullscreen');
     else pyserver.log('exiting fullscreen');
 };
+var synthSpeaker = new SynthSpeaker({volume: 0.75, rate: 0.8, pitch: 0.5});
+
+var textGeomLogger = new TextGeomLogger();
+avatar.add(textGeomLogger.root);
+textGeomLogger.root.position.set(-2.5, 1.0, -3.5);
+
+
+function resetTable() {
+    "use strict";
+    POOLVR.ballBodies.forEach(function (body, ballNum) {
+        body.position.copy(POOLVR.initialPositions[ballNum]);
+        body.wakeUp();
+    });
+    if (synthSpeaker.speaking === false) {
+        synthSpeaker.speak("Table reset.");
+    }
+    POOLVR.nextBall = 1;
+    textGeomLogger.log("TABLE RESET.");
+}
 
 
 var autoPosition = ( function () {
@@ -1268,31 +1406,19 @@ var autoPosition = ( function () {
         // reposition and move back:
         avatar.position.x = POOLVR.ballMeshes[0].position.x;
         avatar.position.z = POOLVR.ballMeshes[0].position.z;
-        nextVector.multiplyScalar(0.75);
+        nextVector.multiplyScalar(0.42);
         avatar.position.sub(nextVector);
-        avatar.position.y = POOLVR.config.H_table + 0.32;
+        avatar.position.y = POOLVR.config.H_table + 0.24;
         avatar.heading = Math.atan2(
             -(POOLVR.ballMeshes[POOLVR.nextBall].position.x - avatar.position.x),
             -(POOLVR.ballMeshes[POOLVR.nextBall].position.z - avatar.position.z)
         );
         avatar.quaternion.setFromAxisAngle(UP, avatar.heading);
         avatar.updateMatrix();
+        pyserver.log('position: ' + avatar.position.x +', ' + avatar.position.y + ', ' +  avatar.position.z);
     }
     return autoPosition;
 } )();
-
-
-function resetTable() {
-    "use strict";
-    POOLVR.ballBodies.forEach(function (body, ballNum) {
-        body.position.copy(POOLVR.initialPositions[ballNum]);
-        body.wakeUp();
-    });
-    if (synthSpeaker.speaking === false) {
-        synthSpeaker.speak("Table reset.");
-    }
-    textGeomLogger.log("TABLE RESET.");
-}
 
 
 function setupMenu(parent) {
@@ -1455,7 +1581,7 @@ var animate = function (leapController, animateLeap,
             stickShadowMesh.quaternion.copy(stickMesh.quaternion);
         }
 
-        //if (animateMousePointer) animateMousePointer(t);
+        animateMousePointer(t);
 
         lt = t;
     }
@@ -1463,7 +1589,6 @@ var animate = function (leapController, animateLeap,
     return animate;
 
 };
-
 
 
 /* jshint multistr: true */
@@ -1489,6 +1614,18 @@ function onLoad() {
         });
     }
     pyserver.log("POOLVR.config =\n" + JSON.stringify(POOLVR.config, undefined, 2));
+
+    scene = THREE.py.parse(JSON_SCENE);
+
+    if (!POOLVR.config.useBasicMaterials) {
+        var centerSpotLight = new THREE.SpotLight(0xffffee, 1, 10, 90);
+        centerSpotLight.position.set(0, 3, 0);
+        centerSpotLight.castShadow = true;
+        centerSpotLight.shadowCameraNear = 0.01;
+        centerSpotLight.shadowCameraFar = 4;
+        centerSpotLight.shadowCameraFov = 90;
+        scene.add(centerSpotLight);
+    }
 
     POOLVR.config.keyboardCommands = POOLVR.keyboardCommands;
     POOLVR.config.gamepadCommands = POOLVR.gamepadCommands;
@@ -1516,7 +1653,7 @@ function onLoad() {
         // TODO: reposition toolRoot correctly
         // toolRoot.position.applyAxisAngle(UP, -dheading);
         // toolRoot.position.sub(lastPosition);
-        scene.updateMatrixWorld();
+        // scene.updateMatrixWorld();
     };
 
 
@@ -1527,21 +1664,6 @@ function onLoad() {
     app = new WebVRApplication("poolvr", avatar, scene, POOLVR.config);
     avatar.add(app.camera);
     scene.add(avatar);
-
-
-    if (!POOLVR.config.useBasicMaterials) {
-        // would rather add the spot lights via three.py generated JSON_SCENE, but I'm having problems getting shadows frm them:
-        var centerSpotLight = new THREE.SpotLight(0xffffee, 1, 10, 90);
-        centerSpotLight.position.set(0, 3, 0);
-        centerSpotLight.castShadow = true;
-        centerSpotLight.shadowCameraNear = 0.01;
-        centerSpotLight.shadowCameraFar = 4;
-        centerSpotLight.shadowCameraFov = 90;
-        scene.add(centerSpotLight);
-        // var centerSpotLightHelper = new THREE.SpotLightHelper(centerSpotLight);
-        // scene.add(centerSpotLightHelper);
-        // centerSpotLightHelper.visible = false;
-    }
 
 
     THREE.py.CANNONize(scene, app.world);
@@ -1564,11 +1686,7 @@ function onLoad() {
     tipBody.material = POOLVR.tipMaterial;
 
     // referenced by cannon.js callbacks:
-    var onTable = [false,
-                   true, true, true, true, true, true, true,
-                   true,
-                   true, true, true, true, true, true, true],
-        ballStripeMeshes = [],
+    var ballStripeMeshes = [],
         ballShadowMeshes = [];
     // first pass:
     scene.traverse(function (node) {
@@ -1631,7 +1749,9 @@ function onLoad() {
                     stripeMesh.quaternion.copy(this.body.quaternion);
                 }
                 var shadowMesh = ballShadowMeshes[ballNum];
-                shadowMesh.position.y = -(this.position.y - H_table) + 0.0004;
+                if (shadowMesh) {
+                    shadowMesh.position.y = -(this.position.y - H_table) + 0.0004;
+                }
                 // var awakes = false;
                 // for (var j = 0; j < ballBodies.length; ++j) {
                 //     // if (body.sleepState === CANNON.Body.AWAKE) {
@@ -1655,8 +1775,8 @@ function onLoad() {
                     if (body.bounces === 1) {
                         textGeomLogger.log(body.mesh.name + " HIT THE FLOOR!");
                         playPocketedSound();
-                        onTable[body.ballNum] = false;
-                        POOLVR.nextBall = onTable.indexOf(true);
+                        POOLVR.onTable[body.ballNum] = false;
+                        POOLVR.nextBall = POOLVR.onTable.indexOf(true);
                         if (POOLVR.nextBall === -1) {
                             synthSpeaker.speak("You cleared the table.  Well done.");
                             textGeomLogger.log("YOU CLEARED THE TABLE.  WELL DONE.");
@@ -1687,9 +1807,7 @@ function onLoad() {
         }
     });
 
-
-    var mouseStuff = setupMouse(avatar);
-    var animateMousePointer = mouseStuff.animateMousePointer;
+    var animateMousePointer = setupMouse(avatar);
 
     app.start( animate(leapController, animateLeap,
                        POOLVR.ballBodies, ballStripeMeshes,

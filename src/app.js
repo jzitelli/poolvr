@@ -10,7 +10,6 @@ if (POOLVR.config.initialPosition) {
     avatar.position.z = 1.86;
 }
 avatar.heading = 0;
-0, 0.98295, 1.0042
 
 POOLVR.ballMeshes = [];
 POOLVR.ballBodies = [];
@@ -18,8 +17,9 @@ POOLVR.initialPositions = [];
 POOLVR.onTable = [false,
                   true, true, true, true, true, true, true,
                   true,
-                  true, true, true, true, true, true, true],
+                  true, true, true, true, true, true, true];
 POOLVR.nextBall = 1;
+
 POOLVR.config.onfullscreenchange = function (fullscreen) {
     if (fullscreen) pyserver.log('going fullscreen');
     else pyserver.log('exiting fullscreen');
