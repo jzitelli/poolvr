@@ -1,7 +1,7 @@
-function setupMouse(parent, position) {
+function setupMouse(parent, position, particleTexture) {
     position = position || new THREE.Vector3(0, 0, -2);
     var numParticles = 50;
-    var particleTexture = 'images/particle.png';
+    particleTexture = particleTexture || 'images/mouseParticle.png';
     var mouseParticleGroup = new SPE.Group({
         texture: {value: THREE.ImageUtils.loadTexture(particleTexture)},
         maxParticleCount: numParticles

@@ -32,7 +32,8 @@ POOLVR = {
         'shadowMap'             : None,
         'pointLight'            : None,
         'H_table'               : 0.74295,
-        'ball_diameter'         : 2.25 * pool_table.IN2METER
+        'ball_diameter'         : 2.25 * pool_table.IN2METER,
+        'toolOffset'            : [0, -0.42, -0.4]
     },
     'version': '0.1.0dev'
 }
@@ -42,17 +43,18 @@ def get_poolvr_config():
     config = deepcopy(POOLVR['config'])
     args = dict({k: v for k, v in request.args.items()
                  if k in config})
-    config.update(args)
-    for k, v in config.items():
+    # TODO: better way
+    for k, v in args.items():
         if v == 'false':
-            config[k] = False
+            args[k] = False
         elif v == 'true':
-            config[k] = True
+            args[k] = True
         elif not (v is False or v is True or v is None):
             try:
-                config[k] = float(v)
+                args[k] = float(v)
             except Exception as err:
-                _logger.warning('\nUNRECOGNIZED ARGUMENT: %s' % str(config.pop(k)))
+                _logger.warning('\nUNRECOGNIZED ARGUMENT: %s' % str(args.pop(k)))
+    config.update(args)
     if not config['useBasicMaterials']:
         if config['useLambertMaterials'] is None:
             config['useLambertMaterials'] = True
@@ -75,6 +77,7 @@ def js_suffix():
 def poolvr_app():
     """Serves the poolvr HTML app"""
     config = get_poolvr_config()
+    config['initialPosition'] = [0, 0.98295, 1.0042]
     version = request.args.get('version')
     if version is not None:
         template = 'poolvr-%s.html' % version
@@ -84,7 +87,6 @@ def poolvr_app():
     return render_template(template,
                            json_config=Markup(r"""<script>
 var POOLVR = %s;
-
 var JSON_SCENE = %s;
 </script>""" % (json.dumps({'config' : config,
                             'version': version},
@@ -100,7 +102,7 @@ def poolvr_config():
     config = get_poolvr_config()
     config['initialPosition'] = [0, 0.9, 0.9]
     version = request.args.get('version', POOLVR['version'])
-    configScene = config_scene.config_scene(cube_map=True,
+    configScene = config_scene.config_scene(cubeMap=True,
                                             url_prefix="../",
                                             **config)
     poolvr_config = json.dumps({'config' : config,
@@ -112,10 +114,6 @@ var POOLVR = %s;
 var JSON_SCENE = %s;
 </script>""" % (poolvr_config,
                 json.dumps(configScene.export(), indent=2))))
-
-#                            poolvr_config=Markup(r"""<code>
-# %s
-# </code>""" % poolvr_config.replace('\n', '<br>')))
 
 # try:
 #     model_dir = os.path.join(os.getcwd(), 'models')
@@ -149,7 +147,7 @@ def main():
     _logger.info("app.config =\n%s" % '\n'.join(['%s: %s' % (k, str(v))
                                                 for k, v in sorted(app.config.items(),
                                                                    key=lambda i: i[0])]))
-    _logger.info("three.THREE_VERSION = %s" % three.THREE_VERSION)
+    _logger.info("three.py VERSION: %s" % three.THREE_VERSION)
     _logger.info("""
           ***********
    *************************

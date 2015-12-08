@@ -223,7 +223,8 @@ def pool_hall(useBasicMaterials=True,
               L_table=2.3368,
               H_table=0.74295,
               ball_diameter=2.25*IN2METER,
-              cube_map=False,
+              cubeMap=False,
+              cubeImages=None,
               **kwargs):
     scene = Scene()
     L_room, W_room = 10, 10
@@ -241,9 +242,9 @@ def pool_hall(useBasicMaterials=True,
         light = PointLight(color=0xaa8866, position=[4, 5, 2.5], intensity=0.8, distance=40)
         scene.add(light)
 
-    if cube_map and ShaderLib is not None:
-        shader = deepcopy(ShaderLib['cube'])
-        shader['uniforms']['tCube']['value'] = [url_prefix + "images/skybox/%s.jpg" % pos
+    if cubeMap and shaderlib is not None:
+        shader = deepcopy(shaderlib['cube'])
+        shader['uniforms']['tCube']['value'] = [url_prefix + "images/%s.png" % pos
                                                 for pos in ('px', 'nx', 'py', 'ny', 'pz', 'nz')]
         scene.add(Mesh(geometry=BoxGeometry(900, 900, 900),
                        material=ShaderMaterial(side=BackSide, **shader)))

@@ -15,9 +15,10 @@ function addTool(parent, world, options) {
     var toolMass   = options.toolMass   || 0.05;
 
     var tipRadius      = options.tipRadius || 0.95 * toolRadius;
-    var tipMinorRadius = options.tipMinorRadius || 0.4 * toolRadius;
+    var tipMinorRadius = options.tipMinorRadius || 0.25 * tipRadius;
 
-    var toolOffset = options.toolOffset || new THREE.Vector3(0, -0.4, -toolLength - 0.2);
+    var toolOffset = options.toolOffset;
+    toolOffset = new THREE.Vector3(0, -0.4, -toolLength - 0.2).fromArray(toolOffset);
     var handOffset = options.handOffset || new THREE.Vector3().copy(toolOffset);
 
     var toolTime  = options.toolTime  || 0.25;

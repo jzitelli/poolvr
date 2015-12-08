@@ -1,26 +1,48 @@
 var app;
 
-var scene = THREE.py.parse(JSON_SCENE);
+var scene;
 
 var avatar = new THREE.Object3D();
-avatar.position.y = 1.1;
-avatar.position.z = 1.86;
+if (POOLVR.config.initialPosition) {
+    avatar.position.fromArray(POOLVR.config.initialPosition);
+} else {
+    avatar.position.y = 1.0;
+    avatar.position.z = 1.86;
+}
 avatar.heading = 0;
-
-var textGeomLogger = textGeomLogger || new TextGeomLogger();
-avatar.add(textGeomLogger.root);
-textGeomLogger.root.position.set(-2.5, 1.0, -3.5);
-
-var synthSpeaker = new SynthSpeaker({volume: 0.75, rate: 0.8, pitch: 0.5});
+0, 0.98295, 1.0042
 
 POOLVR.ballMeshes = [];
 POOLVR.ballBodies = [];
 POOLVR.initialPositions = [];
+POOLVR.onTable = [false,
+                  true, true, true, true, true, true, true,
+                  true,
+                  true, true, true, true, true, true, true],
 POOLVR.nextBall = 1;
 POOLVR.config.onfullscreenchange = function (fullscreen) {
     if (fullscreen) pyserver.log('going fullscreen');
     else pyserver.log('exiting fullscreen');
 };
+var synthSpeaker = new SynthSpeaker({volume: 0.75, rate: 0.8, pitch: 0.5});
+
+var textGeomLogger = new TextGeomLogger();
+avatar.add(textGeomLogger.root);
+textGeomLogger.root.position.set(-2.5, 1.0, -3.5);
+
+
+function resetTable() {
+    "use strict";
+    POOLVR.ballBodies.forEach(function (body, ballNum) {
+        body.position.copy(POOLVR.initialPositions[ballNum]);
+        body.wakeUp();
+    });
+    if (synthSpeaker.speaking === false) {
+        synthSpeaker.speak("Table reset.");
+    }
+    POOLVR.nextBall = 1;
+    textGeomLogger.log("TABLE RESET.");
+}
 
 
 var autoPosition = ( function () {
@@ -39,31 +61,19 @@ var autoPosition = ( function () {
         // reposition and move back:
         avatar.position.x = POOLVR.ballMeshes[0].position.x;
         avatar.position.z = POOLVR.ballMeshes[0].position.z;
-        nextVector.multiplyScalar(0.75);
+        nextVector.multiplyScalar(0.42);
         avatar.position.sub(nextVector);
-        avatar.position.y = POOLVR.config.H_table + 0.32;
+        avatar.position.y = POOLVR.config.H_table + 0.24;
         avatar.heading = Math.atan2(
             -(POOLVR.ballMeshes[POOLVR.nextBall].position.x - avatar.position.x),
             -(POOLVR.ballMeshes[POOLVR.nextBall].position.z - avatar.position.z)
         );
         avatar.quaternion.setFromAxisAngle(UP, avatar.heading);
         avatar.updateMatrix();
+        pyserver.log('position: ' + avatar.position.x +', ' + avatar.position.y + ', ' +  avatar.position.z);
     }
     return autoPosition;
 } )();
-
-
-function resetTable() {
-    "use strict";
-    POOLVR.ballBodies.forEach(function (body, ballNum) {
-        body.position.copy(POOLVR.initialPositions[ballNum]);
-        body.wakeUp();
-    });
-    if (synthSpeaker.speaking === false) {
-        synthSpeaker.speak("Table reset.");
-    }
-    textGeomLogger.log("TABLE RESET.");
-}
 
 
 function setupMenu(parent) {
@@ -226,7 +236,7 @@ var animate = function (leapController, animateLeap,
             stickShadowMesh.quaternion.copy(stickMesh.quaternion);
         }
 
-        //if (animateMousePointer) animateMousePointer(t);
+        animateMousePointer(t);
 
         lt = t;
     }
@@ -234,7 +244,6 @@ var animate = function (leapController, animateLeap,
     return animate;
 
 };
-
 
 
 /* jshint multistr: true */
@@ -260,6 +269,18 @@ function onLoad() {
         });
     }
     pyserver.log("POOLVR.config =\n" + JSON.stringify(POOLVR.config, undefined, 2));
+
+    scene = THREE.py.parse(JSON_SCENE);
+
+    if (!POOLVR.config.useBasicMaterials) {
+        var centerSpotLight = new THREE.SpotLight(0xffffee, 1, 10, 90);
+        centerSpotLight.position.set(0, 3, 0);
+        centerSpotLight.castShadow = true;
+        centerSpotLight.shadowCameraNear = 0.01;
+        centerSpotLight.shadowCameraFar = 4;
+        centerSpotLight.shadowCameraFov = 90;
+        scene.add(centerSpotLight);
+    }
 
     POOLVR.config.keyboardCommands = POOLVR.keyboardCommands;
     POOLVR.config.gamepadCommands = POOLVR.gamepadCommands;
@@ -287,7 +308,7 @@ function onLoad() {
         // TODO: reposition toolRoot correctly
         // toolRoot.position.applyAxisAngle(UP, -dheading);
         // toolRoot.position.sub(lastPosition);
-        scene.updateMatrixWorld();
+        // scene.updateMatrixWorld();
     };
 
 
@@ -298,21 +319,6 @@ function onLoad() {
     app = new WebVRApplication("poolvr", avatar, scene, POOLVR.config);
     avatar.add(app.camera);
     scene.add(avatar);
-
-
-    if (!POOLVR.config.useBasicMaterials) {
-        // would rather add the spot lights via three.py generated JSON_SCENE, but I'm having problems getting shadows frm them:
-        var centerSpotLight = new THREE.SpotLight(0xffffee, 1, 10, 90);
-        centerSpotLight.position.set(0, 3, 0);
-        centerSpotLight.castShadow = true;
-        centerSpotLight.shadowCameraNear = 0.01;
-        centerSpotLight.shadowCameraFar = 4;
-        centerSpotLight.shadowCameraFov = 90;
-        scene.add(centerSpotLight);
-        // var centerSpotLightHelper = new THREE.SpotLightHelper(centerSpotLight);
-        // scene.add(centerSpotLightHelper);
-        // centerSpotLightHelper.visible = false;
-    }
 
 
     THREE.py.CANNONize(scene, app.world);
@@ -335,11 +341,7 @@ function onLoad() {
     tipBody.material = POOLVR.tipMaterial;
 
     // referenced by cannon.js callbacks:
-    var onTable = [false,
-                   true, true, true, true, true, true, true,
-                   true,
-                   true, true, true, true, true, true, true],
-        ballStripeMeshes = [],
+    var ballStripeMeshes = [],
         ballShadowMeshes = [];
     // first pass:
     scene.traverse(function (node) {
@@ -402,7 +404,9 @@ function onLoad() {
                     stripeMesh.quaternion.copy(this.body.quaternion);
                 }
                 var shadowMesh = ballShadowMeshes[ballNum];
-                shadowMesh.position.y = -(this.position.y - H_table) + 0.0004;
+                if (shadowMesh) {
+                    shadowMesh.position.y = -(this.position.y - H_table) + 0.0004;
+                }
                 // var awakes = false;
                 // for (var j = 0; j < ballBodies.length; ++j) {
                 //     // if (body.sleepState === CANNON.Body.AWAKE) {
@@ -426,8 +430,8 @@ function onLoad() {
                     if (body.bounces === 1) {
                         textGeomLogger.log(body.mesh.name + " HIT THE FLOOR!");
                         playPocketedSound();
-                        onTable[body.ballNum] = false;
-                        POOLVR.nextBall = onTable.indexOf(true);
+                        POOLVR.onTable[body.ballNum] = false;
+                        POOLVR.nextBall = POOLVR.onTable.indexOf(true);
                         if (POOLVR.nextBall === -1) {
                             synthSpeaker.speak("You cleared the table.  Well done.");
                             textGeomLogger.log("YOU CLEARED THE TABLE.  WELL DONE.");
@@ -458,9 +462,7 @@ function onLoad() {
         }
     });
 
-
-    var mouseStuff = setupMouse(avatar);
-    var animateMousePointer = mouseStuff.animateMousePointer;
+    var animateMousePointer = setupMouse(avatar);
 
     app.start( animate(leapController, animateLeap,
                        POOLVR.ballBodies, ballStripeMeshes,

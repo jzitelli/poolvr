@@ -19,7 +19,9 @@ WebVRApplication = ( function () {
             this.renderer.shadowMap.enabled = true;
             this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         }
-        document.body.appendChild(this.renderer.domElement);
+        var domElement = this.renderer.domElement;
+        document.body.appendChild(domElement);
+        domElement.id = 'renderer'
         this.vrEffect = new THREE.VREffect(this.renderer);
         this.vrEffect.setSize(window.innerWidth, window.innerHeight);
         this.vrManager = new WebVRManager(this.renderer, this.vrEffect, {
@@ -108,9 +110,9 @@ WebVRApplication = ( function () {
             world.broadphase = new CANNON.SAPBroadphase( world );
             world.defaultContactMaterial.contactEquationStiffness   = config.contactEquationStiffness || 1e6;
             world.defaultContactMaterial.frictionEquationStiffness  = config.frictionEquationStiffness || 1e6;
-            world.defaultContactMaterial.contactEquationRelaxation  = config.contactEquationRelaxation || 4;
-            world.defaultContactMaterial.frictionEquationRelaxation = config.frictionEquationRelaxation || 4;
-            world.solver.iterations = 8;
+            world.defaultContactMaterial.contactEquationRelaxation  = config.contactEquationRelaxation || 3;
+            world.defaultContactMaterial.frictionEquationRelaxation = config.frictionEquationRelaxation || 3;
+            world.solver.iterations = 7;
         }
         this.world = world;
 

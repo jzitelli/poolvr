@@ -106,17 +106,12 @@ POOLVR.tipBallContactMaterial = new CANNON.ContactMaterial(POOLVR.tipMaterial, P
 
 POOLVR.config.vrLeap = URL_PARAMS.vrLeap || POOLVR.config.vrLeap;
 
-POOLVR.config.toolLength   = URL_PARAMS.toolLength || POOLVR.config.toolLength || 0.5;
-POOLVR.config.toolRadius   = URL_PARAMS.toolRadius || POOLVR.config.toolRadius || 0.013;
-POOLVR.config.toolMass     = URL_PARAMS.toolMass || POOLVR.config.toolMass || 0.04;
-if (URL_PARAMS.toolOffset) {
-    POOLVR.config.toolOffset = new THREE.Vector3();
-    POOLVR.config.toolOffset.fromArray(URL_PARAMS.toolOffset);
-} else {
-    POOLVR.config.toolOffset = new THREE.Vector3(0, -0.42, -POOLVR.config.toolLength - 0.15);
-}
+POOLVR.config.toolLength = URL_PARAMS.toolLength || POOLVR.config.toolLength || 0.5;
+POOLVR.config.toolRadius = URL_PARAMS.toolRadius || POOLVR.config.toolRadius || 0.013;
+POOLVR.config.toolMass   = URL_PARAMS.toolMass   || POOLVR.config.toolMass   || 0.04;
+POOLVR.config.toolOffset = URL_PARAMS.toolOffset || POOLVR.config.toolOffset || [0, -0.42, -POOLVR.config.toolLength - 0.15];
 
-var WebVRConfig = WebVRConfig || {};
+var WebVRConfig = WebVRConfig || POOLVR.config.WebVRConfig || {};
 WebVRConfig.FORCE_DISTORTION = URL_PARAMS.FORCE_DISTORTION; //true;
 WebVRConfig.FORCE_ENABLE_VR  = URL_PARAMS.FORCE_ENABLE_VR; //true;
 

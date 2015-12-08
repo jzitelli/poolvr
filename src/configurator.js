@@ -1,9 +1,36 @@
 var app;
 
+var avatar = new THREE.Object3D();
+var initialPosition = POOLVR.config.initialPosition || [0, 0.9, 0.9];
+avatar.position.fromArray(initialPosition);
+avatar.heading = 0;
+avatar.floatMode = false;
+avatar.toolMode = false;
+
+var textGeomLogger = new TextGeomLogger(undefined, {nrows: 20, size: 0.043});
+avatar.add(textGeomLogger.root);
+textGeomLogger.root.position.set(-1.5, -0.23, -2);
+
 
 var animate = function (avatar, leapController, animateLeap,
-                        toolRoot, leftRoot, rightRoot, animateMousePointer) {
+                        toolRoot, leftRoot, rightRoot, stickMesh,
+                        animateMousePointer,
+                        shadowMap) {
     "use strict";
+    var H_table = POOLVR.config.H_table;
+    if (!shadowMap) {
+        var stickShadow = new THREE.Object3D();
+        stickShadow.position.set(stickMesh.position.x,
+            (H_table + 0.001 - toolRoot.position.y - avatar.position.y) / toolRoot.scale.y,
+            stickMesh.position.z);
+        stickShadow.scale.set(1, 0.001, 1);
+        toolRoot.add(stickShadow);
+        var stickShadowMaterial = new THREE.MeshBasicMaterial({color: 0x002200});
+        var stickShadowGeom = stickMesh.geometry.clone();
+        var stickShadowMesh = new THREE.Mesh(stickShadowGeom, stickShadowMaterial);
+        stickShadowMesh.quaternion.copy(stickMesh.quaternion);
+        stickShadow.add(stickShadowMesh);
+    }
     var UP = new THREE.Vector3(0, 1, 0);
     var walkSpeed = 0.333,
         floatSpeed = 0.1;
@@ -85,12 +112,12 @@ var animate = function (avatar, leapController, animateLeap,
         toolRoot.rotation.y += 0.15 * dt * rotateToolCW;
         leftRoot.rotation.y = rightRoot.rotation.y = toolRoot.rotation.y;
 
-        // if (!shadowMap) {
-        //     stickShadow.position.set(stickMesh.position.x,
-        //         (H_table + 0.001 - toolRoot.position.y - avatar.position.y) / toolRoot.scale.y,
-        //         stickMesh.position.z);
-        //     stickShadowMesh.quaternion.copy(stickMesh.quaternion);
-        // }
+        if (!shadowMap) {
+            stickShadow.position.set(stickMesh.position.x,
+                (H_table + 0.001 - toolRoot.position.y - avatar.position.y) / toolRoot.scale.y,
+                stickMesh.position.z);
+            stickShadowMesh.quaternion.copy(stickMesh.quaternion);
+        }
 
         animateMousePointer(t);
 
@@ -102,18 +129,25 @@ var animate = function (avatar, leapController, animateLeap,
 
 function onLoad() {
     "use strict";
-    var avatar = new THREE.Object3D();
-    var initialPosition = POOLVR.config.initialPosition || [0, 0.9, 0.9];
-    avatar.position.fromArray(initialPosition);
-    avatar.heading = 0;
-    avatar.floatMode = false;
-
-    var textGeomLogger = new TextGeomLogger();
-    avatar.add(textGeomLogger.root);
-    textGeomLogger.root.position.set(-2.5, 1.5, -3.5);
-
     var scene = THREE.py.parse(JSON_SCENE);
+
+    if (!POOLVR.config.useBasicMaterials) {
+        // would rather add the spot lights via three.py generated JSON_SCENE, but I'm having problems getting shadows frm them:
+        var centerSpotLight = new THREE.SpotLight(0xffffee, 1, 10, 90);
+        centerSpotLight.position.set(0, 3, 0);
+        centerSpotLight.castShadow = true;
+        centerSpotLight.shadowCameraNear = 0.01;
+        centerSpotLight.shadowCameraFar = 4;
+        centerSpotLight.shadowCameraFov = 90;
+        scene.add(centerSpotLight);
+        // var centerSpotLightHelper = new THREE.SpotLightHelper(centerSpotLight);
+        // scene.add(centerSpotLightHelper);
+        // centerSpotLightHelper.visible = false;
+    }
+
     scene.add(avatar);
+
+    textGeomLogger.log(JSON.stringify(POOLVR.config, undefined, 2));
 
     POOLVR.config.keyboardCommands = POOLVR.keyboardCommands;
     POOLVR.config.gamepadCommands = POOLVR.gamepadCommands;
@@ -121,11 +155,9 @@ function onLoad() {
     app = new WebVRApplication('poolvr config', avatar, scene, POOLVR.config);
     avatar.add(app.camera);
 
-    textGeomLogger.log(JSON.stringify(POOLVR.config, undefined, 2));
+    var toolStuff = addTool(avatar, app.world, POOLVR.config);
 
-    var toolStuff = addTool(avatar, app.world);
-
-    var animateMousePointer = setupMouse(avatar);
+    var animateMousePointer = setupMouse(avatar, undefined, '../images/mouseParticle.png');
 
     app.start( animate(avatar,
                        toolStuff.leapController,
@@ -133,5 +165,7 @@ function onLoad() {
                        toolStuff.toolRoot,
                        toolStuff.leftRoot,
                        toolStuff.rightRoot,
-                       animateMousePointer) );
+                       toolStuff.stickMesh,
+                       animateMousePointer,
+                       POOLVR.config.shadowMap) );
 }

@@ -6,7 +6,7 @@ var TextGeomLogger = (function () {
     var chars = alphas + digits + symbols;
 
     function TextGeomLogger(material, options) {
-        material = material || new THREE.MeshBasicMaterial({color: 0xee2200});
+        material = material || new THREE.MeshBasicMaterial({color: 0xff2201});
         options = options || {};
         var textGeomParams = {
             size:          options.size || 0.12,
@@ -60,7 +60,7 @@ var TextGeomLogger = (function () {
             }
             // remove rows exceeding max display
             var toRemove = [];
-            for (i = lines.length; i < this.root.children.length - nrows; i++) {
+            for (i = lines.length - 1; i < this.root.children.length - nrows; i++) {
                 toRemove.push(this.root.children[i]);
             }
             for (i = 0; i < toRemove.length; i++) {
