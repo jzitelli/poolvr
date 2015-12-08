@@ -60,16 +60,16 @@ var TextGeomLogger = (function () {
             }
             // remove rows exceeding max display
             var toRemove = [];
-            for (i = 0; i < this.root.children.length - nrows; i++) {
+            for (i = lines.length; i < this.root.children.length - nrows; i++) {
                 toRemove.push(this.root.children[i]);
             }
             for (i = 0; i < toRemove.length; i++) {
                 this.root.remove(toRemove[i]);
             }
             // scroll lines:
-            for (i = 1; i < this.root.children.length; i++) {
+            for (i = 0; i < this.root.children.length; i++) {
                 var child = this.root.children[i];
-                child.position.y = i * 1.6*textGeomParams.size;
+                child.position.y = (this.root.children.length - i) * 1.6*textGeomParams.size;
             }
         }.bind(this);
     }

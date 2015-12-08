@@ -9,7 +9,7 @@ avatar.heading = 0;
 
 var textGeomLogger = textGeomLogger || new TextGeomLogger();
 avatar.add(textGeomLogger.root);
-textGeomLogger.root.position.set(-2.5, 1.5, -3.5);
+textGeomLogger.root.position.set(-2.5, 1.2, -3.5);
 
 var synthSpeaker = new SynthSpeaker({volume: 0.75, rate: 0.8, pitch: 0.5});
 
