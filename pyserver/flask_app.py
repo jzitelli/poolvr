@@ -100,7 +100,9 @@ def poolvr_config():
     config = get_poolvr_config()
     config['initialPosition'] = [0, 0.9, 0.9]
     version = request.args.get('version', POOLVR['version'])
-    configScene = config_scene.config_scene(url_prefix="../", **config)
+    configScene = config_scene.config_scene(cube_map=True,
+                                            url_prefix="../",
+                                            **config)
     poolvr_config = json.dumps({'config' : config,
                                 'version': version},
                                indent=2)

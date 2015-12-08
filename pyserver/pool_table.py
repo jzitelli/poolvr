@@ -223,6 +223,7 @@ def pool_hall(useBasicMaterials=True,
               L_table=2.3368,
               H_table=0.74295,
               ball_diameter=2.25*IN2METER,
+              cube_map=False,
               **kwargs):
     scene = Scene()
     L_room, W_room = 10, 10
@@ -240,6 +241,13 @@ def pool_hall(useBasicMaterials=True,
         light = PointLight(color=0xaa8866, position=[4, 5, 2.5], intensity=0.8, distance=40)
         scene.add(light)
 
+    if cube_map and ShaderLib is not None:
+        shader = deepcopy(ShaderLib['cube'])
+        shader['uniforms']['tCube']['value'] = [url_prefix + "images/skybox/%s.jpg" % pos
+                                                for pos in ('px', 'nx', 'py', 'ny', 'pz', 'nz')]
+        scene.add(Mesh(geometry=BoxGeometry(900, 900, 900),
+                       material=ShaderMaterial(side=BackSide, **shader)))
+
     poolTable = pool_table(L_table=L_table, H_table=H_table, ball_diameter=ball_diameter,
                            useBasicMaterials=useBasicMaterials, shadowMap=shadowMap, pointLight=pointLight, **kwargs)
     scene.add(poolTable)
@@ -250,7 +258,7 @@ def pool_hall(useBasicMaterials=True,
     sphere = SphereBufferGeometry(radius=ball_radius,
                                   widthSegments=16,
                                   heightSegments=12)
-    stripeGeom = SphereBufferGeometry(radius=1.023*ball_radius,
+    stripeGeom = SphereBufferGeometry(radius=1.022*ball_radius,
                                       widthSegments=16,
                                       heightSegments=8,
                                       thetaStart=np.pi/3,
@@ -318,4 +326,5 @@ def pool_hall(useBasicMaterials=True,
                                   position=[0, -ball_radius + 0.001, 0],
                                   rotation=[-0.5*np.pi - rotation[0], -rotation[1], -rotation[2]])
             ballMesh.add(ballShadowMesh)
+
     return scene
