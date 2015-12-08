@@ -109,4 +109,12 @@ def config_scene(useBasicMaterials=True,
                                   position=[0, -ball_radius + 0.001, 0],
                                   rotation=[-0.5*np.pi - rotation[0], -rotation[1], -rotation[2]])
             ballMesh.add(ballShadowMesh)
+
+    textGeom = TextGeometry(text="POOLVR", font='anonymous pro', height=0, size=0.4, curveSegments=2)
+    textMaterial = MeshBasicMaterial(color=0xff0000)
+    textMesh = Mesh(geometry=textGeom,
+                    material=textMaterial,
+                    position=[0, 1.1, -0.5*L_table - 1])
+    scene.add(textMesh)
+
     return scene

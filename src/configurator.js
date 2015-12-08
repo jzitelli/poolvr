@@ -2,7 +2,7 @@ var app;
 
 
 var animate = function (avatar, leapController, animateLeap,
-                        toolRoot, leftRoot, rightRoot) {
+                        toolRoot, leftRoot, rightRoot, animateMousePointer) {
     "use strict";
     var UP = new THREE.Vector3(0, 1, 0);
     var walkSpeed = 0.333,
@@ -76,14 +76,14 @@ var animate = function (avatar, leapController, animateLeap,
         avatar.position.z += dt * (drive * cosHeading - strafe * sinHeading);
         avatar.position.y += dt * floatUp;
 
-        // toolRoot.position.x += 0.25  * dt * toolStrafe;
-        // toolRoot.position.z += -0.25 * dt * toolDrive;
-        // toolRoot.position.y += 0.25  * dt * toolFloat;
-        // leftRoot.position.copy(toolRoot.position);
-        // rightRoot.position.copy(toolRoot.position);
+        toolRoot.position.x += 0.25  * dt * toolStrafe;
+        toolRoot.position.z += -0.25 * dt * toolDrive;
+        toolRoot.position.y += 0.25  * dt * toolFloat;
+        leftRoot.position.copy(toolRoot.position);
+        rightRoot.position.copy(toolRoot.position);
 
-        // toolRoot.rotation.y += 0.15 * dt * rotateToolCW;
-        // leftRoot.rotation.y = rightRoot.rotation.y = toolRoot.rotation.y;
+        toolRoot.rotation.y += 0.15 * dt * rotateToolCW;
+        leftRoot.rotation.y = rightRoot.rotation.y = toolRoot.rotation.y;
 
         // if (!shadowMap) {
         //     stickShadow.position.set(stickMesh.position.x,
@@ -92,7 +92,7 @@ var animate = function (avatar, leapController, animateLeap,
         //     stickShadowMesh.quaternion.copy(stickMesh.quaternion);
         // }
 
-        //if (animateMousePointer) animateMousePointer(t);
+        animateMousePointer(t);
 
         lt = t;
     }
@@ -115,6 +115,9 @@ function onLoad() {
     var scene = THREE.py.parse(JSON_SCENE);
     scene.add(avatar);
 
+    POOLVR.config.keyboardCommands = POOLVR.keyboardCommands;
+    POOLVR.config.gamepadCommands = POOLVR.gamepadCommands;
+
     app = new WebVRApplication('poolvr config', avatar, scene, POOLVR.config);
     avatar.add(app.camera);
 
@@ -122,10 +125,13 @@ function onLoad() {
 
     var toolStuff = addTool(avatar, app.world);
 
+    var animateMousePointer = setupMouse(avatar);
+
     app.start( animate(avatar,
                        toolStuff.leapController,
                        toolStuff.animateLeap,
                        toolStuff.toolRoot,
                        toolStuff.leftRoot,
-                       toolStuff.rightRoot) );
+                       toolStuff.rightRoot,
+                       animateMousePointer) );
 }

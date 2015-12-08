@@ -83,7 +83,7 @@ def pool_table(L_table=2.3368, W_table=None, H_table=0.74295,
                                                         'shapes': ['Box']}})
     poolTable.add(playableSurfaceMesh)
     ball_radius = ball_diameter / 2
-    spotGeom = CircleBufferGeometry(name='spotGeom', radius=ball_radius)
+    spotGeom = CircleBufferGeometry(name='spotGeom', radius=ball_radius, segments=5)
     headSpotMesh = Mesh(geometry=spotGeom,
                         material=spotMaterial,
                         position=[0, H_table + 0.0002, 0.25*L_table],
@@ -318,4 +318,4 @@ def pool_hall(useBasicMaterials=True,
                                   position=[0, -ball_radius + 0.001, 0],
                                   rotation=[-0.5*np.pi - rotation[0], -rotation[1], -rotation[2]])
             ballMesh.add(ballShadowMesh)
-    return scene.export()
+    return scene

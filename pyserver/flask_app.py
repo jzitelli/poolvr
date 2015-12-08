@@ -70,7 +70,7 @@ def js_suffix():
         return {'js_suffix': '.min.js'}
 
 
-    
+
 @app.route('/poolvr')
 def poolvr_app():
     """Serves the poolvr HTML app"""
@@ -89,7 +89,7 @@ var JSON_SCENE = %s;
 </script>""" % (json.dumps({'config' : config,
                             'version': version},
                            indent=2),
-                json.dumps(pool_table.pool_hall(**config),
+                json.dumps(pool_table.pool_hall(**config).export(),
                            indent=(2 if app.debug else None)))), **config)
 
 
@@ -100,17 +100,7 @@ def poolvr_config():
     config = get_poolvr_config()
     config['initialPosition'] = [0, 0.9, 0.9]
     version = request.args.get('version', POOLVR['version'])
-
     configScene = config_scene.config_scene(url_prefix="../", **config)
-    textGeom = three.TextGeometry(text="POOLVR", font='anonymous pro', height=0, size=0.4, curveSegments=2)
-    textMaterial = three.MeshBasicMaterial(color=0xff0000)
-    textMesh = three.Mesh(geometry=textGeom, material=textMaterial,
-                          position=[config['initialPosition'][0],
-                                    config['initialPosition'][1] + 0.2,
-                                    config['initialPosition'][2] + 0.4])
-    configScene.add(textMesh)
-    configScene = configScene.export()
-
     poolvr_config = json.dumps({'config' : config,
                                 'version': version},
                                indent=2)
@@ -119,7 +109,7 @@ def poolvr_config():
 var POOLVR = %s;
 var JSON_SCENE = %s;
 </script>""" % (poolvr_config,
-                json.dumps(configScene, indent=2))))
+                json.dumps(configScene.export(), indent=2))))
 
 #                            poolvr_config=Markup(r"""<code>
 # %s

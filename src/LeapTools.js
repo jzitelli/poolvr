@@ -242,7 +242,7 @@ function addTool(parent, world, options) {
                     if (interactionBoxMaterial.opacity > 0.1 && tool.timeVisible > toolTimeC) {
                         // dim the interaction box:
                         interactionBoxMaterial.opacity *= 0.93;
-                        zeroPlaneMaterial.opacity *= 0.93;
+                        zeroPlaneMaterial.opacity = interactionBoxMaterial.opacity;
                     }
 
                 }
