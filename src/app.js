@@ -47,6 +47,7 @@ var autoPosition = ( function () {
         avatar.lookAt(horizontal);
         avatar.rotation.y += Math.PI;
         avatar.updateMatrix();
+        textGeomLogger.log("avatar.rotation.y =" + avatar.rotation.y);
     }
     return autoPosition;
 } )();
@@ -156,8 +157,8 @@ var animate = function (leapController, animateLeap,
             drive = 0;
         }
 
-        var cosHeading = Math.cos(heading - avatar.rotation.y),
-            sinHeading = Math.sin(heading - avatar.rotation.y);
+        var cosHeading = Math.cos(heading + avatar.rotation.y),
+            sinHeading = Math.sin(heading + avatar.rotation.y);
 
         // if (!app.vrControls.enabled) {
         //     pitch -= 0.8 * dt * (app.keyboard.getValue("pitchUp") + app.keyboard.getValue("pitchDown"));
@@ -190,7 +191,6 @@ var animate = function (leapController, animateLeap,
 
         headingQuat.setFromAxisAngle(UP, heading);
         avatar.quaternion.multiply(headingQuat);
-        // avatar.quaternion.setFromAxisAngle(UP, heading);
         // avatar.quaternion.multiply(pitchQuat);
 
         avatar.position.x += dt * (strafe * cosHeading + drive * sinHeading);
