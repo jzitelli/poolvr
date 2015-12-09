@@ -1,5 +1,3 @@
-"""See http://flask.pocoo.org/docs/0.10/testing/
-"""
 import unittest
 
 from needle.cases import NeedleTestCase
