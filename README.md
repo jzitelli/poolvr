@@ -103,6 +103,8 @@ Python packages:
   - [NumPy](http://www.numpy.org)
 
 
+The space nebula cube map background was created with [Space 3D](http://wwwtyro.github.io/space-3d/#animationSpeed=1&fov=90&nebulae=true&pointStars=true&resolution=1024&seed=1bblx79ds&stars=true&sun=false).
+
 
 
 ## TODO list:
