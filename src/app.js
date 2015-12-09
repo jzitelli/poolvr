@@ -102,7 +102,7 @@ function startTutorial() {
 
     synthSpeaker.speak("Keep the stick within the interaction box when you want to make contact with.  A ball.", function () {
         textGeomLogger.log("KEEP THE STICK WITHIN THE INTERACTION BOX WHEN YOU WANT");
-        textGeomLogger.log("TO MAKE CONTACT WITH A BALL.");
+        textGeomLogger.log("TO MAKE CONTACT WITH A BALL...");
     });
 }
 
