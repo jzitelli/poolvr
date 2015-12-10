@@ -22,6 +22,8 @@ import pool_table
 import config_scene
 
 
+WRITE_FOLDER = os.path.join(os.getcwd(), 'saves')
+
 POOLVR = {
     'config': {
         'pyserver'              : True,
@@ -43,6 +45,14 @@ POOLVR = {
 
 def get_poolvr_config():
     config = deepcopy(POOLVR['config'])
+    if request.args.get('config'):
+        path = os.path.join(WRITE_FOLDER, request.args['config'])
+        try:
+            with open(path) as f:
+                config = json.loads(f.read())
+                _logger.debug('loaded %s' % path)
+        except Exception as err:
+            _logger.warning(err);
     args = dict({k: v for k, v in request.args.items()
                  if k in config})
     # TODO: better way
@@ -74,7 +84,6 @@ def js_suffix():
         return {'js_suffix': '.min.js'}
 
 
-
 @app.route('/poolvr')
 def poolvr_app():
     """Serves the poolvr HTML app"""
@@ -104,8 +113,7 @@ def poolvr_config():
     config = get_poolvr_config()
     config['initialPosition'] = [0, 0.9, 0.9]
     version = request.args.get('version', POOLVR['version'])
-    configScene = config_scene.config_scene(cubeMap=True,
-                                            url_prefix="../",
+    configScene = config_scene.config_scene(url_prefix="../",
                                             **config)
     poolvr_config = json.dumps({'config' : config,
                                 'version': version},
@@ -144,8 +152,6 @@ def log():
     return jsonify(response)
 
 
-
-WRITE_FOLDER = os.path.join(os.getcwd(), 'saves')
 try:
     if not os.path.exists(WRITE_FOLDER):
         raise Exception('write is disabled, you need to create the write folder %s' % WRITE_FOLDER)
