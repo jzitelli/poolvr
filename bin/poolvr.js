@@ -51,14 +51,15 @@ WebVRApplication = ( function () {
         }.bind(this);
 
         var lastPosition = new THREE.Vector3();
-        var lastQuaternion = new THREE.Quaternion();
+        //var lastQuaternion = new THREE.Quaternion();
         this.resetVRSensor = function () {
-            lastQuaternion.copy(this.camera.quaternion);
+            //lastQuaternion.copy(this.camera.quaternion);
             lastPosition.copy(this.camera.position);
+            var lastRotation = this.camera.rotation.y;
             this.vrControls.resetSensor();
             this.vrControls.update();
             if (this.config.onResetVRSensor) {
-                this.config.onResetVRSensor(lastQuaternion, lastPosition);
+                this.config.onResetVRSensor(lastRotation, lastPosition);
             }
         }.bind(this);
 
@@ -413,7 +414,7 @@ function addTool(parent, world, options) {
 
     var toolLength = options.toolLength || 0.5;
     var toolRadius = options.toolRadius || 0.013;
-    var toolMass   = options.toolMass   || 0.05;
+    var toolMass   = options.toolMass   || 0.04;
 
     var tipRadius      = options.tipRadius || 0.95 * toolRadius;
     var tipMinorRadius = options.tipMinorRadius || 0.25 * tipRadius;
@@ -433,6 +434,8 @@ function addTool(parent, world, options) {
 
     var keyboard = options.keyboard;
     var gamepad = options.gamepad;
+
+    var useEllipsoid = options.useEllipsoid || false;
 
     var leapController = new Leap.Controller({frameEventName: 'animationFrame'});
 
@@ -529,16 +532,21 @@ function addTool(parent, world, options) {
     toolRoot.add(stickMesh);
     // TODO: verify ellipsoid shape:
     var tipGeom = new THREE.SphereBufferGeometry(tipRadius/scalar, 10);
-    tipGeom.scale(1, tipMinorRadius / tipRadius, 1);
+    if (useEllipsoid) {
+        tipGeom.scale(1, tipMinorRadius / tipRadius, 1);
+    }
     var tipMesh = new THREE.Mesh(tipGeom, tipMaterial);
     tipMesh.castShadow = true;
     stickMesh.add(tipMesh);
 
 
     var tipBody = new CANNON.Body({mass: toolMass, type: CANNON.Body.KINEMATIC});
-    //tipBody.addShape(new CANNON.Sphere(tipRadius));
-    // TODO: semi-ellipsoid shape?
-    tipBody.addShape(new CANNON.Ellipsoid(tipRadius, tipMinorRadius, tipRadius));
+    if (useEllipsoid) {
+        // TODO: fix
+        tipBody.addShape(new CANNON.Ellipsoid(tipRadius, tipMinorRadius, tipRadius));
+    } else {
+        tipBody.addShape(new CANNON.Sphere(tipRadius));
+    }
     world.addBody(tipBody);
     toolRoot.visible = false;
 
@@ -643,6 +651,7 @@ function addTool(parent, world, options) {
                     tipBody.quaternion.copy(stickMesh.quaternion);
 
                     velocity.set(tool.tipVelocity[0] * 0.001, tool.tipVelocity[1] * 0.001, tool.tipVelocity[2] * 0.001);
+                    velocity.applyQuaternion(toolRoot.quaternion);
                     velocity.applyQuaternion(parent.quaternion);
                     tipBody.velocity.copy(velocity);
 
@@ -1364,7 +1373,7 @@ POOLVR.floorBallContactMaterial = new CANNON.ContactMaterial(POOLVR.floorMateria
 });
 POOLVR.tipMaterial            = new CANNON.Material();
 POOLVR.tipBallContactMaterial = new CANNON.ContactMaterial(POOLVR.tipMaterial, POOLVR.ballMaterial, {
-    restitution: 0.1,
+    restitution: 0.2,
     friction: 0.333
 });
 
@@ -1372,14 +1381,16 @@ POOLVR.tipBallContactMaterial = new CANNON.ContactMaterial(POOLVR.tipMaterial, P
 
 POOLVR.config.vrLeap = URL_PARAMS.vrLeap || POOLVR.config.vrLeap;
 
-POOLVR.config.toolLength = URL_PARAMS.toolLength || POOLVR.config.toolLength || 0.5;
-POOLVR.config.toolRadius = URL_PARAMS.toolRadius || POOLVR.config.toolRadius || 0.013;
-POOLVR.config.toolMass   = URL_PARAMS.toolMass   || POOLVR.config.toolMass   || 0.04;
-POOLVR.config.toolOffset = URL_PARAMS.toolOffset || POOLVR.config.toolOffset || [0, -0.42, -POOLVR.config.toolLength - 0.15];
+POOLVR.config.toolLength   = URL_PARAMS.toolLength   || POOLVR.config.toolLength || 0.5;
+POOLVR.config.toolRadius   = URL_PARAMS.toolRadius   || POOLVR.config.toolRadius || 0.013;
+POOLVR.config.toolMass     = URL_PARAMS.toolMass     || POOLVR.config.toolMass   || 0.04;
+POOLVR.config.toolOffset   = URL_PARAMS.toolOffset   || POOLVR.config.toolOffset || [0, -0.42, -POOLVR.config.toolLength - 0.15];
+POOLVR.config.toolRotation = URL_PARAMS.toolRotation || POOLVR.config.toolRotation || 0;
+POOLVR.config.useEllipsoid = URL_PARAMS.useEllipsoid || POOLVR.config.useEllipsoid || false;
 
 var WebVRConfig = WebVRConfig || POOLVR.config.WebVRConfig || {};
-WebVRConfig.FORCE_DISTORTION = URL_PARAMS.FORCE_DISTORTION; //true;
-WebVRConfig.FORCE_ENABLE_VR  = URL_PARAMS.FORCE_ENABLE_VR; //true;
+WebVRConfig.FORCE_DISTORTION = URL_PARAMS.FORCE_DISTORTION;
+WebVRConfig.FORCE_ENABLE_VR  = URL_PARAMS.FORCE_ENABLE_VR;
 
 var userAgent = navigator.userAgent;
 ;
@@ -1432,6 +1443,9 @@ if (POOLVR.config.initialPosition) {
     avatar.position.z = 1.86;
 }
 avatar.heading = 0;
+avatar.floatMode = false;
+avatar.toolMode = false;
+
 
 POOLVR.ballMeshes = [];
 POOLVR.ballBodies = [];
@@ -1531,12 +1545,10 @@ function startTutorial() {
 
 
 var animate = function (leapController, animateLeap,
-                        ballBodies, ballStripeMeshes,
                         toolRoot, shadowMap,
                         stickMesh, tipMesh,
                         H_table,
-                        animateMousePointer,
-                        leftRoot, rightRoot) {
+                        animateMousePointer) {
     "use strict";
 
     if (!shadowMap) {
@@ -1552,11 +1564,14 @@ var animate = function (leapController, animateLeap,
         var stickShadowMesh = new THREE.Mesh(stickShadowGeom, stickShadowMaterial);
         stickShadowMesh.quaternion.copy(stickMesh.quaternion);
         stickShadow.add(stickShadowMesh);
-        // TODO: new projection approach for ellipsoid tip
-        // tipMesh.geometry.computeBoundingSphere();
-        // var tipShadowGeom = new THREE.CircleBufferGeometry(tipMesh.geometry.boundingSphere.radius).rotateX(-Math.PI / 2);
-        // var tipShadowMesh = new THREE.Mesh(tipShadowGeom, stickShadowMaterial);
-        // stickShadow.add(tipShadowMesh);
+        if (POOLVR.config.useEllipsoid) {
+            // TODO: new projection approach for ellipsoid tip
+        } else {
+            tipMesh.geometry.computeBoundingSphere();
+            var tipShadowGeom = new THREE.CircleBufferGeometry(tipMesh.geometry.boundingSphere.radius).rotateX(-Math.PI / 2);
+            var tipShadowMesh = new THREE.Mesh(tipShadowGeom, stickShadowMaterial);
+            stickShadow.add(tipShadowMesh);
+        }
     }
 
     var UP = new THREE.Vector3(0, 1, 0),
@@ -1693,7 +1708,8 @@ function onLoad() {
         toolLength       : POOLVR.config.toolLength,
         toolRadius       : POOLVR.config.toolRadius,
         toolMass         : POOLVR.config.toolMass,
-        toolOffset       : POOLVR.config.toolOffset
+        toolOffset       : POOLVR.config.toolOffset,
+        useEllipsoid     : POOLVR.config.useEllipsoid
     };
     if (POOLVR.config.vrLeap) {
         // ##### Leap Motion VR tracking mode: #####
@@ -1704,19 +1720,16 @@ function onLoad() {
     pyserver.log('toolOptions =\n' + JSON.stringify(toolOptions, undefined, 2));
 
 
-    //var UP = new THREE.Vector3(0, 1, 0);
-    POOLVR.config.onResetVRSensor = function (lastQuaternion, lastPosition) {
-        // TODO: reposition toolRoot correctly
+    var UP = new THREE.Vector3(0, 1, 0);
+    POOLVR.config.onResetVRSensor = function (lastRotation, lastPosition) {
         pyserver.log('updating the toolRoot position...');
-        pyserver.log('' + app.camera.position.x + ' ' + app.camera.position.y + ' ' + app.camera.position.z);
-        pyserver.log('' + lastPosition.x + ' ' + lastPosition.y + ' ' + lastPosition.z);
-
+        app.camera.updateMatrix();
+        avatar.heading += lastRotation - app.camera.rotation.y;
+        toolRoot.rotation.y -= (lastRotation - app.camera.rotation.y);
         toolRoot.position.sub(lastPosition);
+        toolRoot.position.applyAxisAngle(UP, -lastRotation + app.camera.rotation.y);
         toolRoot.position.add(app.camera.position);
         toolRoot.updateMatrix();
-        // toolRoot.position.applyAxisAngle(UP, -dheading);
-        // toolRoot.position.sub(lastPosition);
-        // scene.updateMatrixWorld();
     };
 
 
@@ -1878,12 +1891,10 @@ function onLoad() {
     var animateMousePointer = mouseStuff.animateMousePointer;
 
     app.start( animate(leapController, animateLeap,
-                       POOLVR.ballBodies, ballStripeMeshes,
                        toolRoot, POOLVR.config.shadowMap,
                        toolStuff.stickMesh, toolStuff.tipMesh,
                        POOLVR.config.H_table,
-                       animateMousePointer,
-                       leftRoot, rightRoot) );
+                       animateMousePointer) );
 
     startTutorial();
 }

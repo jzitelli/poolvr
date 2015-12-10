@@ -12,7 +12,7 @@ function addTool(parent, world, options) {
 
     var toolLength = options.toolLength || 0.5;
     var toolRadius = options.toolRadius || 0.013;
-    var toolMass   = options.toolMass   || 0.05;
+    var toolMass   = options.toolMass   || 0.04;
 
     var tipRadius      = options.tipRadius || 0.95 * toolRadius;
     var tipMinorRadius = options.tipMinorRadius || 0.25 * tipRadius;
@@ -32,6 +32,8 @@ function addTool(parent, world, options) {
 
     var keyboard = options.keyboard;
     var gamepad = options.gamepad;
+
+    var useEllipsoid = options.useEllipsoid || false;
 
     var leapController = new Leap.Controller({frameEventName: 'animationFrame'});
 
@@ -128,16 +130,21 @@ function addTool(parent, world, options) {
     toolRoot.add(stickMesh);
     // TODO: verify ellipsoid shape:
     var tipGeom = new THREE.SphereBufferGeometry(tipRadius/scalar, 10);
-    tipGeom.scale(1, tipMinorRadius / tipRadius, 1);
+    if (useEllipsoid) {
+        tipGeom.scale(1, tipMinorRadius / tipRadius, 1);
+    }
     var tipMesh = new THREE.Mesh(tipGeom, tipMaterial);
     tipMesh.castShadow = true;
     stickMesh.add(tipMesh);
 
 
     var tipBody = new CANNON.Body({mass: toolMass, type: CANNON.Body.KINEMATIC});
-    //tipBody.addShape(new CANNON.Sphere(tipRadius));
-    // TODO: semi-ellipsoid shape?
-    tipBody.addShape(new CANNON.Ellipsoid(tipRadius, tipMinorRadius, tipRadius));
+    if (useEllipsoid) {
+        // TODO: fix
+        tipBody.addShape(new CANNON.Ellipsoid(tipRadius, tipMinorRadius, tipRadius));
+    } else {
+        tipBody.addShape(new CANNON.Sphere(tipRadius));
+    }
     world.addBody(tipBody);
     toolRoot.visible = false;
 
@@ -242,6 +249,7 @@ function addTool(parent, world, options) {
                     tipBody.quaternion.copy(stickMesh.quaternion);
 
                     velocity.set(tool.tipVelocity[0] * 0.001, tool.tipVelocity[1] * 0.001, tool.tipVelocity[2] * 0.001);
+                    velocity.applyQuaternion(toolRoot.quaternion);
                     velocity.applyQuaternion(parent.quaternion);
                     tipBody.velocity.copy(velocity);
 

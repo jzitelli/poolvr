@@ -11,6 +11,7 @@ var textGeomLogger = new TextGeomLogger(undefined, {nrows: 20, size: 0.043});
 avatar.add(textGeomLogger.root);
 textGeomLogger.root.position.set(-1.5, -0.23, -2);
 
+var toolRoot;
 
 var animate = function (avatar, leapController, animateLeap,
                         toolRoot, stickMesh,
@@ -107,9 +108,23 @@ var animate = function (avatar, leapController, animateLeap,
 
 function saveConfig() {
     "use strict";
+    POOLVR.config.toolOffset = [toolRoot.position.x, toolRoot.position.y, toolRoot.position.z];
+    POOLVR.config.toolRotation = toolRoot.rotation.y;
     if (POOLVR.config.pyserver) {
-        pyserver.writeFile('config.json', POOLVR.config);
+        delete POOLVR.config.gamepad;
+        delete POOLVR.config.keyboard;
+        delete POOLVR.config.gamepadCommands;
+        delete POOLVR.config.keyboardCommands;
+        //pyserver.writeFile('config.json', POOLVR.config);
+        pyserver.writeFile('config.json', JSON.stringify(POOLVR.config, undefined, 2));
+        pyserver.log(JSON.stringify(POOLVR.config, undefined, 2));
     }
+}
+
+
+function loadConfig(json) {
+    "use strict";
+    // TODO
 }
 
 
@@ -154,15 +169,16 @@ function onLoad() {
             pyserver.log('exiting fullscreen');
         }
     };
-    var toolRoot;
-    POOLVR.config.onResetVRSensor = function (lastQuaternion, lastPosition) {
-        // TODO: reposition toolRoot correctly
-        pyserver.log('updating the toolRoot position...');
-        pyserver.log('' + app.camera.position.x + ' ' + app.camera.position.y + ' ' + app.camera.position.z);
-        pyserver.log('' + lastPosition.x + ' ' + lastPosition.y + ' ' + lastPosition.z);
 
-        toolRoot.position.sub(app.camera.position);
-        toolRoot.position.add(lastPosition);
+    var UP = new THREE.Vector3(0, 1, 0);
+    POOLVR.config.onResetVRSensor = function (lastRotation, lastPosition) {
+        pyserver.log('updating the toolRoot position...');
+        app.camera.updateMatrix();
+        avatar.heading += lastRotation - app.camera.rotation.y;
+        toolRoot.rotation.y -= (lastRotation - app.camera.rotation.y);
+        toolRoot.position.sub(lastPosition);
+        toolRoot.position.applyAxisAngle(UP, -lastRotation + app.camera.rotation.y);
+        toolRoot.position.add(app.camera.position);
         toolRoot.updateMatrix();
     };
 

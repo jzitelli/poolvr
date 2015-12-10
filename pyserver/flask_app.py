@@ -33,7 +33,9 @@ POOLVR = {
         'pointLight'            : None,
         'H_table'               : 0.74295,
         'ball_diameter'         : 2.25 * pool_table.IN2METER,
-        'toolOffset'            : [0, -0.42, -0.4]
+        'toolOffset'            : [0, -0.42, -0.4],
+        'cubeMap'               : False,
+        'useEllipsoid'          : False
     },
     'version': '0.1.0dev'
 }

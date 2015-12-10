@@ -224,7 +224,6 @@ def pool_hall(useBasicMaterials=True,
               H_table=0.74295,
               ball_diameter=2.25*IN2METER,
               cubeMap=False,
-              cubeImages=None,
               **kwargs):
     scene = Scene()
     L_room, W_room = 10, 10
