@@ -283,8 +283,15 @@ function onLoad() {
 
 
     //var UP = new THREE.Vector3(0, 1, 0);
-    POOLVR.config.onResetVRSensor = function (dheading, lastPosition) {
+    POOLVR.config.onResetVRSensor = function (lastQuaternion, lastPosition) {
         // TODO: reposition toolRoot correctly
+        pyserver.log('updating the toolRoot position...');
+        pyserver.log('' + app.camera.position.x + ' ' + app.camera.position.y + ' ' + app.camera.position.z);
+        pyserver.log('' + lastPosition.x + ' ' + lastPosition.y + ' ' + lastPosition.z);
+
+        toolRoot.position.sub(lastPosition);
+        toolRoot.position.add(app.camera.position);
+        toolRoot.updateMatrix();
         // toolRoot.position.applyAxisAngle(UP, -dheading);
         // toolRoot.position.sub(lastPosition);
         // scene.updateMatrixWorld();

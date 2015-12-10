@@ -1,4 +1,4 @@
-function setupMouse(parent, position, particleTexture) {
+function setupMouse(parent, position, particleTexture, onpointerlockchange) {
     "use strict";
     position = position || new THREE.Vector3(0, 0, -2);
     var numParticles = 32;
@@ -35,9 +35,15 @@ function setupMouse(parent, position, particleTexture) {
         if ( document.pointerLockElement || document.mozPointerLockElement || document.webkitPointerLockElement ) {
             pyserver.log('pointer lock status is now locked');
             // mousePointerMesh.visible = true;
+            if (onpointerlockchange) {
+                onpointerlockchange(true);
+            }
         } else {
             pyserver.log('pointer lock status is now unlocked');
             // mousePointerMesh.visible = false;
+            if (onpointerlockchange) {
+                onpointerlockchange(false);
+            }
         }
     }
 

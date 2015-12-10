@@ -143,6 +143,33 @@ def log():
 
 
 
+WRITE_FOLDER = os.path.join(os.getcwd(), 'saves')
+try:
+    if not os.path.exists(WRITE_FOLDER):
+        raise Exception('write is disabled, you need to create the write folder %s' % WRITE_FOLDER)
+    @app.route("/write", methods=['POST'])
+    def write():
+        filename = os.path.join(WRITE_FOLDER, os.path.split(request.args['file'])[1])
+        try:
+            if request.json is not None:
+                with open(filename, 'w') as f:
+                    f.write(json.dumps(request.json))
+            else:
+                with open(filename, 'w') as f:
+                    f.write(request.form['text'])
+            response = {'filename': filename}
+            _logger.info('wrote %s' % filename)
+        except Exception as err:
+            response = {'error': str(err)}
+        return jsonify(response)
+except Exception as err:
+    @app.route('/write', methods=['POST'])
+    def write():
+        filename = os.path.join(WRITE_FOLDER, os.path.split(request.args['file'])[1])
+        return jsonify({'filename': filename,
+                        'writeDisabled': True})
+
+
 def main():
     _logger.info("app.config =\n%s" % '\n'.join(['%s: %s' % (k, str(v))
                                                 for k, v in sorted(app.config.items(),

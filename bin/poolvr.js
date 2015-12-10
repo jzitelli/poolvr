@@ -51,12 +51,14 @@ WebVRApplication = ( function () {
         }.bind(this);
 
         var lastPosition = new THREE.Vector3();
+        var lastQuaternion = new THREE.Quaternion();
         this.resetVRSensor = function () {
-            var dheading = -this.camera.rotation.y;
+            lastQuaternion.copy(this.camera.quaternion);
             lastPosition.copy(this.camera.position);
             this.vrControls.resetSensor();
+            this.vrControls.update();
             if (this.config.onResetVRSensor) {
-                this.config.onResetVRSensor(dheading, lastPosition);
+                this.config.onResetVRSensor(lastQuaternion, lastPosition);
             }
         }.bind(this);
 
@@ -71,6 +73,9 @@ WebVRApplication = ( function () {
 
 
         this.menu = this.config.menu;
+        this.toggleMenu = function () {
+            if (this.menu) this.menu.visible = !this.menu.visible;
+        }.bind(this);
 
 
         var keyboardCommands = {
@@ -81,7 +86,7 @@ WebVRApplication = ( function () {
             resetVRSensor: {buttons: [Primrose.Input.Keyboard.Z],
                             commandDown: this.resetVRSensor.bind(this), dt: 0.25},
             toggleMenu: {buttons: [Primrose.Input.Keyboard.SPACEBAR],
-                         commandDown: function () { this.menu.visible = !this.menu.visible; }.bind(this), dt: 0.5}
+                         commandDown: this.toggleMenu.bind(this), dt: 0.25}
         };
         config.keyboardCommands = combineDefaults(config.keyboardCommands || {}, keyboardCommands);
         config.keyboardCommands = Object.keys(config.keyboardCommands).map(function (k) {
@@ -94,7 +99,7 @@ WebVRApplication = ( function () {
             resetVRSensor: {buttons: [Primrose.Input.Gamepad.XBOX_BUTTONS.back],
                             commandDown: this.resetVRSensor.bind(this), dt: 0.25},
             toggleMenu: {buttons: [Primrose.Input.Gamepad.XBOX_BUTTONS.start],
-                         commandDown: function () { this.menu.visible = !this.menu.visible; }.bind(this), dt: 0.5}
+                         commandDown: this.toggleMenu.bind(this), dt: 0.25}
         };
         config.gamepadCommands = combineDefaults(config.gamepadCommands || {}, gamepadCommands);
         config.gamepadCommands = Object.keys(config.gamepadCommands).map(function (k) {
@@ -116,7 +121,7 @@ WebVRApplication = ( function () {
             world = new CANNON.World();
             world.gravity.set( 0, -config.gravity, 0 );
             world.broadphase = new CANNON.SAPBroadphase( world );
-            world.defaultContactMaterial.contactEquationStiffness   = config.contactEquationStiffness || 2e6;
+            world.defaultContactMaterial.contactEquationStiffness   = config.contactEquationStiffness || 8e6;
             world.defaultContactMaterial.frictionEquationStiffness  = config.frictionEquationStiffness || 1e6;
             world.defaultContactMaterial.contactEquationRelaxation  = config.contactEquationRelaxation || 3;
             world.defaultContactMaterial.frictionEquationRelaxation = config.frictionEquationRelaxation || 3;
@@ -267,6 +272,7 @@ THREE.py = ( function () {
 
     var position = new THREE.Vector3();
     function CANNONize(obj, world) {
+        obj.updateMatrixWorld();
         obj.traverse(function(node) {
             if (node.userData && node.userData.cannonData) {
                 var body = makeCANNON(node, node.userData.cannonData);
@@ -290,7 +296,7 @@ THREE.py = ( function () {
             if (node instanceof THREE.Mesh) {
                 position.copy(node.position);
                 var params = {mass: cannonData.mass,
-                              position: node.localToWorld(position),
+                              position: node.parent.localToWorld(position),
                               quaternion: node.quaternion};
                 if (cannonData.linearDamping !== undefined) {
                     params.linearDamping = cannonData.linearDamping;
@@ -634,6 +640,8 @@ function addTool(parent, world, options) {
                     stickMesh.localToWorld(position);
                     tipBody.position.copy(position);
 
+                    tipBody.quaternion.copy(stickMesh.quaternion);
+
                     velocity.set(tool.tipVelocity[0] * 0.001, tool.tipVelocity[1] * 0.001, tool.tipVelocity[2] * 0.001);
                     velocity.applyQuaternion(parent.quaternion);
                     tipBody.velocity.copy(velocity);
@@ -959,7 +967,7 @@ var SynthSpeaker = ( function() {
     }
 } )();
 ;
-function setupMouse(parent, position, particleTexture) {
+function setupMouse(parent, position, particleTexture, onpointerlockchange) {
     "use strict";
     position = position || new THREE.Vector3(0, 0, -2);
     var numParticles = 32;
@@ -996,9 +1004,15 @@ function setupMouse(parent, position, particleTexture) {
         if ( document.pointerLockElement || document.mozPointerLockElement || document.webkitPointerLockElement ) {
             pyserver.log('pointer lock status is now locked');
             // mousePointerMesh.visible = true;
+            if (onpointerlockchange) {
+                onpointerlockchange(true);
+            }
         } else {
             pyserver.log('pointer lock status is now unlocked');
             // mousePointerMesh.visible = false;
+            if (onpointerlockchange) {
+                onpointerlockchange(false);
+            }
         }
     }
 
@@ -1691,8 +1705,15 @@ function onLoad() {
 
 
     //var UP = new THREE.Vector3(0, 1, 0);
-    POOLVR.config.onResetVRSensor = function (dheading, lastPosition) {
+    POOLVR.config.onResetVRSensor = function (lastQuaternion, lastPosition) {
         // TODO: reposition toolRoot correctly
+        pyserver.log('updating the toolRoot position...');
+        pyserver.log('' + app.camera.position.x + ' ' + app.camera.position.y + ' ' + app.camera.position.z);
+        pyserver.log('' + lastPosition.x + ' ' + lastPosition.y + ' ' + lastPosition.z);
+
+        toolRoot.position.sub(lastPosition);
+        toolRoot.position.add(app.camera.position);
+        toolRoot.updateMatrix();
         // toolRoot.position.applyAxisAngle(UP, -dheading);
         // toolRoot.position.sub(lastPosition);
         // scene.updateMatrixWorld();

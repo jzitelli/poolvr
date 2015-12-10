@@ -239,6 +239,8 @@ function addTool(parent, world, options) {
                     stickMesh.localToWorld(position);
                     tipBody.position.copy(position);
 
+                    tipBody.quaternion.copy(stickMesh.quaternion);
+
                     velocity.set(tool.tipVelocity[0] * 0.001, tool.tipVelocity[1] * 0.001, tool.tipVelocity[2] * 0.001);
                     velocity.applyQuaternion(parent.quaternion);
                     tipBody.velocity.copy(velocity);

@@ -105,6 +105,14 @@ var animate = function (avatar, leapController, animateLeap,
 };
 
 
+function saveConfig() {
+    "use strict";
+    if (POOLVR.config.pyserver) {
+        pyserver.writeFile('config.json', POOLVR.config);
+    }
+}
+
+
 function onLoad() {
     "use strict";
     var scene = THREE.py.parse(JSON_SCENE);
@@ -129,8 +137,13 @@ function onLoad() {
 
     POOLVR.config.keyboardCommands = POOLVR.keyboardCommands;
     POOLVR.config.gamepadCommands = POOLVR.gamepadCommands;
+    POOLVR.config.keyboardCommands.saveConfig = {buttons: [Primrose.Input.Keyboard.NUMBER1],
+        commandDown: saveConfig, dt: 1.0};
 
     var mouseStuff = setupMouse(avatar, undefined, '../images/mouseParticle.png');
+    // , function (locked) {
+    //     mouseStuff.setVisible(true);
+    // });
 
     POOLVR.config.onfullscreenchange = function (fullscreen) {
         if (fullscreen) {
@@ -141,6 +154,17 @@ function onLoad() {
             pyserver.log('exiting fullscreen');
         }
     };
+    var toolRoot;
+    POOLVR.config.onResetVRSensor = function (lastQuaternion, lastPosition) {
+        // TODO: reposition toolRoot correctly
+        pyserver.log('updating the toolRoot position...');
+        pyserver.log('' + app.camera.position.x + ' ' + app.camera.position.y + ' ' + app.camera.position.z);
+        pyserver.log('' + lastPosition.x + ' ' + lastPosition.y + ' ' + lastPosition.z);
+
+        toolRoot.position.sub(app.camera.position);
+        toolRoot.position.add(lastPosition);
+        toolRoot.updateMatrix();
+    };
 
     app = new WebVRApplication('poolvr config', avatar, scene, POOLVR.config);
     avatar.add(app.camera);
@@ -148,7 +172,7 @@ function onLoad() {
     POOLVR.config.keyboard = app.keyboard;
     POOLVR.config.gamepad = app.gamepad;
     var toolStuff = addTool(avatar, app.world, POOLVR.config);
-
+    toolRoot = toolStuff.toolRoot;
 
     app.start( animate(avatar,
                        toolStuff.leapController,

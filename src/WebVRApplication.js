@@ -44,12 +44,14 @@ WebVRApplication = ( function () {
         }.bind(this);
 
         var lastPosition = new THREE.Vector3();
+        var lastQuaternion = new THREE.Quaternion();
         this.resetVRSensor = function () {
-            var dheading = -this.camera.rotation.y;
+            lastQuaternion.copy(this.camera.quaternion);
             lastPosition.copy(this.camera.position);
             this.vrControls.resetSensor();
+            this.vrControls.update();
             if (this.config.onResetVRSensor) {
-                this.config.onResetVRSensor(dheading, lastPosition);
+                this.config.onResetVRSensor(lastQuaternion, lastPosition);
             }
         }.bind(this);
 
@@ -64,6 +66,9 @@ WebVRApplication = ( function () {
 
 
         this.menu = this.config.menu;
+        this.toggleMenu = function () {
+            if (this.menu) this.menu.visible = !this.menu.visible;
+        }.bind(this);
 
 
         var keyboardCommands = {
@@ -74,7 +79,7 @@ WebVRApplication = ( function () {
             resetVRSensor: {buttons: [Primrose.Input.Keyboard.Z],
                             commandDown: this.resetVRSensor.bind(this), dt: 0.25},
             toggleMenu: {buttons: [Primrose.Input.Keyboard.SPACEBAR],
-                         commandDown: function () { this.menu.visible = !this.menu.visible; }.bind(this), dt: 0.5}
+                         commandDown: this.toggleMenu.bind(this), dt: 0.25}
         };
         config.keyboardCommands = combineDefaults(config.keyboardCommands || {}, keyboardCommands);
         config.keyboardCommands = Object.keys(config.keyboardCommands).map(function (k) {
@@ -87,7 +92,7 @@ WebVRApplication = ( function () {
             resetVRSensor: {buttons: [Primrose.Input.Gamepad.XBOX_BUTTONS.back],
                             commandDown: this.resetVRSensor.bind(this), dt: 0.25},
             toggleMenu: {buttons: [Primrose.Input.Gamepad.XBOX_BUTTONS.start],
-                         commandDown: function () { this.menu.visible = !this.menu.visible; }.bind(this), dt: 0.5}
+                         commandDown: this.toggleMenu.bind(this), dt: 0.25}
         };
         config.gamepadCommands = combineDefaults(config.gamepadCommands || {}, gamepadCommands);
         config.gamepadCommands = Object.keys(config.gamepadCommands).map(function (k) {
@@ -109,7 +114,7 @@ WebVRApplication = ( function () {
             world = new CANNON.World();
             world.gravity.set( 0, -config.gravity, 0 );
             world.broadphase = new CANNON.SAPBroadphase( world );
-            world.defaultContactMaterial.contactEquationStiffness   = config.contactEquationStiffness || 2e6;
+            world.defaultContactMaterial.contactEquationStiffness   = config.contactEquationStiffness || 8e6;
             world.defaultContactMaterial.frictionEquationStiffness  = config.frictionEquationStiffness || 1e6;
             world.defaultContactMaterial.contactEquationRelaxation  = config.contactEquationRelaxation || 3;
             world.defaultContactMaterial.frictionEquationRelaxation = config.frictionEquationRelaxation || 3;

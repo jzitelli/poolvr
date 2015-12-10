@@ -2,7 +2,7 @@
 
 Play pool / billiards with your [Leap Motion controller](https://www.leapmotion.com) in VR (or fullscreen mode), in a web browser!
 
-![screenshot](http://jzitelli.github.io/poolvr/images/screenshot6.png)
+![screenshot](http://jzitelli.github.io/poolvr/images/poolvr-0.1.0.png)
 
 
 
@@ -118,3 +118,6 @@ The space nebula cube map background was created with [Space 3D](http://wwwtyro.
 - tweak friction, collision response physics parameters
 - improve Leap Motion tracking robustness
 - multi-user
+- render balls as sphere imposters
+- Android support, iOS support
+
