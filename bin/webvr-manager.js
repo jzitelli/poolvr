@@ -1,4 +1,4 @@
-(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
 /**
  * Responsible for showing the vertical alignment UI that separates left and
  * right eye images.
@@ -14,7 +14,8 @@ function Aligner() {
   s.left = '50%';
   s.display = 'none';
   s.marginLeft = '-2px';
-  s.border = '2px solid black';
+  s.border = '1px solid black';
+  s.borderTop = '0px';
   this.el = el;
 
   document.body.appendChild(el);
@@ -30,7 +31,7 @@ Aligner.prototype.hide = function() {
 
 module.exports = Aligner;
 
-},{}],2:[function(require,module,exports){
+},{}],2:[function(_dereq_,module,exports){
 /*
  * Copyright 2015 Google Inc. All Rights Reserved.
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -46,10 +47,10 @@ module.exports = Aligner;
  * limitations under the License.
  */
 
-var Aligner = require('./aligner.js');
-var Emitter = require('./emitter.js');
-var Modes = require('./modes.js');
-var Util = require('./util.js');
+var Aligner = _dereq_('./aligner.js');
+var Emitter = _dereq_('./emitter.js');
+var Modes = _dereq_('./modes.js');
+var Util = _dereq_('./util.js');
 
 /**
  * Everything having to do with the WebVR button.
@@ -214,7 +215,7 @@ ButtonManager.prototype.loadIcons_ = function() {
 
 module.exports = ButtonManager;
 
-},{"./aligner.js":1,"./emitter.js":6,"./modes.js":8,"./util.js":10}],3:[function(require,module,exports){
+},{"./aligner.js":1,"./emitter.js":6,"./modes.js":8,"./util.js":10}],3:[function(_dereq_,module,exports){
 /*
  * Copyright 2015 Google Inc. All Rights Reserved.
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -230,10 +231,7 @@ module.exports = ButtonManager;
  * limitations under the License.
  */
 
-var BarrelDistortion = require('./distortion/barrel-distortion-fragment.js');
-var DeviceInfo = require('./device-info.js');
-
-var deviceInfo = new DeviceInfo();
+var BarrelDistortion = _dereq_('./distortion/barrel-distortion-fragment.js');
 
 
 function ShaderPass(shader) {
@@ -271,7 +269,7 @@ function createRenderTarget(renderer) {
   return new THREE.WebGLRenderTarget(width, height, parameters);
 }
 
-function CardboardDistorter(renderer) {
+function CardboardDistorter(renderer, deviceInfo) {
   var left = deviceInfo.getLeftEyeCenter();
   var right = deviceInfo.getRightEyeCenter();
 
@@ -302,13 +300,13 @@ CardboardDistorter.prototype.patch = function() {
   if (!this.isActive) {
     return;
   }
-  this.textureTarget = createRenderTarget(renderer);
+  this.textureTarget = createRenderTarget(this.renderer);
 
   this.renderer.render = function(scene, camera, renderTarget, forceClear) {
     this.genuineRender.call(this.renderer, scene, camera, this.textureTarget, forceClear);
   }.bind(this);
 
-  renderer.setSize = function(width, height) {
+  this.renderer.setSize = function(width, height) {
     this.genuineSetSize.call(this.renderer, width, height);
     this.textureTarget = createRenderTarget(this.renderer);
   }.bind(this);
@@ -335,7 +333,7 @@ CardboardDistorter.prototype.postRender = function() {
   }
   var size = this.renderer.getSize();
   this.renderer.setViewport(0, 0, size.width, size.height);
-  this.shaderPass.render(this.genuineRender.bind(renderer), this.textureTarget);
+  this.shaderPass.render(this.genuineRender.bind(this.renderer), this.textureTarget);
 };
 
 /**
@@ -357,7 +355,7 @@ CardboardDistorter.prototype.setDistortionCoefficients = function(coefficients) 
 
 module.exports = CardboardDistorter;
 
-},{"./device-info.js":4,"./distortion/barrel-distortion-fragment.js":5}],4:[function(require,module,exports){
+},{"./distortion/barrel-distortion-fragment.js":5}],4:[function(_dereq_,module,exports){
 /*
  * Copyright 2015 Google Inc. All Rights Reserved.
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -373,7 +371,7 @@ module.exports = CardboardDistorter;
  * limitations under the License.
  */
 
-var Util = require('./util.js');
+var Util = _dereq_('./util.js');
 
 // Display width, display height and bevel measurements done on real phones.
 // Resolutions from http://www.paintcodeapp.com/news/ultimate-guide-to-iphone-resolutions
@@ -401,6 +399,7 @@ var iOSDevices = {
   })
 };
 
+// TODO: Add Nexus 5X, Nexus 6P, Nexus 6.
 var AndroidDevices = {
   Nexus5: new Device({
     userAgentRegExp: /Nexus 5/,
@@ -436,18 +435,26 @@ var AndroidDevices = {
 
 var Viewers = {
   CardboardV1: new CardboardViewer({
-    name: 'Cardboard 2014 (Magnet)',
+    id: 'CardboardV1',
+    label: 'Cardboard I/O 2014',
     fov: 40,
-    ipdMm: 60,
+    ipd: 0.060,
     baselineLensCenterMm: 37.26,
-    distortionCoefficients: [0.441, 0.156]
+    distortionCoefficients: [0.441, 0.156],
+    inverseCoefficients: [-0.4410035, 0.42756155, -0.4804439, 0.5460139,
+      -0.58821183, 0.5733938, -0.48303202, 0.33299083, -0.17573841,
+      0.0651772, -0.01488963, 0.001559834]
   }),
   CardboardV2: new CardboardViewer({
-    name: 'Cardboard 2015 (Button)',
+    id: 'CardboardV2',
+    label: 'Cardboard I/O 2015',
     fov: 60,
-    ipdMm: 64,
+    ipd: 0.064,
     baselineLensCenterMm: 37.26,
-    distortionCoefficients: [0.34, 0.55]
+    distortionCoefficients: [0.34, 0.55],
+    inverseCoefficients: [-0.33836704, -0.18162185, 0.862655, -1.2462051,
+      1.0560602, -0.58208317, 0.21609078, -0.05444823, 0.009177956,
+      -9.904169E-4, 6.183535E-5, -1.6981803E-6]
   })
 };
 
@@ -461,11 +468,15 @@ var DEFAULT_RIGHT_CENTER = {x: 0.5, y: 0.5};
  */
 function DeviceInfo() {
   this.device = this.determineDevice_();
-  this.enclosure = Viewers.CardboardV1;
+  this.viewer = Viewers.CardboardV1;
 }
 
 DeviceInfo.prototype.getDevice = function() {
   return this.device;
+};
+
+DeviceInfo.prototype.setViewer = function(viewer) {
+  this.viewer = viewer;
 };
 
 /**
@@ -475,9 +486,10 @@ DeviceInfo.prototype.getLeftEyeCenter = function() {
   if (!this.device) {
     return DEFAULT_LEFT_CENTER;
   }
-  // Get parameters from the enclosure.
-  var eyeToMid = this.enclosure.ipdMm / 2;
-  var eyeToBase = this.enclosure.baselineLensCenterMm;
+  // Get parameters from the viewer.
+  var ipdMm = this.viewer.ipd * 1000;
+  var eyeToMid = ipdMm / 2;
+  var eyeToBase = this.viewer.baselineLensCenterMm;
 
   // Get parameters from the phone.
   var halfWidthMm = this.device.heightMm / 2;
@@ -560,23 +572,28 @@ function Device(params) {
 
 
 function CardboardViewer(params) {
-  // A human readable name.
-  this.name = params.name;
+  // A machine readable ID.
+  this.id = params.id;
+  // A human readable label.
+  this.label = params.label;
   // Field of view in degrees (per side).
   this.fov = params.fov;
   // Distortion coefficients.
   this.distortionCoefficients = params.distortionCoefficients;
-  // IPD in millimeters.
-  this.ipdMm = params.ipdMm;
+  // Inverse distortion coefficients.
+  // TODO: Calculate these from distortionCoefficients in the future.
+  this.inverseCoefficients = params.inverseCoefficients;
+  // Interpupillary distance in meters.
+  this.ipd = params.ipd;
   // Distance between baseline and lens center.
   this.baselineLensCenterMm = params.baselineLensCenterMm;
 }
 
-// Export enclosure information.
+// Export viewer information.
 DeviceInfo.Viewers = Viewers;
 module.exports = DeviceInfo;
 
-},{"./util.js":10}],5:[function(require,module,exports){
+},{"./util.js":10}],5:[function(_dereq_,module,exports){
 var BarrelDistortionFragment = {
   type: 'fragment',
 
@@ -633,7 +650,7 @@ var BarrelDistortionFragment = {
 
 module.exports = BarrelDistortionFragment;
 
-},{}],6:[function(require,module,exports){
+},{}],6:[function(_dereq_,module,exports){
 /*
  * Copyright 2015 Google Inc. All Rights Reserved.
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -677,7 +694,7 @@ Emitter.prototype.on = function(eventName, callback) {
 
 module.exports = Emitter;
 
-},{}],7:[function(require,module,exports){
+},{}],7:[function(_dereq_,module,exports){
 /*
  * Copyright 2015 Google Inc. All Rights Reserved.
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -693,12 +710,12 @@ module.exports = Emitter;
  * limitations under the License.
  */
 
-var WebVRManager = require('./webvr-manager.js');
+var WebVRManager = _dereq_('./webvr-manager.js');
 
 window.WebVRConfig = window.WebVRConfig || {};
 window.WebVRManager = WebVRManager;
 
-},{"./webvr-manager.js":13}],8:[function(require,module,exports){
+},{"./webvr-manager.js":13}],8:[function(_dereq_,module,exports){
 /*
  * Copyright 2015 Google Inc. All Rights Reserved.
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -726,7 +743,7 @@ var Modes = {
 
 module.exports = Modes;
 
-},{}],9:[function(require,module,exports){
+},{}],9:[function(_dereq_,module,exports){
 /*
  * Copyright 2015 Google Inc. All Rights Reserved.
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -742,7 +759,7 @@ module.exports = Modes;
  * limitations under the License.
  */
 
-var Util = require('./util.js');
+var Util = _dereq_('./util.js');
 
 function RotateInstructions() {
   this.loadIcon_();
@@ -850,7 +867,7 @@ RotateInstructions.prototype.loadIcon_ = function() {
 
 module.exports = RotateInstructions;
 
-},{"./util.js":10}],10:[function(require,module,exports){
+},{"./util.js":10}],10:[function(_dereq_,module,exports){
 /*
  * Copyright 2015 Google Inc. All Rights Reserved.
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -916,9 +933,24 @@ Util.isLandscapeMode = function() {
 
 module.exports = Util;
 
-},{}],11:[function(require,module,exports){
-var Emitter = require('./emitter.js');
-var Util = require('./util.js');
+},{}],11:[function(_dereq_,module,exports){
+/*
+ * Copyright 2015 Google Inc. All Rights Reserved.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+var Emitter = _dereq_('./emitter.js');
+var Util = _dereq_('./util.js');
 
 var DEFAULT_VIEWER = 'CardboardV1';
 var VIEWER_KEY = 'WEBVR_CARDBOARD_VIEWER';
@@ -933,7 +965,7 @@ var VIEWER_KEY = 'WEBVR_CARDBOARD_VIEWER';
 function ViewerSelector(options) {
   // Try to load the selected key from local storage. If none exists, use the
   // default key.
-  this.selectedKey = localStorage[VIEWER_KEY] || DEFAULT_VIEWER;
+  this.selectedKey = localStorage.getItem(VIEWER_KEY) || DEFAULT_VIEWER;
   this.dialog = this.createDialog_(options);
   this.options = options;
   document.body.appendChild(this.dialog);
@@ -972,7 +1004,13 @@ ViewerSelector.prototype.onSave_ = function() {
   }
 
   this.emit('change', this.options[this.selectedKey]);
-  localStorage[VIEWER_KEY] = this.selectedKey;
+
+  // Attempt to save the viewer profile, but fails in private mode.
+  try {
+    localStorage.setItem(VIEWER_KEY, this.selectedKey);
+  } catch(error) {
+    console.error('Failed to save viewer profile: %s', error);
+  }
   this.hide();
 };
 
@@ -1011,7 +1049,7 @@ ViewerSelector.prototype.createDialog_ = function(options) {
 
   dialog.appendChild(this.createH1_('Select your viewer'));
   for (var id in options) {
-    dialog.appendChild(this.createChoice_(id, options[id].name));
+    dialog.appendChild(this.createChoice_(id, options[id].label));
   }
   dialog.appendChild(this.createButton_('Save', this.onSave_.bind(this)));
 
@@ -1082,7 +1120,7 @@ ViewerSelector.prototype.createButton_ = function(label, onclick) {
 
 module.exports = ViewerSelector;
 
-},{"./emitter.js":6,"./util.js":10}],12:[function(require,module,exports){
+},{"./emitter.js":6,"./util.js":10}],12:[function(_dereq_,module,exports){
 /*
  * Copyright 2015 Google Inc. All Rights Reserved.
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -1098,7 +1136,7 @@ module.exports = ViewerSelector;
  * limitations under the License.
  */
 
-var Util = require('./util.js');
+var Util = _dereq_('./util.js');
 
 /**
  * Android and iOS compatible wakelock implementation.
@@ -1158,7 +1196,7 @@ function getWakeLock() {
 
 module.exports = getWakeLock();
 
-},{"./util.js":10}],13:[function(require,module,exports){
+},{"./util.js":10}],13:[function(_dereq_,module,exports){
 /*
  * Copyright 2015 Google Inc. All Rights Reserved.
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -1174,15 +1212,15 @@ module.exports = getWakeLock();
  * limitations under the License.
  */
 
-var ButtonManager = require('./button-manager.js');
-var CardboardDistorter = require('./cardboard-distorter.js');
-var DeviceInfo = require('./device-info.js');
-var Emitter = require('./emitter.js');
-var Modes = require('./modes.js');
-var RotateInstructions = require('./rotate-instructions.js');
-var Util = require('./util.js');
-var ViewerSelector = require('./viewer-selector.js');
-var Wakelock = require('./wakelock.js');
+var ButtonManager = _dereq_('./button-manager.js');
+var CardboardDistorter = _dereq_('./cardboard-distorter.js');
+var DeviceInfo = _dereq_('./device-info.js');
+var Emitter = _dereq_('./emitter.js');
+var Modes = _dereq_('./modes.js');
+var RotateInstructions = _dereq_('./rotate-instructions.js');
+var Util = _dereq_('./util.js');
+var ViewerSelector = _dereq_('./viewer-selector.js');
+var Wakelock = _dereq_('./wakelock.js');
 
 /**
  * Helper for getting in and out of VR mode.
@@ -1208,15 +1246,17 @@ function WebVRManager(renderer, effect, params) {
   // Set option to hide the button.
   var hideButton = this.params.hideButton || false;
 
+  this.deviceInfo = new DeviceInfo();
+
   // Save the THREE.js renderer and effect for later.
   this.renderer = renderer;
   this.effect = effect;
-  this.distorter = new CardboardDistorter(renderer);
+  this.distorter = new CardboardDistorter(renderer, this.deviceInfo);
   this.button = new ButtonManager();
   this.rotateInstructions = new RotateInstructions();
   this.viewerSelector = new ViewerSelector(DeviceInfo.Viewers);
 
-  console.log('Using the %s viewer.', this.getViewer().name);
+  console.log('Using the %s viewer.', this.getViewer().label);
 
   this.isVRCompatible = false;
   this.isFullscreenDisabled = !!Util.getQueryParameter('no_fullscreen');
@@ -1226,15 +1266,16 @@ function WebVRManager(renderer, effect, params) {
     this.startMode = startModeParam;
   }
 
-  // Set the correct viewer and listen for changes.
-  this.onViewerChanged_(this.getViewer());
+  // Set the correct viewer profile, but only if this is Cardboard.
+  if (Util.isMobile()) {
+    this.onViewerChanged_(this.getViewer());
+  }
+  // Listen for changes to the viewer.
   this.viewerSelector.on('change', this.onViewerChanged_.bind(this));
 
   if (hideButton) {
     this.button.setVisibility(false);
   }
-
-  var deviceInfo = new DeviceInfo();
 
   // Check if the browser is compatible with WebVR.
   this.getDeviceByType_(HMDVRDevice).then(function(hmd) {
@@ -1246,7 +1287,7 @@ function WebVRManager(renderer, effect, params) {
       this.isVRCompatible = true;
       // Only enable distortion if we are dealing using the polyfill, we have a
       // perfect device match, and it's not prevented via configuration.
-      if (hmd.deviceName.indexOf('webvr-polyfill') == 0 && deviceInfo.getDevice() &&
+      if (hmd.deviceName.indexOf('webvr-polyfill') == 0 && this.deviceInfo.getDevice() &&
           !WebVRConfig.PREVENT_DISTORTION) {
         this.distorter.setActive(true);
       }
@@ -1583,26 +1624,31 @@ WebVRManager.prototype.exitFullscreen_ = function() {
 };
 
 WebVRManager.prototype.onViewerChanged_ = function(viewer) {
-  this.emit('viewerchange', viewer);
+  this.deviceInfo.setViewer(viewer);
 
   // Set the proper coefficients.
   this.distorter.setDistortionCoefficients(viewer.distortionCoefficients);
 
   // And update the camera FOV.
-  this.setCardboardFov_(viewer.fov);
+  this.setHMDVRDeviceParams_(viewer);
+
+  // Notify anyone interested in this event.
+  this.emit('viewerchange', viewer);
 };
 
 /**
- * Sets the FOV of the CardboardHMDVRDevice. These changes are ultimately
- * handled by VREffect.
+ * Sets parameters on CardboardHMDVRDevice. These changes are ultimately handled
+ * by VREffect.
  */
-WebVRManager.prototype.setCardboardFov_ = function(fov) {
+WebVRManager.prototype.setHMDVRDeviceParams_ = function(viewer) {
   this.getDeviceByType_(HMDVRDevice).then(function(hmd) {
-    if (hmd) {
-      // hmd.fov.upDegrees = fov;
-      // hmd.fov.downDegrees = fov;
-      // hmd.fov.leftDegrees = fov;
-      // hmd.fov.rightDegrees = fov;
+    // Set these properties if this HMDVRDevice supports them.
+    if (hmd && hmd.setFieldOfView) {
+      hmd.setFieldOfView(viewer.fov);
+    }
+    // Note: setInterpupillaryDistance is not part of the WebVR standard.
+    if (hmd && hmd.setInterpupillaryDistance) {
+      hmd.setInterpupillaryDistance(viewer.ipd);
     }
   });
 };

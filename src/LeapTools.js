@@ -30,6 +30,9 @@ function addTool(parent, world, options) {
     var interactionBoxOpacity   = options.interactionBoxOpacity || (options.useBasicMaterials === false ? 0.1 : 0.25);
     var interactionPlaneOpacity = options.interactionPlaneOpacity || interactionBoxOpacity;
 
+    var keyboard = options.keyboard;
+    var gamepad = options.gamepad;
+
     var leapController = new Leap.Controller({frameEventName: 'animationFrame'});
 
     var scalar;
@@ -300,6 +303,42 @@ function addTool(parent, world, options) {
             }
         }
 
+
+        var toolDrive = 0;
+        var toolFloat = 0;
+        var toolStrafe = 0;
+        var rotateToolCW = 0;
+        if (keyboard) {
+            toolDrive += keyboard.getValue("moveToolForwards") - keyboard.getValue("moveToolBackwards");
+            toolFloat += keyboard.getValue("moveToolUp") - keyboard.getValue("moveToolDown");
+            toolStrafe += keyboard.getValue("moveToolRight") - keyboard.getValue("moveToolLeft");
+            rotateToolCW += keyboard.getValue("rotateToolCW") - keyboard.getValue("rotateToolCCW");
+        }
+        if (gamepad) {
+            if (parent.toolMode) {
+                toolFloat += gamepad.getValue("toolFloat");
+                toolStrafe += gamepad.getValue("toolStrafe");
+            } else {
+                toolDrive -= gamepad.getValue("toolDrive");
+                rotateToolCW -= gamepad.getValue("toolStrafe");
+            }
+        }
+        if (toolDrive !== 0 || toolStrafe !== 0 || toolFloat !== 0 || rotateToolCW !== 0) {
+            toolRoot.position.x += 0.25  * dt * toolStrafe;
+            toolRoot.position.z += -0.25 * dt * toolDrive;
+            toolRoot.position.y += 0.25  * dt * toolFloat;
+            leftRoot.position.copy(toolRoot.position);
+            rightRoot.position.copy(toolRoot.position);
+            toolRoot.rotation.y += 0.15 * dt * rotateToolCW;
+            leftRoot.rotation.y = rightRoot.rotation.y = toolRoot.rotation.y;
+
+            if (toolRoot.visible === false || stickMaterial.opacity !== 1) {
+                toolRoot.visible = true;
+                stickMaterial.opacity = tipMaterial.opacity = 1;
+                interactionBoxMaterial.opacity = interactionBoxOpacity;
+                zeroPlaneMaterial.opacity = interactionPlaneOpacity;
+            }
+        }
     }
 
     // leapController.on('frame', animateLeap);

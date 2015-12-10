@@ -112,7 +112,7 @@ var animate = function (leapController, animateLeap,
                         ballBodies, ballStripeMeshes,
                         toolRoot, shadowMap,
                         stickMesh, tipMesh,
-                        H_table, floorMaterial, ballMaterial,
+                        H_table,
                         animateMousePointer,
                         leftRoot, rightRoot) {
     "use strict";
@@ -199,18 +199,6 @@ var animate = function (leapController, animateLeap,
         // var cosPitch = Math.cos(pitch),
         //     sinPitch = Math.sin(pitch);
 
-        var toolDrive = app.keyboard.getValue("moveToolForwards") - app.keyboard.getValue("moveToolBackwards");
-        var toolFloat = app.keyboard.getValue("moveToolUp") - app.keyboard.getValue("moveToolDown");
-        var toolStrafe = app.keyboard.getValue("moveToolRight") - app.keyboard.getValue("moveToolLeft");
-        var rotateToolCW = app.keyboard.getValue("rotateToolCW") - app.keyboard.getValue("rotateToolCCW");
-        if (avatar.toolMode) {
-            toolFloat += app.gamepad.getValue("toolFloat");
-            toolStrafe += app.gamepad.getValue("toolStrafe");
-        } else {
-            toolDrive -= app.gamepad.getValue("toolDrive");
-            rotateToolCW -= app.gamepad.getValue("toolStrafe");
-        }
-
         avatar.quaternion.setFromAxisAngle(UP, avatar.heading);
         // headingQuat.setFromAxisAngle(UP, heading);
         // avatar.quaternion.multiply(headingQuat);
@@ -219,15 +207,6 @@ var animate = function (leapController, animateLeap,
         avatar.position.x += dt * (strafe * cosHeading + drive * sinHeading);
         avatar.position.z += dt * (drive * cosHeading - strafe * sinHeading);
         avatar.position.y += dt * floatUp;
-
-        toolRoot.position.x += 0.25  * dt * toolStrafe;
-        toolRoot.position.z += -0.25 * dt * toolDrive;
-        toolRoot.position.y += 0.25  * dt * toolFloat;
-        leftRoot.position.copy(toolRoot.position);
-        rightRoot.position.copy(toolRoot.position);
-
-        toolRoot.rotation.y += 0.15 * dt * rotateToolCW;
-        leftRoot.rotation.y = rightRoot.rotation.y = toolRoot.rotation.y;
 
         if (!shadowMap) {
             stickShadow.position.set(stickMesh.position.x,
@@ -329,6 +308,10 @@ function onLoad() {
     app.world.addContactMaterial(POOLVR.floorBallContactMaterial);
     app.world.addContactMaterial(POOLVR.tipBallContactMaterial);
 
+
+    toolOptions.keyboard = app.keyboard;
+    toolOptions.gamepad = app.gamepad;
+
     var toolStuff = addTool(avatar, app.world, toolOptions);
     var toolRoot       = toolStuff.toolRoot;
     var leapController = toolStuff.leapController;
@@ -337,8 +320,8 @@ function onLoad() {
     var leftRoot       = toolStuff.leftRoot;
     var rightRoot      = toolStuff.rightRoot;
     var tipBody        = toolStuff.tipBody;
-
     tipBody.material = POOLVR.tipMaterial;
+
 
     // referenced by cannon.js callbacks:
     var ballStripeMeshes = [],
@@ -462,13 +445,14 @@ function onLoad() {
         }
     });
 
-    var animateMousePointer = setupMouse(avatar);
+    var mouseStuff = setupMouse(avatar);
+    var animateMousePointer = mouseStuff.animateMousePointer;
 
     app.start( animate(leapController, animateLeap,
                        POOLVR.ballBodies, ballStripeMeshes,
                        toolRoot, POOLVR.config.shadowMap,
                        toolStuff.stickMesh, toolStuff.tipMesh,
-                       POOLVR.config.H_table, POOLVR.floorMaterial, POOLVR.ballMaterial,
+                       POOLVR.config.H_table,
                        animateMousePointer,
                        leftRoot, rightRoot) );
 

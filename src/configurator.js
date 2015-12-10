@@ -13,7 +13,7 @@ textGeomLogger.root.position.set(-1.5, -0.23, -2);
 
 
 var animate = function (avatar, leapController, animateLeap,
-                        toolRoot, leftRoot, rightRoot, stickMesh,
+                        toolRoot, stickMesh,
                         animateMousePointer,
                         shadowMap) {
     "use strict";
@@ -71,7 +71,6 @@ var animate = function (avatar, leapController, animateLeap,
         avatar.heading += heading;
         var cosHeading = Math.cos(avatar.heading),
             sinHeading = Math.sin(avatar.heading);
-
         // if (!app.vrControls.enabled) {
         //     pitch -= 0.8 * dt * (app.keyboard.getValue("pitchUp") + app.keyboard.getValue("pitchDown"));
         //     pitchQuat.setFromAxisAngle(RIGHT, pitch);
@@ -79,38 +78,17 @@ var animate = function (avatar, leapController, animateLeap,
         // var cosPitch = Math.cos(pitch),
         //     sinPitch = Math.sin(pitch);
 
-        var toolDrive = app.keyboard.getValue("moveToolForwards") - app.keyboard.getValue("moveToolBackwards");
-        var toolFloat = app.keyboard.getValue("moveToolUp") - app.keyboard.getValue("moveToolDown");
-        var toolStrafe = app.keyboard.getValue("moveToolRight") - app.keyboard.getValue("moveToolLeft");
-        var rotateToolCW = app.keyboard.getValue("rotateToolCW") - app.keyboard.getValue("rotateToolCCW");
-        if (avatar.toolMode) {
-            toolFloat += app.gamepad.getValue("toolFloat");
-            toolStrafe += app.gamepad.getValue("toolStrafe");
-        } else {
-            toolDrive -= app.gamepad.getValue("toolDrive");
-            rotateToolCW -= app.gamepad.getValue("toolStrafe");
-        }
+        avatar.quaternion.setFromAxisAngle(UP, avatar.heading);
+        avatar.position.x += dt * (strafe * cosHeading + drive * sinHeading);
+        avatar.position.z += dt * (drive * cosHeading - strafe * sinHeading);
+        avatar.position.y += dt * floatUp;
+
 
         var frame = leapController.frame();
         if (frame.valid && frame.id != lastFrameID) {
             animateLeap(frame, dt);
             lastFrameID = frame.id;
         }
-
-        avatar.quaternion.setFromAxisAngle(UP, avatar.heading);
-
-        avatar.position.x += dt * (strafe * cosHeading + drive * sinHeading);
-        avatar.position.z += dt * (drive * cosHeading - strafe * sinHeading);
-        avatar.position.y += dt * floatUp;
-
-        toolRoot.position.x += 0.25  * dt * toolStrafe;
-        toolRoot.position.z += -0.25 * dt * toolDrive;
-        toolRoot.position.y += 0.25  * dt * toolFloat;
-        leftRoot.position.copy(toolRoot.position);
-        rightRoot.position.copy(toolRoot.position);
-
-        toolRoot.rotation.y += 0.15 * dt * rotateToolCW;
-        leftRoot.rotation.y = rightRoot.rotation.y = toolRoot.rotation.y;
 
         if (!shadowMap) {
             stickShadow.position.set(stickMesh.position.x,
@@ -152,20 +130,31 @@ function onLoad() {
     POOLVR.config.keyboardCommands = POOLVR.keyboardCommands;
     POOLVR.config.gamepadCommands = POOLVR.gamepadCommands;
 
+    var mouseStuff = setupMouse(avatar, undefined, '../images/mouseParticle.png');
+
+    POOLVR.config.onfullscreenchange = function (fullscreen) {
+        if (fullscreen) {
+            pyserver.log('going fullscreen');
+            mouseStuff.setVisible(true);
+        }
+        else {
+            pyserver.log('exiting fullscreen');
+        }
+    };
+
     app = new WebVRApplication('poolvr config', avatar, scene, POOLVR.config);
     avatar.add(app.camera);
 
+    POOLVR.config.keyboard = app.keyboard;
+    POOLVR.config.gamepad = app.gamepad;
     var toolStuff = addTool(avatar, app.world, POOLVR.config);
 
-    var animateMousePointer = setupMouse(avatar, undefined, '../images/mouseParticle.png');
 
     app.start( animate(avatar,
                        toolStuff.leapController,
                        toolStuff.animateLeap,
                        toolStuff.toolRoot,
-                       toolStuff.leftRoot,
-                       toolStuff.rightRoot,
                        toolStuff.stickMesh,
-                       animateMousePointer,
+                       mouseStuff.animateMousePointer,
                        POOLVR.config.shadowMap) );
 }
