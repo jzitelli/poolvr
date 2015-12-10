@@ -147,7 +147,6 @@ def main():
     _logger.info("app.config =\n%s" % '\n'.join(['%s: %s' % (k, str(v))
                                                 for k, v in sorted(app.config.items(),
                                                                    key=lambda i: i[0])]))
-    _logger.info("three.py VERSION: %s" % three.THREE_VERSION)
     _logger.info("""
           ***********
    *************************

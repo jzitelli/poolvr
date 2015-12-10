@@ -37,7 +37,6 @@ def main():
     app.listen(port)
     _logger.info("STATIC_FOLDER   = %s" % STATIC_FOLDER)
     _logger.info("listening on port %d" % port)
-    _logger.info("three.THREE_VERSION = %s" % three.THREE_VERSION)
     _logger.info("press CTRL-C to terminate the server")
     _logger.info("""
                 *
