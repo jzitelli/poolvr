@@ -194,25 +194,27 @@ var animate = function (leapController, animateLeap,
             drive = 0;
         }
 
-        avatar.heading += heading;
-        var cosHeading = Math.cos(avatar.heading),
-            sinHeading = Math.sin(avatar.heading);
+        if (floatUp !== 0 || strafe !== 0 || heading !== 0 || drive !== 0) {
+            avatar.heading += heading;
+            var cosHeading = Math.cos(avatar.heading),
+                sinHeading = Math.sin(avatar.heading);
 
-        // if (!app.vrControls.enabled) {
-        //     pitch -= 0.8 * dt * (app.keyboard.getValue("pitchUp") + app.keyboard.getValue("pitchDown"));
-        //     pitchQuat.setFromAxisAngle(RIGHT, pitch);
-        // }
-        // var cosPitch = Math.cos(pitch),
-        //     sinPitch = Math.sin(pitch);
+            // if (!app.vrControls.enabled) {
+            //     pitch -= 0.8 * dt * (app.keyboard.getValue("pitchUp") + app.keyboard.getValue("pitchDown"));
+            //     pitchQuat.setFromAxisAngle(RIGHT, pitch);
+            // }
+            // var cosPitch = Math.cos(pitch),
+            //     sinPitch = Math.sin(pitch);
 
-        avatar.quaternion.setFromAxisAngle(UP, avatar.heading);
-        // headingQuat.setFromAxisAngle(UP, heading);
-        // avatar.quaternion.multiply(headingQuat);
-        // avatar.quaternion.multiply(pitchQuat);
+            avatar.quaternion.setFromAxisAngle(UP, avatar.heading);
+            // headingQuat.setFromAxisAngle(UP, heading);
+            // avatar.quaternion.multiply(headingQuat);
+            // avatar.quaternion.multiply(pitchQuat);
 
-        avatar.position.x += dt * (strafe * cosHeading + drive * sinHeading);
-        avatar.position.z += dt * (drive * cosHeading - strafe * sinHeading);
-        avatar.position.y += dt * floatUp;
+            avatar.position.x += dt * (strafe * cosHeading + drive * sinHeading);
+            avatar.position.z += dt * (drive * cosHeading - strafe * sinHeading);
+            avatar.position.y += dt * floatUp;
+        }
 
         if (!shadowMap) {
             stickShadow.position.set(stickMesh.position.x,
@@ -278,6 +280,7 @@ function onLoad() {
         toolRadius       : POOLVR.config.toolRadius,
         toolMass         : POOLVR.config.toolMass,
         toolOffset       : POOLVR.config.toolOffset,
+        toolRotation     : POOLVR.config.toolRotation,
         tipShape         : POOLVR.config.tipShape
     };
     if (POOLVR.config.vrLeap) {

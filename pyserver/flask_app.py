@@ -47,14 +47,11 @@ POOLVR = {
 
 def get_poolvr_config():
     config = deepcopy(POOLVR['config'])
-    if request.args.get('config'):
-        path = os.path.join(WRITE_FOLDER, request.args['config'])
-        try:
-            with open(path) as f:
-                config = json.loads(f.read())
-                _logger.debug('loaded %s' % path)
-        except Exception as err:
-            _logger.warning(err);
+    try:
+        with open(os.path.join(WRITE_FOLDER, request.args.get('config', 'config.json'))) as f:
+            config.update(json.loads(f.read()))
+    except Exception as err:
+        _logger.warning(err);
     args = dict({k: v for k, v in request.args.items()
                  if k in config})
     # TODO: better way

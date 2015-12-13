@@ -28,7 +28,10 @@ function addTool(parent, world, options) {
 
     var toolOffset = options.toolOffset;
     toolOffset = new THREE.Vector3(0, -0.4, -toolLength - 0.2).fromArray(toolOffset);
+    var toolRotation = options.toolRotation || 0;
+
     var handOffset = options.handOffset || new THREE.Vector3().copy(toolOffset);
+    var handRotation = options.handRotation || toolRotation;
 
     var toolTime  = options.toolTime  || 0.25;
     var toolTimeB = options.toolTimeB || toolTime + 0.5;
@@ -52,6 +55,7 @@ function addTool(parent, world, options) {
         pyserver.log("transformOptions =\n" + JSON.stringify(transformOptions, undefined, 2));
         if (transformOptions.vr === true) {
             toolOffset.set(0, 0, 0);
+            toolRotation = 0;
             handOffset.set(0, 0, 0);
         }
         scalar = 1; // transform plugin takes care of scaling
@@ -78,6 +82,8 @@ function addTool(parent, world, options) {
     toolRoot.position.copy(toolOffset);
     toolRoot.scale.set(scalar, scalar, scalar);
     parent.add(toolRoot);
+    var UP = new THREE.Vector3(0, 1, 0);
+    toolRoot.quaternion.setFromAxisAngle(UP, toolRotation);
 
     // interaction box visual guide:
     var boxGeom = new THREE.BoxGeometry(1/scalar, 1/scalar, 1/scalar);
@@ -222,7 +228,6 @@ function addTool(parent, world, options) {
     leftRoot.add(joint2s[0][0], joint2s[0][1], joint2s[0][2], joint2s[0][3], joint2s[0][4]);
     rightRoot.add(joint2s[1][0], joint2s[1][1], joint2s[1][2], joint2s[1][3], joint2s[1][4]);
 
-    var UP = new THREE.Vector3(0, 1, 0);
     var direction = new THREE.Vector3();
     var position = new THREE.Vector3();
     var velocity = new THREE.Vector3();

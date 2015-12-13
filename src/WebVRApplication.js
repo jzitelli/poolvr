@@ -29,7 +29,7 @@ WebVRApplication = ( function () {
             hideButton: false
         });
         this.vrControls = new THREE.VRControls(this.camera);
-        this.vrControls.enabled = true;
+        this.vrControls.enabled = false;
 
 
         this.toggleVRControls = function () {
@@ -39,7 +39,7 @@ WebVRApplication = ( function () {
                 this.camera.quaternion.set(0, 0, 0, 1);
             } else {
                 this.vrControls.enabled = true;
-                this.vrControls.update();
+                // this.vrControls.update();
             }
         }.bind(this);
 
@@ -138,9 +138,9 @@ WebVRApplication = ( function () {
         }
         var fullscreenchange = this.renderer.domElement.mozRequestFullScreen ? 'mozfullscreenchange' : 'webkitfullscreenchange';
         document.addEventListener(fullscreenchange, function ( event ) {
-            // if (this.vrManager.isVRMode()) {
-            //     this.vrControls.enabled = true;
-            // }
+            if (this.vrManager.isVRMode()) {
+                this.vrControls.enabled = true;
+            }
             var fullscreen = !(document.webkitFullscreenElement === null || document.mozFullScreenElement === null);
             if (!fullscreen) {
                 releasePointerLock();

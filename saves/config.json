@@ -16,12 +16,12 @@
   "toolLength": 0.5,
   "toolMass": 0.04,
   "toolOffset": [
-    0,
-    -0.42,
-    -0.4
+    -0.3601029741558145,
+    -0.537939695782329,
+    -0.34400803045005446
   ],
   "toolRadius": 0.013,
-  "toolRotation": 0,
+  "toolRotation": 0.4072419879983769,
   "useBasicMaterials": true,
   "useLambertMaterials": null,
   "usePhongMaterials": null

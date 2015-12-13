@@ -36,7 +36,7 @@ WebVRApplication = ( function () {
             hideButton: false
         });
         this.vrControls = new THREE.VRControls(this.camera);
-        this.vrControls.enabled = true;
+        this.vrControls.enabled = false;
 
 
         this.toggleVRControls = function () {
@@ -46,7 +46,7 @@ WebVRApplication = ( function () {
                 this.camera.quaternion.set(0, 0, 0, 1);
             } else {
                 this.vrControls.enabled = true;
-                this.vrControls.update();
+                // this.vrControls.update();
             }
         }.bind(this);
 
@@ -145,9 +145,9 @@ WebVRApplication = ( function () {
         }
         var fullscreenchange = this.renderer.domElement.mozRequestFullScreen ? 'mozfullscreenchange' : 'webkitfullscreenchange';
         document.addEventListener(fullscreenchange, function ( event ) {
-            // if (this.vrManager.isVRMode()) {
-            //     this.vrControls.enabled = true;
-            // }
+            if (this.vrManager.isVRMode()) {
+                this.vrControls.enabled = true;
+            }
             var fullscreen = !(document.webkitFullscreenElement === null || document.mozFullScreenElement === null);
             if (!fullscreen) {
                 releasePointerLock();
@@ -525,7 +525,10 @@ function addTool(parent, world, options) {
 
     var toolOffset = options.toolOffset;
     toolOffset = new THREE.Vector3(0, -0.4, -toolLength - 0.2).fromArray(toolOffset);
+    var toolRotation = options.toolRotation || 0;
+
     var handOffset = options.handOffset || new THREE.Vector3().copy(toolOffset);
+    var handRotation = options.handRotation || toolRotation;
 
     var toolTime  = options.toolTime  || 0.25;
     var toolTimeB = options.toolTimeB || toolTime + 0.5;
@@ -549,6 +552,7 @@ function addTool(parent, world, options) {
         pyserver.log("transformOptions =\n" + JSON.stringify(transformOptions, undefined, 2));
         if (transformOptions.vr === true) {
             toolOffset.set(0, 0, 0);
+            toolRotation = 0;
             handOffset.set(0, 0, 0);
         }
         scalar = 1; // transform plugin takes care of scaling
@@ -575,6 +579,8 @@ function addTool(parent, world, options) {
     toolRoot.position.copy(toolOffset);
     toolRoot.scale.set(scalar, scalar, scalar);
     parent.add(toolRoot);
+    var UP = new THREE.Vector3(0, 1, 0);
+    toolRoot.quaternion.setFromAxisAngle(UP, toolRotation);
 
     // interaction box visual guide:
     var boxGeom = new THREE.BoxGeometry(1/scalar, 1/scalar, 1/scalar);
@@ -719,7 +725,6 @@ function addTool(parent, world, options) {
     leftRoot.add(joint2s[0][0], joint2s[0][1], joint2s[0][2], joint2s[0][3], joint2s[0][4]);
     rightRoot.add(joint2s[1][0], joint2s[1][1], joint2s[1][2], joint2s[1][3], joint2s[1][4]);
 
-    var UP = new THREE.Vector3(0, 1, 0);
     var direction = new THREE.Vector3();
     var position = new THREE.Vector3();
     var velocity = new THREE.Vector3();
@@ -1382,7 +1387,25 @@ if (!POOLVR.config.pyserver) {
                 xhr.setRequestHeader('Content-Type', 'application/json');
                 xhr.send(JSON.stringify(text));
             }
+        },
+
+        saveConfig: function (filename, json) {
+            "use strict";
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', "/poolvr/config/save?file=" + filename);
+            xhr.onload = function() {
+                var response = JSON.parse(xhr.responseText);
+                if (response.filename) {
+                    console.log("wrote " + response.filename);
+                }
+                else if (response.error) {
+                    console.log(response.error);
+                }
+            };
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            xhr.send(JSON.stringify(json));
         }
+
     };
 }
 ;
@@ -1492,10 +1515,7 @@ POOLVR.tipBallContactMaterial = new CANNON.ContactMaterial(POOLVR.tipMaterial, P
     friction: 0.333
 });
 
-
-
 POOLVR.config.vrLeap = URL_PARAMS.vrLeap || POOLVR.config.vrLeap;
-
 POOLVR.config.toolLength   = URL_PARAMS.toolLength   || POOLVR.config.toolLength || 0.5;
 POOLVR.config.toolRadius   = URL_PARAMS.toolRadius   || POOLVR.config.toolRadius || 0.013;
 POOLVR.config.toolMass     = URL_PARAMS.toolMass     || POOLVR.config.toolMass   || 0.04;
@@ -1504,11 +1524,12 @@ POOLVR.config.toolRotation = URL_PARAMS.toolRotation || POOLVR.config.toolRotati
 // POOLVR.config.useEllipsoid = URL_PARAMS.useEllipsoid || POOLVR.config.useEllipsoid || false;
 POOLVR.config.tipShape     = URL_PARAMS.tipShape     || POOLVR.config.tipShape || 'Sphere';
 
-var WebVRConfig = WebVRConfig || POOLVR.config.WebVRConfig || {};
-WebVRConfig.FORCE_DISTORTION = URL_PARAMS.FORCE_DISTORTION;
-WebVRConfig.FORCE_ENABLE_VR  = URL_PARAMS.FORCE_ENABLE_VR;
+var localStorageConfig = localStorage.getItem(POOLVR.version);
+if (localStorageConfig) {
+    console.log(localStorageConfig);
+    POOLVR.config = JSON.parse(localStorageConfig);
+}
 
-var userAgent = navigator.userAgent;
 
 function saveConfig() {
     "use strict";
@@ -1523,8 +1544,9 @@ function saveConfig() {
         delete POOLVR.config.gamepadCommands;
         delete POOLVR.config.keyboardCommands;
         //pyserver.writeFile('config.json', POOLVR.config);
-        pyserver.writeFile('config.json', JSON.stringify(POOLVR.config, undefined, 2));
+        pyserver.saveConfig('config.json', POOLVR.config);
     }
+    localStorage.setItem(POOLVR.version, JSON.stringify(POOLVR.config));
 }
 
 
@@ -1532,6 +1554,13 @@ function loadConfig(json) {
     "use strict";
     // TODO
 }
+
+
+var WebVRConfig = WebVRConfig || POOLVR.config.WebVRConfig || {};
+WebVRConfig.FORCE_DISTORTION = URL_PARAMS.FORCE_DISTORTION;
+WebVRConfig.FORCE_ENABLE_VR  = URL_PARAMS.FORCE_ENABLE_VR;
+
+var userAgent = navigator.userAgent;
 ;
 ;
 var playCollisionSound = (function () {
@@ -1766,25 +1795,27 @@ var animate = function (leapController, animateLeap,
             drive = 0;
         }
 
-        avatar.heading += heading;
-        var cosHeading = Math.cos(avatar.heading),
-            sinHeading = Math.sin(avatar.heading);
+        if (floatUp !== 0 || strafe !== 0 || heading !== 0 || drive !== 0) {
+            avatar.heading += heading;
+            var cosHeading = Math.cos(avatar.heading),
+                sinHeading = Math.sin(avatar.heading);
 
-        // if (!app.vrControls.enabled) {
-        //     pitch -= 0.8 * dt * (app.keyboard.getValue("pitchUp") + app.keyboard.getValue("pitchDown"));
-        //     pitchQuat.setFromAxisAngle(RIGHT, pitch);
-        // }
-        // var cosPitch = Math.cos(pitch),
-        //     sinPitch = Math.sin(pitch);
+            // if (!app.vrControls.enabled) {
+            //     pitch -= 0.8 * dt * (app.keyboard.getValue("pitchUp") + app.keyboard.getValue("pitchDown"));
+            //     pitchQuat.setFromAxisAngle(RIGHT, pitch);
+            // }
+            // var cosPitch = Math.cos(pitch),
+            //     sinPitch = Math.sin(pitch);
 
-        avatar.quaternion.setFromAxisAngle(UP, avatar.heading);
-        // headingQuat.setFromAxisAngle(UP, heading);
-        // avatar.quaternion.multiply(headingQuat);
-        // avatar.quaternion.multiply(pitchQuat);
+            avatar.quaternion.setFromAxisAngle(UP, avatar.heading);
+            // headingQuat.setFromAxisAngle(UP, heading);
+            // avatar.quaternion.multiply(headingQuat);
+            // avatar.quaternion.multiply(pitchQuat);
 
-        avatar.position.x += dt * (strafe * cosHeading + drive * sinHeading);
-        avatar.position.z += dt * (drive * cosHeading - strafe * sinHeading);
-        avatar.position.y += dt * floatUp;
+            avatar.position.x += dt * (strafe * cosHeading + drive * sinHeading);
+            avatar.position.z += dt * (drive * cosHeading - strafe * sinHeading);
+            avatar.position.y += dt * floatUp;
+        }
 
         if (!shadowMap) {
             stickShadow.position.set(stickMesh.position.x,
@@ -1850,6 +1881,7 @@ function onLoad() {
         toolRadius       : POOLVR.config.toolRadius,
         toolMass         : POOLVR.config.toolMass,
         toolOffset       : POOLVR.config.toolOffset,
+        toolRotation     : POOLVR.config.toolRotation,
         tipShape         : POOLVR.config.tipShape
     };
     if (POOLVR.config.vrLeap) {

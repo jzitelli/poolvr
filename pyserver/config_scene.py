@@ -27,12 +27,12 @@ def config_scene(**config):
                     position=[0, 0.85, -0.5*L_table])
     scene.add(textMesh)
 
-    textGeom = TextGeometry(text=json.dumps(config, indent=2),
-                            font='anonymous pro',
-                            size=0.16, height=0, curveSegments=2)
-    textMesh = Mesh(geometry=textGeom,
-                    material=MeshBasicMaterial(color=0xffff00),
-                    position=[-2, 0, -3])
-    scene.add(textMesh)
+    # textGeom = TextGeometry(text=json.dumps(config, indent=2),
+    #                         font='anonymous pro',
+    #                         size=0.16, height=0, curveSegments=2)
+    # textMesh = Mesh(geometry=textGeom,
+    #                 material=MeshBasicMaterial(color=0xffff00),
+    #                 position=[-2, 0, -3])
+    # scene.add(textMesh)
 
     return scene
