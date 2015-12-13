@@ -3,6 +3,7 @@
 from copy import deepcopy
 import numpy as np
 
+from . import *
 from three import *
 from pool_table import *
 
@@ -33,5 +34,5 @@ def config_scene(**config):
                     material=MeshBasicMaterial(color=0xffff00),
                     position=[-2, 0, -3])
     scene.add(textMesh)
-    
+
     return scene

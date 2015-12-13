@@ -9,7 +9,11 @@ from tornado.wsgi import WSGIContainer
 from tornado.web import Application, FallbackHandler, StaticFileHandler
 from tornado.ioloop import IOLoop
 
-from flask_app import app, site_settings, STATIC_FOLDER, three
+import sys
+sys.path.append(os.getcwd())
+import pyserver
+
+from flask_app import app, site_settings, STATIC_FOLDER
 app_flask = app
 
 websocket_handlers = []

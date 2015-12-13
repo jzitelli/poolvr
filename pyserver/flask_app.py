@@ -15,11 +15,11 @@ app = Flask(__name__,
 import site_settings
 app.config.from_object(site_settings)
 
-
-sys.path.insert(0, os.path.join(os.getcwd(), 'three.py'))
-import three
-import pool_table
-import config_scene
+sys.path.append(os.getcwd())
+import pyserver
+# from pyserver import three
+from pyserver import pool_table
+from pyserver import config_scene
 
 
 WRITE_FOLDER = os.path.join(os.getcwd(), 'saves')

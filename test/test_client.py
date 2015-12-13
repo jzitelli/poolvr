@@ -2,6 +2,10 @@ import unittest
 
 from needle.cases import NeedleTestCase
 
+import sys
+import os
+sys.path.append(os.path.join(os.getcwd(), os.path.pardir))
+sys.path.append(os.path.join(os.getcwd(), os.path.pardir, 'pyserver'))
 from flask_app import app as flask_app
 
 
