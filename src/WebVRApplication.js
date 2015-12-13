@@ -119,7 +119,7 @@ WebVRApplication = ( function () {
             world.defaultContactMaterial.frictionEquationStiffness  = config.frictionEquationStiffness || 1e6;
             world.defaultContactMaterial.contactEquationRelaxation  = config.contactEquationRelaxation || 3;
             world.defaultContactMaterial.frictionEquationRelaxation = config.frictionEquationRelaxation || 3;
-            world.solver.iterations = 7;
+            world.solver.iterations = 8;
         }
         this.world = world;
 

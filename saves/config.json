@@ -1,0 +1,28 @@
+{
+  "pointLight": null,
+  "pyserver": true,
+  "tipShape": "Cylinder",
+  "toolOffset": [
+    0,
+    -0.42,
+    -0.4
+  ],
+  "ball_diameter": 0.05715,
+  "initialPosition": [
+    0,
+    0.98295,
+    1.0042
+  ],
+  "gravity": 9.8,
+  "L_table": 2.3368,
+  "shadowMap": null,
+  "cubeMap": false,
+  "toolRotation": 0,
+  "usePhongMaterials": null,
+  "H_table": 0.74295,
+  "useBasicMaterials": true,
+  "useLambertMaterials": null,
+  "toolLength": 0.5,
+  "toolRadius": 0.013,
+  "toolMass": 0.04
+}

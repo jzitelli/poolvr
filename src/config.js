@@ -42,7 +42,9 @@ POOLVR.keyboardCommands = {
     resetTable: {buttons: [Primrose.Input.Keyboard.R],
                  commandDown: function () { resetTable(); }, dt: 0.5},
     autoPosition: {buttons: [Primrose.Input.Keyboard.P],
-                   commandDown: function () { autoPosition(avatar); }, dt: 0.5}
+                   commandDown: function () { autoPosition(avatar); }, dt: 0.5},
+    saveConfig: {buttons: [Primrose.Input.Keyboard.NUMBER1],
+                 commandDown: saveConfig, dt: 1.0}
 };
 
 var DEADZONE = 0.2;
@@ -111,10 +113,34 @@ POOLVR.config.toolRadius   = URL_PARAMS.toolRadius   || POOLVR.config.toolRadius
 POOLVR.config.toolMass     = URL_PARAMS.toolMass     || POOLVR.config.toolMass   || 0.04;
 POOLVR.config.toolOffset   = URL_PARAMS.toolOffset   || POOLVR.config.toolOffset || [0, -0.42, -POOLVR.config.toolLength - 0.15];
 POOLVR.config.toolRotation = URL_PARAMS.toolRotation || POOLVR.config.toolRotation || 0;
-POOLVR.config.useEllipsoid = URL_PARAMS.useEllipsoid || POOLVR.config.useEllipsoid || false;
+// POOLVR.config.useEllipsoid = URL_PARAMS.useEllipsoid || POOLVR.config.useEllipsoid || false;
+POOLVR.config.tipShape     = URL_PARAMS.tipShape     || POOLVR.config.tipShape || 'Sphere';
 
 var WebVRConfig = WebVRConfig || POOLVR.config.WebVRConfig || {};
 WebVRConfig.FORCE_DISTORTION = URL_PARAMS.FORCE_DISTORTION;
 WebVRConfig.FORCE_ENABLE_VR  = URL_PARAMS.FORCE_ENABLE_VR;
 
 var userAgent = navigator.userAgent;
+
+function saveConfig() {
+    "use strict";
+    if (window.toolRoot) {
+        POOLVR.config.toolOffset = [window.toolRoot.position.x, window.toolRoot.position.y, window.toolRoot.position.z];
+        POOLVR.config.toolRotation = window.toolRoot.rotation.y;
+    }
+    if (POOLVR.config.pyserver) {
+        delete POOLVR.config.gamepad;
+        delete POOLVR.config.keyboard;
+        delete POOLVR.config.onResetVRSensor;
+        delete POOLVR.config.gamepadCommands;
+        delete POOLVR.config.keyboardCommands;
+        //pyserver.writeFile('config.json', POOLVR.config);
+        pyserver.writeFile('config.json', JSON.stringify(POOLVR.config, undefined, 2));
+    }
+}
+
+
+function loadConfig(json) {
+    "use strict";
+    // TODO
+}

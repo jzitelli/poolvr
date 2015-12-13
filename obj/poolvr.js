@@ -1,5 +1,5 @@
 /*
-  poolvr v0.1.0 2015-12-10
+  poolvr v0.1.0 2015-12-13
   
   Copyright (C) 2015 Jeffrey Zitelli <jeffrey.zitelli@gmail.com> (http://subvr.info)
   http://subvr.info/poolvr
@@ -126,7 +126,7 @@ WebVRApplication = ( function () {
             world.defaultContactMaterial.frictionEquationStiffness  = config.frictionEquationStiffness || 1e6;
             world.defaultContactMaterial.contactEquationRelaxation  = config.contactEquationRelaxation || 3;
             world.defaultContactMaterial.frictionEquationRelaxation = config.frictionEquationRelaxation || 3;
-            world.solver.iterations = 7;
+            world.solver.iterations = 8;
         }
         this.world = world;
 
@@ -201,6 +201,68 @@ THREE.py = ( function () {
         // TODO:
     }
 
+
+    var TextGeomMesher = ( function () {
+
+        var alphas = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        var digits = "0123456789";
+        var symbols = ",./;'[]\\-=<>?:\"{}|_+~!@#$%^&*()";
+        var chars = alphas + digits + symbols;
+
+        function TextGeomMesher(material, parameters) {
+            this.material = material || new THREE.MeshBasicMaterial({color: 0xff2201});
+            this.geometries = {};
+            this.meshes = {};
+            parameters = parameters || {size: 0.2, height: 0, font: 'anonymous pro', curveSegments: 2};
+            for (var i = 0; i < chars.length; i++) {
+                var c = chars[i];
+                var geom = new THREE.TextGeometry(c, parameters);
+                var bufferGeom = new THREE.BufferGeometry();
+                bufferGeom.fromGeometry(geom);
+                geom.dispose();
+                this.geometries[c] = bufferGeom;
+                this.meshes[c] = new THREE.Mesh(geom, this.material);
+            }
+            var lineMeshBuffer = {};
+            this.makeMesh = function (text, material) {
+                material = material || this.material;
+                var mesh = new THREE.Object3D();
+                var lines = text.split(/\n/);
+                for (var i = 0; i < lines.length; i++) {
+                    var line = lines[i];
+                    var lineMesh = lineMeshBuffer[line];
+                    if (lineMesh) {
+                        var clone = lineMesh.clone();
+                        clone.position.y = 0;
+                        mesh.add(clone);
+                    }
+                    else {
+                        lineMesh = new THREE.Object3D();
+                        mesh.add(lineMesh);
+                        lineMeshBuffer[line] = lineMesh;
+                        for (var j = 0; j < line.length; j++) {
+                            var c = line[j];
+                            if (c !== ' ') {
+                                var letterMesh = this.meshes[c].clone();
+                                letterMesh.position.x = 0.8*textGeomParams.size * j;
+                                lineMesh.add(letterMesh);
+                            }
+                        }
+                    }
+                }
+                // scroll lines:
+                for (i = 0; i < mesh.children.length; i++) {
+                    var child = mesh.children[i];
+                    child.position.y = (mesh.children.length - i) * 1.6*parameters.size;
+                }
+                return mesh;
+            }.bind(this);
+        }
+
+        return TextGeomMesher;
+    } )();
+
+
     function parse(json, texturePath) {
         if (texturePath) {
             objectLoader.setTexturePath(texturePath);
@@ -248,7 +310,7 @@ THREE.py = ( function () {
 
         // filter out geometries that ObjectLoader doesn't handle:
         var geometries = objectLoader.parseGeometries(json.geometries.filter(function (geom) {
-            return geom.type != "TextGeometry";
+            return geom.type !== "TextGeometry";
         }));
         // construct and insert geometries that ObjectLoader doesn't handle
         json.geometries.forEach( function (geom) {
@@ -264,6 +326,15 @@ THREE.py = ( function () {
         });
         var textures = objectLoader.parseTextures(json.textures, images);
         var materials = objectLoader.parseMaterials(json.materials, textures);
+
+        function parseObject(json, geometries, materials) {
+            var object;
+            if (json.type === 'TextObject3D') {
+                object = new THREE.Object3D();
+
+            }
+        }
+
         var object = objectLoader.parseObject(json.object, geometries, materials);
         if (json.images === undefined || json.images.length === 0) {
             onLoad(object);
@@ -309,8 +380,8 @@ THREE.py = ( function () {
                 body.mesh = node;
                 cannonData.shapes.forEach(function(e) {
                     var shape,
-                        position,
                         quaternion,
+                        position,
                         array;
                     switch (e) {
                         case 'Plane':
@@ -354,26 +425,49 @@ THREE.py = ( function () {
                                 node.geometry.parameters.height,
                                 node.geometry.parameters.radialSegments);
                             break;
-                        // case 'Trimesh':
-                        //     var vertices;
-                        //     var indices;
-                        //     if (node.geometry instanceof THREE.BufferGeometry) {
-                        //         vertices = node.geometry.getAttribute('position').array;
-                        //         indices = node.geometry.getAttribute('index').array;
-                        //     } else {
-                        //         vertices = [];
-                        //         for (var iv = 0; iv < node.geometry.vertices.length; iv++) {
-                        //             var vert = node.geometry.vertices[iv];
-                        //             vertices.push(vert.x, vert.y, vert.z);
-                        //         }
-                        //         indices = [];
-                        //         for (var iface = 0; iface < node.geometry.faces.length; iface++) {
-                        //             var face = node.geometry.faces[iface];
-                        //             indices.push(face.a, face.b, face.c);
-                        //         }
-                        //     }
-                        //     shape = new CANNON.Trimesh(vertices, indices);
-                        //     break;
+                        case 'Heightfield':
+                            array = node.geometry.getAttribute('position').array;
+                            if (node.geometry.type !== 'PlaneBufferGeometry') {
+                                pyserver.log('uh oh!');
+                            }
+                            var gridX1 = node.geometry.parameters.widthSegments + 1;
+                            var gridY1 = node.geometry.parameters.heightSegments + 1;
+                            var dx = node.geometry.parameters.width / node.geometry.parameters.widthSegments;
+                            var data = [];
+                            for (var ix = 0; ix < gridX1; ++ix) {
+                                data.push(new Float32Array(gridY1));
+                                for (var iy = 0; iy < gridY1; ++iy) {
+                                    data[ix][iy] = array[3 * (gridX1 * (gridY1 - iy - 1) + ix) + 2];
+                                }
+                            }
+                            shape = new CANNON.Heightfield(data, {
+                                elementSize: dx
+                            });
+                            // center to match THREE.PlaneBufferGeometry:
+                            position = new CANNON.Vec3();
+                            position.x = -node.geometry.parameters.width / 2;
+                            position.y = -node.geometry.parameters.height / 2;
+                            break;
+                        case 'Trimesh':
+                            var vertices;
+                            var indices;
+                            if (node.geometry instanceof THREE.BufferGeometry) {
+                                vertices = node.geometry.getAttribute('position').array;
+                                indices = node.geometry.index.array;
+                            } else {
+                                vertices = [];
+                                for (var iv = 0; iv < node.geometry.vertices.length; iv++) {
+                                    var vert = node.geometry.vertices[iv];
+                                    vertices.push(vert.x, vert.y, vert.z);
+                                }
+                                indices = [];
+                                for (var iface = 0; iface < node.geometry.faces.length; iface++) {
+                                    var face = node.geometry.faces[iface];
+                                    indices.push(face.a, face.b, face.c);
+                                }
+                            }
+                            shape = new CANNON.Trimesh(vertices, indices);
+                            break;
                         default:
                             console.log("unknown shape type: " + e);
                             break;
@@ -393,11 +487,12 @@ THREE.py = ( function () {
     }
 
     return {
-        parse: parse,
-        CANNONize: CANNONize,
-        isLoaded: isLoaded
+        load:           load,
+        parse:          parse,
+        CANNONize:      CANNONize,
+        isLoaded:       isLoaded,
+        TextGeomMesher: TextGeomMesher
     };
-
 } )();
 ;
 function addTool(parent, world, options) {
@@ -416,8 +511,17 @@ function addTool(parent, world, options) {
     var toolRadius = options.toolRadius || 0.013;
     var toolMass   = options.toolMass   || 0.04;
 
-    var tipRadius      = options.tipRadius || 0.95 * toolRadius;
-    var tipMinorRadius = options.tipMinorRadius || 0.25 * tipRadius;
+    var tipShape = options.tipShape || 'Sphere';
+    var tipRadius = options.tipRadius;
+    var tipMinorRadius = options.tipMinorRadius;
+    if (tipShape === 'Cylinder') {
+        tipRadius = tipRadius || toolRadius;
+    } else {
+        tipRadius = tipRadius || 0.95 * toolRadius;
+        if (tipShape === 'Ellipsoid') {
+            tipMinorRadius = tipMinorRadius || 0.25 * tipRadius;
+        }
+    }
 
     var toolOffset = options.toolOffset;
     toolOffset = new THREE.Vector3(0, -0.4, -toolLength - 0.2).fromArray(toolOffset);
@@ -432,10 +536,9 @@ function addTool(parent, world, options) {
     var interactionBoxOpacity   = options.interactionBoxOpacity || (options.useBasicMaterials === false ? 0.1 : 0.25);
     var interactionPlaneOpacity = options.interactionPlaneOpacity || interactionBoxOpacity;
 
+
     var keyboard = options.keyboard;
     var gamepad = options.gamepad;
-
-    var useEllipsoid = options.useEllipsoid || false;
 
     var leapController = new Leap.Controller({frameEventName: 'animationFrame'});
 
@@ -530,26 +633,31 @@ function addTool(parent, world, options) {
     var stickMesh = new THREE.Mesh(stickGeom, stickMaterial);
     stickMesh.castShadow = true;
     toolRoot.add(stickMesh);
-    // TODO: verify ellipsoid shape:
-    var tipGeom = new THREE.SphereBufferGeometry(tipRadius/scalar, 10);
-    if (useEllipsoid) {
-        tipGeom.scale(1, tipMinorRadius / tipRadius, 1);
-    }
-    var tipMesh = new THREE.Mesh(tipGeom, tipMaterial);
-    tipMesh.castShadow = true;
-    stickMesh.add(tipMesh);
-
 
     var tipBody = new CANNON.Body({mass: toolMass, type: CANNON.Body.KINEMATIC});
-    if (useEllipsoid) {
-        // TODO: fix
-        tipBody.addShape(new CANNON.Ellipsoid(tipRadius, tipMinorRadius, tipRadius));
+    var tipMesh = null;
+    if (tipShape !== 'Cylinder') {
+        var tipGeom = new THREE.SphereBufferGeometry(tipRadius/scalar, 10);
+        if (tipShape === 'Ellipsoid') {
+            tipGeom.scale(1, tipMinorRadius / tipRadius, 1);
+            // TODO: fix. verify ellipsoid shape:
+            tipBody.addShape(new CANNON.Ellipsoid(tipRadius, tipMinorRadius, tipRadius));
+        } else {
+            tipBody.addShape(new CANNON.Sphere(tipRadius));
+        }
+        tipMesh = new THREE.Mesh(tipGeom, tipMaterial);
+        tipMesh.castShadow = true;
+        stickMesh.add(tipMesh);
     } else {
-        tipBody.addShape(new CANNON.Sphere(tipRadius));
+        // whole stick
+        var quaternion = new CANNON.Quaternion();
+        quaternion.setFromEuler(-Math.PI / 2, 0, 0, 'XYZ');
+        var shapePosition = new CANNON.Vec3(0, -toolLength / 2, 0);
+        tipBody.addShape(new CANNON.Cylinder(tipRadius, tipRadius, toolLength, 8), shapePosition, quaternion);
     }
+
     world.addBody(tipBody);
     toolRoot.visible = false;
-
 
     // three.js hands: ############################
     // hands don't necessarily correspond the left / right labels, but doesn't matter to me because they look indistinguishable
@@ -634,7 +742,6 @@ function addTool(parent, world, options) {
                 stickMesh.position.fromArray(tool.tipPosition); // stickMesh.position.fromArray(tool.stabilizedTipPosition);
                 direction.fromArray(tool.direction);
                 stickMesh.quaternion.setFromUnitVectors(UP, direction);
-
                 if (tool.timeVisible > toolTimeB) {
 
                     if (tipBody.sleepState === CANNON.Body.SLEEPING) {
@@ -644,11 +751,17 @@ function addTool(parent, world, options) {
                         tipMaterial.color.setHex(0xff0000);
                     }
 
-                    position.set(0, 0, 0);
-                    stickMesh.localToWorld(position);
+                    // TODO: fix cannon position / orientation
+                    position.copy(stickMesh.position);
+                    toolRoot.updateMatrixWorld();
+                    toolRoot.localToWorld(position);
                     tipBody.position.copy(position);
-
-                    tipBody.quaternion.copy(stickMesh.quaternion);
+                    // tipBody.quaternion.copy(stickMesh.quaternion);
+                    // tipBody.quaternion.mult(toolRoot.quaternion, tipBody.quaternion);
+                    // tipBody.quaternion.mult(parent.quaternion, tipBody.quaternion);
+                    tipBody.quaternion.copy(parent.quaternion);
+                    tipBody.quaternion.mult(toolRoot.quaternion, tipBody.quaternion);
+                    tipBody.quaternion.mult(stickMesh.quaternion, tipBody.quaternion);
 
                     velocity.set(tool.tipVelocity[0] * 0.001, tool.tipVelocity[1] * 0.001, tool.tipVelocity[2] * 0.001);
                     velocity.applyQuaternion(toolRoot.quaternion);
@@ -1317,7 +1430,9 @@ POOLVR.keyboardCommands = {
     resetTable: {buttons: [Primrose.Input.Keyboard.R],
                  commandDown: function () { resetTable(); }, dt: 0.5},
     autoPosition: {buttons: [Primrose.Input.Keyboard.P],
-                   commandDown: function () { autoPosition(avatar); }, dt: 0.5}
+                   commandDown: function () { autoPosition(avatar); }, dt: 0.5},
+    saveConfig: {buttons: [Primrose.Input.Keyboard.NUMBER1],
+                 commandDown: saveConfig, dt: 1.0}
 };
 
 var DEADZONE = 0.2;
@@ -1386,13 +1501,37 @@ POOLVR.config.toolRadius   = URL_PARAMS.toolRadius   || POOLVR.config.toolRadius
 POOLVR.config.toolMass     = URL_PARAMS.toolMass     || POOLVR.config.toolMass   || 0.04;
 POOLVR.config.toolOffset   = URL_PARAMS.toolOffset   || POOLVR.config.toolOffset || [0, -0.42, -POOLVR.config.toolLength - 0.15];
 POOLVR.config.toolRotation = URL_PARAMS.toolRotation || POOLVR.config.toolRotation || 0;
-POOLVR.config.useEllipsoid = URL_PARAMS.useEllipsoid || POOLVR.config.useEllipsoid || false;
+// POOLVR.config.useEllipsoid = URL_PARAMS.useEllipsoid || POOLVR.config.useEllipsoid || false;
+POOLVR.config.tipShape     = URL_PARAMS.tipShape     || POOLVR.config.tipShape || 'Sphere';
 
 var WebVRConfig = WebVRConfig || POOLVR.config.WebVRConfig || {};
 WebVRConfig.FORCE_DISTORTION = URL_PARAMS.FORCE_DISTORTION;
 WebVRConfig.FORCE_ENABLE_VR  = URL_PARAMS.FORCE_ENABLE_VR;
 
 var userAgent = navigator.userAgent;
+
+function saveConfig() {
+    "use strict";
+    if (window.toolRoot) {
+        POOLVR.config.toolOffset = [window.toolRoot.position.x, window.toolRoot.position.y, window.toolRoot.position.z];
+        POOLVR.config.toolRotation = window.toolRoot.rotation.y;
+    }
+    if (POOLVR.config.pyserver) {
+        delete POOLVR.config.gamepad;
+        delete POOLVR.config.keyboard;
+        delete POOLVR.config.onResetVRSensor;
+        delete POOLVR.config.gamepadCommands;
+        delete POOLVR.config.keyboardCommands;
+        //pyserver.writeFile('config.json', POOLVR.config);
+        pyserver.writeFile('config.json', JSON.stringify(POOLVR.config, undefined, 2));
+    }
+}
+
+
+function loadConfig(json) {
+    "use strict";
+    // TODO
+}
 ;
 ;
 var playCollisionSound = (function () {
@@ -1446,6 +1585,8 @@ avatar.heading = 0;
 avatar.floatMode = false;
 avatar.toolMode = false;
 
+var toolRoot;
+
 
 POOLVR.ballMeshes = [];
 POOLVR.ballBodies = [];
@@ -1456,10 +1597,10 @@ POOLVR.onTable = [false,
                   true, true, true, true, true, true, true];
 POOLVR.nextBall = 1;
 
-POOLVR.config.onfullscreenchange = function (fullscreen) {
-    if (fullscreen) pyserver.log('going fullscreen');
-    else pyserver.log('exiting fullscreen');
-};
+// POOLVR.config.onfullscreenchange = function (fullscreen) {
+//     if (fullscreen) pyserver.log('going fullscreen');
+//     else pyserver.log('exiting fullscreen');
+// };
 var synthSpeaker = new SynthSpeaker({volume: 0.75, rate: 0.8, pitch: 0.5});
 
 var textGeomLogger = new TextGeomLogger();
@@ -1564,9 +1705,9 @@ var animate = function (leapController, animateLeap,
         var stickShadowMesh = new THREE.Mesh(stickShadowGeom, stickShadowMaterial);
         stickShadowMesh.quaternion.copy(stickMesh.quaternion);
         stickShadow.add(stickShadowMesh);
-        if (POOLVR.config.useEllipsoid) {
+        if (POOLVR.config.tipShape === 'Ellipsoid') {
             // TODO: new projection approach for ellipsoid tip
-        } else {
+        } else if (POOLVR.config.tipShape === 'Sphere') {
             tipMesh.geometry.computeBoundingSphere();
             var tipShadowGeom = new THREE.CircleBufferGeometry(tipMesh.geometry.boundingSphere.radius).rotateX(-Math.PI / 2);
             var tipShadowMesh = new THREE.Mesh(tipShadowGeom, stickShadowMaterial);
@@ -1709,7 +1850,7 @@ function onLoad() {
         toolRadius       : POOLVR.config.toolRadius,
         toolMass         : POOLVR.config.toolMass,
         toolOffset       : POOLVR.config.toolOffset,
-        useEllipsoid     : POOLVR.config.useEllipsoid
+        tipShape         : POOLVR.config.tipShape
     };
     if (POOLVR.config.vrLeap) {
         // ##### Leap Motion VR tracking mode: #####
@@ -1734,7 +1875,7 @@ function onLoad() {
 
 
     var menu = setupMenu(avatar);
-    POOLVR.config.menu = menu;
+    //POOLVR.config.menu = menu;
 
 
     app = new WebVRApplication("poolvr", avatar, scene, POOLVR.config);
@@ -1755,7 +1896,7 @@ function onLoad() {
     toolOptions.gamepad = app.gamepad;
 
     var toolStuff = addTool(avatar, app.world, toolOptions);
-    var toolRoot       = toolStuff.toolRoot;
+    toolRoot       = toolStuff.toolRoot;
     var leapController = toolStuff.leapController;
     var stickMesh      = toolStuff.stickMesh;
     var animateLeap    = toolStuff.animateLeap;

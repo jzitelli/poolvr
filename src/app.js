@@ -13,6 +13,8 @@ avatar.heading = 0;
 avatar.floatMode = false;
 avatar.toolMode = false;
 
+var toolRoot;
+
 
 POOLVR.ballMeshes = [];
 POOLVR.ballBodies = [];
@@ -23,10 +25,10 @@ POOLVR.onTable = [false,
                   true, true, true, true, true, true, true];
 POOLVR.nextBall = 1;
 
-POOLVR.config.onfullscreenchange = function (fullscreen) {
-    if (fullscreen) pyserver.log('going fullscreen');
-    else pyserver.log('exiting fullscreen');
-};
+// POOLVR.config.onfullscreenchange = function (fullscreen) {
+//     if (fullscreen) pyserver.log('going fullscreen');
+//     else pyserver.log('exiting fullscreen');
+// };
 var synthSpeaker = new SynthSpeaker({volume: 0.75, rate: 0.8, pitch: 0.5});
 
 var textGeomLogger = new TextGeomLogger();
@@ -131,9 +133,9 @@ var animate = function (leapController, animateLeap,
         var stickShadowMesh = new THREE.Mesh(stickShadowGeom, stickShadowMaterial);
         stickShadowMesh.quaternion.copy(stickMesh.quaternion);
         stickShadow.add(stickShadowMesh);
-        if (POOLVR.config.useEllipsoid) {
+        if (POOLVR.config.tipShape === 'Ellipsoid') {
             // TODO: new projection approach for ellipsoid tip
-        } else {
+        } else if (POOLVR.config.tipShape === 'Sphere') {
             tipMesh.geometry.computeBoundingSphere();
             var tipShadowGeom = new THREE.CircleBufferGeometry(tipMesh.geometry.boundingSphere.radius).rotateX(-Math.PI / 2);
             var tipShadowMesh = new THREE.Mesh(tipShadowGeom, stickShadowMaterial);
@@ -276,7 +278,7 @@ function onLoad() {
         toolRadius       : POOLVR.config.toolRadius,
         toolMass         : POOLVR.config.toolMass,
         toolOffset       : POOLVR.config.toolOffset,
-        useEllipsoid     : POOLVR.config.useEllipsoid
+        tipShape         : POOLVR.config.tipShape
     };
     if (POOLVR.config.vrLeap) {
         // ##### Leap Motion VR tracking mode: #####
@@ -301,7 +303,7 @@ function onLoad() {
 
 
     var menu = setupMenu(avatar);
-    POOLVR.config.menu = menu;
+    //POOLVR.config.menu = menu;
 
 
     app = new WebVRApplication("poolvr", avatar, scene, POOLVR.config);
@@ -322,7 +324,7 @@ function onLoad() {
     toolOptions.gamepad = app.gamepad;
 
     var toolStuff = addTool(avatar, app.world, toolOptions);
-    var toolRoot       = toolStuff.toolRoot;
+    toolRoot       = toolStuff.toolRoot;
     var leapController = toolStuff.leapController;
     var stickMesh      = toolStuff.stickMesh;
     var animateLeap    = toolStuff.animateLeap;

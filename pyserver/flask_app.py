@@ -33,11 +33,13 @@ POOLVR = {
         'usePhongMaterials'     : None,
         'shadowMap'             : None,
         'pointLight'            : None,
+        'L_table'               : 2.3368,
         'H_table'               : 0.74295,
         'ball_diameter'         : 2.25 * pool_table.IN2METER,
         'toolOffset'            : [0, -0.42, -0.4],
+        'toolRotation'          : 0,
         'cubeMap'               : False,
-        'useEllipsoid'          : False
+        'tipShape'              : 'Cylinder'
     },
     'version': '0.1.0dev'
 }
@@ -65,7 +67,7 @@ def get_poolvr_config():
             try:
                 args[k] = float(v)
             except Exception as err:
-                _logger.warning('\nUNRECOGNIZED ARGUMENT: %s' % str(args.pop(k)))
+                pass
     config.update(args)
     if not config['useBasicMaterials']:
         if config['useLambertMaterials'] is None:
@@ -73,7 +75,6 @@ def get_poolvr_config():
         if config['usePhongMaterials'] is None:
             config['usePhongMaterials'] = True
     return config
-
 
 
 @app.context_processor
@@ -106,7 +107,6 @@ var JSON_SCENE = %s;
                            indent=(2 if app.debug else None)))), **config)
 
 
-
 @app.route('/poolvr/config', methods=['GET', 'POST'])
 def poolvr_config():
     """app configurator"""
@@ -124,22 +124,6 @@ var POOLVR = %s;
 var JSON_SCENE = %s;
 </script>""" % (poolvr_config,
                 json.dumps(configScene.export(), indent=2))))
-
-# try:
-#     model_dir = os.path.join(os.getcwd(), 'models')
-#     with open(os.path.join(model_dir, 'ConfigUtilDeskScene.json')) as f:
-#         configScene = json.loads(f.read())
-#     def replace_urls(node):
-#         for k, v in node.items():
-#             if isinstance(v, str) and v[-4:] == '.png':
-#                 node[k] = os.path.join('models', v)
-#             elif isinstance(v, dict):
-#                 replace_urls(v)
-#     replace_urls(configScene)
-# except Exception as err:
-#     _logger.warning(err)
-#     configScene = three.Scene().export()
-
 
 
 @app.route('/log', methods=['POST'])

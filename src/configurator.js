@@ -106,28 +106,6 @@ var animate = function (avatar, leapController, animateLeap,
 };
 
 
-function saveConfig() {
-    "use strict";
-    POOLVR.config.toolOffset = [toolRoot.position.x, toolRoot.position.y, toolRoot.position.z];
-    POOLVR.config.toolRotation = toolRoot.rotation.y;
-    if (POOLVR.config.pyserver) {
-        delete POOLVR.config.gamepad;
-        delete POOLVR.config.keyboard;
-        delete POOLVR.config.gamepadCommands;
-        delete POOLVR.config.keyboardCommands;
-        //pyserver.writeFile('config.json', POOLVR.config);
-        pyserver.writeFile('config.json', JSON.stringify(POOLVR.config, undefined, 2));
-        pyserver.log(JSON.stringify(POOLVR.config, undefined, 2));
-    }
-}
-
-
-function loadConfig(json) {
-    "use strict";
-    // TODO
-}
-
-
 function onLoad() {
     "use strict";
     var scene = THREE.py.parse(JSON_SCENE);
@@ -152,8 +130,6 @@ function onLoad() {
 
     POOLVR.config.keyboardCommands = POOLVR.keyboardCommands;
     POOLVR.config.gamepadCommands = POOLVR.gamepadCommands;
-    POOLVR.config.keyboardCommands.saveConfig = {buttons: [Primrose.Input.Keyboard.NUMBER1],
-        commandDown: saveConfig, dt: 1.0};
 
     var mouseStuff = setupMouse(avatar, undefined, '../images/mouseParticle.png');
     // , function (locked) {

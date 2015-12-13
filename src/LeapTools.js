@@ -14,8 +14,17 @@ function addTool(parent, world, options) {
     var toolRadius = options.toolRadius || 0.013;
     var toolMass   = options.toolMass   || 0.04;
 
-    var tipRadius      = options.tipRadius || 0.95 * toolRadius;
-    var tipMinorRadius = options.tipMinorRadius || 0.25 * tipRadius;
+    var tipShape = options.tipShape || 'Sphere';
+    var tipRadius = options.tipRadius;
+    var tipMinorRadius = options.tipMinorRadius;
+    if (tipShape === 'Cylinder') {
+        tipRadius = tipRadius || toolRadius;
+    } else {
+        tipRadius = tipRadius || 0.95 * toolRadius;
+        if (tipShape === 'Ellipsoid') {
+            tipMinorRadius = tipMinorRadius || 0.25 * tipRadius;
+        }
+    }
 
     var toolOffset = options.toolOffset;
     toolOffset = new THREE.Vector3(0, -0.4, -toolLength - 0.2).fromArray(toolOffset);
@@ -30,10 +39,9 @@ function addTool(parent, world, options) {
     var interactionBoxOpacity   = options.interactionBoxOpacity || (options.useBasicMaterials === false ? 0.1 : 0.25);
     var interactionPlaneOpacity = options.interactionPlaneOpacity || interactionBoxOpacity;
 
+
     var keyboard = options.keyboard;
     var gamepad = options.gamepad;
-
-    var useEllipsoid = options.useEllipsoid || false;
 
     var leapController = new Leap.Controller({frameEventName: 'animationFrame'});
 
@@ -128,26 +136,31 @@ function addTool(parent, world, options) {
     var stickMesh = new THREE.Mesh(stickGeom, stickMaterial);
     stickMesh.castShadow = true;
     toolRoot.add(stickMesh);
-    // TODO: verify ellipsoid shape:
-    var tipGeom = new THREE.SphereBufferGeometry(tipRadius/scalar, 10);
-    if (useEllipsoid) {
-        tipGeom.scale(1, tipMinorRadius / tipRadius, 1);
-    }
-    var tipMesh = new THREE.Mesh(tipGeom, tipMaterial);
-    tipMesh.castShadow = true;
-    stickMesh.add(tipMesh);
-
 
     var tipBody = new CANNON.Body({mass: toolMass, type: CANNON.Body.KINEMATIC});
-    if (useEllipsoid) {
-        // TODO: fix
-        tipBody.addShape(new CANNON.Ellipsoid(tipRadius, tipMinorRadius, tipRadius));
+    var tipMesh = null;
+    if (tipShape !== 'Cylinder') {
+        var tipGeom = new THREE.SphereBufferGeometry(tipRadius/scalar, 10);
+        if (tipShape === 'Ellipsoid') {
+            tipGeom.scale(1, tipMinorRadius / tipRadius, 1);
+            // TODO: fix. verify ellipsoid shape:
+            tipBody.addShape(new CANNON.Ellipsoid(tipRadius, tipMinorRadius, tipRadius));
+        } else {
+            tipBody.addShape(new CANNON.Sphere(tipRadius));
+        }
+        tipMesh = new THREE.Mesh(tipGeom, tipMaterial);
+        tipMesh.castShadow = true;
+        stickMesh.add(tipMesh);
     } else {
-        tipBody.addShape(new CANNON.Sphere(tipRadius));
+        // whole stick
+        var quaternion = new CANNON.Quaternion();
+        quaternion.setFromEuler(-Math.PI / 2, 0, 0, 'XYZ');
+        var shapePosition = new CANNON.Vec3(0, -toolLength / 2, 0);
+        tipBody.addShape(new CANNON.Cylinder(tipRadius, tipRadius, toolLength, 8), shapePosition, quaternion);
     }
+
     world.addBody(tipBody);
     toolRoot.visible = false;
-
 
     // three.js hands: ############################
     // hands don't necessarily correspond the left / right labels, but doesn't matter to me because they look indistinguishable
@@ -232,7 +245,6 @@ function addTool(parent, world, options) {
                 stickMesh.position.fromArray(tool.tipPosition); // stickMesh.position.fromArray(tool.stabilizedTipPosition);
                 direction.fromArray(tool.direction);
                 stickMesh.quaternion.setFromUnitVectors(UP, direction);
-
                 if (tool.timeVisible > toolTimeB) {
 
                     if (tipBody.sleepState === CANNON.Body.SLEEPING) {
@@ -242,11 +254,17 @@ function addTool(parent, world, options) {
                         tipMaterial.color.setHex(0xff0000);
                     }
 
-                    position.set(0, 0, 0);
-                    stickMesh.localToWorld(position);
+                    // TODO: fix cannon position / orientation
+                    position.copy(stickMesh.position);
+                    toolRoot.updateMatrixWorld();
+                    toolRoot.localToWorld(position);
                     tipBody.position.copy(position);
-
-                    tipBody.quaternion.copy(stickMesh.quaternion);
+                    // tipBody.quaternion.copy(stickMesh.quaternion);
+                    // tipBody.quaternion.mult(toolRoot.quaternion, tipBody.quaternion);
+                    // tipBody.quaternion.mult(parent.quaternion, tipBody.quaternion);
+                    tipBody.quaternion.copy(parent.quaternion);
+                    tipBody.quaternion.mult(toolRoot.quaternion, tipBody.quaternion);
+                    tipBody.quaternion.mult(stickMesh.quaternion, tipBody.quaternion);
 
                     velocity.set(tool.tipVelocity[0] * 0.001, tool.tipVelocity[1] * 0.001, tool.tipVelocity[2] * 0.001);
                     velocity.applyQuaternion(toolRoot.quaternion);
