@@ -145,7 +145,8 @@ try:
         try:
             if request.json is not None:
                 with open(filename, 'w') as f:
-                    f.write(json.dumps(request.json))
+                    f.write(json.dumps(request.json,
+                                       indent=2, sort_keys=True))
             else:
                 with open(filename, 'w') as f:
                     f.write(request.form['text'])
@@ -154,9 +155,26 @@ try:
         except Exception as err:
             response = {'error': str(err)}
         return jsonify(response)
+    @app.route("/poolvr/config/save", methods=['POST'])
+    def save_config():
+        filename = os.path.join(WRITE_FOLDER, os.path.split(request.args['file'])[1])
+        try:
+            with open(filename, 'w') as f:
+                f.write(json.dumps(request.json,
+                                   indent=2, sort_keys=True))
+            response = {'filename': filename}
+            _logger.info('wrote %s' % filename)
+        except Exception as err:
+            response = {'error': str(err)}
+        return jsonify(response)
 except Exception as err:
     @app.route('/write', methods=['POST'])
     def write():
+        filename = os.path.join(WRITE_FOLDER, os.path.split(request.args['file'])[1])
+        return jsonify({'filename': filename,
+                        'writeDisabled': True})
+    @app.route("/poolvr/config/save", methods=['POST'])
+    def save_config():
         filename = os.path.join(WRITE_FOLDER, os.path.split(request.args['file'])[1])
         return jsonify({'filename': filename,
                         'writeDisabled': True})

@@ -122,6 +122,7 @@ WebVRConfig.FORCE_ENABLE_VR  = URL_PARAMS.FORCE_ENABLE_VR;
 
 var userAgent = navigator.userAgent;
 
+
 function saveConfig() {
     "use strict";
     if (window.toolRoot) {
@@ -135,7 +136,7 @@ function saveConfig() {
         delete POOLVR.config.gamepadCommands;
         delete POOLVR.config.keyboardCommands;
         //pyserver.writeFile('config.json', POOLVR.config);
-        pyserver.writeFile('config.json', JSON.stringify(POOLVR.config, undefined, 2));
+        pyserver.saveConfig('config.json', POOLVR.config);
     }
 }
 

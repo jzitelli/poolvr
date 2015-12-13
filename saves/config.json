@@ -1,28 +1,28 @@
 {
+  "H_table": 0.74295,
+  "L_table": 2.3368,
+  "ball_diameter": 0.05715,
+  "cubeMap": false,
+  "gravity": 9.8,
+  "initialPosition": [
+    0,
+    0.9,
+    0.9
+  ],
   "pointLight": null,
   "pyserver": true,
+  "shadowMap": null,
   "tipShape": "Cylinder",
+  "toolLength": 0.5,
+  "toolMass": 0.04,
   "toolOffset": [
     0,
     -0.42,
     -0.4
   ],
-  "ball_diameter": 0.05715,
-  "initialPosition": [
-    0,
-    0.98295,
-    1.0042
-  ],
-  "gravity": 9.8,
-  "L_table": 2.3368,
-  "shadowMap": null,
-  "cubeMap": false,
+  "toolRadius": 0.013,
   "toolRotation": 0,
-  "usePhongMaterials": null,
-  "H_table": 0.74295,
   "useBasicMaterials": true,
   "useLambertMaterials": null,
-  "toolLength": 0.5,
-  "toolRadius": 0.013,
-  "toolMass": 0.04
+  "usePhongMaterials": null
 }
