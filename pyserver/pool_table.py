@@ -227,12 +227,13 @@ def pool_hall(useBasicMaterials=True,
               **kwargs):
     scene = Scene()
     L_room, W_room = 10, 10
-    floorMesh = Mesh(name="floorMesh", geometry=square,
+    floorMesh = Mesh(name="floorMesh",
+                     geometry=PlaneBufferGeometry(width=W_room, height=L_room),
                      material=MeshBasicMaterial(color=0xffffff,
                                                 map=Texture(image=Image(url=url_prefix+"images/deck.png"),
                                                             repeat=[4*L_room, 4*W_room], wrap=[RepeatWrapping, RepeatWrapping])),
                      position=[0, 0, 0],
-                     scale=[L_room, 1, W_room],
+                     rotation=[-np.pi/2, 0, 0],
                      userData={'cannonData': {'mass': 0,
                                               'shapes': ['Plane']}})
     scene.add(floorMesh)

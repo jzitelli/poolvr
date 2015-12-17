@@ -26,8 +26,10 @@ function addTool(parent, world, options) {
         }
     }
 
-    var toolOffset = options.toolOffset;
-    toolOffset = new THREE.Vector3(0, -0.4, -toolLength - 0.2).fromArray(toolOffset);
+    var toolOffset = new THREE.Vector3(0, -0.4, -toolLength - 0.2);
+    if (options.toolOffset) {
+        toolOffset.fromArray(options.toolOffset);
+    }
     var toolRotation = options.toolRotation || 0;
 
     var handOffset = options.handOffset || new THREE.Vector3().copy(toolOffset);
@@ -159,10 +161,10 @@ function addTool(parent, world, options) {
         stickMesh.add(tipMesh);
     } else {
         // whole stick
-        var quaternion = new CANNON.Quaternion();
-        quaternion.setFromEuler(-Math.PI / 2, 0, 0, 'XYZ');
+        var shapeQuaternion = new CANNON.Quaternion();
+        shapeQuaternion.setFromEuler(-Math.PI / 2, 0, 0, 'XYZ');
         var shapePosition = new CANNON.Vec3(0, -toolLength / 2, 0);
-        tipBody.addShape(new CANNON.Cylinder(tipRadius, tipRadius, toolLength, 8), shapePosition, quaternion);
+        tipBody.addShape(new CANNON.Cylinder(tipRadius, tipRadius, toolLength, 8), shapePosition, shapeQuaternion);
     }
 
     world.addBody(tipBody);
@@ -261,15 +263,17 @@ function addTool(parent, world, options) {
 
                     // TODO: fix cannon position / orientation
                     position.copy(stickMesh.position);
-                    toolRoot.updateMatrixWorld();
+                    //parent.updateMatrixWorld();
                     toolRoot.localToWorld(position);
                     tipBody.position.copy(position);
-                    // tipBody.quaternion.copy(stickMesh.quaternion);
-                    // tipBody.quaternion.mult(toolRoot.quaternion, tipBody.quaternion);
-                    // tipBody.quaternion.mult(parent.quaternion, tipBody.quaternion);
+
                     tipBody.quaternion.copy(parent.quaternion);
                     tipBody.quaternion.mult(toolRoot.quaternion, tipBody.quaternion);
                     tipBody.quaternion.mult(stickMesh.quaternion, tipBody.quaternion);
+
+                    // tipBody.quaternion.copy(stickMesh.quaternion);
+                    // tipBody.quaternion.mult(toolRoot.quaternion, tipBody.quaternion);
+                    // tipBody.quaternion.mult(parent.quaternion, tipBody.quaternion);
 
                     velocity.set(tool.tipVelocity[0] * 0.001, tool.tipVelocity[1] * 0.001, tool.tipVelocity[2] * 0.001);
                     velocity.applyQuaternion(toolRoot.quaternion);

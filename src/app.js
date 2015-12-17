@@ -53,12 +53,12 @@ function resetTable() {
 var autoPosition = ( function () {
     "use strict";
     var nextVector = new THREE.Vector3();
-    var UP = new THREE.Vector3();
+    var UP = new THREE.Vector3(0, 1, 0);
     function autoPosition(avatar) {
         textGeomLogger.log("YOU ARE BEING AUTO-POSITIONED.");
-        if (synthSpeaker.speaking === false) {
-            synthSpeaker.speak("You are being auto-positioned.");
-        }
+        // if (synthSpeaker.speaking === false) {
+        //     synthSpeaker.speak("You are being auto-positioned.");
+        // }
         nextVector.copy(POOLVR.ballMeshes[POOLVR.nextBall].position);
         nextVector.sub(POOLVR.ballMeshes[0].position);
         nextVector.y = 0;
@@ -74,7 +74,7 @@ var autoPosition = ( function () {
             -(POOLVR.ballMeshes[POOLVR.nextBall].position.z - avatar.position.z)
         );
         avatar.quaternion.setFromAxisAngle(UP, avatar.heading);
-        avatar.updateMatrix();
+        avatar.updateMatrixWorld();
         pyserver.log('position: ' + avatar.position.x +', ' + avatar.position.y + ', ' +  avatar.position.z);
     }
     return autoPosition;
