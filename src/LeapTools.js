@@ -234,6 +234,9 @@ function addTool(parent, world, options) {
     var position = new THREE.Vector3();
     var velocity = new THREE.Vector3();
 
+    var bodyDirection = new CANNON.Vec3(),
+        cannonUP = new CANNON.Vec3(0, 1, 0);
+
     // TODO: restructure w/ mixin pattern
     function animateLeap(frame, dt) {
 
@@ -262,14 +265,21 @@ function addTool(parent, world, options) {
                     }
 
                     // TODO: fix cannon position / orientation
+                    parent.updateMatrixWorld();
+                    toolRoot.updateMatrixWorld();
                     position.copy(stickMesh.position);
-                    //parent.updateMatrixWorld();
                     toolRoot.localToWorld(position);
                     tipBody.position.copy(position);
 
-                    tipBody.quaternion.copy(parent.quaternion);
-                    tipBody.quaternion.mult(toolRoot.quaternion, tipBody.quaternion);
-                    tipBody.quaternion.mult(stickMesh.quaternion, tipBody.quaternion);
+                    // tipBody.quaternion.copy(parent.quaternion);
+                    // tipBody.quaternion.mult(toolRoot.quaternion, tipBody.quaternion);
+                    // tipBody.quaternion.mult(stickMesh.quaternion, tipBody.quaternion);
+
+                    direction.applyQuaternion(toolRoot.quaternion);
+                    direction.applyQuaternion(parent.quaternion);
+                    bodyDirection.copy(direction);
+                    // direction.normalize();
+                    tipBody.quaternion.setFromVectors(cannonUP, bodyDirection);
 
                     // tipBody.quaternion.copy(stickMesh.quaternion);
                     // tipBody.quaternion.mult(toolRoot.quaternion, tipBody.quaternion);
@@ -279,6 +289,8 @@ function addTool(parent, world, options) {
                     velocity.applyQuaternion(toolRoot.quaternion);
                     velocity.applyQuaternion(parent.quaternion);
                     tipBody.velocity.copy(velocity);
+
+                    tipBody.aabbNeedsUpdate = true;
 
                     if (interactionBoxMaterial.opacity > 0.1 && tool.timeVisible > toolTimeC) {
                         // dim the interaction box:

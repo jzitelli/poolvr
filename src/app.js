@@ -75,6 +75,13 @@ var autoPosition = ( function () {
         );
         avatar.quaternion.setFromAxisAngle(UP, avatar.heading);
         avatar.updateMatrixWorld();
+
+        nextVector.copy(toolRoot.position);
+        avatar.localToWorld(nextVector);
+        nextVector.sub(POOLVR.ballMeshes[0].position);
+        nextVector.y = 0;
+        avatar.position.sub(nextVector);
+
         pyserver.log('position: ' + avatar.position.x +', ' + avatar.position.y + ', ' +  avatar.position.z);
     }
     return autoPosition;
@@ -448,14 +455,14 @@ function onLoad() {
         if (tipEventCounter === 1) {
             synthSpeaker.speak("You moved a ball.  Good job.");
         }
-        else if (tipEventCounter === 4) {
-            synthSpeaker.speak("I have something else to tell you.");
+        else if (tipEventCounter === 16) {
+            synthSpeaker.speak("Hi.");
         }
         else if (tipEventCounter === 8) {
-            synthSpeaker.speak("I have something else to tell you. Again.");
+            // synthSpeaker.speak("I have something else to tell you. Again.");
         }
         else if (tipEventCounter === 30) {
-            synthSpeaker.speak("I have something else to tell you. For the third, and final time.");
+            // synthSpeaker.speak("I have something else to tell you. For the third, and final time.");
         }
     });
 
