@@ -68,7 +68,7 @@ var autoPosition = ( function () {
         avatar.position.z = POOLVR.ballMeshes[0].position.z;
         nextVector.multiplyScalar(0.42);
         avatar.position.sub(nextVector);
-        avatar.position.y = POOLVR.config.H_table + 0.24;
+        // avatar.position.y = POOLVR.config.H_table + 0.24;
         avatar.heading = Math.atan2(
             -(POOLVR.ballMeshes[POOLVR.nextBall].position.x - avatar.position.x),
             -(POOLVR.ballMeshes[POOLVR.nextBall].position.z - avatar.position.z)
@@ -323,6 +323,11 @@ function onLoad() {
 
     THREE.py.CANNONize(scene, app.world);
 
+    app.world.addMaterial(POOLVR.ballMaterial);
+    app.world.addMaterial(POOLVR.playableSurfaceMaterial);
+    app.world.addMaterial(POOLVR.cushionMaterial);
+    app.world.addMaterial(POOLVR.floorMaterial);
+    app.world.addMaterial(POOLVR.tipMaterial);
     app.world.addContactMaterial(POOLVR.ballBallContactMaterial);
     app.world.addContactMaterial(POOLVR.ballPlayableSurfaceContactMaterial);
     app.world.addContactMaterial(POOLVR.ballCushionContactMaterial);
@@ -334,13 +339,15 @@ function onLoad() {
     toolOptions.gamepad = app.gamepad;
 
     var toolStuff = addTool(avatar, app.world, toolOptions);
-    toolRoot       = toolStuff.toolRoot;
+
     var leapController = toolStuff.leapController;
     var stickMesh      = toolStuff.stickMesh;
     var animateLeap    = toolStuff.animateLeap;
     var leftRoot       = toolStuff.leftRoot;
     var rightRoot      = toolStuff.rightRoot;
     var tipBody        = toolStuff.tipBody;
+    toolRoot           = toolStuff.toolRoot;
+
     tipBody.material = POOLVR.tipMaterial;
 
 

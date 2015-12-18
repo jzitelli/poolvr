@@ -163,8 +163,8 @@ function addTool(parent, world, options) {
         // whole stick
         var shapeQuaternion = new CANNON.Quaternion();
         shapeQuaternion.setFromEuler(-Math.PI / 2, 0, 0, 'XYZ');
-        var shapePosition = new CANNON.Vec3(0, -toolLength / 2, 0);
-        tipBody.addShape(new CANNON.Cylinder(tipRadius, tipRadius, toolLength, 8), shapePosition, shapeQuaternion);
+        var shapePosition = new CANNON.Vec3(0, -tipRadius, 0);
+        tipBody.addShape(new CANNON.Cylinder(tipRadius, tipRadius, 2*tipRadius, 8), shapePosition, shapeQuaternion);
     }
 
     world.addBody(tipBody);
@@ -286,11 +286,10 @@ function addTool(parent, world, options) {
                     // tipBody.quaternion.mult(parent.quaternion, tipBody.quaternion);
 
                     velocity.set(tool.tipVelocity[0] * 0.001, tool.tipVelocity[1] * 0.001, tool.tipVelocity[2] * 0.001);
-                    velocity.applyQuaternion(toolRoot.quaternion);
-                    velocity.applyQuaternion(parent.quaternion);
+                    // velocity.applyQuaternion(toolRoot.quaternion);
+                    // velocity.applyQuaternion(parent.quaternion);
+                    velocity.applyQuaternion(toolRoot.getWorldQuaternion());
                     tipBody.velocity.copy(velocity);
-
-                    tipBody.aabbNeedsUpdate = true;
 
                     if (interactionBoxMaterial.opacity > 0.1 && tool.timeVisible > toolTimeC) {
                         // dim the interaction box:

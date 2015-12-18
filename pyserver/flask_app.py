@@ -39,7 +39,7 @@ POOLVR = {
         'toolOffset'            : [0, -0.42, -0.4],
         'toolRotation'          : 0,
         'cubeMap'               : False,
-        'tipShape'              : 'Cylinder'
+        'tipShape'              : 'Sphere'
     },
     'version': '0.1.0dev'
 }

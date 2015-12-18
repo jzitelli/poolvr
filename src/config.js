@@ -80,13 +80,13 @@ POOLVR.gamepadCommands = {
 // TODO: load from JSON config
 POOLVR.ballMaterial            = new CANNON.Material();
 POOLVR.ballBallContactMaterial = new CANNON.ContactMaterial(POOLVR.ballMaterial, POOLVR.ballMaterial, {
-    restitution: 0.92,
-    friction: 0.17
+    restitution: 0.93,
+    friction: 0.14
 });
 POOLVR.playableSurfaceMaterial            = new CANNON.Material();
 POOLVR.ballPlayableSurfaceContactMaterial = new CANNON.ContactMaterial(POOLVR.ballMaterial, POOLVR.playableSurfaceMaterial, {
     restitution: 0.33,
-    friction: 0.19
+    friction: 0.16
 });
 POOLVR.cushionMaterial            = new CANNON.Material();
 POOLVR.ballCushionContactMaterial = new CANNON.ContactMaterial(POOLVR.ballMaterial, POOLVR.cushionMaterial, {
@@ -100,8 +100,8 @@ POOLVR.floorBallContactMaterial = new CANNON.ContactMaterial(POOLVR.floorMateria
 });
 POOLVR.tipMaterial            = new CANNON.Material();
 POOLVR.tipBallContactMaterial = new CANNON.ContactMaterial(POOLVR.tipMaterial, POOLVR.ballMaterial, {
-    restitution: 0.2,
-    friction: 0.333
+    restitution: 0.02,
+    friction: 0.15
 });
 
 POOLVR.config.vrLeap = URL_PARAMS.vrLeap || POOLVR.config.vrLeap;
@@ -113,11 +113,11 @@ POOLVR.config.toolRotation = URL_PARAMS.toolRotation || POOLVR.config.toolRotati
 // POOLVR.config.useEllipsoid = URL_PARAMS.useEllipsoid || POOLVR.config.useEllipsoid || false;
 POOLVR.config.tipShape     = URL_PARAMS.tipShape     || POOLVR.config.tipShape || 'Sphere';
 
-var localStorageConfig = localStorage.getItem(POOLVR.version);
-if (localStorageConfig) {
-    console.log(localStorageConfig);
-    POOLVR.config = JSON.parse(localStorageConfig);
-}
+// var localStorageConfig = localStorage.getItem(POOLVR.version);
+// if (localStorageConfig) {
+//     console.log(localStorageConfig);
+//     POOLVR.config = JSON.parse(localStorageConfig);
+// }
 
 
 function saveConfig() {

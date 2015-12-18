@@ -6,22 +6,22 @@
   "gravity": 9.8,
   "initialPosition": [
     0,
-    0.9,
-    0.9
+    0.98295,
+    1.0042
   ],
   "pointLight": null,
   "pyserver": true,
   "shadowMap": null,
-  "tipShape": "Cylinder",
+  "tipShape": "Sphere",
   "toolLength": 0.5,
   "toolMass": 0.04,
   "toolOffset": [
-    -0.3601029741558145,
-    -0.537939695782329,
-    -0.34400803045005446
+    -0.2895305623463309,
+    -0.3343856924904722,
+    -0.591528038058524
   ],
   "toolRadius": 0.013,
-  "toolRotation": 0.4072419879983769,
+  "toolRotation": 0.3510694354943298,
   "useBasicMaterials": true,
   "useLambertMaterials": null,
   "usePhongMaterials": null
