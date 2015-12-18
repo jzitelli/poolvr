@@ -162,6 +162,9 @@ var animate = function (leapController, animateLeap,
     function animate(t) {
         var dt = (t - lt) * 0.001;
         requestAnimationFrame(animate);
+
+        app.vrManager.render(app.scene, app.camera, t);
+
         if (app.vrControls.enabled) {
             app.vrControls.update();
         }
@@ -171,9 +174,7 @@ var animate = function (leapController, animateLeap,
             lastFrameID = frame.id;
         }
 
-        app.world.step(1/75, dt, 5);
-
-        app.vrManager.render(app.scene, app.camera, t);
+        app.world.step(1/75, dt, 10);
 
         app.keyboard.update(dt);
         app.gamepad.update(dt);
@@ -328,6 +329,7 @@ function onLoad() {
     app.world.addMaterial(POOLVR.cushionMaterial);
     app.world.addMaterial(POOLVR.floorMaterial);
     app.world.addMaterial(POOLVR.tipMaterial);
+
     app.world.addContactMaterial(POOLVR.ballBallContactMaterial);
     app.world.addContactMaterial(POOLVR.ballPlayableSurfaceContactMaterial);
     app.world.addContactMaterial(POOLVR.ballCushionContactMaterial);
@@ -472,6 +474,11 @@ function onLoad() {
             // synthSpeaker.speak("I have something else to tell you. For the third, and final time.");
         }
     });
+    // app.world.addEventListener("postStep", function () {
+    //     stickMesh.position.copy(tipBody.position);
+    //     stickMesh.parent.worldToLocal(stickMesh.position);
+    //     //scene.updateMatrixWorld();
+    // });
 
     var mouseStuff = setupMouse(avatar);
     var animateMousePointer = mouseStuff.animateMousePointer;

@@ -234,9 +234,6 @@ function addTool(parent, world, options) {
     var position = new THREE.Vector3();
     var velocity = new THREE.Vector3();
 
-    var bodyDirection = new CANNON.Vec3(),
-        cannonUP = new CANNON.Vec3(0, 1, 0);
-
     // TODO: restructure w/ mixin pattern
     function animateLeap(frame, dt) {
 
@@ -252,9 +249,15 @@ function addTool(parent, world, options) {
 
             if (tool.timeVisible > toolTime) {
 
-                stickMesh.position.fromArray(tool.tipPosition); // stickMesh.position.fromArray(tool.stabilizedTipPosition);
+                // position.fromArray(tool.tipPosition);
+                position.fromArray(tool.stabilizedTipPosition);
+
+                stickMesh.position.copy(position);
+
                 direction.fromArray(tool.direction);
+
                 stickMesh.quaternion.setFromUnitVectors(UP, direction);
+
                 if (tool.timeVisible > toolTimeB) {
 
                     if (tipBody.sleepState === CANNON.Body.SLEEPING) {
@@ -264,31 +267,13 @@ function addTool(parent, world, options) {
                         tipMaterial.color.setHex(0xff0000);
                     }
 
-                    // TODO: fix cannon position / orientation
-                    // parent.updateMatrixWorld();
-                    // toolRoot.updateMatrixWorld();
-                    tipBody.position.copy(stickMesh.getWorldPosition());
-                    //toolRoot.localToWorld(position);
-                    //tipBody.position.copy(position);
+                    toolRoot.localToWorld(position);
+                    tipBody.position.copy(position);
+
                     tipBody.quaternion.copy(stickMesh.getWorldQuaternion());
-                    // tipBody.quaternion.copy(parent.quaternion);
-                    // tipBody.quaternion.mult(toolRoot.quaternion, tipBody.quaternion);
-                    // tipBody.quaternion.mult(stickMesh.quaternion, tipBody.quaternion);
 
-                    // direction.applyQuaternion(toolRoot.quaternion);
-                    // direction.applyQuaternion(parent.quaternion);
-                    // bodyDirection.copy(direction);
-                    // direction.normalize();
-                    // tipBody.quaternion.setFromVectors(cannonUP, bodyDirection);
-
-                    // tipBody.quaternion.copy(stickMesh.quaternion);
-                    // tipBody.quaternion.mult(toolRoot.quaternion, tipBody.quaternion);
-                    // tipBody.quaternion.mult(parent.quaternion, tipBody.quaternion);
-
-                    velocity.set(tool.tipVelocity[0] * 0.001, tool.tipVelocity[1] * 0.001, tool.tipVelocity[2] * 0.001);
-                    // velocity.applyQuaternion(toolRoot.quaternion);
-                    // velocity.applyQuaternion(parent.quaternion);
-                    velocity.applyQuaternion(toolRoot.getWorldQuaternion());
+                    velocity.fromArray(tool.tipVelocity);
+                    toolRoot.localToWorld(velocity);
                     tipBody.velocity.copy(velocity);
 
                     if (interactionBoxMaterial.opacity > 0.1 && tool.timeVisible > toolTimeC) {
