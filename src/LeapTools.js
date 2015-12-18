@@ -265,21 +265,21 @@ function addTool(parent, world, options) {
                     }
 
                     // TODO: fix cannon position / orientation
-                    parent.updateMatrixWorld();
-                    toolRoot.updateMatrixWorld();
-                    position.copy(stickMesh.position);
-                    toolRoot.localToWorld(position);
-                    tipBody.position.copy(position);
-
+                    // parent.updateMatrixWorld();
+                    // toolRoot.updateMatrixWorld();
+                    tipBody.position.copy(stickMesh.getWorldPosition());
+                    //toolRoot.localToWorld(position);
+                    //tipBody.position.copy(position);
+                    tipBody.quaternion.copy(stickMesh.getWorldQuaternion());
                     // tipBody.quaternion.copy(parent.quaternion);
                     // tipBody.quaternion.mult(toolRoot.quaternion, tipBody.quaternion);
                     // tipBody.quaternion.mult(stickMesh.quaternion, tipBody.quaternion);
 
-                    direction.applyQuaternion(toolRoot.quaternion);
-                    direction.applyQuaternion(parent.quaternion);
-                    bodyDirection.copy(direction);
+                    // direction.applyQuaternion(toolRoot.quaternion);
+                    // direction.applyQuaternion(parent.quaternion);
+                    // bodyDirection.copy(direction);
                     // direction.normalize();
-                    tipBody.quaternion.setFromVectors(cannonUP, bodyDirection);
+                    // tipBody.quaternion.setFromVectors(cannonUP, bodyDirection);
 
                     // tipBody.quaternion.copy(stickMesh.quaternion);
                     // tipBody.quaternion.mult(toolRoot.quaternion, tipBody.quaternion);
