@@ -101,24 +101,27 @@ POOLVR.floorBallContactMaterial = new CANNON.ContactMaterial(POOLVR.floorMateria
 POOLVR.tipMaterial            = new CANNON.Material();
 POOLVR.tipBallContactMaterial = new CANNON.ContactMaterial(POOLVR.tipMaterial, POOLVR.ballMaterial, {
     restitution: 0.02,
-    friction: 0.23
+    friction: 0.23,
+    contactEquationRelaxation: 3
 });
 
-POOLVR.config.vrLeap = URL_PARAMS.vrLeap || POOLVR.config.vrLeap;
-POOLVR.config.toolLength   = URL_PARAMS.toolLength   || POOLVR.config.toolLength || 0.5;
-POOLVR.config.toolRadius   = URL_PARAMS.toolRadius   || POOLVR.config.toolRadius || 0.013;
-POOLVR.config.toolMass     = URL_PARAMS.toolMass     || POOLVR.config.toolMass   || 0.04;
-POOLVR.config.toolOffset   = URL_PARAMS.toolOffset   || POOLVR.config.toolOffset || [0, -0.42, -POOLVR.config.toolLength - 0.15];
+var localStorageConfig = localStorage.getItem(POOLVR.version);
+if (localStorageConfig) {
+    console.log("loaded from localStorage:");
+    console.log(localStorageConfig);
+    POOLVR.config = JSON.parse(localStorageConfig);
+}
+
+POOLVR.config.vrLeap       = URL_PARAMS.vrLeap       || POOLVR.config.vrLeap;
+
+POOLVR.config.toolLength   = URL_PARAMS.toolLength   || POOLVR.config.toolLength   || 0.5;
+POOLVR.config.toolRadius   = URL_PARAMS.toolRadius   || POOLVR.config.toolRadius   || 0.013;
+POOLVR.config.toolMass     = URL_PARAMS.toolMass     || POOLVR.config.toolMass     || 0.04;
+POOLVR.config.toolOffset   = URL_PARAMS.toolOffset   || POOLVR.config.toolOffset   || [0, -0.42, -POOLVR.config.toolLength - 0.15];
 POOLVR.config.toolRotation = URL_PARAMS.toolRotation || POOLVR.config.toolRotation || 0;
-// POOLVR.config.useEllipsoid = URL_PARAMS.useEllipsoid || POOLVR.config.useEllipsoid || false;
-POOLVR.config.tipShape     = URL_PARAMS.tipShape     || POOLVR.config.tipShape || 'Sphere';
+POOLVR.config.tipShape     = URL_PARAMS.tipShape     || POOLVR.config.tipShape     || 'Sphere';
 
-// var localStorageConfig = localStorage.getItem(POOLVR.version);
-// if (localStorageConfig) {
-//     console.log(localStorageConfig);
-//     POOLVR.config = JSON.parse(localStorageConfig);
-// }
-
+POOLVR.config.textGeomLogger = URL_PARAMS.textGeomLogger || POOLVR.config.textGeomLogger;
 
 function saveConfig() {
     "use strict";
@@ -132,7 +135,6 @@ function saveConfig() {
         delete POOLVR.config.onResetVRSensor;
         delete POOLVR.config.gamepadCommands;
         delete POOLVR.config.keyboardCommands;
-        //pyserver.writeFile('config.json', POOLVR.config);
         pyserver.saveConfig('config.json', POOLVR.config);
     }
     localStorage.setItem(POOLVR.version, JSON.stringify(POOLVR.config));
@@ -146,7 +148,7 @@ function loadConfig(json) {
 
 
 var WebVRConfig = WebVRConfig || POOLVR.config.WebVRConfig || {};
-WebVRConfig.FORCE_DISTORTION = URL_PARAMS.FORCE_DISTORTION;
-WebVRConfig.FORCE_ENABLE_VR  = URL_PARAMS.FORCE_ENABLE_VR;
+WebVRConfig.FORCE_DISTORTION = URL_PARAMS.FORCE_DISTORTION || WebVRConfig.FORCE_DISTORTION;
+WebVRConfig.FORCE_ENABLE_VR  = URL_PARAMS.FORCE_ENABLE_VR  || WebVRConfig.FORCE_ENABLE_VR;
 
 var userAgent = navigator.userAgent;

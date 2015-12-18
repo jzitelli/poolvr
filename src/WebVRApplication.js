@@ -29,7 +29,7 @@ WebVRApplication = ( function () {
             hideButton: false
         });
         this.vrControls = new THREE.VRControls(this.camera);
-        this.vrControls.enabled = false;
+        this.vrControls.enabled = true;
 
 
         this.toggleVRControls = function () {

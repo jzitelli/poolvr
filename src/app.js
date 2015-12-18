@@ -31,7 +31,16 @@ POOLVR.nextBall = 1;
 // };
 var synthSpeaker = new SynthSpeaker({volume: 0.75, rate: 0.8, pitch: 0.5});
 
-var textGeomLogger = new TextGeomLogger();
+var textGeomLogger;
+if (POOLVR.config.textGeomLogger) {
+   textGeomLogger = new TextGeomLogger();
+} else {
+    textGeomLogger = new function () {
+        this.root = new THREE.Object3D();
+        this.log = function (msg) { console.log(msg); };
+    };
+}
+
 avatar.add(textGeomLogger.root);
 textGeomLogger.root.position.set(-2.5, 1.0, -3.5);
 

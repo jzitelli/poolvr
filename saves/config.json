@@ -12,16 +12,16 @@
   "pointLight": null,
   "pyserver": true,
   "shadowMap": null,
-  "tipShape": "Sphere",
+  "tipShape": "Cylinder",
   "toolLength": 0.5,
   "toolMass": 0.04,
   "toolOffset": [
-    -0.2895305623463309,
-    -0.3343856924904722,
-    -0.591528038058524
+    -0.04147260889014635,
+    -0.44485697341977015,
+    -0.5558233816064826
   ],
   "toolRadius": 0.013,
-  "toolRotation": 0.3510694354943298,
+  "toolRotation": -5.1854612880480465e-05,
   "useBasicMaterials": true,
   "useLambertMaterials": null,
   "usePhongMaterials": null
