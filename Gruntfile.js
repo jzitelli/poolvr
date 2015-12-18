@@ -2,6 +2,7 @@
 
 var fs = require( "fs" ),
     files = [
+      "lib/three.js",
       "lib/three-r73.js",
       "lib/TextGeometry.js",
       "lib/FontUtils.js",

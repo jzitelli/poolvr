@@ -99,14 +99,14 @@ function addTool(parent, world, options) {
     var zeroPlaneMaterial = new THREE.MeshBasicMaterial({color: 0x00dd44, transparent: true, opacity: interactionPlaneOpacity});
     var zeroPlaneGeom = new THREE.PlaneBufferGeometry(1/scalar, 1/scalar);
     var zeroPlaneMesh = new THREE.Mesh(zeroPlaneGeom, zeroPlaneMaterial);
-    zeroPlaneMesh.position.z = 1/2/scalar - 0.9/3/scalar;
+    zeroPlaneMesh.position.z = 1/2/scalar - 1/3/scalar;
     interactionBoxMesh.add(zeroPlaneMesh);
     zeroPlaneMesh = zeroPlaneMesh.clone();
-    zeroPlaneMesh.position.z = 1/2/scalar - 2*0.9/3/scalar;
+    zeroPlaneMesh.position.z = 1/2/scalar - 2/3/scalar;
     interactionBoxMesh.add(zeroPlaneMesh);
-    zeroPlaneMesh = zeroPlaneMesh.clone();
-    zeroPlaneMesh.position.z = 1/2/scalar - 0.9/scalar;
-    interactionBoxMesh.add(zeroPlaneMesh);
+    // zeroPlaneMesh = zeroPlaneMesh.clone();
+    // zeroPlaneMesh.position.z = 1/2/scalar - 0.9/scalar;
+    // interactionBoxMesh.add(zeroPlaneMesh);
 
     boxGeom = new THREE.BoxGeometry(0.0254*3/scalar, 0.0254*0.5/scalar, 0.0254*1.2/scalar);
     var leapGeom = new THREE.BufferGeometry();
@@ -273,8 +273,9 @@ function addTool(parent, world, options) {
                     tipBody.quaternion.copy(stickMesh.getWorldQuaternion());
 
                     velocity.fromArray(tool.tipVelocity);
-                    velocity.multiplyScalar(0.5);
+                    // velocity.multiplyScalar(0.5);
                     toolRoot.localToWorld(velocity);
+                    velocity.sub(toolRoot.getWorldPosition());
                     tipBody.velocity.copy(velocity);
 
                     if (interactionBoxMaterial.opacity > 0.1 && tool.timeVisible > toolTimeC) {
