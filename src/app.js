@@ -25,19 +25,19 @@ POOLVR.onTable = [false,
                   true, true, true, true, true, true, true];
 POOLVR.nextBall = 1;
 
-// POOLVR.config.onfullscreenchange = function (fullscreen) {
-//     if (fullscreen) pyserver.log('going fullscreen');
-//     else pyserver.log('exiting fullscreen');
-// };
+POOLVR.config.onfullscreenchange = function (fullscreen) {
+    if (fullscreen) pyserver.log('going fullscreen');
+    else pyserver.log('exiting fullscreen');
+};
 var synthSpeaker = new SynthSpeaker({volume: 0.75, rate: 0.8, pitch: 0.5});
 
 var textGeomLogger;
 if (POOLVR.config.textGeomLogger) {
    textGeomLogger = new TextGeomLogger();
 } else {
-    textGeomLogger = new function () {
-        this.root = new THREE.Object3D();
-        this.log = function (msg) { console.log(msg); };
+    textGeomLogger = {
+        root: new THREE.Object3D(),
+        log: function (msg) { console.log(msg); }
     };
 }
 
@@ -78,20 +78,21 @@ var autoPosition = ( function () {
         nextVector.multiplyScalar(0.42);
         avatar.position.sub(nextVector);
         // avatar.position.y = POOLVR.config.H_table + 0.24;
-        avatar.heading = Math.atan2(
-            -(POOLVR.ballMeshes[POOLVR.nextBall].position.x - avatar.position.x),
-            -(POOLVR.ballMeshes[POOLVR.nextBall].position.z - avatar.position.z)
-        );
-        avatar.quaternion.setFromAxisAngle(UP, avatar.heading);
         avatar.updateMatrixWorld();
-
         nextVector.copy(toolRoot.position);
         avatar.localToWorld(nextVector);
         nextVector.sub(POOLVR.ballMeshes[0].position);
         nextVector.y = 0;
         avatar.position.sub(nextVector);
 
-        pyserver.log('position: ' + avatar.position.x +', ' + avatar.position.y + ', ' +  avatar.position.z);
+        avatar.heading = Math.atan2(
+            -(POOLVR.ballMeshes[POOLVR.nextBall].position.x - avatar.position.x),
+            -(POOLVR.ballMeshes[POOLVR.nextBall].position.z - avatar.position.z)
+        );
+        avatar.quaternion.setFromAxisAngle(UP, avatar.heading);
+
+        pyserver.log('position  : ' + avatar.position.x +', ' + avatar.position.y + ', ' +  avatar.position.z);
+        pyserver.log('quaternion: ' + avatar.quaternion.x +', ' + avatar.quaternion.y + ', ' +  avatar.quaternion.z + ', ' + avatar.quaternion.w);
     }
     return autoPosition;
 } )();

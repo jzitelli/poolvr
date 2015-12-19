@@ -1,5 +1,5 @@
 /*
-  poolvr v0.1.0 2015-12-13
+  poolvr v0.1.0 2015-12-19
   
   Copyright (C) 2015 Jeffrey Zitelli <jeffrey.zitelli@gmail.com> (http://subvr.info)
   http://subvr.info/poolvr
@@ -36,7 +36,7 @@ WebVRApplication = ( function () {
             hideButton: false
         });
         this.vrControls = new THREE.VRControls(this.camera);
-        this.vrControls.enabled = false;
+        this.vrControls.enabled = true;
 
 
         this.toggleVRControls = function () {
@@ -184,7 +184,7 @@ WebVRApplication = ( function () {
 THREE.py = ( function () {
     "use strict";
     var manager = new THREE.LoadingManager();
-    var isLoaded_ = true;
+    var isLoaded_ = false;
     manager.onLoad = function () {
         isLoaded_ = true;
     };
@@ -201,6 +201,271 @@ THREE.py = ( function () {
         // TODO:
     }
 
+    function parse(json, texturePath, onLoad) {
+        if (texturePath) {
+            objectLoader.setTexturePath(texturePath);
+        }
+
+        function onLoad_(obj) {
+            loadHeightfields(obj);
+            obj.traverse( function (node) {
+                if (node instanceof THREE.Mesh) {
+                    node.geometry.computeBoundingSphere();
+                    node.geometry.computeBoundingBox();
+                    if (node.userData && node.userData.visible === false) {
+                        node.visible = false;
+                    }
+                    if (!(node.geometry instanceof THREE.SphereBufferGeometry)) {
+                        // makes seams appear on spherebuffergeometries due to doubled vertices at phi=0=2*pi
+                        //node.geometry.computeVertexNormals();
+                    }
+                    if (node.material.shading === THREE.FlatShading)
+                        node.geometry.computeFaceNormals();
+                }
+            } );
+            if (onLoad) {
+                onLoad(obj);
+            }
+        }
+
+        if (json.materials) {
+            json.materials.forEach( function (mat) {
+                if (mat.type.endsWith("ShaderMaterial") && mat.uniforms) {
+                    var uniforms = mat.uniforms;
+                    for (var key in uniforms) {
+                        var uniform = uniforms[key];
+                        if (uniform.type === 't') {
+                            if (Array.isArray(uniform.value) && uniform.value.length == 6) {
+                                isLoaded_ = false;
+                                // texture cube specified by urls
+                                uniform.value = cubeTextureLoader.load(uniform.value);
+                            } else
+                            if (typeof uniform.value === 'string') {
+                                isLoaded_ = false;
+                                // single texture specified by url
+                                uniform.value = textureLoader.load(uniform.value);
+                            }
+                        }
+                    }
+                }
+            } );
+        }
+
+        // filter out geometries that ObjectLoader doesn't handle:
+        var geometries = objectLoader.parseGeometries(json.geometries.filter(function (geom) {
+            return geom.type !== "TextGeometry" && geom.type !== 'HeightfieldBufferGeometry';
+        }));
+        // construct and insert geometries that ObjectLoader doesn't handle
+        json.geometries.forEach( function (geom) {
+            if (geom.type == "TextGeometry") {
+                var geometry = new THREE.TextGeometry(geom.text, geom.parameters);
+                geometry.uuid = geom.uuid;
+                if (geom.name !== undefined) geometry.name = geom.name;
+                geometries[geom.uuid] = geometry;
+            }
+        } );
+        var images = objectLoader.parseImages(json.images, function () {onLoad_(object);});
+        var textures = objectLoader.parseTextures(json.textures, images);
+        var materials = objectLoader.parseMaterials(json.materials, textures);
+        var object = objectLoader.parseObject(json.object, geometries, materials);
+
+
+        if (json.images === undefined || json.images.length === 0) {
+            onLoad_(object);
+        }
+
+        function loadHeightfields(obj) {
+            function getPixel(imagedata, x, y) {
+                var position = (x + imagedata.width * y) * 4,
+                    data = imagedata.data;
+                return {
+                    r: data[position],
+                    g: data[position + 1],
+                    b: data[position + 2],
+                    a: data[position + 3]
+                };
+            }
+            obj.traverse( function (node) {
+                if (node.userData && node.userData.heightfieldImage) {
+                    var uuid = node.userData.heightfieldImage;
+                    var heightfieldScale = node.userData.heightfieldScale || 1;
+                    var image = images[uuid];
+                    if (image) {
+                        var canvas = document.createElement('canvas');
+                        canvas.width = image.width;
+                        canvas.height = image.height;
+                        var context = canvas.getContext('2d');
+                        context.drawImage(image, 0, 0);
+                        var imageData = context.getImageData(0, 0, image.width, image.height);
+                        var attribute = node.geometry.getAttribute('position');
+                        var gridX1 = node.geometry.parameters.widthSegments + 1;
+                        var gridY1 = node.geometry.parameters.heightSegments + 1;
+                        var i = 0;
+                        for (var iy = 0; iy < gridY1; ++iy) {
+                            for (var ix = 0; ix < gridX1; ++ix) {
+                                var pixel = getPixel(imageData, ix, iy);
+                                attribute.setZ(i++, heightfieldScale * (pixel.r + 256*pixel.g + 256*256*pixel.b) / (256 * 256 * 256));
+                            }
+                        }
+                        attribute.needsUpdate = true;
+                        node.geometry.computeFaceNormals();
+                        node.geometry.computeVertexNormals();
+                        node.geometry.normalsNeedUpdate = true;
+                        node.geometry.computeBoundingSphere();
+                        node.geometry.computeBoundingBox();
+                    }
+                }
+            });
+        }
+
+        return object;
+    }
+
+    function CANNONize(obj, world) {
+        obj.updateMatrixWorld();
+        obj.traverse(function(node) {
+            if (node.userData && node.userData.cannonData) {
+                var body = makeCANNON(node, node.userData.cannonData);
+                if (world) {
+                    if (body instanceof CANNON.Body) {
+                        world.addBody(body);
+                    } else {
+                        // assumed to be array
+                        body.forEach(function (b) { world.addBody(b); });
+                    }
+                }
+            }
+        });
+
+        function makeCANNON(node, cannonData) {
+            var body;
+            var bodies;
+            if (node.body) {
+                return node.body;
+            }
+            if (node instanceof THREE.Mesh) {
+                var params = {mass: cannonData.mass,
+                              position: node.position,
+                              quaternion: node.quaternion};
+                if (cannonData.linearDamping !== undefined) {
+                    params.linearDamping = cannonData.linearDamping;
+                }
+                if (cannonData.angularDamping !== undefined) {
+                    params.angularDamping = cannonData.angularDamping;
+                }
+                body = new CANNON.Body(params);
+                body.mesh = node;
+                cannonData.shapes.forEach(function(e) {
+                    var shape,
+                        quaternion,
+                        position,
+                        array;
+                    switch (e) {
+                        case 'Plane':
+                            shape = new CANNON.Plane();
+                            break;
+                        case 'Box':
+                            var halfExtents = new CANNON.Vec3();
+                            node.geometry.computeBoundingBox();
+                            halfExtents.x = node.scale.x * (node.geometry.boundingBox.max.x - node.geometry.boundingBox.min.x) / 2;
+                            halfExtents.y = node.scale.y * (node.geometry.boundingBox.max.y - node.geometry.boundingBox.min.y) / 2;
+                            halfExtents.z = node.scale.z * (node.geometry.boundingBox.max.z - node.geometry.boundingBox.min.z) / 2;
+                            shape = new CANNON.Box(halfExtents);
+                            break;
+                        case 'Sphere':
+                            node.geometry.computeBoundingSphere();
+                            shape = new CANNON.Sphere(node.geometry.boundingSphere.radius);
+                            break;
+                        case 'ConvexPolyhedron':
+                            var points = [];
+                            var faces = [];
+                            if (node.geometry instanceof THREE.BufferGeometry) {
+                                array = node.geometry.getAttribute('position').array;
+                                for (var i = 0; i < array.length; i += 3) {
+                                    points.push(new CANNON.Vec3(array[i], array[i+1], array[i+2]));
+                                }
+                                array = node.geometry.index.array;
+                                for (i = 0; i < array.length; i += 3) {
+                                    var face = [array[i], array[i+1], array[i+2]];
+                                    faces.push(face);
+                                }
+                            } else if (node.geometry instanceof THREE.Geometry) {
+                                // TODO
+                            }
+                            shape = new CANNON.ConvexPolyhedron(points, faces);
+                            break;
+                        case 'Cylinder':
+                            shape = new CANNON.Cylinder(node.geometry.parameters.radiusTop,
+                                node.geometry.parameters.radiusBottom,
+                                node.geometry.parameters.height,
+                                node.geometry.parameters.radialSegments);
+                            var quaternion = new CANNON.Quaternion();
+                            quaternion.setFromEuler(-Math.PI/2, 0, 0, 'XYZ');
+                            break;
+                        case 'Heightfield':
+                            array = node.geometry.getAttribute('position').array;
+                            if (node.geometry.type !== 'PlaneBufferGeometry') {
+                                alert('uh oh!');
+                            }
+                            var gridX1 = node.geometry.parameters.widthSegments + 1;
+                            var gridY1 = node.geometry.parameters.heightSegments + 1;
+                            var dx = node.geometry.parameters.width / node.geometry.parameters.widthSegments;
+                            var data = [];
+                            for (var ix = 0; ix < gridX1; ++ix) {
+                                data.push(new Float32Array(gridY1));
+                                for (var iy = 0; iy < gridY1; ++iy) {
+                                    data[ix][iy] = array[3 * (gridX1 * (gridY1 - iy - 1) + ix) + 2];
+                                }
+                            }
+                            shape = new CANNON.Heightfield(data, {
+                                elementSize: dx
+                            });
+                            // center to match THREE.PlaneBufferGeometry:
+                            position = new CANNON.Vec3();
+                            position.x = -node.geometry.parameters.width / 2;
+                            position.y = -node.geometry.parameters.height / 2;
+                            break;
+                        case 'Trimesh':
+                            var vertices;
+                            var indices;
+                            if (node.geometry instanceof THREE.BufferGeometry) {
+                                vertices = node.geometry.getAttribute('position').array;
+                                indices = node.geometry.index.array;
+                            } else {
+                                vertices = [];
+                                for (var iv = 0; iv < node.geometry.vertices.length; iv++) {
+                                    var vert = node.geometry.vertices[iv];
+                                    vertices.push(vert.x, vert.y, vert.z);
+                                }
+                                indices = [];
+                                for (var iface = 0; iface < node.geometry.faces.length; iface++) {
+                                    var face = node.geometry.faces[iface];
+                                    indices.push(face.a, face.b, face.c);
+                                }
+                            }
+                            shape = new CANNON.Trimesh(vertices, indices);
+                            break;
+                        case 'Ellipsoid':
+                            // TODO
+                            console.log('TODO');
+                            break;
+                        default:
+                            console.log("unknown shape type: " + e);
+                            break;
+                    }
+                    body.addShape(shape, position, quaternion);
+                });
+                node.body = body;
+                return body;
+            } else if (node instanceof THREE.Object3D) {
+                bodies = [];
+                node.children.forEach(function (c) { bodies.push(makeCANNON(c, cannonData)); });
+                return bodies;
+            } else {
+                console.log("makeCANNON error");
+            }
+        }
+    }
 
     var TextGeomMesher = ( function () {
 
@@ -263,235 +528,13 @@ THREE.py = ( function () {
     } )();
 
 
-    function parse(json, texturePath) {
-        if (texturePath) {
-            objectLoader.setTexturePath(texturePath);
-        }
-        // TODO: convert all to BufferGeometry?
-        function onLoad(obj) {
-            obj.traverse( function (node) {
-                if (node instanceof THREE.Mesh) {
-                    node.geometry.computeBoundingSphere();
-                    node.geometry.computeBoundingBox();
-                    if (node.userData && node.userData.visible === false) {
-                        node.visible = false;
-                    }
-                    if (!(node.geometry instanceof THREE.SphereBufferGeometry)) {
-                        // makes seams appear on spherebuffergeometries due to doubled vertices at phi=0=2*pi
-                        node.geometry.computeVertexNormals();
-                    }
-                    if (node.material.shading === THREE.FlatShading)
-                        node.geometry.computeFaceNormals();
-                }
-            } );
-        }
-        if (json.materials) {
-            json.materials.forEach( function (mat) {
-                if (mat.type.endsWith("ShaderMaterial") && mat.uniforms) {
-                    var uniforms = mat.uniforms;
-                    for (var key in uniforms) {
-                        var uniform = uniforms[key];
-                        if (uniform.type === 't') {
-                            if (Array.isArray(uniform.value) && uniform.value.length == 6) {
-                                isLoaded_ = false;
-                                // texture cube specified by urls
-                                uniform.value = cubeTextureLoader.load(uniform.value);
-                            } else
-                            if (typeof uniform.value === 'string') {
-                                isLoaded_ = false;
-                                // single texture specified by url
-                                uniform.value = textureLoader.load(uniform.value);
-                            }
-                        }
-                    }
-                }
-            } );
-        }
-
-        // filter out geometries that ObjectLoader doesn't handle:
-        var geometries = objectLoader.parseGeometries(json.geometries.filter(function (geom) {
-            return geom.type !== "TextGeometry";
-        }));
-        // construct and insert geometries that ObjectLoader doesn't handle
-        json.geometries.forEach( function (geom) {
-            if (geom.type == "TextGeometry") {
-                var geometry = new THREE.TextGeometry(geom.text, geom.parameters);
-                geometry.uuid = geom.uuid;
-                if (geom.name !== undefined) geometry.name = geom.name;
-                geometries[geom.uuid] = geometry;
-            }
-        } );
-        var images = objectLoader.parseImages(json.images, function () {
-            onLoad(object);
-        });
-        var textures = objectLoader.parseTextures(json.textures, images);
-        var materials = objectLoader.parseMaterials(json.materials, textures);
-
-        function parseObject(json, geometries, materials) {
-            var object;
-            if (json.type === 'TextObject3D') {
-                object = new THREE.Object3D();
-
-            }
-        }
-
-        var object = objectLoader.parseObject(json.object, geometries, materials);
-        if (json.images === undefined || json.images.length === 0) {
-            onLoad(object);
-        }
-        return object;
-    }
-
-    var position = new THREE.Vector3();
-    function CANNONize(obj, world) {
-        obj.updateMatrixWorld();
-        obj.traverse(function(node) {
-            if (node.userData && node.userData.cannonData) {
-                var body = makeCANNON(node, node.userData.cannonData);
-                if (world) {
-                    if (body instanceof CANNON.Body) {
-                        world.addBody(body);
-                    } else {
-                        // assumed to be array
-                        body.forEach(function (b) { world.addBody(b); });
-                    }
-                }
-            }
-        });
-
-        function makeCANNON(node, cannonData) {
-            var body;
-            var bodies;
-            if (node.body) {
-                return node.body;
-            }
-            if (node instanceof THREE.Mesh) {
-                position.copy(node.position);
-                var params = {mass: cannonData.mass,
-                              position: node.parent.localToWorld(position),
-                              quaternion: node.quaternion};
-                if (cannonData.linearDamping !== undefined) {
-                    params.linearDamping = cannonData.linearDamping;
-                }
-                if (cannonData.angularDamping !== undefined) {
-                    params.angularDamping = cannonData.angularDamping;
-                }
-                body = new CANNON.Body(params);
-                body.mesh = node;
-                cannonData.shapes.forEach(function(e) {
-                    var shape,
-                        quaternion,
-                        position,
-                        array;
-                    switch (e) {
-                        case 'Plane':
-                            shape = new CANNON.Plane();
-                            quaternion = new CANNON.Quaternion();
-                            quaternion.setFromEuler(-Math.PI / 2, 0, 0, 'XYZ');
-                            break;
-                        case 'Box':
-                            var halfExtents = new CANNON.Vec3();
-                            node.geometry.computeBoundingBox();
-                            halfExtents.x = node.scale.x * (node.geometry.boundingBox.max.x - node.geometry.boundingBox.min.x) / 2;
-                            halfExtents.y = node.scale.y * (node.geometry.boundingBox.max.y - node.geometry.boundingBox.min.y) / 2;
-                            halfExtents.z = node.scale.z * (node.geometry.boundingBox.max.z - node.geometry.boundingBox.min.z) / 2;
-                            shape = new CANNON.Box(halfExtents);
-                            break;
-                        case 'Sphere':
-                            node.geometry.computeBoundingSphere();
-                            shape = new CANNON.Sphere(node.geometry.boundingSphere.radius);
-                            break;
-                        case 'ConvexPolyhedron':
-                            var points = [];
-                            var faces = [];
-                            if (node.geometry instanceof THREE.BufferGeometry) {
-                                array = node.geometry.getAttribute('position').array;
-                                for (var i = 0; i < array.length; i += 3) {
-                                    points.push(new CANNON.Vec3(array[i], array[i+1], array[i+2]));
-                                }
-                                array = node.geometry.index.array;
-                                for (i = 0; i < array.length; i += 3) {
-                                    var face = [array[i], array[i+1], array[i+2]];
-                                    faces.push(face);
-                                }
-                            } else if (node.geometry instanceof THREE.Geometry) {
-                                // TODO
-                            }
-                            shape = new CANNON.ConvexPolyhedron(points, faces);
-                            break;
-                        case 'Cylinder':
-                            shape = new CANNON.Cylinder(node.geometry.parameters.radiusTop,
-                                node.geometry.parameters.radiusBottom,
-                                node.geometry.parameters.height,
-                                node.geometry.parameters.radialSegments);
-                            break;
-                        case 'Heightfield':
-                            array = node.geometry.getAttribute('position').array;
-                            if (node.geometry.type !== 'PlaneBufferGeometry') {
-                                pyserver.log('uh oh!');
-                            }
-                            var gridX1 = node.geometry.parameters.widthSegments + 1;
-                            var gridY1 = node.geometry.parameters.heightSegments + 1;
-                            var dx = node.geometry.parameters.width / node.geometry.parameters.widthSegments;
-                            var data = [];
-                            for (var ix = 0; ix < gridX1; ++ix) {
-                                data.push(new Float32Array(gridY1));
-                                for (var iy = 0; iy < gridY1; ++iy) {
-                                    data[ix][iy] = array[3 * (gridX1 * (gridY1 - iy - 1) + ix) + 2];
-                                }
-                            }
-                            shape = new CANNON.Heightfield(data, {
-                                elementSize: dx
-                            });
-                            // center to match THREE.PlaneBufferGeometry:
-                            position = new CANNON.Vec3();
-                            position.x = -node.geometry.parameters.width / 2;
-                            position.y = -node.geometry.parameters.height / 2;
-                            break;
-                        case 'Trimesh':
-                            var vertices;
-                            var indices;
-                            if (node.geometry instanceof THREE.BufferGeometry) {
-                                vertices = node.geometry.getAttribute('position').array;
-                                indices = node.geometry.index.array;
-                            } else {
-                                vertices = [];
-                                for (var iv = 0; iv < node.geometry.vertices.length; iv++) {
-                                    var vert = node.geometry.vertices[iv];
-                                    vertices.push(vert.x, vert.y, vert.z);
-                                }
-                                indices = [];
-                                for (var iface = 0; iface < node.geometry.faces.length; iface++) {
-                                    var face = node.geometry.faces[iface];
-                                    indices.push(face.a, face.b, face.c);
-                                }
-                            }
-                            shape = new CANNON.Trimesh(vertices, indices);
-                            break;
-                        default:
-                            console.log("unknown shape type: " + e);
-                            break;
-                    }
-                    body.addShape(shape, position, quaternion);
-                });
-                node.body = body;
-                return body;
-            } else if (node instanceof THREE.Object3D) {
-                bodies = [];
-                node.children.forEach(function (c) { bodies.push(makeCANNON(c, cannonData)); });
-                return bodies;
-            } else {
-                console.log("makeCANNON error");
-            }
-        }
-    }
-
     return {
         load:           load,
         parse:          parse,
         CANNONize:      CANNONize,
         isLoaded:       isLoaded,
-        TextGeomMesher: TextGeomMesher
+        TextGeomMesher: TextGeomMesher,
+        config:         window.THREE_PY_CONFIG || {}
     };
 } )();
 ;
@@ -512,19 +555,21 @@ function addTool(parent, world, options) {
     var toolMass   = options.toolMass   || 0.04;
 
     var tipShape = options.tipShape || 'Sphere';
-    var tipRadius = options.tipRadius;
-    var tipMinorRadius = options.tipMinorRadius;
+    var tipRadius,
+        tipMinorRadius;
     if (tipShape === 'Cylinder') {
-        tipRadius = tipRadius || toolRadius;
+        tipRadius = options.tipRadius || toolRadius;
     } else {
-        tipRadius = tipRadius || 0.95 * toolRadius;
+        tipRadius = options.tipRadius || 0.95 * toolRadius;
         if (tipShape === 'Ellipsoid') {
-            tipMinorRadius = tipMinorRadius || 0.25 * tipRadius;
+            tipMinorRadius = options.tipMinorRadius || 0.25 * tipRadius;
         }
     }
 
-    var toolOffset = options.toolOffset;
-    toolOffset = new THREE.Vector3(0, -0.4, -toolLength - 0.2).fromArray(toolOffset);
+    var toolOffset = new THREE.Vector3(0, -0.4, -toolLength - 0.2);
+    if (options.toolOffset) {
+        toolOffset.fromArray(options.toolOffset);
+    }
     var toolRotation = options.toolRotation || 0;
 
     var handOffset = options.handOffset || new THREE.Vector3().copy(toolOffset);
@@ -591,17 +636,17 @@ function addTool(parent, world, options) {
     var interactionBoxMaterial = new THREE.MeshBasicMaterial({color: 0x00dd44, transparent: true, opacity: interactionPlaneOpacity, side: THREE.BackSide});
     var interactionBoxMesh = new THREE.Mesh(interactionBoxGeom, interactionBoxMaterial);
     toolRoot.add(interactionBoxMesh);
-    var zeroPlaneMaterial = new THREE.MeshBasicMaterial({color: 0x00dd44, transparent: true, opacity: interactionPlaneOpacity});
-    var zeroPlaneGeom = new THREE.PlaneBufferGeometry(1/scalar, 1/scalar);
-    var zeroPlaneMesh = new THREE.Mesh(zeroPlaneGeom, zeroPlaneMaterial);
-    zeroPlaneMesh.position.z = 1/2/scalar - 0.9/3/scalar;
-    interactionBoxMesh.add(zeroPlaneMesh);
-    zeroPlaneMesh = zeroPlaneMesh.clone();
-    zeroPlaneMesh.position.z = 1/2/scalar - 2*0.9/3/scalar;
-    interactionBoxMesh.add(zeroPlaneMesh);
-    zeroPlaneMesh = zeroPlaneMesh.clone();
-    zeroPlaneMesh.position.z = 1/2/scalar - 0.9/scalar;
-    interactionBoxMesh.add(zeroPlaneMesh);
+    var interactionPlaneMaterial = new THREE.MeshBasicMaterial({color: 0x00dd44, transparent: true, opacity: interactionPlaneOpacity});
+    var interactionPlaneGeom = new THREE.PlaneBufferGeometry(1/scalar, 1/scalar);
+    var interactionPlaneMesh = new THREE.Mesh(interactionPlaneGeom, interactionPlaneMaterial);
+    interactionPlaneMesh.position.z = 1/2/scalar - 1/3/scalar;
+    interactionBoxMesh.add(interactionPlaneMesh);
+    interactionPlaneMesh = interactionPlaneMesh.clone();
+    interactionPlaneMesh.position.z = 1/2/scalar - 2/3/scalar;
+    interactionBoxMesh.add(interactionPlaneMesh);
+    // interactionPlaneMesh = interactionPlaneMesh.clone();
+    // interactionPlaneMesh.position.z = 1/2/scalar - 0.9/scalar;
+    // interactionBoxMesh.add(interactionPlaneMesh);
 
     boxGeom = new THREE.BoxGeometry(0.0254*3/scalar, 0.0254*0.5/scalar, 0.0254*1.2/scalar);
     var leapGeom = new THREE.BufferGeometry();
@@ -656,10 +701,10 @@ function addTool(parent, world, options) {
         stickMesh.add(tipMesh);
     } else {
         // whole stick
-        var quaternion = new CANNON.Quaternion();
-        quaternion.setFromEuler(-Math.PI / 2, 0, 0, 'XYZ');
-        var shapePosition = new CANNON.Vec3(0, -toolLength / 2, 0);
-        tipBody.addShape(new CANNON.Cylinder(tipRadius, tipRadius, toolLength, 8), shapePosition, quaternion);
+        var shapeQuaternion = new CANNON.Quaternion();
+        shapeQuaternion.setFromEuler(-Math.PI / 2, 0, 0, 'XYZ');
+        var shapePosition = new CANNON.Vec3(0, -tipRadius, 0);
+        tipBody.addShape(new CANNON.Cylinder(tipRadius, tipRadius, 2*tipRadius, 8), shapePosition, shapeQuaternion);
     }
 
     world.addBody(tipBody);
@@ -744,9 +789,15 @@ function addTool(parent, world, options) {
 
             if (tool.timeVisible > toolTime) {
 
-                stickMesh.position.fromArray(tool.tipPosition); // stickMesh.position.fromArray(tool.stabilizedTipPosition);
+                // position.fromArray(tool.tipPosition);
+                position.fromArray(tool.stabilizedTipPosition);
+
+                stickMesh.position.copy(position);
+
                 direction.fromArray(tool.direction);
+
                 stickMesh.quaternion.setFromUnitVectors(UP, direction);
+
                 if (tool.timeVisible > toolTimeB) {
 
                     if (tipBody.sleepState === CANNON.Body.SLEEPING) {
@@ -756,27 +807,21 @@ function addTool(parent, world, options) {
                         tipMaterial.color.setHex(0xff0000);
                     }
 
-                    // TODO: fix cannon position / orientation
-                    position.copy(stickMesh.position);
-                    toolRoot.updateMatrixWorld();
                     toolRoot.localToWorld(position);
                     tipBody.position.copy(position);
-                    // tipBody.quaternion.copy(stickMesh.quaternion);
-                    // tipBody.quaternion.mult(toolRoot.quaternion, tipBody.quaternion);
-                    // tipBody.quaternion.mult(parent.quaternion, tipBody.quaternion);
-                    tipBody.quaternion.copy(parent.quaternion);
-                    tipBody.quaternion.mult(toolRoot.quaternion, tipBody.quaternion);
-                    tipBody.quaternion.mult(stickMesh.quaternion, tipBody.quaternion);
 
-                    velocity.set(tool.tipVelocity[0] * 0.001, tool.tipVelocity[1] * 0.001, tool.tipVelocity[2] * 0.001);
-                    velocity.applyQuaternion(toolRoot.quaternion);
-                    velocity.applyQuaternion(parent.quaternion);
+                    tipBody.quaternion.copy(stickMesh.getWorldQuaternion());
+
+                    velocity.fromArray(tool.tipVelocity);
+                    toolRoot.localToWorld(velocity);
+                    velocity.sub(toolRoot.getWorldPosition());
+                    // velocity.multiplyScalar(0.5);
                     tipBody.velocity.copy(velocity);
 
                     if (interactionBoxMaterial.opacity > 0.1 && tool.timeVisible > toolTimeC) {
                         // dim the interaction box:
                         interactionBoxMaterial.opacity *= 0.93;
-                        zeroPlaneMaterial.opacity = interactionBoxMaterial.opacity;
+                        interactionPlaneMaterial.opacity = interactionBoxMaterial.opacity;
                     }
 
                 }
@@ -785,7 +830,7 @@ function addTool(parent, world, options) {
                     toolRoot.visible = true;
                     stickMaterial.opacity = tipMaterial.opacity = 1;
                     interactionBoxMaterial.opacity = interactionBoxOpacity;
-                    zeroPlaneMaterial.opacity = interactionPlaneOpacity;
+                    interactionPlaneMaterial.opacity = interactionPlaneOpacity;
                 }
 
             }
@@ -802,7 +847,7 @@ function addTool(parent, world, options) {
                 stickMaterial.opacity *= 0.9;
                 tipMaterial.opacity = stickMaterial.opacity;
                 interactionBoxMaterial.opacity *= 0.9;
-                zeroPlaneMaterial.opacity = interactionBoxMaterial.opacity;
+                interactionPlaneMaterial.opacity = interactionBoxMaterial.opacity;
             } else {
                 toolRoot.visible = false;
             }
@@ -866,7 +911,7 @@ function addTool(parent, world, options) {
                 toolRoot.visible = true;
                 stickMaterial.opacity = tipMaterial.opacity = 1;
                 interactionBoxMaterial.opacity = interactionBoxOpacity;
-                zeroPlaneMaterial.opacity = interactionPlaneOpacity;
+                interactionPlaneMaterial.opacity = interactionPlaneOpacity;
             }
         }
     }
@@ -1491,13 +1536,13 @@ POOLVR.gamepadCommands = {
 // TODO: load from JSON config
 POOLVR.ballMaterial            = new CANNON.Material();
 POOLVR.ballBallContactMaterial = new CANNON.ContactMaterial(POOLVR.ballMaterial, POOLVR.ballMaterial, {
-    restitution: 0.92,
-    friction: 0.17
+    restitution: 0.93,
+    friction: 0.14
 });
 POOLVR.playableSurfaceMaterial            = new CANNON.Material();
 POOLVR.ballPlayableSurfaceContactMaterial = new CANNON.ContactMaterial(POOLVR.ballMaterial, POOLVR.playableSurfaceMaterial, {
     restitution: 0.33,
-    friction: 0.19
+    friction: 0.16
 });
 POOLVR.cushionMaterial            = new CANNON.Material();
 POOLVR.ballCushionContactMaterial = new CANNON.ContactMaterial(POOLVR.ballMaterial, POOLVR.cushionMaterial, {
@@ -1511,25 +1556,28 @@ POOLVR.floorBallContactMaterial = new CANNON.ContactMaterial(POOLVR.floorMateria
 });
 POOLVR.tipMaterial            = new CANNON.Material();
 POOLVR.tipBallContactMaterial = new CANNON.ContactMaterial(POOLVR.tipMaterial, POOLVR.ballMaterial, {
-    restitution: 0.2,
-    friction: 0.333
+    restitution: 0.001,
+    friction: 0.23,
+    contactEquationRelaxation: 3
 });
-
-POOLVR.config.vrLeap = URL_PARAMS.vrLeap || POOLVR.config.vrLeap;
-POOLVR.config.toolLength   = URL_PARAMS.toolLength   || POOLVR.config.toolLength || 0.5;
-POOLVR.config.toolRadius   = URL_PARAMS.toolRadius   || POOLVR.config.toolRadius || 0.013;
-POOLVR.config.toolMass     = URL_PARAMS.toolMass     || POOLVR.config.toolMass   || 0.04;
-POOLVR.config.toolOffset   = URL_PARAMS.toolOffset   || POOLVR.config.toolOffset || [0, -0.42, -POOLVR.config.toolLength - 0.15];
-POOLVR.config.toolRotation = URL_PARAMS.toolRotation || POOLVR.config.toolRotation || 0;
-// POOLVR.config.useEllipsoid = URL_PARAMS.useEllipsoid || POOLVR.config.useEllipsoid || false;
-POOLVR.config.tipShape     = URL_PARAMS.tipShape     || POOLVR.config.tipShape || 'Sphere';
 
 var localStorageConfig = localStorage.getItem(POOLVR.version);
 if (localStorageConfig) {
+    console.log("loaded from localStorage:");
     console.log(localStorageConfig);
     POOLVR.config = JSON.parse(localStorageConfig);
 }
 
+POOLVR.config.vrLeap       = URL_PARAMS.vrLeap       || POOLVR.config.vrLeap;
+
+POOLVR.config.toolLength   = URL_PARAMS.toolLength   || POOLVR.config.toolLength   || 0.5;
+POOLVR.config.toolRadius   = URL_PARAMS.toolRadius   || POOLVR.config.toolRadius   || 0.013;
+POOLVR.config.toolMass     = URL_PARAMS.toolMass     || POOLVR.config.toolMass     || 0.04;
+POOLVR.config.toolOffset   = URL_PARAMS.toolOffset   || POOLVR.config.toolOffset   || [0, -0.42, -POOLVR.config.toolLength - 0.15];
+POOLVR.config.toolRotation = URL_PARAMS.toolRotation || POOLVR.config.toolRotation || 0;
+POOLVR.config.tipShape     = URL_PARAMS.tipShape     || POOLVR.config.tipShape     || 'Sphere';
+
+POOLVR.config.textGeomLogger = URL_PARAMS.textGeomLogger || POOLVR.config.textGeomLogger;
 
 function saveConfig() {
     "use strict";
@@ -1543,7 +1591,6 @@ function saveConfig() {
         delete POOLVR.config.onResetVRSensor;
         delete POOLVR.config.gamepadCommands;
         delete POOLVR.config.keyboardCommands;
-        //pyserver.writeFile('config.json', POOLVR.config);
         pyserver.saveConfig('config.json', POOLVR.config);
     }
     localStorage.setItem(POOLVR.version, JSON.stringify(POOLVR.config));
@@ -1557,8 +1604,8 @@ function loadConfig(json) {
 
 
 var WebVRConfig = WebVRConfig || POOLVR.config.WebVRConfig || {};
-WebVRConfig.FORCE_DISTORTION = URL_PARAMS.FORCE_DISTORTION;
-WebVRConfig.FORCE_ENABLE_VR  = URL_PARAMS.FORCE_ENABLE_VR;
+WebVRConfig.FORCE_DISTORTION = URL_PARAMS.FORCE_DISTORTION || WebVRConfig.FORCE_DISTORTION;
+WebVRConfig.FORCE_ENABLE_VR  = URL_PARAMS.FORCE_ENABLE_VR  || WebVRConfig.FORCE_ENABLE_VR;
 
 var userAgent = navigator.userAgent;
 ;
@@ -1626,13 +1673,22 @@ POOLVR.onTable = [false,
                   true, true, true, true, true, true, true];
 POOLVR.nextBall = 1;
 
-// POOLVR.config.onfullscreenchange = function (fullscreen) {
-//     if (fullscreen) pyserver.log('going fullscreen');
-//     else pyserver.log('exiting fullscreen');
-// };
+POOLVR.config.onfullscreenchange = function (fullscreen) {
+    if (fullscreen) pyserver.log('going fullscreen');
+    else pyserver.log('exiting fullscreen');
+};
 var synthSpeaker = new SynthSpeaker({volume: 0.75, rate: 0.8, pitch: 0.5});
 
-var textGeomLogger = new TextGeomLogger();
+var textGeomLogger;
+if (POOLVR.config.textGeomLogger) {
+   textGeomLogger = new TextGeomLogger();
+} else {
+    textGeomLogger = {
+        root: new THREE.Object3D(),
+        log: function (msg) { console.log(msg); }
+    };
+}
+
 avatar.add(textGeomLogger.root);
 textGeomLogger.root.position.set(-2.5, 1.0, -3.5);
 
@@ -1654,12 +1710,12 @@ function resetTable() {
 var autoPosition = ( function () {
     "use strict";
     var nextVector = new THREE.Vector3();
-    var UP = new THREE.Vector3();
+    var UP = new THREE.Vector3(0, 1, 0);
     function autoPosition(avatar) {
         textGeomLogger.log("YOU ARE BEING AUTO-POSITIONED.");
-        if (synthSpeaker.speaking === false) {
-            synthSpeaker.speak("You are being auto-positioned.");
-        }
+        // if (synthSpeaker.speaking === false) {
+        //     synthSpeaker.speak("You are being auto-positioned.");
+        // }
         nextVector.copy(POOLVR.ballMeshes[POOLVR.nextBall].position);
         nextVector.sub(POOLVR.ballMeshes[0].position);
         nextVector.y = 0;
@@ -1669,14 +1725,22 @@ var autoPosition = ( function () {
         avatar.position.z = POOLVR.ballMeshes[0].position.z;
         nextVector.multiplyScalar(0.42);
         avatar.position.sub(nextVector);
-        avatar.position.y = POOLVR.config.H_table + 0.24;
+        // avatar.position.y = POOLVR.config.H_table + 0.24;
+        avatar.updateMatrixWorld();
+        nextVector.copy(toolRoot.position);
+        avatar.localToWorld(nextVector);
+        nextVector.sub(POOLVR.ballMeshes[0].position);
+        nextVector.y = 0;
+        avatar.position.sub(nextVector);
+
         avatar.heading = Math.atan2(
             -(POOLVR.ballMeshes[POOLVR.nextBall].position.x - avatar.position.x),
             -(POOLVR.ballMeshes[POOLVR.nextBall].position.z - avatar.position.z)
         );
         avatar.quaternion.setFromAxisAngle(UP, avatar.heading);
-        avatar.updateMatrix();
-        pyserver.log('position: ' + avatar.position.x +', ' + avatar.position.y + ', ' +  avatar.position.z);
+
+        pyserver.log('position  : ' + avatar.position.x +', ' + avatar.position.y + ', ' +  avatar.position.z);
+        pyserver.log('quaternion: ' + avatar.quaternion.x +', ' + avatar.quaternion.y + ', ' +  avatar.quaternion.z + ', ' + avatar.quaternion.w);
     }
     return autoPosition;
 } )();
@@ -1756,6 +1820,9 @@ var animate = function (leapController, animateLeap,
     function animate(t) {
         var dt = (t - lt) * 0.001;
         requestAnimationFrame(animate);
+
+        app.vrManager.render(app.scene, app.camera, t);
+
         if (app.vrControls.enabled) {
             app.vrControls.update();
         }
@@ -1765,9 +1832,7 @@ var animate = function (leapController, animateLeap,
             lastFrameID = frame.id;
         }
 
-        app.world.step(1/75, dt, 5);
-
-        app.vrManager.render(app.scene, app.camera, t);
+        app.world.step(1/75, dt, 10);
 
         app.keyboard.update(dt);
         app.gamepad.update(dt);
@@ -1917,6 +1982,12 @@ function onLoad() {
 
     THREE.py.CANNONize(scene, app.world);
 
+    app.world.addMaterial(POOLVR.ballMaterial);
+    app.world.addMaterial(POOLVR.playableSurfaceMaterial);
+    app.world.addMaterial(POOLVR.cushionMaterial);
+    app.world.addMaterial(POOLVR.floorMaterial);
+    app.world.addMaterial(POOLVR.tipMaterial);
+
     app.world.addContactMaterial(POOLVR.ballBallContactMaterial);
     app.world.addContactMaterial(POOLVR.ballPlayableSurfaceContactMaterial);
     app.world.addContactMaterial(POOLVR.ballCushionContactMaterial);
@@ -1928,13 +1999,15 @@ function onLoad() {
     toolOptions.gamepad = app.gamepad;
 
     var toolStuff = addTool(avatar, app.world, toolOptions);
-    toolRoot       = toolStuff.toolRoot;
+
     var leapController = toolStuff.leapController;
     var stickMesh      = toolStuff.stickMesh;
     var animateLeap    = toolStuff.animateLeap;
     var leftRoot       = toolStuff.leftRoot;
     var rightRoot      = toolStuff.rightRoot;
     var tipBody        = toolStuff.tipBody;
+    toolRoot           = toolStuff.toolRoot;
+
     tipBody.material = POOLVR.tipMaterial;
 
 
@@ -2049,16 +2122,21 @@ function onLoad() {
         if (tipEventCounter === 1) {
             synthSpeaker.speak("You moved a ball.  Good job.");
         }
-        else if (tipEventCounter === 4) {
-            synthSpeaker.speak("I have something else to tell you.");
+        else if (tipEventCounter === 16) {
+            synthSpeaker.speak("Hi.");
         }
         else if (tipEventCounter === 8) {
-            synthSpeaker.speak("I have something else to tell you. Again.");
+            // synthSpeaker.speak("I have something else to tell you. Again.");
         }
         else if (tipEventCounter === 30) {
-            synthSpeaker.speak("I have something else to tell you. For the third, and final time.");
+            // synthSpeaker.speak("I have something else to tell you. For the third, and final time.");
         }
     });
+    // app.world.addEventListener("postStep", function () {
+    //     stickMesh.position.copy(tipBody.position);
+    //     stickMesh.parent.worldToLocal(stickMesh.position);
+    //     //scene.updateMatrixWorld();
+    // });
 
     var mouseStuff = setupMouse(avatar);
     var animateMousePointer = mouseStuff.animateMousePointer;
