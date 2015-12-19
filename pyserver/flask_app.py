@@ -27,8 +27,8 @@ POOLVR = {
         'pyserver'              : True,
         'gravity'               : 9.8,
         'useBasicMaterials'     : True,
-        'useLambertMaterials'   : None,
-        'usePhongMaterials'     : None,
+        'useLambertMaterials'   : False,
+        'usePhongMaterials'     : False,
         'shadowMap'             : None,
         'pointLight'            : None,
         'L_table'               : 2.3368,
@@ -43,32 +43,28 @@ POOLVR = {
 }
 
 
+# TODO: choose a way to deliver configuration (should all be in js)
 def get_poolvr_config():
     config = deepcopy(POOLVR['config'])
-    try:
-        with open(os.path.join(WRITE_FOLDER, request.args.get('config', 'config.json'))) as f:
-            config.update(json.loads(f.read()))
-    except Exception as err:
-        _logger.warning(err);
-    args = dict({k: v for k, v in request.args.items()
-                 if k in config})
-    # TODO: better way
-    for k, v in args.items():
-        if v == 'false':
-            args[k] = False
-        elif v == 'true':
-            args[k] = True
-        elif not (v is False or v is True or v is None):
-            try:
-                args[k] = float(v)
-            except Exception as err:
-                pass
-    config.update(args)
-    if not config['useBasicMaterials']:
-        if config['useLambertMaterials'] is None:
-            config['useLambertMaterials'] = True
-        if config['usePhongMaterials'] is None:
-            config['usePhongMaterials'] = True
+    # try:
+    #     with open(os.path.join(WRITE_FOLDER, request.args.get('config', 'config.json'))) as f:
+    #         config.update(json.loads(f.read()))
+    # except Exception as err:
+    #     _logger.warning(err);
+    # args = dict({k: v for k, v in request.args.items()
+    #              if k in config})
+    # # TODO: better way
+    # for k, v in args.items():
+    #     if v == 'false':
+    #         args[k] = False
+    #     elif v == 'true':
+    #         args[k] = True
+    #     elif not (v is False or v is True or v is None):
+    #         try:
+    #             args[k] = float(v)
+    #         except Exception as err:
+    #             pass
+    # config.update(args)
     return config
 
 

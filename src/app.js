@@ -25,10 +25,10 @@ POOLVR.onTable = [false,
                   true, true, true, true, true, true, true];
 POOLVR.nextBall = 1;
 
-POOLVR.config.onfullscreenchange = function (fullscreen) {
-    if (fullscreen) pyserver.log('going fullscreen');
-    else pyserver.log('exiting fullscreen');
-};
+// POOLVR.config.onfullscreenchange = function (fullscreen) {
+//     if (fullscreen) pyserver.log('going fullscreen');
+//     else pyserver.log('exiting fullscreen');
+// };
 var synthSpeaker = new SynthSpeaker({volume: 0.75, rate: 0.8, pitch: 0.5});
 
 var textGeomLogger;

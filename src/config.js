@@ -11,12 +11,12 @@ var URL_PARAMS = (function () {
         }
     } );
     for (var k in params) {
-        if (params[k].length == 1)
-            params[k] = params[k][0];
         if (params[k] === 'true')
             params[k] = true;
         else if (params[k] === 'false')
             params[k] = false;
+        if (params[k].length == 1)
+            params[k] = params[k][0];
     }
     return params;
 })();
@@ -100,17 +100,30 @@ POOLVR.floorBallContactMaterial = new CANNON.ContactMaterial(POOLVR.floorMateria
 });
 POOLVR.tipMaterial            = new CANNON.Material();
 POOLVR.tipBallContactMaterial = new CANNON.ContactMaterial(POOLVR.tipMaterial, POOLVR.ballMaterial, {
-    restitution: 0.001,
-    friction: 0.23,
-    contactEquationRelaxation: 3
+    restitution: 0.04,
+    friction: 0.2,
+    contactEquationRelaxation: 2,
+    frictionEquationRelaxation: 2
 });
+
 
 var localStorageConfig = localStorage.getItem(POOLVR.version);
 if (localStorageConfig) {
-    console.log("loaded from localStorage:");
-    console.log(localStorageConfig);
+    pyserver.log("loaded from localStorage:");
+    pyserver.log(localStorageConfig);
     POOLVR.config = JSON.parse(localStorageConfig);
 }
+
+
+// url param override
+
+POOLVR.config.useBasicMaterials   = URL_PARAMS.useBasicMaterials   || POOLVR.config.useBasicMaterials   || true;
+POOLVR.config.useLambertMaterials = URL_PARAMS.useLambertMaterials || POOLVR.config.useLambertMaterials || false;
+POOLVR.config.usePhongMaterials   = URL_PARAMS.usePhongMaterials   || POOLVR.config.usePhongMaterials   || false;
+
+POOLVR.config.shadowMap           = URL_PARAMS.shadowMap           || POOLVR.config.shadowMap           || false;
+
+POOLVR.config.cubeMap             = URL_PARAMS.cubeMap             || POOLVR.config.cubeMap             || false;
 
 POOLVR.config.vrLeap       = URL_PARAMS.vrLeap       || POOLVR.config.vrLeap;
 
