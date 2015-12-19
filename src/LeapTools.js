@@ -92,8 +92,7 @@ function addTool(parent, world, options) {
     var interactionBoxGeom = new THREE.BufferGeometry();
     interactionBoxGeom.fromGeometry(boxGeom);
     boxGeom.dispose();
-    //var interactionBoxMaterial = new THREE.MeshBasicMaterial({color: 0xaa8800, transparent: true, opacity: interactionBoxOpacity, side: THREE.BackSide});
-    var interactionBoxMaterial = new THREE.MeshBasicMaterial({color: 0x00dd44, transparent: true, opacity: interactionPlaneOpacity, side: THREE.BackSide});
+    var interactionBoxMaterial = new THREE.MeshBasicMaterial({color: 0x00dd44, transparent: true, opacity: interactionBoxOpacity, side: THREE.BackSide});
     var interactionBoxMesh = new THREE.Mesh(interactionBoxGeom, interactionBoxMaterial);
     toolRoot.add(interactionBoxMesh);
     var interactionPlaneMaterial = new THREE.MeshBasicMaterial({color: 0x00dd44, transparent: true, opacity: interactionPlaneOpacity});
@@ -104,10 +103,7 @@ function addTool(parent, world, options) {
     interactionPlaneMesh = interactionPlaneMesh.clone();
     interactionPlaneMesh.position.z = 1/2/scalar - 2/3/scalar;
     interactionBoxMesh.add(interactionPlaneMesh);
-    // interactionPlaneMesh = interactionPlaneMesh.clone();
-    // interactionPlaneMesh.position.z = 1/2/scalar - 0.9/scalar;
-    // interactionBoxMesh.add(interactionPlaneMesh);
-
+    // leap motion controller:
     boxGeom = new THREE.BoxGeometry(0.0254*3/scalar, 0.0254*0.5/scalar, 0.0254*1.2/scalar);
     var leapGeom = new THREE.BufferGeometry();
     leapGeom.fromGeometry(boxGeom);
@@ -359,9 +355,9 @@ function addTool(parent, world, options) {
             }
         }
         if (toolDrive !== 0 || toolStrafe !== 0 || toolFloat !== 0 || rotateToolCW !== 0) {
-            toolRoot.position.x += 0.25  * dt * toolStrafe;
-            toolRoot.position.z += -0.25 * dt * toolDrive;
-            toolRoot.position.y += 0.25  * dt * toolFloat;
+            toolRoot.position.x += 0.2  * dt * toolStrafe;
+            toolRoot.position.z += -0.2 * dt * toolDrive;
+            toolRoot.position.y += 0.2  * dt * toolFloat;
             leftRoot.position.copy(toolRoot.position);
             rightRoot.position.copy(toolRoot.position);
             toolRoot.rotation.y += 0.15 * dt * rotateToolCW;

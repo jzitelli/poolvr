@@ -29,7 +29,7 @@ POOLVR.nextBall = 1;
 //     if (fullscreen) pyserver.log('going fullscreen');
 //     else pyserver.log('exiting fullscreen');
 // };
-var synthSpeaker = new SynthSpeaker({volume: 0.75, rate: 0.8, pitch: 0.5});
+var synthSpeaker = new SynthSpeaker({volume: 0.5, rate: 0.8, pitch: 0.5});
 
 var textGeomLogger;
 if (POOLVR.config.textGeomLogger) {
@@ -69,15 +69,11 @@ var autoPosition = ( function () {
         //     synthSpeaker.speak("You are being auto-positioned.");
         // }
 
-        nextVector.copy(POOLVR.ballMeshes[POOLVR.nextBall].position);
-        nextVector.sub(POOLVR.ballMeshes[0].position);
-        nextVector.y = 0;
-        nextVector.normalize();
-        nextVector.multiplyScalar(0.42);
-        avatar.position.x = POOLVR.ballMeshes[0].position.x;
-        avatar.position.z = POOLVR.ballMeshes[0].position.z;
-        avatar.position.sub(nextVector);
-
+        avatar.heading = Math.atan2(
+            -(POOLVR.ballMeshes[POOLVR.nextBall].position.x - POOLVR.ballMeshes[0].position.x),
+            -(POOLVR.ballMeshes[POOLVR.nextBall].position.z - POOLVR.ballMeshes[0].position.z)
+        );
+        avatar.quaternion.setFromAxisAngle(UP, avatar.heading);
         avatar.updateMatrixWorld();
 
         nextVector.copy(toolRoot.position);
@@ -86,14 +82,8 @@ var autoPosition = ( function () {
         nextVector.y = 0;
         avatar.position.sub(nextVector);
 
-        avatar.heading = Math.atan2(
-            -(POOLVR.ballMeshes[POOLVR.nextBall].position.x - avatar.position.x),
-            -(POOLVR.ballMeshes[POOLVR.nextBall].position.z - avatar.position.z)
-        );
-        avatar.quaternion.setFromAxisAngle(UP, avatar.heading);
-
-        pyserver.log('position  : ' + avatar.position.x +', ' + avatar.position.y + ', ' +  avatar.position.z);
-        pyserver.log('quaternion: ' + avatar.quaternion.x +', ' + avatar.quaternion.y + ', ' +  avatar.quaternion.z + ', ' + avatar.quaternion.w);
+        pyserver.log('position  : ' + avatar.position.x   + ', ' + avatar.position.y   + ', ' +  avatar.position.z);
+        pyserver.log('quaternion: ' + avatar.quaternion.x + ', ' + avatar.quaternion.y + ', ' +  avatar.quaternion.z + ', ' + avatar.quaternion.w);
     }
     return autoPosition;
 } )();
@@ -307,13 +297,13 @@ function onLoad() {
     var UP = new THREE.Vector3(0, 1, 0);
     POOLVR.config.onResetVRSensor = function (lastRotation, lastPosition) {
         pyserver.log('updating the toolRoot position...');
-        app.camera.updateMatrix();
+        // app.camera.updateMatrix();
         avatar.heading += lastRotation - app.camera.rotation.y;
         toolRoot.rotation.y -= (lastRotation - app.camera.rotation.y);
         toolRoot.position.sub(lastPosition);
         toolRoot.position.applyAxisAngle(UP, -lastRotation + app.camera.rotation.y);
         toolRoot.position.add(app.camera.position);
-        toolRoot.updateMatrix();
+        avatar.updateMatrixWorld();
     };
 
 

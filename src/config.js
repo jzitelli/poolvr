@@ -100,10 +100,10 @@ POOLVR.floorBallContactMaterial = new CANNON.ContactMaterial(POOLVR.floorMateria
 });
 POOLVR.tipMaterial            = new CANNON.Material();
 POOLVR.tipBallContactMaterial = new CANNON.ContactMaterial(POOLVR.tipMaterial, POOLVR.ballMaterial, {
-    restitution: 0.04,
+    restitution: 0.02,
     friction: 0.2,
-    contactEquationRelaxation: 2,
-    frictionEquationRelaxation: 2
+    contactEquationRelaxation: 3,
+    frictionEquationRelaxation: 3
 });
 
 
