@@ -31,7 +31,16 @@ POOLVR.nextBall = 1;
 // };
 var synthSpeaker = new SynthSpeaker({volume: 0.75, rate: 0.8, pitch: 0.5});
 
-var textGeomLogger = new TextGeomLogger();
+var textGeomLogger;
+if (POOLVR.config.textGeomLogger) {
+   textGeomLogger = new TextGeomLogger();
+} else {
+    textGeomLogger = {
+        root: new THREE.Object3D(),
+        log: function (msg) { console.log(msg); }
+    };
+}
+
 avatar.add(textGeomLogger.root);
 textGeomLogger.root.position.set(-2.5, 1.0, -3.5);
 
@@ -53,12 +62,12 @@ function resetTable() {
 var autoPosition = ( function () {
     "use strict";
     var nextVector = new THREE.Vector3();
-    var UP = new THREE.Vector3();
+    var UP = new THREE.Vector3(0, 1, 0);
     function autoPosition(avatar) {
         textGeomLogger.log("YOU ARE BEING AUTO-POSITIONED.");
-        if (synthSpeaker.speaking === false) {
-            synthSpeaker.speak("You are being auto-positioned.");
-        }
+        // if (synthSpeaker.speaking === false) {
+        //     synthSpeaker.speak("You are being auto-positioned.");
+        // }
         nextVector.copy(POOLVR.ballMeshes[POOLVR.nextBall].position);
         nextVector.sub(POOLVR.ballMeshes[0].position);
         nextVector.y = 0;
@@ -68,14 +77,22 @@ var autoPosition = ( function () {
         avatar.position.z = POOLVR.ballMeshes[0].position.z;
         nextVector.multiplyScalar(0.42);
         avatar.position.sub(nextVector);
-        avatar.position.y = POOLVR.config.H_table + 0.24;
+        // avatar.position.y = POOLVR.config.H_table + 0.24;
+        avatar.updateMatrixWorld();
+        nextVector.copy(toolRoot.position);
+        avatar.localToWorld(nextVector);
+        nextVector.sub(POOLVR.ballMeshes[0].position);
+        nextVector.y = 0;
+        avatar.position.sub(nextVector);
+
         avatar.heading = Math.atan2(
             -(POOLVR.ballMeshes[POOLVR.nextBall].position.x - avatar.position.x),
             -(POOLVR.ballMeshes[POOLVR.nextBall].position.z - avatar.position.z)
         );
         avatar.quaternion.setFromAxisAngle(UP, avatar.heading);
-        avatar.updateMatrix();
-        pyserver.log('position: ' + avatar.position.x +', ' + avatar.position.y + ', ' +  avatar.position.z);
+
+        pyserver.log('position  : ' + avatar.position.x +', ' + avatar.position.y + ', ' +  avatar.position.z);
+        pyserver.log('quaternion: ' + avatar.quaternion.x +', ' + avatar.quaternion.y + ', ' +  avatar.quaternion.z + ', ' + avatar.quaternion.w);
     }
     return autoPosition;
 } )();
@@ -155,6 +172,9 @@ var animate = function (leapController, animateLeap,
     function animate(t) {
         var dt = (t - lt) * 0.001;
         requestAnimationFrame(animate);
+
+        app.vrManager.render(app.scene, app.camera, t);
+
         if (app.vrControls.enabled) {
             app.vrControls.update();
         }
@@ -164,9 +184,7 @@ var animate = function (leapController, animateLeap,
             lastFrameID = frame.id;
         }
 
-        app.world.step(1/75, dt, 5);
-
-        app.vrManager.render(app.scene, app.camera, t);
+        app.world.step(1/75, dt, 10);
 
         app.keyboard.update(dt);
         app.gamepad.update(dt);
@@ -316,6 +334,12 @@ function onLoad() {
 
     THREE.py.CANNONize(scene, app.world);
 
+    app.world.addMaterial(POOLVR.ballMaterial);
+    app.world.addMaterial(POOLVR.playableSurfaceMaterial);
+    app.world.addMaterial(POOLVR.cushionMaterial);
+    app.world.addMaterial(POOLVR.floorMaterial);
+    app.world.addMaterial(POOLVR.tipMaterial);
+
     app.world.addContactMaterial(POOLVR.ballBallContactMaterial);
     app.world.addContactMaterial(POOLVR.ballPlayableSurfaceContactMaterial);
     app.world.addContactMaterial(POOLVR.ballCushionContactMaterial);
@@ -327,13 +351,15 @@ function onLoad() {
     toolOptions.gamepad = app.gamepad;
 
     var toolStuff = addTool(avatar, app.world, toolOptions);
-    toolRoot       = toolStuff.toolRoot;
+
     var leapController = toolStuff.leapController;
     var stickMesh      = toolStuff.stickMesh;
     var animateLeap    = toolStuff.animateLeap;
     var leftRoot       = toolStuff.leftRoot;
     var rightRoot      = toolStuff.rightRoot;
     var tipBody        = toolStuff.tipBody;
+    toolRoot           = toolStuff.toolRoot;
+
     tipBody.material = POOLVR.tipMaterial;
 
 
@@ -448,16 +474,21 @@ function onLoad() {
         if (tipEventCounter === 1) {
             synthSpeaker.speak("You moved a ball.  Good job.");
         }
-        else if (tipEventCounter === 4) {
-            synthSpeaker.speak("I have something else to tell you.");
+        else if (tipEventCounter === 16) {
+            synthSpeaker.speak("Hi.");
         }
         else if (tipEventCounter === 8) {
-            synthSpeaker.speak("I have something else to tell you. Again.");
+            // synthSpeaker.speak("I have something else to tell you. Again.");
         }
         else if (tipEventCounter === 30) {
-            synthSpeaker.speak("I have something else to tell you. For the third, and final time.");
+            // synthSpeaker.speak("I have something else to tell you. For the third, and final time.");
         }
     });
+    // app.world.addEventListener("postStep", function () {
+    //     stickMesh.position.copy(tipBody.position);
+    //     stickMesh.parent.worldToLocal(stickMesh.position);
+    //     //scene.updateMatrixWorld();
+    // });
 
     var mouseStuff = setupMouse(avatar);
     var animateMousePointer = mouseStuff.animateMousePointer;
