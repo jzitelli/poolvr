@@ -16,10 +16,8 @@ import site_settings
 app.config.from_object(site_settings)
 
 sys.path.append(os.getcwd())
-import pyserver
-# from pyserver import three
-from pyserver import pool_table
-from pyserver import config_scene
+import pyserver.pool_table as pool_table
+import pyserver.config_scene as config_scene
 
 
 WRITE_FOLDER = os.path.join(os.getcwd(), 'saves')
@@ -39,7 +37,7 @@ POOLVR = {
         'toolOffset'            : [0, -0.42, -0.4],
         'toolRotation'          : 0,
         'cubeMap'               : False,
-        'tipShape'              : 'Sphere'
+        'tipShape'              : 'Cylinder'
     },
     'version': '0.1.0dev'
 }
