@@ -68,17 +68,18 @@ var autoPosition = ( function () {
         // if (synthSpeaker.speaking === false) {
         //     synthSpeaker.speak("You are being auto-positioned.");
         // }
+
         nextVector.copy(POOLVR.ballMeshes[POOLVR.nextBall].position);
         nextVector.sub(POOLVR.ballMeshes[0].position);
         nextVector.y = 0;
         nextVector.normalize();
-        // reposition and move back:
+        nextVector.multiplyScalar(0.42);
         avatar.position.x = POOLVR.ballMeshes[0].position.x;
         avatar.position.z = POOLVR.ballMeshes[0].position.z;
-        nextVector.multiplyScalar(0.42);
         avatar.position.sub(nextVector);
-        // avatar.position.y = POOLVR.config.H_table + 0.24;
+
         avatar.updateMatrixWorld();
+
         nextVector.copy(toolRoot.position);
         avatar.localToWorld(nextVector);
         nextVector.sub(POOLVR.ballMeshes[0].position);
@@ -161,14 +162,10 @@ var animate = function (leapController, animateLeap,
     }
 
     var UP = new THREE.Vector3(0, 1, 0),
-        //headingQuat = new THREE.Quaternion(),
-        //RIGHT = new THREE.Vector3(1, 0, 0),
-        // pitchQuat = new THREE.Quaternion(),
         walkSpeed = 0.333,
         floatSpeed = 0.1;
     var lastFrameID;
     var lt = 0;
-    //var doAutoPosition = true;
     function animate(t) {
         var dt = (t - lt) * 0.001;
         requestAnimationFrame(animate);
@@ -225,9 +222,6 @@ var animate = function (leapController, animateLeap,
             //     sinPitch = Math.sin(pitch);
 
             avatar.quaternion.setFromAxisAngle(UP, avatar.heading);
-            // headingQuat.setFromAxisAngle(UP, heading);
-            // avatar.quaternion.multiply(headingQuat);
-            // avatar.quaternion.multiply(pitchQuat);
 
             avatar.position.x += dt * (strafe * cosHeading + drive * sinHeading);
             avatar.position.z += dt * (drive * cosHeading - strafe * sinHeading);
@@ -324,7 +318,6 @@ function onLoad() {
 
 
     var menu = setupMenu(avatar);
-    //POOLVR.config.menu = menu;
 
 
     app = new WebVRApplication("poolvr", avatar, scene, POOLVR.config);
@@ -476,12 +469,6 @@ function onLoad() {
         }
         else if (tipEventCounter === 16) {
             synthSpeaker.speak("Hi.");
-        }
-        else if (tipEventCounter === 8) {
-            // synthSpeaker.speak("I have something else to tell you. Again.");
-        }
-        else if (tipEventCounter === 30) {
-            // synthSpeaker.speak("I have something else to tell you. For the third, and final time.");
         }
     });
     // app.world.addEventListener("postStep", function () {

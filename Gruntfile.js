@@ -63,7 +63,6 @@ module.exports = function ( grunt ) {
               "src/GfxTablet.js",
               "src/pyserver.js",
               "src/config.js",
-              "src/actions.js",
               "src/sound.js",
               //"src/configurator.js",
               "src/app.js"
