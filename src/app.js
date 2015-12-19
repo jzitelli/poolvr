@@ -81,9 +81,6 @@ var autoPosition = ( function () {
         nextVector.sub(POOLVR.ballMeshes[0].position);
         nextVector.y = 0;
         avatar.position.sub(nextVector);
-
-        pyserver.log('position  : ' + avatar.position.x   + ', ' + avatar.position.y   + ', ' +  avatar.position.z);
-        pyserver.log('quaternion: ' + avatar.quaternion.x + ', ' + avatar.quaternion.y + ', ' +  avatar.quaternion.z + ', ' + avatar.quaternion.w);
     }
     return autoPosition;
 } )();

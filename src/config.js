@@ -11,12 +11,12 @@ var URL_PARAMS = (function () {
         }
     } );
     for (var k in params) {
+        if (params[k].length === 1)
+            params[k] = params[k][0];
         if (params[k] === 'true')
             params[k] = true;
         else if (params[k] === 'false')
             params[k] = false;
-        if (params[k].length == 1)
-            params[k] = params[k][0];
     }
     return params;
 })();
@@ -80,18 +80,18 @@ POOLVR.gamepadCommands = {
 // TODO: load from JSON config
 POOLVR.ballMaterial            = new CANNON.Material();
 POOLVR.ballBallContactMaterial = new CANNON.ContactMaterial(POOLVR.ballMaterial, POOLVR.ballMaterial, {
-    restitution: 0.93,
+    restitution: 0.92,
     friction: 0.14
 });
 POOLVR.playableSurfaceMaterial            = new CANNON.Material();
 POOLVR.ballPlayableSurfaceContactMaterial = new CANNON.ContactMaterial(POOLVR.ballMaterial, POOLVR.playableSurfaceMaterial, {
     restitution: 0.33,
-    friction: 0.16
+    friction: 0.19
 });
 POOLVR.cushionMaterial            = new CANNON.Material();
 POOLVR.ballCushionContactMaterial = new CANNON.ContactMaterial(POOLVR.ballMaterial, POOLVR.cushionMaterial, {
     restitution: 0.8,
-    friction: 0.21
+    friction: 0.16
 });
 POOLVR.floorMaterial            = new CANNON.Material();
 POOLVR.floorBallContactMaterial = new CANNON.ContactMaterial(POOLVR.floorMaterial, POOLVR.ballMaterial, {
@@ -100,8 +100,8 @@ POOLVR.floorBallContactMaterial = new CANNON.ContactMaterial(POOLVR.floorMateria
 });
 POOLVR.tipMaterial            = new CANNON.Material();
 POOLVR.tipBallContactMaterial = new CANNON.ContactMaterial(POOLVR.tipMaterial, POOLVR.ballMaterial, {
-    restitution: 0.02,
-    friction: 0.2,
+    restitution: 0.01,
+    friction: 0.15,
     contactEquationRelaxation: 3,
     frictionEquationRelaxation: 3
 });
@@ -115,17 +115,7 @@ if (localStorageConfig) {
 }
 
 
-// url param override
-
-POOLVR.config.useBasicMaterials   = URL_PARAMS.useBasicMaterials   || POOLVR.config.useBasicMaterials   || true;
-POOLVR.config.useLambertMaterials = URL_PARAMS.useLambertMaterials || POOLVR.config.useLambertMaterials || false;
-POOLVR.config.usePhongMaterials   = URL_PARAMS.usePhongMaterials   || POOLVR.config.usePhongMaterials   || false;
-
-POOLVR.config.shadowMap           = URL_PARAMS.shadowMap           || POOLVR.config.shadowMap           || false;
-
-POOLVR.config.cubeMap             = URL_PARAMS.cubeMap             || POOLVR.config.cubeMap             || false;
-
-POOLVR.config.vrLeap       = URL_PARAMS.vrLeap       || POOLVR.config.vrLeap;
+POOLVR.config.vrLeap = URL_PARAMS.vrLeap || POOLVR.config.vrLeap;
 
 POOLVR.config.toolLength   = URL_PARAMS.toolLength   || POOLVR.config.toolLength   || 0.5;
 POOLVR.config.toolRadius   = URL_PARAMS.toolRadius   || POOLVR.config.toolRadius   || 0.013;

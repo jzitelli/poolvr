@@ -32,11 +32,8 @@ ball_colors = ball_colors + ball_colors[1:-1]
 def pool_table(L_table=2.3368, W_table=None, H_table=0.74295,
                L_playable=None, W_playable=None,
                ball_diameter=2.25*IN2METER,
-               W_cushion=2*IN2METER,
-               H_cushion=None,
-               W_rail=None,
-               useBasicMaterials=True, useLambertMaterials=False, usePhongMaterials=False,
-               shadowMap=False, **kwargs):
+               W_cushion=2*IN2METER, H_cushion=None, W_rail=None,
+               useBasicMaterials=True, shadowMap=False, **kwargs):
     """Procedurally defined three.js pool table 'Object3D' (three.js Object format V4)
 
     :param L_table: length of the pool table (longer than the playable surface); default is 8ft.
@@ -69,14 +66,9 @@ def pool_table(L_table=2.3368, W_table=None, H_table=0.74295,
         railMaterial = MeshBasicMaterial(color=rail_color)
     else:
         spotMaterial = MeshLambertMaterial(color=0xaaaaaa, shading=FlatShading)
-        if usePhongMaterials:
-            surfaceMaterial = MeshPhongMaterial(color=0x00aa00, shininess=5, shading=FlatShading)
-            cushionMaterial = MeshPhongMaterial(color=0x07aa16, shininess=5, shading=FlatShading)
-            railMaterial = MeshPhongMaterial(color=0xdda400, shininess=10, shading=FlatShading)
-        else:
-            surfaceMaterial = MeshLambertMaterial(color=0x00aa00, shading=FlatShading)
-            cushionMaterial = MeshLambertMaterial(color=0x11aa06, shading=FlatShading)
-            railMaterial = MeshLambertMaterial(color=0xffaa00, shading=FlatShading)
+        surfaceMaterial = MeshPhongMaterial(color=0x00aa00, shininess=5, shading=FlatShading)
+        cushionMaterial = MeshPhongMaterial(color=0x07aa16, shininess=5, shading=FlatShading)
+        railMaterial = MeshPhongMaterial(color=0xdda400, shininess=10, shading=FlatShading)
     playableSurfaceGeom = BoxGeometry(W_playable, H_table, L_playable)
     playableSurfaceMesh = Mesh(name='playableSurfaceMesh',
                                geometry=playableSurfaceGeom,

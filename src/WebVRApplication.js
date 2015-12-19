@@ -44,9 +44,7 @@ WebVRApplication = ( function () {
         }.bind(this);
 
         var lastPosition = new THREE.Vector3();
-        //var lastQuaternion = new THREE.Quaternion();
         this.resetVRSensor = function () {
-            //lastQuaternion.copy(this.camera.quaternion);
             lastPosition.copy(this.camera.position);
             var lastRotation = this.camera.rotation.y;
             this.vrControls.resetSensor();
