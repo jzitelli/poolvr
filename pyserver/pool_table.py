@@ -241,7 +241,7 @@ def pool_hall(useBasicMaterials=True,
         light = PointLight(color=0xaa8866, position=[4, 5, 2.5], intensity=0.8, distance=40)
         scene.add(light)
 
-    if cubeMap and shaderlib is not None:
+    if cubeMap:
         shader = deepcopy(shaderlib['cube'])
         shader['uniforms']['tCube']['value'] = [url_prefix + "images/%s.png" % pos
                                                 for pos in ('px', 'nx', 'py', 'ny', 'pz', 'nz')]
