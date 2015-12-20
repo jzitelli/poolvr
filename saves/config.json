@@ -15,10 +15,10 @@
   "shadowMap": null,
   "tipShape": "Cylinder",
   "toolOffset": [
-    0,
-    -0.42,
-    -0.4
+    -0.21828871548438455,
+    -0.4452017508042664,
+    -0.5409228274112684
   ],
-  "toolRotation": 0,
+  "toolRotation": 0.2088639528002434,
   "useBasicMaterials": true
 }

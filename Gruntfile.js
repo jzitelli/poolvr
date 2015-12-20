@@ -64,7 +64,6 @@ module.exports = function ( grunt ) {
               "src/pyserver.js",
               "src/config.js",
               "src/sound.js",
-              //"src/configurator.js",
               "src/app.js"
           ]
         }

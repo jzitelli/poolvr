@@ -2,7 +2,8 @@ var pyserver;
 if (!POOLVR.config.pyserver) {
     pyserver = {log: function (msg) { console.log('pyserver.log: ' + msg); },
                 readFile: function () {},
-                writeFile: function () {}};
+                writeFile: function () {},
+                saveConfig: function () {}};
 } else {
     pyserver = {
         log: function (msg, success) {

@@ -126,13 +126,13 @@ function onLoad() {
 
     scene.add(avatar);
 
+
     textGeomLogger.log(JSON.stringify(POOLVR.config, undefined, 2));
+
+    var mouseStuff = setupMouse(avatar, undefined, '../images/mouseParticle.png');
 
     POOLVR.config.keyboardCommands = POOLVR.keyboardCommands;
     POOLVR.config.gamepadCommands = POOLVR.gamepadCommands;
-
-    var mouseStuff = setupMouse(avatar, undefined, '../images/mouseParticle.png');
-    // mouseStuff.setVisible(true);
 
     var UP = new THREE.Vector3(0, 1, 0);
     POOLVR.config.onResetVRSensor = function (lastRotation, lastPosition) {

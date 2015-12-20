@@ -307,6 +307,10 @@ function onLoad() {
     var menu = setupMenu(avatar);
 
 
+    var mouseStuff = setupMouse(avatar);
+    var animateMousePointer = mouseStuff.animateMousePointer;
+
+
     app = new WebVRApplication("poolvr", avatar, scene, POOLVR.config);
     avatar.add(app.camera);
     scene.add(avatar);
@@ -463,9 +467,6 @@ function onLoad() {
     //     stickMesh.parent.worldToLocal(stickMesh.position);
     //     //scene.updateMatrixWorld();
     // });
-
-    var mouseStuff = setupMouse(avatar);
-    var animateMousePointer = mouseStuff.animateMousePointer;
 
     app.start( animate(leapController, animateLeap,
                        toolRoot, POOLVR.config.shadowMap,
