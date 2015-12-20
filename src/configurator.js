@@ -132,19 +132,7 @@ function onLoad() {
     POOLVR.config.gamepadCommands = POOLVR.gamepadCommands;
 
     var mouseStuff = setupMouse(avatar, undefined, '../images/mouseParticle.png');
-    // , function (locked) {
-    //     mouseStuff.setVisible(true);
-    // });
-
-    POOLVR.config.onfullscreenchange = function (fullscreen) {
-        if (fullscreen) {
-            pyserver.log('going fullscreen');
-            mouseStuff.setVisible(true);
-        }
-        else {
-            pyserver.log('exiting fullscreen');
-        }
-    };
+    // mouseStuff.setVisible(true);
 
     var UP = new THREE.Vector3(0, 1, 0);
     POOLVR.config.onResetVRSensor = function (lastRotation, lastPosition) {

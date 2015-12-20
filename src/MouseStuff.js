@@ -19,11 +19,14 @@ function setupMouse(parent, position, particleTexture, onpointerlockchange) {
         particleCount: numParticles
     });
     mouseParticleGroup.addEmitter(mouseParticleEmitter);
+
     var mousePointerMesh = mouseParticleGroup.mesh;
+    // var mousePointerMesh = new THREE.Mesh(new THREE.SphereBufferGeometry(0.0123));
     parent.add(mousePointerMesh);
     mousePointerMesh.position.copy(position);
 
     mousePointerMesh.visible = false;
+
     if ("onpointerlockchange" in document) {
       document.addEventListener('pointerlockchange', lockChangeAlert, false);
     } else if ("onmozpointerlockchange" in document) {
@@ -34,13 +37,13 @@ function setupMouse(parent, position, particleTexture, onpointerlockchange) {
     function lockChangeAlert() {
         if ( document.pointerLockElement || document.mozPointerLockElement || document.webkitPointerLockElement ) {
             pyserver.log('pointer lock status is now locked');
-            // mousePointerMesh.visible = true;
+            mousePointerMesh.visible = true;
             if (onpointerlockchange) {
                 onpointerlockchange(true);
             }
         } else {
             pyserver.log('pointer lock status is now unlocked');
-            // mousePointerMesh.visible = false;
+            mousePointerMesh.visible = false;
             if (onpointerlockchange) {
                 onpointerlockchange(false);
             }
@@ -63,7 +66,7 @@ function setupMouse(parent, position, particleTexture, onpointerlockchange) {
 
 
     function setVisible(visible) {
-        mousePointerMesh.visible = true;
+        mousePointerMesh.visible = visible;
     }
 
     var pickables,
@@ -71,38 +74,41 @@ function setupMouse(parent, position, particleTexture, onpointerlockchange) {
     function setPickables(p) {
         pickables = p;
     }
-    var lt;
+    var lt = 0;
     var origin = new THREE.Vector3();
     var direction = new THREE.Vector3();
     var raycaster = new THREE.Raycaster();
     function animateMousePointer(t, camera) {
 
         var dt = 0.001*(t - lt);
+
         if (mousePointerMesh.visible) {
+
             mouseParticleGroup.tick(dt);
 
-            if (pickables && camera) {
-                origin.set(0, 0, 0);
-                direction.set(0, 0, 0);
-                direction.subVectors(mousePointerMesh.localToWorld(direction), camera.localToWorld(origin)).normalize();
-                raycaster.set(origin, direction);
-                var intersects = raycaster.intersectObjects(pickables);
-                if (intersects.length > 0) {
-                    if (picked != intersects[0].object) {
-                        if (picked) picked.material.color.setHex(picked.currentHex);
-                        picked = intersects[0].object;
-                        picked.currentHex = picked.material.color.getHex();
-                        picked.material.color.setHex(0xff4444); //0x44ff44);
-                    }
-                } else {
-                    if (picked) picked.material.color.setHex(picked.currentHex);
-                    picked = null;
-                }
-            }
+            // if (pickables && camera) {
+            //     origin.set(0, 0, 0);
+            //     direction.set(0, 0, 0);
+            //     direction.subVectors(mousePointerMesh.localToWorld(direction), camera.localToWorld(origin)).normalize();
+            //     raycaster.set(origin, direction);
+            //     var intersects = raycaster.intersectObjects(pickables);
+            //     if (intersects.length > 0) {
+            //         if (picked != intersects[0].object) {
+            //             if (picked) picked.material.color.setHex(picked.currentHex);
+            //             picked = intersects[0].object;
+            //             picked.currentHex = picked.material.color.getHex();
+            //             picked.material.color.setHex(0xff4444); //0x44ff44);
+            //         }
+            //     } else {
+            //         if (picked) picked.material.color.setHex(picked.currentHex);
+            //         picked = null;
+            //     }
+            // }
 
         }
 
         lt = t;
+
     }
 
     return {
