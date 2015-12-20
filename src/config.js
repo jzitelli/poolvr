@@ -67,10 +67,10 @@ POOLVR.gamepadCommands = {
                           commandDown: function () { avatar.toolMode = true; },
                           commandUp: function () { avatar.toolMode = false; } },
     nextBall: {buttons: [Primrose.Input.Gamepad.XBOX_BUTTONS.rightBumper],
-               commandDown: function () { POOLVR.nextBall = Math.max(1, (POOLVR.nextBall + 1) % 15); },
+               commandDown: function () { POOLVR.nextBall = Math.max(1, (POOLVR.nextBall + 1) % 16); },
                dt: 0.5},
     prevBall: {buttons: [Primrose.Input.Gamepad.XBOX_BUTTONS.leftBumper],
-               commandDown: function () { POOLVR.nextBall = Math.max(1, (POOLVR.nextBall - 1) % 15); },
+               commandDown: function () { POOLVR.nextBall = Math.max(1, (POOLVR.nextBall - 1) % 16); },
                dt: 0.5},
     autoPosition: {buttons: [Primrose.Input.Gamepad.XBOX_BUTTONS.Y],
                    commandDown: function () { autoPosition(avatar); }, dt: 0.5}
@@ -91,7 +91,7 @@ POOLVR.ballPlayableSurfaceContactMaterial = new CANNON.ContactMaterial(POOLVR.ba
 POOLVR.cushionMaterial            = new CANNON.Material();
 POOLVR.ballCushionContactMaterial = new CANNON.ContactMaterial(POOLVR.ballMaterial, POOLVR.cushionMaterial, {
     restitution: 0.8,
-    friction: 0.16
+    friction: 0.12
 });
 POOLVR.floorMaterial            = new CANNON.Material();
 POOLVR.floorBallContactMaterial = new CANNON.ContactMaterial(POOLVR.floorMaterial, POOLVR.ballMaterial, {
@@ -106,23 +106,23 @@ POOLVR.tipBallContactMaterial = new CANNON.ContactMaterial(POOLVR.tipMaterial, P
     frictionEquationRelaxation: 3
 });
 
-
-var localStorageConfig = localStorage.getItem(POOLVR.version);
-if (localStorageConfig) {
-    pyserver.log("loaded from localStorage:");
-    pyserver.log(localStorageConfig);
-    POOLVR.config = JSON.parse(localStorageConfig);
+if (!URL_PARAMS.disableLocalStorage) {
+    var localStorageConfig = localStorage.getItem(POOLVR.version);
+    if (localStorageConfig) {
+        pyserver.log("loaded from localStorage:");
+        pyserver.log(localStorageConfig);
+        POOLVR.config = JSON.parse(localStorageConfig);
+    }
 }
-
 
 POOLVR.config.vrLeap = URL_PARAMS.vrLeap || POOLVR.config.vrLeap;
 
-POOLVR.config.toolLength   = URL_PARAMS.toolLength   || POOLVR.config.toolLength   || 0.5;
-POOLVR.config.toolRadius   = URL_PARAMS.toolRadius   || POOLVR.config.toolRadius   || 0.013;
-POOLVR.config.toolMass     = URL_PARAMS.toolMass     || POOLVR.config.toolMass     || 0.04;
-POOLVR.config.toolOffset   = URL_PARAMS.toolOffset   || POOLVR.config.toolOffset   || [0, -0.42, -POOLVR.config.toolLength - 0.15];
-POOLVR.config.toolRotation = URL_PARAMS.toolRotation || POOLVR.config.toolRotation || 0;
-POOLVR.config.tipShape     = URL_PARAMS.tipShape     || POOLVR.config.tipShape     || 'Sphere';
+POOLVR.config.toolLength   = URL_PARAMS.toolLength   || POOLVR.config.toolLength;
+POOLVR.config.toolRadius   = URL_PARAMS.toolRadius   || POOLVR.config.toolRadius;
+POOLVR.config.toolMass     = URL_PARAMS.toolMass     || POOLVR.config.toolMass;
+POOLVR.config.toolOffset   = URL_PARAMS.toolOffset   || POOLVR.config.toolOffset;
+POOLVR.config.toolRotation = URL_PARAMS.toolRotation || POOLVR.config.toolRotation;
+POOLVR.config.tipShape     = URL_PARAMS.tipShape     || POOLVR.config.tipShape;
 
 POOLVR.config.textGeomLogger = URL_PARAMS.textGeomLogger || POOLVR.config.textGeomLogger;
 
@@ -140,7 +140,9 @@ function saveConfig() {
         delete POOLVR.config.keyboardCommands;
         pyserver.saveConfig('config.json', POOLVR.config);
     }
-    localStorage.setItem(POOLVR.version, JSON.stringify(POOLVR.config));
+    if (!URL_PARAMS.disableLocalStorage) {
+        localStorage.setItem(POOLVR.version, JSON.stringify(POOLVR.config));
+    }
 }
 
 

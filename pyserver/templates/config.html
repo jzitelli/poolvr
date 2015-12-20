@@ -20,6 +20,9 @@
         padding: 0;
         overflow: hidden;
       }
+      a {
+        color: #df2;
+      }
     </style>
 
 {{ json_config }}
@@ -28,21 +31,42 @@
 
   <body onLoad='onLoad()'>
 
+    <a id='save' href="/poolvr/config/save">
+    <h2>
+    Save config
+    </h2>
+    </a>
+
+    <br>
+
+    <a id='load' href="/poolvr/config/load">
+    <h2>
+    Load config
+    </h2>
+    </a>
 <!--
-    <a id='save'>   Save config   </a>
-    <a id='import'> Import config </a>
-    <a id='export'> Export config </a>
+    <br>
+    <a id='import' href="importConfig">
+    Import config
+    </a>
+    <br>
+    <a id='export' href="exportConfig">
+    Export config
+    </a>
  -->
 
-    <script src="../lib/three-r73.js"></script>
+    <script src="../lib/three.js"></script>
     <script src="../lib/TextGeometry.js"></script>
     <script src="../lib/FontUtils.js"></script>
-    <script src="../lib/VREffect.js"></script>
+
     <script src="../lib/VRControls.js"></script>
+    <script src="../lib/VREffect.js"></script>
+
     <script src="../lib/webvr-polyfill.js"></script>
     <script src="../lib/webvr-manager.js"></script>
 
     <script src="../lib/cannon.js"></script>
+    <!-- <script src="../lib/cannon.serialize.js"></script> -->
 
     <script src="../lib/leap-0.6.4.js"></script>
     <!-- enhanced version w/ tool tracking: -->
@@ -50,6 +74,7 @@
     <script src="../lib/leap-widgets-0.1.0.js"></script>
 
     <script src="../lib/ColladaLoader.js"></script>
+    <script src="../lib/socket.io.js"></script>
     <script src="../lib/Primrose.js"></script>
 
     <script src="../lib/SPE.js"></script>
@@ -60,12 +85,18 @@
     <script src="../three.py/js/three.py.js"></script>
 
     <script src="../src/WebVRApplication.js"></script>
-    <script src="../src/TextGeomLogger.js"></script>
     <script src="../src/LeapTools.js"></script>
+    <script src="../src/TextGeomLogger.js"></script>
+    <script src="../src/VRShot.js"></script>
+    <script src="../src/WebVRSound.js"></script>
+    <script src="../src/SynthSpeaker.js"></script>
     <script src="../src/MouseStuff.js"></script>
+    <script src="../src/GfxTablet.js"></script>
 
     <script src="../src/pyserver.js"></script>
     <script src="../src/config.js"></script>
+    <script src="../src/sound.js"></script>
+
     <script src="../src/configurator.js"></script>
 
   </body>

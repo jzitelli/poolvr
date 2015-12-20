@@ -3,7 +3,7 @@ var playCollisionSound = (function () {
     var ballBallBuffer;
     var request = new XMLHttpRequest();
     request.responseType = 'arraybuffer';
-    request.open('GET', 'sounds/ballBall.ogg', true);
+    request.open('GET', '/sounds/ballBall.ogg', true);
     request.onload = function() {
         WebVRSound.audioContext.decodeAudioData(request.response, function(buffer) {
             ballBallBuffer = buffer;
@@ -21,7 +21,7 @@ var playPocketedSound = (function () {
     var ballBallBuffer;
     var request = new XMLHttpRequest();
     request.responseType = 'arraybuffer';
-    request.open('GET', 'sounds/ballPocketed.ogg', true);
+    request.open('GET', '/sounds/ballPocketed.ogg', true);
     request.onload = function() {
         WebVRSound.audioContext.decodeAudioData(request.response, function(buffer) {
             ballBallBuffer = buffer;
