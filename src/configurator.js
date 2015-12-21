@@ -192,7 +192,7 @@ function onLoad() {
     var toolStuff = addTool(avatar, app.world, POOLVR.toolOptions);
     toolRoot = toolStuff.toolRoot;
 
-    POOLVR.setupWorld(scene, app.world, toolStiff.tipBody);
+    POOLVR.setupWorld(scene, app.world, toolStuff.tipBody);
 
     app.start( animate(avatar, POOLVR.keyboard, POOLVR.gamepad,
                        toolStuff.leapController,
