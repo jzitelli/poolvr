@@ -208,6 +208,7 @@ POOLVR.config.toolOptions.gamepad = POOLVR.gamepad;
 
 POOLVR.config.textGeomLogger = URL_PARAMS.textGeomLogger || POOLVR.config.textGeomLogger;
 
+
 function saveConfig() {
     "use strict";
     if (window.toolRoot) {
@@ -280,6 +281,7 @@ var autoPosition = ( function () {
     return autoPosition;
 } )();
 
+POOLVR.config.useWebVRBoilerplate = URL_PARAMS.useWebVRBoilerplate;
 
 var WebVRConfig = WebVRConfig || POOLVR.config.WebVRConfig || {};
 WebVRConfig.FORCE_DISTORTION = URL_PARAMS.FORCE_DISTORTION || WebVRConfig.FORCE_DISTORTION;
