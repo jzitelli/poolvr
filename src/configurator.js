@@ -146,7 +146,7 @@ function onLoad() {
         toolRoot.updateMatrix();
     };
 
-    app = new WebVRApplication('poolvr config', avatar, scene, POOLVR.config);
+    app = new WebVRApplication(scene, POOLVR.config);
     avatar.add(app.camera);
 
     POOLVR.config.keyboard = app.keyboard;

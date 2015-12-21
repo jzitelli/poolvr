@@ -311,7 +311,7 @@ function onLoad() {
     var animateMousePointer = mouseStuff.animateMousePointer;
 
 
-    app = new WebVRApplication("poolvr", avatar, scene, POOLVR.config);
+    app = new WebVRApplication(scene, POOLVR.config);
     avatar.add(app.camera);
     scene.add(avatar);
 

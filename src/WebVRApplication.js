@@ -1,7 +1,5 @@
 WebVRApplication = ( function () {
-    function WebVRApplication(name, avatar, scene, config) {
-        this.name = name;
-        this.avatar = avatar;
+    function WebVRApplication(scene, config) {
         this.scene = scene;
 
         var camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
