@@ -8,16 +8,11 @@
 WebVRApplication = ( function () {
     function WebVRApplication(scene, config) {
         this.scene = scene;
+
         config = config || {};
-
-        var rendererOptions    = config.rendererOptions || {antialias: true, alpha: true};
-        var useShadowMap       = config.useShadowMap;
-
-        var onResetVRSensor    = config.onResetVRSensor;
-
-        var keyboardCommands = config.keyboardCommands || {};
-        var gamepadCommands  = config.gamepadCommands || {};
-
+        var rendererOptions     = config.rendererOptions || {antialias: true, alpha: true};
+        var useShadowMap        = config.useShadowMap;
+        var onResetVRSensor     = config.onResetVRSensor;
         var useWebVRBoilerplate = config.useWebVRBoilerplate;
 
         var world = config.world;
@@ -66,20 +61,29 @@ WebVRApplication = ( function () {
                 hideButton: false
             });
         } else {
-            this.vrManager = {
-                isVRMode: function () {return true;},
-                render:   this.vrEffect.render
-            };
-            var onFullscreenChange = function () {
-                this.vrEffect.setSize(window.innerWidth, window.innerHeight);
-            }.bind(this);
-            document.addEventListener('webkitfullscreenchange', onFullscreenChange);
-            document.addEventListener('mozfullscreenchange', onFullscreenChange);
-            window.addEventListener('keydown', function (evt) {
-                if (evt.keyCode === 70) { // F
-                    vrEffect.setFullScreen(true);
-                }
-            });
+            this.vrManager = ( function () {
+                var mode = 0;
+                var onFullscreenChange = function () {
+                    vrEffect.setSize(window.innerWidth, window.innerHeight);
+                };
+                document.addEventListener('webkitfullscreenchange', onFullscreenChange);
+                document.addEventListener('mozfullscreenchange', onFullscreenChange);
+                window.addEventListener('keydown', function (evt) {
+                    if (evt.keyCode === 70) { // F
+                        mode = 1 - mode;
+                        vrEffect.setFullScreen((mode === 1));
+                    }
+                });
+                return {
+                    isVRMode: function () {
+                        return mode === 1;
+                    },
+                    render: function (scene, camera, t) {
+                        if (mode === 1) vrEffect.render(scene, camera);
+                        else renderer.render(scene, camera);
+                    }
+                };
+            } )();
         }
 
         this.toggleVRControls = function () {
@@ -518,6 +522,127 @@ THREE.py = ( function () {
         config:         window.THREE_PY_CONFIG || {}
     };
 } )();
+;
+function setupMouse(parent, position, particleTexture, onpointerlockchange) {
+    "use strict";
+    position = position || new THREE.Vector3(0, 0, -2);
+    var numParticles = 50;
+    particleTexture = particleTexture || '/images/mouseParticle.png';
+    var mouseParticleGroup = new SPE.Group({
+        texture: {value: THREE.ImageUtils.loadTexture(particleTexture)},
+        maxParticleCount: numParticles
+    });
+    var mouseParticleEmitter = new SPE.Emitter({
+        maxAge: {value: 0.5},
+        position: {value: new THREE.Vector3(0, 0, 0),
+                   spread: new THREE.Vector3(0, 0, 0)},
+        velocity: {value: new THREE.Vector3(0, 0, 0),
+                   spread: new THREE.Vector3(0.4, 0.4, 0.4)},
+        color: {value: [new THREE.Color('blue'), new THREE.Color('red')]},
+        opacity: {value: [1, 0.1]},
+        size: {value: 0.1},
+        particleCount: numParticles
+    });
+    mouseParticleGroup.addEmitter(mouseParticleEmitter);
+
+    var mousePointerMesh = mouseParticleGroup.mesh;
+
+    parent.add(mousePointerMesh);
+    mousePointerMesh.position.copy(position);
+
+    // mousePointerMesh.visible = true;
+    mousePointerMesh.visible = false;
+
+    if ("onpointerlockchange" in document) {
+      document.addEventListener('pointerlockchange', lockChangeAlert, false);
+    } else if ("onmozpointerlockchange" in document) {
+      document.addEventListener('mozpointerlockchange', lockChangeAlert, false);
+    } else if ("onwebkitpointerlockchange" in document) {
+      document.addEventListener('webkitpointerlockchange', lockChangeAlert, false);
+    }
+    function lockChangeAlert() {
+        if ( document.pointerLockElement || document.mozPointerLockElement || document.webkitPointerLockElement ) {
+            pyserver.log('pointer lock status is now locked');
+            mousePointerMesh.visible = true;
+            if (onpointerlockchange) {
+                onpointerlockchange(true);
+            }
+        } else {
+            pyserver.log('pointer lock status is now unlocked');
+            mousePointerMesh.visible = false;
+            if (onpointerlockchange) {
+                onpointerlockchange(false);
+            }
+        }
+    }
+
+    var xMax = 2, xMin = -2,
+        yMax = 1, yMin = -1;
+    window.addEventListener("mousemove", function (evt) {
+        if (!mousePointerMesh.visible) return;
+        var dx = evt.movementX,
+            dy = evt.movementY;
+        if (dx) {
+            mousePointerMesh.position.x += 0.0004*dx;
+            mousePointerMesh.position.y -= 0.0004*dy;
+            if      (mousePointerMesh.position.x > xMax) mousePointerMesh.position.x = xMax;
+            else if (mousePointerMesh.position.x < xMin) mousePointerMesh.position.x = xMin;
+            if      (mousePointerMesh.position.y > yMax) mousePointerMesh.position.y = yMax;
+            else if (mousePointerMesh.position.y < yMin) mousePointerMesh.position.y = yMin;
+        }
+    });
+
+
+    // function setVisible(visible) {
+    //     mousePointerMesh.visible = visible;
+    // }
+
+
+    // var pickables,
+    //     picked;
+    // function setPickables(p) {
+    //     pickables = p;
+    // }
+
+
+    // var origin = new THREE.Vector3();
+    // var direction = new THREE.Vector3();
+    // var raycaster = new THREE.Raycaster();
+    var lt = 0;
+    function animateMousePointer(t, camera) {
+        var dt = 0.001*(t - lt);
+        if (mousePointerMesh.visible) {
+            mouseParticleGroup.tick(dt);
+            // if (pickables && camera) {
+            //     origin.set(0, 0, 0);
+            //     direction.set(0, 0, 0);
+            //     direction.subVectors(mousePointerMesh.localToWorld(direction), camera.localToWorld(origin)).normalize();
+            //     raycaster.set(origin, direction);
+            //     var intersects = raycaster.intersectObjects(pickables);
+            //     if (intersects.length > 0) {
+            //         if (picked != intersects[0].object) {
+            //             if (picked) picked.material.color.setHex(picked.currentHex);
+            //             picked = intersects[0].object;
+            //             picked.currentHex = picked.material.color.getHex();
+            //             picked.material.color.setHex(0xff4444); //0x44ff44);
+            //         }
+            //     } else {
+            //         if (picked) picked.material.color.setHex(picked.currentHex);
+            //         picked = null;
+            //     }
+            // }
+        }
+        lt = t;
+    }
+
+    // return {
+    //     animateMousePointer: animateMousePointer,
+    //     setPickables: setPickables,
+    //     setVisible: setVisible
+    // };
+
+    return {animateMousePointer: animateMousePointer};
+}
 ;
 function addTool(parent, world, options) {
     /*************************************
@@ -1116,125 +1241,6 @@ var SynthSpeaker = ( function() {
     }
 } )();
 ;
-function setupMouse(parent, position, particleTexture, onpointerlockchange) {
-    "use strict";
-    position = position || new THREE.Vector3(0, 0, -2);
-    var numParticles = 50;
-    particleTexture = particleTexture || 'images/mouseParticle.png';
-    var mouseParticleGroup = new SPE.Group({
-        texture: {value: THREE.ImageUtils.loadTexture(particleTexture)},
-        maxParticleCount: numParticles
-    });
-    var mouseParticleEmitter = new SPE.Emitter({
-        maxAge: {value: 0.5},
-        position: {value: new THREE.Vector3(0, 0, 0),
-                   spread: new THREE.Vector3(0, 0, 0)},
-        velocity: {value: new THREE.Vector3(0, 0, 0),
-                   spread: new THREE.Vector3(0.4, 0.4, 0.4)},
-        color: {value: [new THREE.Color('blue'), new THREE.Color('red')]},
-        opacity: {value: [1, 0.1]},
-        size: {value: 0.1},
-        particleCount: numParticles
-    });
-    mouseParticleGroup.addEmitter(mouseParticleEmitter);
-
-    var mousePointerMesh = mouseParticleGroup.mesh;
-
-    parent.add(mousePointerMesh);
-    mousePointerMesh.position.copy(position);
-
-    mousePointerMesh.visible = true;
-    // mousePointerMesh.visible = false;
-
-    if ("onpointerlockchange" in document) {
-      document.addEventListener('pointerlockchange', lockChangeAlert, false);
-    } else if ("onmozpointerlockchange" in document) {
-      document.addEventListener('mozpointerlockchange', lockChangeAlert, false);
-    } else if ("onwebkitpointerlockchange" in document) {
-      document.addEventListener('webkitpointerlockchange', lockChangeAlert, false);
-    }
-    function lockChangeAlert() {
-        if ( document.pointerLockElement || document.mozPointerLockElement || document.webkitPointerLockElement ) {
-            pyserver.log('pointer lock status is now locked');
-            mousePointerMesh.visible = true;
-            if (onpointerlockchange) {
-                onpointerlockchange(true);
-            }
-        } else {
-            pyserver.log('pointer lock status is now unlocked');
-            mousePointerMesh.visible = false;
-            if (onpointerlockchange) {
-                onpointerlockchange(false);
-            }
-        }
-    }
-
-    var xMax = 2, xMin = -2,
-        yMax = 1, yMin = -1;
-    window.addEventListener("mousemove", function (evt) {
-        if (!mousePointerMesh.visible) return;
-        var dx = evt.movementX,
-            dy = evt.movementY;
-        if (dx) {
-            mousePointerMesh.position.x += 0.0004*dx;
-            mousePointerMesh.position.y -= 0.0004*dy;
-            if      (mousePointerMesh.position.x > xMax) mousePointerMesh.position.x = xMax;
-            else if (mousePointerMesh.position.x < xMin) mousePointerMesh.position.x = xMin;
-            if      (mousePointerMesh.position.y > yMax) mousePointerMesh.position.y = yMax;
-            else if (mousePointerMesh.position.y < yMin) mousePointerMesh.position.y = yMin;
-        }
-    });
-
-
-    // function setVisible(visible) {
-    //     mousePointerMesh.visible = visible;
-    // }
-
-
-    // var pickables,
-    //     picked;
-    // function setPickables(p) {
-    //     pickables = p;
-    // }
-
-
-    // var origin = new THREE.Vector3();
-    // var direction = new THREE.Vector3();
-    // var raycaster = new THREE.Raycaster();
-    var lt = 0;
-    function animateMousePointer(t, camera) {
-        var dt = 0.001*(t - lt);
-        mouseParticleGroup.tick(dt);
-            // if (pickables && camera) {
-            //     origin.set(0, 0, 0);
-            //     direction.set(0, 0, 0);
-            //     direction.subVectors(mousePointerMesh.localToWorld(direction), camera.localToWorld(origin)).normalize();
-            //     raycaster.set(origin, direction);
-            //     var intersects = raycaster.intersectObjects(pickables);
-            //     if (intersects.length > 0) {
-            //         if (picked != intersects[0].object) {
-            //             if (picked) picked.material.color.setHex(picked.currentHex);
-            //             picked = intersects[0].object;
-            //             picked.currentHex = picked.material.color.getHex();
-            //             picked.material.color.setHex(0xff4444); //0x44ff44);
-            //         }
-            //     } else {
-            //         if (picked) picked.material.color.setHex(picked.currentHex);
-            //         picked = null;
-            //     }
-            // }
-        lt = t;
-    }
-
-    // return {
-    //     animateMousePointer: animateMousePointer,
-    //     setPickables: setPickables,
-    //     setVisible: setVisible
-    // };
-
-    return {animateMousePointer: animateMousePointer};
-}
-;
 /* global pyserver */
 function addGfxTablet(width, height, logger) {
     "use strict";
@@ -1461,7 +1467,7 @@ var URL_PARAMS = (function () {
 })();
 
 
-function combineDefaults(a, b) {
+function combineObjects(a, b) {
     "use strict";
     var c = {},
         k;
@@ -1489,6 +1495,9 @@ function makeObjectArray(obj, keyKey) {
         return item;
     });
 }
+
+
+var userAgent = navigator.userAgent;
 
 
 POOLVR.keyboardCommands = {
@@ -1524,6 +1533,9 @@ POOLVR.keyboardCommands = {
     resetVRSensor: {buttons: [Primrose.Input.Keyboard.Z],
                     commandDown: function(){app.resetVRSensor();}, dt: 0.25},
 
+    toggleMenu: {buttons: [Primrose.Input.Keyboard.SPACEBAR],
+                 commandDown: function(){menu.visible=!menu.visible;}, dt: 0.25},
+
     saveConfig: {buttons: [Primrose.Input.Keyboard.NUMBER1],
                  commandDown: saveConfig, dt: 1.0}
 };
@@ -1549,17 +1561,25 @@ POOLVR.gamepadCommands = {
     toggleToolFloatMode: {buttons: [Primrose.Input.Gamepad.XBOX_BUTTONS.rightStick],
                           commandDown: function () { avatar.toolMode = true; },
                           commandUp: function(){avatar.toolMode=false;}},
+
     nextBall: {buttons: [Primrose.Input.Gamepad.XBOX_BUTTONS.rightBumper],
                commandDown: function () { POOLVR.nextBall = Math.max(1, (POOLVR.nextBall + 1) % 16); },
                dt: 0.5},
+
     prevBall: {buttons: [Primrose.Input.Gamepad.XBOX_BUTTONS.leftBumper],
-               commandDown: function () { POOLVR.nextBall = Math.max(1, (POOLVR.nextBall - 1) % 16); },
+               commandDown: function(){POOLVR.nextBall=Math.max(1,(POOLVR.nextBall-1)%16);},
                dt: 0.5},
+
     autoPosition: {buttons: [Primrose.Input.Gamepad.XBOX_BUTTONS.Y],
                    commandDown: function(){autoPosition(avatar);}, dt: 0.5},
+
     resetVRSensor: {buttons: [Primrose.Input.Gamepad.XBOX_BUTTONS.back],
-                    commandDown: function(){app.resetVRSensor();}, dt: 0.25}
+                    commandDown: function(){app.resetVRSensor();}, dt: 0.25},
+
+    toggleMenu: {buttons: [Primrose.Input.Gamepad.XBOX_BUTTONS.start],
+                 commandDown: function(){menu.visible=!menu.visible;}, dt: 0.25}
 };
+
 POOLVR.gamepadCommands = makeObjectArray(POOLVR.gamepadCommands, 'name');
 POOLVR.gamepad = new Primrose.Input.Gamepad("gamepad", POOLVR.gamepadCommands);
 POOLVR.gamepad.addEventListener("gamepadconnected", function(id) {
@@ -1568,41 +1588,6 @@ POOLVR.gamepad.addEventListener("gamepadconnected", function(id) {
         console.log("gamepad " + id + " connected");
     }
 }.bind(POOLVR.gamepad), false);
-
-
-// TODO: load from JSON config
-POOLVR.ballMaterial            = new CANNON.Material();
-POOLVR.ballBallContactMaterial = new CANNON.ContactMaterial(POOLVR.ballMaterial, POOLVR.ballMaterial, {
-    restitution: 0.92,
-    friction: 0.14
-});
-POOLVR.playableSurfaceMaterial            = new CANNON.Material();
-POOLVR.ballPlayableSurfaceContactMaterial = new CANNON.ContactMaterial(POOLVR.ballMaterial, POOLVR.playableSurfaceMaterial, {
-    restitution: 0.3,
-    friction: 0.21
-});
-POOLVR.cushionMaterial            = new CANNON.Material();
-POOLVR.ballCushionContactMaterial = new CANNON.ContactMaterial(POOLVR.ballMaterial, POOLVR.cushionMaterial, {
-    restitution: 0.8,
-    friction: 0.12
-});
-POOLVR.floorMaterial            = new CANNON.Material();
-POOLVR.floorBallContactMaterial = new CANNON.ContactMaterial(POOLVR.floorMaterial, POOLVR.ballMaterial, {
-    restitution: 0.86,
-    friction: 0.4
-});
-POOLVR.railMaterial            = new CANNON.Material();
-POOLVR.railBallContactMaterial = new CANNON.ContactMaterial(POOLVR.railMaterial, POOLVR.ballMaterial, {
-    restitution: 0.4,
-    friction: 0.07
-});
-POOLVR.tipMaterial            = new CANNON.Material();
-POOLVR.tipBallContactMaterial = new CANNON.ContactMaterial(POOLVR.tipMaterial, POOLVR.ballMaterial, {
-    restitution: 0.01,
-    friction: 0.15,
-    contactEquationRelaxation: 3,
-    frictionEquationRelaxation: 3
-});
 
 
 // if (!URL_PARAMS.disableLocalStorage) {
@@ -1615,26 +1600,19 @@ POOLVR.tipBallContactMaterial = new CANNON.ContactMaterial(POOLVR.tipMaterial, P
 // }
 
 
-POOLVR.config.toolLength   = URL_PARAMS.toolLength   || POOLVR.config.toolLength;
-POOLVR.config.toolRadius   = URL_PARAMS.toolRadius   || POOLVR.config.toolRadius;
-POOLVR.config.toolMass     = URL_PARAMS.toolMass     || POOLVR.config.toolMass;
-POOLVR.config.toolOffset   = URL_PARAMS.toolOffset   || POOLVR.config.toolOffset;
-POOLVR.config.toolRotation = URL_PARAMS.toolRotation || POOLVR.config.toolRotation;
-POOLVR.config.tipShape     = URL_PARAMS.tipShape     || POOLVR.config.tipShape;
-POOLVR.config.toolOptions = {
-    // ##### Desktop mode (default): #####
-    transformOptions : POOLVR.config.transformOptions, // || {vr: 'desktop'},
-    useBasicMaterials: POOLVR.config.useBasicMaterials,
-    toolLength       : POOLVR.config.toolLength,
-    toolRadius       : POOLVR.config.toolRadius,
-    toolMass         : POOLVR.config.toolMass,
-    toolOffset       : POOLVR.config.toolOffset,
-    toolRotation     : POOLVR.config.toolRotation,
-    tipShape         : POOLVR.config.tipShape
-};
+POOLVR.config.toolOptions = POOLVR.config.toolOptions || {};
+POOLVR.config.toolOptions.toolLength   = URL_PARAMS.toolLength   || POOLVR.config.toolOptions.toolLength;
+POOLVR.config.toolOptions.toolRadius   = URL_PARAMS.toolRadius   || POOLVR.config.toolOptions.toolRadius;
+POOLVR.config.toolOptions.toolMass     = URL_PARAMS.toolMass     || POOLVR.config.toolOptions.toolMass;
+POOLVR.config.toolOptions.toolOffset   = URL_PARAMS.toolOffset   || POOLVR.config.toolOptions.toolOffset;
+POOLVR.config.toolOptions.toolRotation = URL_PARAMS.toolRotation || POOLVR.config.toolOptions.toolRotation;
+POOLVR.config.toolOptions.tipShape     = URL_PARAMS.tipShape     || POOLVR.config.toolOptions.tipShape;
+
 pyserver.log('POOLVR.config.toolOptions =\n' + JSON.stringify(POOLVR.config.toolOptions, undefined, 2));
-POOLVR.config.toolOptions.keyboard = POOLVR.keyboard;
-POOLVR.config.toolOptions.gamepad = POOLVR.gamepad;
+POOLVR.toolOptions = combineObjects(
+    POOLVR.config.toolOptions,
+    {keyboard: POOLVR.keyboard, gamepad: POOLVR.gamepad, useBasicMaterials: POOLVR.config.useBasicMaterials}
+);
 
 // POOLVR.config.vrLeap = URL_PARAMS.vrLeap || POOLVR.config.vrLeap;
 // if (POOLVR.config.vrLeap) {
@@ -1647,18 +1625,14 @@ POOLVR.config.toolOptions.gamepad = POOLVR.gamepad;
 
 POOLVR.config.textGeomLogger = URL_PARAMS.textGeomLogger || POOLVR.config.textGeomLogger;
 
+
 function saveConfig() {
     "use strict";
-    if (window.toolRoot) {
-        POOLVR.config.toolOffset = [window.toolRoot.position.x, window.toolRoot.position.y, window.toolRoot.position.z];
-        POOLVR.config.toolRotation = window.toolRoot.rotation.y;
-    }
     if (POOLVR.config.pyserver) {
-        delete POOLVR.config.gamepad;
-        delete POOLVR.config.keyboard;
-        delete POOLVR.config.onResetVRSensor;
-        delete POOLVR.config.gamepadCommands;
-        delete POOLVR.config.keyboardCommands;
+        if (window.toolRoot) {
+            POOLVR.config.toolOptions.toolOffset = [window.toolRoot.position.x, window.toolRoot.position.y, window.toolRoot.position.z];
+            POOLVR.config.toolOptions.toolRotation = window.toolRoot.rotation.y;
+        }
         pyserver.saveConfig('config.json', POOLVR.config);
     }
     // if (!URL_PARAMS.disableLocalStorage) {
@@ -1686,8 +1660,11 @@ POOLVR.nextBall = 1;
 function resetTable() {
     "use strict";
     POOLVR.ballBodies.forEach(function (body, ballNum) {
-        body.position.copy(POOLVR.initialPositions[ballNum]);
         body.wakeUp();
+        body.position.copy(POOLVR.initialPositions[ballNum]);
+        body.velocity.set(0,0,0);
+        //body.acceleration.set(0,0,0);
+        //body.bounces = 0;
     });
     if (synthSpeaker.speaking === false) {
         synthSpeaker.speak("Table reset.");
@@ -1724,11 +1701,185 @@ var autoPosition = ( function () {
 } )();
 
 
+POOLVR.config.useWebVRBoilerplate = URL_PARAMS.useWebVRBoilerplate || POOLVR.config.useWebVRBoilerplate;
+
 var WebVRConfig = WebVRConfig || POOLVR.config.WebVRConfig || {};
 WebVRConfig.FORCE_DISTORTION = URL_PARAMS.FORCE_DISTORTION || WebVRConfig.FORCE_DISTORTION;
 WebVRConfig.FORCE_ENABLE_VR  = URL_PARAMS.FORCE_ENABLE_VR  || WebVRConfig.FORCE_ENABLE_VR;
 
-var userAgent = navigator.userAgent;
+
+// TODO: load from JSON config
+POOLVR.ballMaterial            = new CANNON.Material();
+POOLVR.ballBallContactMaterial = new CANNON.ContactMaterial(POOLVR.ballMaterial, POOLVR.ballMaterial, {
+    restitution: 0.92,
+    friction: 0.14
+});
+POOLVR.playableSurfaceMaterial            = new CANNON.Material();
+POOLVR.ballPlayableSurfaceContactMaterial = new CANNON.ContactMaterial(POOLVR.ballMaterial, POOLVR.playableSurfaceMaterial, {
+    restitution: 0.3,
+    friction: 0.21
+});
+POOLVR.cushionMaterial            = new CANNON.Material();
+POOLVR.ballCushionContactMaterial = new CANNON.ContactMaterial(POOLVR.ballMaterial, POOLVR.cushionMaterial, {
+    restitution: 0.8,
+    friction: 0.12
+});
+POOLVR.floorMaterial            = new CANNON.Material();
+POOLVR.floorBallContactMaterial = new CANNON.ContactMaterial(POOLVR.floorMaterial, POOLVR.ballMaterial, {
+    restitution: 0.86,
+    friction: 0.4
+});
+POOLVR.railMaterial            = new CANNON.Material();
+POOLVR.railBallContactMaterial = new CANNON.ContactMaterial(POOLVR.railMaterial, POOLVR.ballMaterial, {
+    restitution: 0.4,
+    friction: 0.07
+});
+POOLVR.tipMaterial            = new CANNON.Material();
+POOLVR.tipBallContactMaterial = new CANNON.ContactMaterial(POOLVR.tipMaterial, POOLVR.ballMaterial, {
+    restitution: 0.01,
+    friction: 0.15,
+    contactEquationRelaxation: 3,
+    frictionEquationRelaxation: 3
+});
+
+POOLVR.setupMaterials = function (world) {
+    world.addMaterial(POOLVR.ballMaterial);
+    world.addMaterial(POOLVR.playableSurfaceMaterial);
+    world.addMaterial(POOLVR.cushionMaterial);
+    world.addMaterial(POOLVR.floorMaterial);
+    world.addMaterial(POOLVR.tipMaterial);
+    world.addMaterial(POOLVR.railMaterial);
+    world.addContactMaterial(POOLVR.ballBallContactMaterial);
+    world.addContactMaterial(POOLVR.ballPlayableSurfaceContactMaterial);
+    world.addContactMaterial(POOLVR.ballCushionContactMaterial);
+    world.addContactMaterial(POOLVR.floorBallContactMaterial);
+    world.addContactMaterial(POOLVR.tipBallContactMaterial);
+    world.addContactMaterial(POOLVR.railBallContactMaterial);
+};
+
+POOLVR.setupWorld = function (scene, world, tipBody) {
+    tipBody.material = POOLVR.tipMaterial;
+    // referenced by cannon.js callbacks:
+    var ballStripeMeshes = [],
+        ballShadowMeshes = [];
+    // first pass:
+    scene.traverse(function (node) {
+        if (node instanceof THREE.Mesh) {
+            var ballNum;
+            if (node.name.startsWith('ball ')) {
+                ballNum = Number(node.name.split(' ')[1]);
+                POOLVR.ballMeshes[ballNum] = node;
+                POOLVR.ballBodies[ballNum] = node.body;
+                POOLVR.initialPositions[ballNum] = new THREE.Vector3().copy(node.position);
+                node.body.bounces = 0;
+                node.body.ballNum = ballNum;
+                node.body.material = POOLVR.ballMaterial;
+            }
+            else if (node.name.startsWith('ballStripeMesh')) {
+                ballNum = Number(node.name.split(' ')[1]);
+                ballStripeMeshes[ballNum] = node;
+            }
+            else if (node.name.startsWith('ballShadowMesh')) {
+                ballNum = Number(node.name.split(' ')[1]);
+                ballShadowMeshes[ballNum] = node;
+            }
+            else if (node.name === 'playableSurfaceMesh') {
+                node.body.material = POOLVR.playableSurfaceMaterial;
+            }
+            else if (node.name.endsWith('CushionMesh')) {
+                node.body.material = POOLVR.cushionMaterial;
+            }
+            else if (node.name === 'floorMesh') {
+                node.body.material = POOLVR.floorMaterial;
+            }
+            else if (node.name.endsWith('RailMesh')) {
+                node.body.material = POOLVR.railMaterial;
+            }
+        }
+    });
+    // second pass:
+    var H_table     = POOLVR.config.H_table,
+        ball_radius = POOLVR.config.ball_diameter / 2;
+    scene.traverse(function (node) {
+        if (node instanceof THREE.Mesh && node.name.startsWith('ball ')) {
+            var ballBum = node.body.ballNum;
+            var body = node.body;
+            var mesh = node;
+            body.addEventListener(CANNON.Body.COLLIDE_EVENT_NAME, function(evt) {
+                var body = evt.body;
+                var contact = evt.contact;
+                // ball-ball collision:
+                if (contact.bi === body && contact.bi.material === contact.bj.material) {
+                    var impactVelocity = contact.getImpactVelocityAlongNormal();
+                    playCollisionSound(impactVelocity);
+                }
+            });
+            // post step callback: reposition mesh, shadow, stripe
+            app.world.addEventListener("postStep", function () {
+                this.position.copy(this.body.position);
+                var ballNum = this.body.ballNum;
+                var stripeMesh = ballStripeMeshes[ballNum];
+                if (stripeMesh !== undefined) {
+                    stripeMesh.quaternion.copy(this.body.quaternion);
+                }
+                var shadowMesh = ballShadowMeshes[ballNum];
+                if (shadowMesh) {
+                    shadowMesh.position.y = -(this.position.y - H_table) + 0.0004;
+                }
+                // var awakes = false;
+                // for (var j = 0; j < ballBodies.length; ++j) {
+                //     // if (body.sleepState === CANNON.Body.AWAKE) {
+                //     //     awakes = true;
+                //     //     doAutoPosition = true;
+                //     // }
+                // }
+            }.bind(mesh));
+        }
+        else if (node instanceof THREE.Mesh && node.name === 'floorMesh') {
+            // ball-floor collision
+            node.body.addEventListener(CANNON.Body.COLLIDE_EVENT_NAME, function (evt) {
+                var body = evt.body;
+                if (body.ballNum === 0) {
+                    textGeomLogger.log("SCRATCH.");
+                    synthSpeaker.speak("Scratch.");
+                    body.position.copy(POOLVR.initialPositions[0]);
+                    body.velocity.set(0, 0, 0);
+                } else {
+                    body.bounces++;
+                    if (body.bounces === 1) {
+                        textGeomLogger.log(body.mesh.name + " HIT THE FLOOR!");
+                        playPocketedSound();
+                        POOLVR.onTable[body.ballNum] = false;
+                        POOLVR.nextBall = POOLVR.onTable.indexOf(true);
+                        if (POOLVR.nextBall === -1) {
+                            synthSpeaker.speak("You cleared the table.  Well done.");
+                            textGeomLogger.log("YOU CLEARED THE TABLE.  WELL DONE.");
+                            resetTable();
+                        }
+                    } else if (body.bounces === 7) {
+                        body.sleep();
+                        // autoPosition(avatar, 5);
+                    }
+                }
+            });
+        }
+    });
+    var tipEventCounter = 0;
+    tipBody.addEventListener(CANNON.Body.COLLIDE_EVENT_NAME, function (evt) {
+        tipEventCounter++;
+        if (tipEventCounter === 1) {
+            synthSpeaker.speak("You moved a ball.  Good job.");
+        }
+        else if (tipEventCounter === 16) {
+            synthSpeaker.speak("Hi.");
+        }
+    });
+    // app.world.addEventListener("postStep", function () {
+    //     stickMesh.position.copy(tipBody.position);
+    //     stickMesh.parent.worldToLocal(stickMesh.position);
+    //     //scene.updateMatrixWorld();
+    // });
+};
 ;
 var playCollisionSound = (function () {
     "use strict";
@@ -1777,17 +1928,33 @@ avatar.toolMode = false;
 
 var textGeomLogger = new TextGeomLogger(undefined, {nrows: 20, size: 0.043});
 avatar.add(textGeomLogger.root);
-textGeomLogger.root.position.set(-1.5, -0.23, -2);
+textGeomLogger.root.position.set(-1.5, -0.23, -1.8);
 
 var toolRoot;
+
+var mouseStuff = setupMouse(avatar, undefined, '../images/mouseParticle.png');
+
+function setupMenu(parent) {
+    "use strict";
+    var menu = new THREE.Object3D();
+    var textGeom = new THREE.TextGeometry('RESET TABLE', {font: 'anonymous pro', size: 0.2, height: 0, curveSegments: 2});
+    var textMesh = new THREE.Mesh(textGeom);
+    textMesh.position.set(0, 1, -2);
+    menu.add(textMesh);
+    parent.add(menu);
+    menu.visible = true;
+    return menu;
+}
+var menu = setupMenu(avatar);
+
 
 var animate = function (avatar, keyboard, gamepad, leapController, animateLeap,
                         toolRoot, stickMesh,
                         animateMousePointer,
-                        shadowMap) {
+                        useShadowMap) {
     "use strict";
     var H_table = POOLVR.config.H_table;
-    if (!shadowMap) {
+    if (!useShadowMap) {
         var stickShadow = new THREE.Object3D();
         stickShadow.position.set(stickMesh.position.x,
             (H_table + 0.001 - toolRoot.position.y - avatar.position.y) / toolRoot.scale.y,
@@ -1859,7 +2026,7 @@ var animate = function (avatar, keyboard, gamepad, leapController, animateLeap,
             lastFrameID = frame.id;
         }
 
-        if (!shadowMap) {
+        if (!useShadowMap) {
             stickShadow.position.set(stickMesh.position.x,
                 (H_table + 0.001 - toolRoot.position.y - avatar.position.y) / toolRoot.scale.y,
                 stickMesh.position.z);
@@ -1874,8 +2041,32 @@ var animate = function (avatar, keyboard, gamepad, leapController, animateLeap,
 };
 
 
+/* jshint multistr: true */
 function onLoad() {
     "use strict";
+    pyserver.log("\n\
+*********************************************----\n\
+*********************************************----\n\
+*********************************************----\n\
+    ---- starting poolvr CONFIGURATOR... --------\n\
+*********************************************----\n\
+*********************************************----\n\
+*********************************************----\n\
+    ---------------------------------------------\n");
+    pyserver.log('WebVRConfig =\n' + JSON.stringify(WebVRConfig, undefined, 2));
+    pyserver.log('userAgent = ' + userAgent);
+    if (navigator.getVRDevices) {
+        navigator.getVRDevices().then(function (devices) {
+            devices.forEach(function (device, i) {
+                pyserver.log('\nVR device ' + i + ': ' + device.deviceName);
+                console.log(device);
+            });
+        });
+    }
+    pyserver.log("POOLVR.config =\n" + JSON.stringify(POOLVR.config, undefined, 2));
+
+    textGeomLogger.log(JSON.stringify(POOLVR.config, undefined, 2));
+
     var scene = THREE.py.parse(JSON_SCENE);
 
     if (!POOLVR.config.useBasicMaterials) {
@@ -1892,30 +2083,35 @@ function onLoad() {
         // centerSpotLightHelper.visible = false;
     }
 
-    // textGeomLogger.log(JSON.stringify(POOLVR.config, undefined, 2));
-
-    var mouseStuff = setupMouse(avatar, undefined, '../images/mouseParticle.png');
 
     var UP = new THREE.Vector3(0, 1, 0);
-    POOLVR.config.onResetVRSensor = function (lastRotation, lastPosition) {
-        pyserver.log('updating the toolRoot position...');
-        app.camera.updateMatrix();
-        avatar.heading += lastRotation - app.camera.rotation.y;
-        toolRoot.rotation.y -= (lastRotation - app.camera.rotation.y);
-        toolRoot.position.sub(lastPosition);
-        toolRoot.position.applyAxisAngle(UP, -lastRotation + app.camera.rotation.y);
-        toolRoot.position.add(app.camera.position);
-        toolRoot.updateMatrix();
-    };
+    var appConfig = combineObjects(POOLVR.config, {
+        onResetVRSensor: function (lastRotation, lastPosition) {
+            // TODO
+            pyserver.log('updating the toolRoot position...');
+            //app.camera.updateMatrix();
+            avatar.heading += lastRotation - app.camera.rotation.y;
+            toolRoot.rotation.y -= (lastRotation - app.camera.rotation.y);
+            toolRoot.position.sub(lastPosition);
+            toolRoot.position.applyAxisAngle(UP, -lastRotation + app.camera.rotation.y);
+            toolRoot.position.add(app.camera.position);
+            //toolRoot.updateMatrix();
+            avatar.updateMatrixWorld();
+        }
+    });
+    app = new WebVRApplication(scene, appConfig);
 
-    app = new WebVRApplication(scene, POOLVR.config);
     THREE.py.CANNONize(scene, app.world);
 
     scene.add(avatar);
     avatar.add(app.camera);
 
-    var toolStuff = addTool(avatar, app.world, POOLVR.config.toolOptions);
+    POOLVR.setupMaterials(app.world);
+
+    var toolStuff = addTool(avatar, app.world, POOLVR.toolOptions);
     toolRoot = toolStuff.toolRoot;
+
+    POOLVR.setupWorld(scene, app.world, toolStiff.tipBody);
 
     app.start( animate(avatar, POOLVR.keyboard, POOLVR.gamepad,
                        toolStuff.leapController,
@@ -1923,6 +2119,6 @@ function onLoad() {
                        toolStuff.toolRoot,
                        toolStuff.stickMesh,
                        mouseStuff.animateMousePointer,
-                       POOLVR.config.shadowMap) );
+                       POOLVR.config.useShadowMap) );
 }
 // ################## poolvr VERSION = "v0.1.0";
