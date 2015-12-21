@@ -13,6 +13,8 @@ avatar.heading = 0;
 avatar.floatMode = false;
 avatar.toolMode = false;
 
+var mouseStuff = setupMouse(avatar);
+
 var toolRoot;
 
 // POOLVR.config.onfullscreenchange = function (fullscreen) {
@@ -35,6 +37,7 @@ if (POOLVR.config.textGeomLogger) {
 avatar.add(textGeomLogger.root);
 textGeomLogger.root.position.set(-2.5, 1.0, -3.5);
 
+var menu = setupMenu(avatar);
 
 function setupMenu(parent) {
     "use strict";
@@ -47,7 +50,6 @@ function setupMenu(parent) {
     menu.visible = false;
     return menu;
 }
-var menu = setupMenu(avatar);
 
 
 function startTutorial() {
@@ -219,10 +221,7 @@ function onLoad() {
         scene.add(centerSpotLight);
     }
 
-
-    var mouseStuff = setupMouse(avatar);
     var animateMousePointer = mouseStuff.animateMousePointer;
-
 
     var UP = new THREE.Vector3(0, 1, 0);
     var appConfig = combineObjects(POOLVR.config, {

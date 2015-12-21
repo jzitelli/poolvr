@@ -68,6 +68,8 @@ def get_poolvr_config():
             except Exception as err:
                 pass
     config.update(args)
+    if config.get('useShadowMap'):
+        config['useBasicMaterials'] = False
     return config
 
 

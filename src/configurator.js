@@ -7,13 +7,15 @@ avatar.heading = 0;
 avatar.floatMode = false;
 avatar.toolMode = false;
 
+var mouseStuff = setupMouse(avatar, undefined, '../images/mouseParticle.png');
+
 var textGeomLogger = new TextGeomLogger(undefined, {nrows: 20, size: 0.043});
 avatar.add(textGeomLogger.root);
 textGeomLogger.root.position.set(-1.5, -0.23, -1.8);
 
 var toolRoot;
 
-var mouseStuff = setupMouse(avatar, undefined, '../images/mouseParticle.png');
+var menu = setupMenu(avatar);
 
 function setupMenu(parent) {
     "use strict";
@@ -26,7 +28,6 @@ function setupMenu(parent) {
     menu.visible = true;
     return menu;
 }
-var menu = setupMenu(avatar);
 
 
 var animate = function (avatar, keyboard, gamepad, leapController, animateLeap,

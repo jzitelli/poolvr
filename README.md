@@ -65,10 +65,10 @@ The Tornado server is configured to also serve any file within the project tree 
 For instance, you can access the static `index.html` that you would obtain with method A via `http://127.0.0.1:5000/index.html`.
 
 
-Currently, you can configure the graphics and other aspects of **poolvr** via URL parameters.  Some of the recognized URL parameters are:
+You can configure the graphics and other aspects of **poolvr** via URL parameters.  Some of the recognized URL parameters are:
 
 - `useBasicMaterials`: defaults to `true`, which configures bare-bones, low-expectation setting "EGA" graphics for max performance and compatibility
-- `shadowMap`: defaults to `false`, shadows will be rendered as projected meshes.  If `true`, shadows are rendered via three.js shadow maps.
+- `useShadowMap`: defaults to `false`, shadows will be rendered as projected meshes.  If `true`, shadows are rendered via three.js shadow maps.
 
 
 
@@ -110,7 +110,6 @@ The space nebula cube map background was created with [Space 3D](http://wwwtyro.
 ## TODO list:
 
 - add 8-ball / other pool/billiards game logic
-- auto-positioning system
 - Leap Motion hand interactions (e.g. point at the ball you want to pocket next)
 - ball labels
 - improve and add more sounds
@@ -121,3 +120,9 @@ The space nebula cube map background was created with [Space 3D](http://wwwtyro.
 - render balls as sphere imposters
 - Android support, iOS support
 
+
+
+## Known issues:
+
+- SPE particles aren't rendering properly in firefox nightly
+- balls getting stuck in cushions / rails

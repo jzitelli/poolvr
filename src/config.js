@@ -89,7 +89,7 @@ POOLVR.keyboardCommands = {
                     commandDown: function(){app.resetVRSensor();}, dt: 0.25},
 
     toggleMenu: {buttons: [Primrose.Input.Keyboard.SPACEBAR],
-                 commandDown: function(){menu.visible=!menu.visible;}, dt: 0.25},
+                 commandDown: function(){POOLVR.toggleMenu();}, dt: 0.25},
 
     saveConfig: {buttons: [Primrose.Input.Keyboard.NUMBER1],
                  commandDown: saveConfig, dt: 1.0}
@@ -132,8 +132,9 @@ POOLVR.gamepadCommands = {
                     commandDown: function(){app.resetVRSensor();}, dt: 0.25},
 
     toggleMenu: {buttons: [Primrose.Input.Gamepad.XBOX_BUTTONS.start],
-                 commandDown: function(){menu.visible=!menu.visible;}, dt: 0.25}
+                 commandDown: function(){POOLVR.toggleMenu();}, dt: 0.25}
 };
+
 
 POOLVR.gamepadCommands = makeObjectArray(POOLVR.gamepadCommands, 'name');
 POOLVR.gamepad = new Primrose.Input.Gamepad("gamepad", POOLVR.gamepadCommands);
@@ -154,6 +155,10 @@ POOLVR.gamepad.addEventListener("gamepadconnected", function(id) {
 //     }
 // }
 
+
+if (POOLVR.config.useShadowMap) {
+    POOLVR.config.useBasicMaterials = false;
+}
 
 POOLVR.config.toolOptions = POOLVR.config.toolOptions || {};
 POOLVR.config.toolOptions.toolLength   = URL_PARAMS.toolLength   || POOLVR.config.toolOptions.toolLength;
@@ -254,6 +259,12 @@ var autoPosition = ( function () {
     }
     return autoPosition;
 } )();
+
+
+POOLVR.toggleMenu = function () {
+    menu.visible = !menu.visible;
+    mouseStuff.mousePointerMesh.visible = menu.visible;
+};
 
 
 POOLVR.config.useWebVRBoilerplate = URL_PARAMS.useWebVRBoilerplate || POOLVR.config.useWebVRBoilerplate;

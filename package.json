@@ -2,8 +2,8 @@
   "name": "poolvr",
   "description": "Play pool / billiards in VR with your Leap Motion sensor, in a web browser!",
   "version": "0.1.0",
-  "author": "Jeffrey Zitelli <jeffrey.zitelli@gmail.com> (http://subvr.info)",
-  "license": "GPL-3.0",
+  "author": "Jeffrey Zitelli <jeffrey.zitelli@gmail.com> (https://github.com/jzitelli)",
+  "license": "MIT",
   "homepage": "http://subvr.info/poolvr",
   "repository": {
     "type": "git",
@@ -17,9 +17,8 @@
     "sounds/",
     "images/",
     "fonts/",
-    "favicon.ico",
-    "flask_app.py",
-    "tornado_app.py"
+    "pyserver/",
+    "favicon.ico"
   ],
   "keywords": [
     "pool",
