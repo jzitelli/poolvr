@@ -69,13 +69,13 @@ function startTutorial() {
 
 
 var animate = function (keyboard, gamepad, leapController, animateLeap,
-                        toolRoot, shadowMap,
+                        toolRoot, useShadowMap,
                         stickMesh, tipMesh,
                         H_table,
                         animateMousePointer) {
     "use strict";
 
-    if (!shadowMap) {
+    if (!useShadowMap) {
         // create shadow mesh from projection:
         var stickShadow = new THREE.Object3D();
         stickShadow.position.set(stickMesh.position.x,
@@ -165,7 +165,7 @@ var animate = function (keyboard, gamepad, leapController, animateLeap,
             avatar.position.y += dt * floatUp;
         }
 
-        if (!shadowMap) {
+        if (!useShadowMap) {
             stickShadow.position.set(stickMesh.position.x,
                 (H_table + 0.001 - toolRoot.position.y - avatar.position.y) / toolRoot.scale.y,
                 stickMesh.position.z);
@@ -396,7 +396,7 @@ function onLoad() {
 
     app.start( animate(POOLVR.keyboard, POOLVR.gamepad,
                        leapController, animateLeap,
-                       toolRoot, POOLVR.config.shadowMap,
+                       toolRoot, POOLVR.config.useShadowMap,
                        toolStuff.stickMesh, toolStuff.tipMesh,
                        POOLVR.config.H_table,
                        animateMousePointer) );

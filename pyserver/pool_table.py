@@ -33,7 +33,7 @@ def pool_table(L_table=2.3368, W_table=None, H_table=0.74295,
                L_playable=None, W_playable=None,
                ball_diameter=2.25*IN2METER,
                W_cushion=2*IN2METER, H_cushion=None, W_rail=None,
-               useBasicMaterials=True, shadowMap=False, **kwargs):
+               useBasicMaterials=True, useShadowMap=False, **kwargs):
     """Procedurally defined three.js pool table 'Object3D' (three.js Object format V4)
 
     :param L_table: length of the pool table (longer than the playable surface); default is 8ft.
@@ -44,8 +44,8 @@ def pool_table(L_table=2.3368, W_table=None, H_table=0.74295,
     :param W_cushion: width of the cushions
     :param H_cushion: height of the nose of the cushions; default is 63.5% of ball diameter
     :param useBasicMaterials: if True, use only three.js BasicMeshMaterials
-    :param shadowMap: by default, plane-projected geometries/meshes representing shadows are created;
-                      if shadowMap is True, they are not
+    :param useShadowMap: by default, plane-projected geometries/meshes representing shadows are created;
+                      if useShadowMap is True, they are not
     """
     if W_table is None:
         W_table = 0.5*L_table
@@ -65,7 +65,7 @@ def pool_table(L_table=2.3368, W_table=None, H_table=0.74295,
         spotMaterial = MeshBasicMaterial(color=0xaaaaaa)
         railMaterial = MeshBasicMaterial(color=rail_color)
     else:
-        spotMaterial = MeshLambertMaterial(color=0xaaaaaa, shading=FlatShading)
+        spotMaterial = MeshLambertMaterial(color=0xaaaaaa)
         surfaceMaterial = MeshPhongMaterial(color=0x00aa00, shininess=5, shading=FlatShading)
         cushionMaterial = MeshPhongMaterial(color=0x07aa16, shininess=5, shading=FlatShading)
         railMaterial = MeshPhongMaterial(color=0xdda400, shininess=10, shading=FlatShading)
@@ -213,13 +213,13 @@ def pool_table(L_table=2.3368, W_table=None, H_table=0.74295,
 
 
 def pool_hall(useBasicMaterials=True,
-              shadowMap=False,
+              useShadowMap=False,
               pointLight=None,
               url_prefix="",
               L_table=2.3368,
               H_table=0.74295,
               ball_diameter=2.25*IN2METER,
-              cubeMap=False,
+              skybox=False,
               **kwargs):
     scene = Scene()
     L_room, W_room = 10, 10
@@ -238,15 +238,12 @@ def pool_hall(useBasicMaterials=True,
         light = PointLight(color=0xaa8866, position=[4, 5, 2.5], intensity=0.8, distance=40)
         scene.add(light)
 
-    if cubeMap:
-        shader = deepcopy(shaderlib['cube'])
-        shader['uniforms']['tCube']['value'] = [url_prefix + "images/%s.png" % pos
-                                                for pos in ('px', 'nx', 'py', 'ny', 'pz', 'nz')]
-        scene.add(Mesh(geometry=BoxGeometry(900, 900, 900),
-                       material=ShaderMaterial(side=BackSide, **shader)))
+    if skybox:
+        scene.add(Skybox(cube_images=[url_prefix + "images/%s.png" % pos
+                                      for pos in ('px', 'nx', 'py', 'ny', 'pz', 'nz')]))
 
     poolTable = pool_table(L_table=L_table, H_table=H_table, ball_diameter=ball_diameter,
-                           useBasicMaterials=useBasicMaterials, shadowMap=shadowMap, pointLight=pointLight, **kwargs)
+                           useBasicMaterials=useBasicMaterials, useShadowMap=useShadowMap, pointLight=pointLight, **kwargs)
     scene.add(poolTable)
 
     # balls:
@@ -316,7 +313,7 @@ def pool_hall(useBasicMaterials=True,
                               material=ball_materials[i-8],
                               geometry=stripeGeom)
             ballMesh.add(stripeMesh)
-        if not shadowMap:
+        if not useShadowMap:
             ballShadowMesh = Mesh(name="ballShadowMesh %d" % i,
                                   geometry=shadowGeom,
                                   material=shadowMaterial,

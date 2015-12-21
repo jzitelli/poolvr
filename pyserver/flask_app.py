@@ -27,14 +27,14 @@ POOLVR = {
         'pyserver'              : True,
         'gravity'               : 9.8,
         'useBasicMaterials'     : True,
-        'shadowMap'             : None,
+        'useShadowMap'          : False,
         'pointLight'            : None,
+        'skybox'                : True,
         'L_table'               : 2.3368,
         'H_table'               : 0.74295,
         'ball_diameter'         : 2.25 * pool_table.IN2METER,
         'toolOffset'            : [0, -0.42, -0.4],
         'toolRotation'          : 0,
-        'cubeMap'               : True,
         'tipShape'              : 'Cylinder'
     },
     'version': '0.1.0dev'

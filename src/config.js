@@ -215,11 +215,7 @@ function saveConfig() {
         POOLVR.config.toolRotation = window.toolRoot.rotation.y;
     }
     if (POOLVR.config.pyserver) {
-        delete POOLVR.config.gamepad;
-        delete POOLVR.config.keyboard;
         delete POOLVR.config.onResetVRSensor;
-        delete POOLVR.config.gamepadCommands;
-        delete POOLVR.config.keyboardCommands;
         pyserver.saveConfig('config.json', POOLVR.config);
     }
     // if (!URL_PARAMS.disableLocalStorage) {
