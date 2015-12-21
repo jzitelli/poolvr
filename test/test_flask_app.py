@@ -1,13 +1,16 @@
 """See http://flask.pocoo.org/docs/0.10/testing/
 """
 import unittest
-from flask_app import app as flask_app
+import sys
+import os.path
+sys.path.insert(0, os.path.join(os.path.split(__file__)[0], os.path.pardir))
+from pyserver.flask_app import app
 
 
 class EndpointsTest(unittest.TestCase):
     def setUp(self):
-        flask_app.config['TESTING'] = True
-        self.app = flask_app.test_client()
+        app.config['TESTING'] = True
+        self.app = app.test_client()
 
     def test_poolvr(self):
         response = self.app.get('/poolvr')
@@ -16,10 +19,10 @@ class EndpointsTest(unittest.TestCase):
         response = self.app.get(r'/poolvr?useBasicMaterials=false')
         print(response)
         assert(response)
-        response = self.app.get('/poolvr?shadowMap=true')
+        response = self.app.get(r'/poolvr?useShadowMap=true')
         print(response)
         assert(response)
-        response = self.app.get('/poolvr?pyserver=false')
+        response = self.app.get(r'/poolvr?pyserver=false')
         print(response)
         assert(response)
 
@@ -27,13 +30,13 @@ class EndpointsTest(unittest.TestCase):
         response = self.app.get('/poolvr/config')
         print(response)
         assert(response)
-        response = self.app.get('/poolvr/config?cubeMap=true')
+        response = self.app.get('/poolvr/config?skybox=true')
         print(response)
         assert(response)
         response = self.app.get('/poolvr/config?useBasicMaterials=false')
         print(response)
         assert(response)
-        response = self.app.get('/poolvr/config?shadowMap=true')
+        response = self.app.get('/poolvr/config?useShadowMap=true')
         print(response)
         assert(response)
 
@@ -42,19 +45,19 @@ class EndpointsTest(unittest.TestCase):
         print(response)
         assert(response)
 
-    def test_poolvr_version(self):
-        response = self.app.get('/poolvr?version=0.1.0')
-        print(response)
-        assert(response)
-        response = self.app.get(r'/poolvr?version=0.1.0&useBasicMaterials=false')
-        print(response)
-        assert(response)
-        response = self.app.get('/poolvr?version=0.1.0&shadowMap=true')
-        print(response)
-        assert(response)
-        response = self.app.get('/poolvr?version=0.1.0&pyserver=false')
-        print(response)
-        assert(response)
+    # def test_poolvr_version(self):
+    #     response = self.app.get('/poolvr?version=0.1.0')
+    #     print(response)
+    #     assert(response)
+    #     response = self.app.get(r'/poolvr?version=0.1.0&useBasicMaterials=false')
+    #     print(response)
+    #     assert(response)
+    #     response = self.app.get('/poolvr?version=0.1.0&shadowMap=true')
+    #     print(response)
+    #     assert(response)
+    #     response = self.app.get('/poolvr?version=0.1.0&pyserver=false')
+    #     print(response)
+    #     assert(response)
 
 
 if __name__ == "__main__":

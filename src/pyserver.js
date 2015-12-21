@@ -2,8 +2,7 @@ var pyserver;
 if (!POOLVR.config.pyserver) {
     pyserver = {log: function (msg) { console.log('pyserver.log: ' + msg); },
                 readFile: function () {},
-                writeFile: function () {},
-                saveConfig: function () {}};
+                writeFile: function () {}};
 } else {
     pyserver = {
         log: function (msg, success) {
@@ -62,24 +61,6 @@ if (!POOLVR.config.pyserver) {
                 xhr.setRequestHeader('Content-Type', 'application/json');
                 xhr.send(JSON.stringify(text));
             }
-        },
-
-        saveConfig: function (filename, json) {
-            "use strict";
-            var xhr = new XMLHttpRequest();
-            xhr.open('POST', "/poolvr/config/save?file=" + filename);
-            xhr.onload = function() {
-                var response = JSON.parse(xhr.responseText);
-                if (response.filename) {
-                    console.log("wrote " + response.filename);
-                }
-                else if (response.error) {
-                    console.log(response.error);
-                }
-            };
-            xhr.setRequestHeader('Content-Type', 'application/json');
-            xhr.send(JSON.stringify(json));
         }
-
     };
 }

@@ -92,7 +92,7 @@ POOLVR.keyboardCommands = {
                  commandDown: function(){POOLVR.toggleMenu();}, dt: 0.25},
 
     saveConfig: {buttons: [Primrose.Input.Keyboard.NUMBER1],
-                 commandDown: saveConfig, dt: 1.0}
+                 commandDown: function(){POOLVR.saveConfig();}, dt: 1.0}
 };
 POOLVR.keyboardCommands = makeObjectArray(POOLVR.keyboardCommands, 'name');
 POOLVR.keyboard = new Primrose.Input.Keyboard("keyboard", window, POOLVR.keyboardCommands);
@@ -186,25 +186,18 @@ POOLVR.toolOptions = combineObjects(
 POOLVR.config.textGeomLogger = URL_PARAMS.textGeomLogger || POOLVR.config.textGeomLogger;
 
 
-function saveConfig() {
+POOLVR.saveConfig = function () {
     "use strict";
     if (POOLVR.config.pyserver) {
         if (window.toolRoot) {
             POOLVR.config.toolOptions.toolOffset = [window.toolRoot.position.x, window.toolRoot.position.y, window.toolRoot.position.z];
             POOLVR.config.toolOptions.toolRotation = window.toolRoot.rotation.y;
         }
-        pyserver.saveConfig('config.json', POOLVR.config);
+        pyserver.writeFile('config.json', POOLVR.config);
+    } else {
+        localStorage.setItem(POOLVR.version, JSON.stringify(POOLVR.config));
     }
-    // if (!URL_PARAMS.disableLocalStorage) {
-    //     localStorage.setItem(POOLVR.version, JSON.stringify(POOLVR.config));
-    // }
-}
-
-
-function loadConfig(json) {
-    "use strict";
-    // TODO
-}
+};
 
 
 POOLVR.ballMeshes = [];
@@ -222,7 +215,7 @@ POOLVR.resetTable = function () {
     POOLVR.ballBodies.forEach(function (body, ballNum) {
         body.wakeUp();
         body.position.copy(POOLVR.initialPositions[ballNum]);
-        body.velocity.set(0,0,0);
+        body.velocity.set(0, 0, 0);
         //body.acceleration.set(0,0,0);
         //body.bounces = 0;
     });

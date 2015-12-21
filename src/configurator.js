@@ -25,11 +25,13 @@ function setupMenu(parent) {
     var textMesh = new THREE.Mesh(textGeom);
     textMesh.position.set(0, 1, -2);
     menu.add(textMesh);
+    textMesh.onSelect = POOLVR.resetTable;
 
     textGeom = new THREE.TextGeometry('SAVE CONFIG', {font: 'anonymous pro', size: 0.2, height: 0, curveSegments: 2});
     textMesh = new THREE.Mesh(textGeom);
     textMesh.position.set(0, 0.7, -2);
     menu.add(textMesh);
+    textMesh.onSelect = POOLVR.saveConfig;
 
     parent.add(menu);
     menu.visible = true;

@@ -7,18 +7,19 @@ import json
 from copy import deepcopy
 import sys
 
+
 from flask import Flask, render_template, request, Markup, jsonify
 STATIC_FOLDER = os.getcwd()
 app = Flask(__name__,
             static_folder=STATIC_FOLDER,
             static_url_path='')
-import site_settings
+
+# sys.path.append(os.getcwd())
+sys.path.insert(0, os.path.join(os.path.split(__file__)[0], os.path.pardir))
+import pyserver.site_settings as site_settings
 app.config.from_object(site_settings)
 
-sys.path.append(os.getcwd())
 import pyserver.pool_table as pool_table
-import pyserver.config_scene as config_scene
-
 
 WRITE_FOLDER = os.path.join(os.getcwd(), 'saves')
 
@@ -34,11 +35,12 @@ POOLVR = {
         'L_table'            : 2.3368,
         'H_table'            : 0.74295,
         'ball_diameter'      : 2.25 * pool_table.IN2METER,
+        'textGeomLogger'     : True,
         'toolOptions': {
             'toolOffset'       : [0, -0.42, -0.4],
             'toolRotation'     : 0,
             'tipShape'         : 'Cylinder'
-        }
+        },
     },
     'version': '0.1.0dev'
 }
@@ -109,7 +111,7 @@ def poolvr_config():
     config = get_poolvr_config()
     config['initialPosition'] = [0, 0.9, 0.9]
     version = request.args.get('version', POOLVR['version'])
-    configScene = config_scene.config_scene(url_prefix='../',
+    configScene = pool_table.config_scene(url_prefix='../',
                                             **config)
     poolvr_config = json.dumps({'config' : config,
                                 'version': version},
@@ -145,20 +147,6 @@ def write():
         else:
             with open(filename, 'w') as f:
                 f.write(request.form['text'])
-        response = {'filename': filename}
-        _logger.info('wrote %s' % filename)
-    except Exception as err:
-        response = {'error': str(err)}
-    return jsonify(response)
-
-
-@app.route("/poolvr/config/save", methods=['POST'])
-def save_config():
-    filename = os.path.join(WRITE_FOLDER, os.path.split(request.args['file'])[1])
-    try:
-        with open(filename, 'w') as f:
-            f.write(json.dumps(request.json,
-                               indent=2, sort_keys=True))
         response = {'filename': filename}
         _logger.info('wrote %s' % filename)
     except Exception as err:
