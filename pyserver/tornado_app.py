@@ -10,11 +10,12 @@ from tornado.web import Application, FallbackHandler, StaticFileHandler
 from tornado.ioloop import IOLoop
 
 import sys
-sys.path.append(os.getcwd())
+#sys.path.append(os.getcwd())
+sys.path.insert(0, os.path.join(os.path.split(__file__)[0], os.path.pardir))
 import pyserver
-
-from flask_app import app, site_settings, STATIC_FOLDER
-app_flask = app
+import pyserver.flask_app as flask_app
+import pyserver.site_settings as site_settings
+app_flask = flask_app.app
 
 websocket_handlers = []
 if site_settings.GFXTABLET:
@@ -39,7 +40,7 @@ def main():
                                                   for k, v in sorted(app.settings.items(), key=itemgetter(0))]))
     port = app_flask.config.get('PORT', 5000)
     app.listen(port)
-    _logger.info("STATIC_FOLDER   = %s" % STATIC_FOLDER)
+    _logger.info("STATIC_FOLDER   = %s" % flask_app.STATIC_FOLDER)
     _logger.info("listening on port %d" % port)
     _logger.info("press CTRL-C to terminate the server")
     _logger.info("""

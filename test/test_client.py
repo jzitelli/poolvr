@@ -3,17 +3,16 @@ import unittest
 from needle.cases import NeedleTestCase
 
 import sys
-import os
-sys.path.append(os.path.join(os.getcwd(), os.path.pardir))
-sys.path.append(os.path.join(os.getcwd(), os.path.pardir, 'pyserver'))
-from flask_app import app as flask_app
+import os.path
+sys.path.insert(0, os.path.join(os.path.split(__file__)[0], os.path.pardir))
+from pyserver.flask_app import app
 
 
-class StartConfiguratorTest(NeedleTestCase):
+class ConfiguratorTest(NeedleTestCase):
     def setUp(self):
-        flask_app.debug = True
-        flask_app.config['TESTING'] = True
-        self.app = flask_app.test_client()
+        app.debug = True
+        app.config['TESTING'] = True
+        self.app = app.test_client()
     def test_screenshotEGA(self):
         self.driver.get('127.0.0.1:5000/poolvr/config')
         self.assertScreenshot('#renderer', 'configurator_screenshotEGA')
@@ -21,15 +20,15 @@ class StartConfiguratorTest(NeedleTestCase):
         self.driver.get('127.0.0.1:5000/poolvr/config?useBasicMaterials=false')
         self.assertScreenshot('#renderer', 'configurator_screenshotVGA')
     def test_screenshotSVGA(self):
-        self.driver.get('127.0.0.1:5000/poolvr/config?useBasicMaterials=false&shadowMap=true')
+        self.driver.get('127.0.0.1:5000/poolvr/config?useShadowMap=true')
         self.assertScreenshot('#renderer', 'configurator_screenshotSVGA')
 
 
-class StartPOOLVRTest(NeedleTestCase):
+class POOLVRTest(NeedleTestCase):
     def setUp(self):
-        flask_app.debug = True
-        flask_app.config['TESTING'] = True
-        self.app = flask_app.test_client()
+        app.debug = True
+        app.config['TESTING'] = True
+        self.app = app.test_client()
     def test_screenshotEGA(self):
         self.driver.get('127.0.0.1:5000/poolvr')
         self.assertScreenshot('#renderer', 'poolvr_screenshotEGA')
@@ -37,7 +36,7 @@ class StartPOOLVRTest(NeedleTestCase):
         self.driver.get('127.0.0.1:5000/poolvr?useBasicMaterials=false')
         self.assertScreenshot('#renderer', 'poolvr_screenshotVGA')
     def test_screenshotSVGA(self):
-        self.driver.get('127.0.0.1:5000/poolvr?useBasicMaterials=false&shadowMap=true')
+        self.driver.get('127.0.0.1:5000/poolvr?useShadowMap=true')
         self.assertScreenshot('#renderer', 'poolvr_screenshotSVGA')
 
 

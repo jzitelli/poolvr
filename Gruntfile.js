@@ -59,7 +59,6 @@ module.exports = function ( grunt ) {
               "three.py/js/MouseStuff.js",
               "three.py/js/TextGeomLogger.js",
               "src/LeapTools.js",
-              "src/TextGeomLogger.js",
               "src/WebVRSound.js",
               "src/SynthSpeaker.js",
               "src/GfxTablet.js",

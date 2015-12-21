@@ -9,7 +9,8 @@ import sys
 
 
 from flask import Flask, render_template, request, Markup, jsonify
-STATIC_FOLDER = os.getcwd()
+#STATIC_FOLDER = os.getcwd()
+STATIC_FOLDER = os.path.abspath(os.path.join(os.path.split(__file__)[0], os.path.pardir))
 app = Flask(__name__,
             static_folder=STATIC_FOLDER,
             static_url_path='')
@@ -21,7 +22,8 @@ app.config.from_object(site_settings)
 
 import pyserver.pool_table as pool_table
 
-WRITE_FOLDER = os.path.join(os.getcwd(), 'saves')
+#WRITE_FOLDER = os.path.join(os.getcwd(), 'saves')
+WRITE_FOLDER = os.path.join(STATIC_FOLDER, 'saves')
 
 POOLVR = {
     'config': {
