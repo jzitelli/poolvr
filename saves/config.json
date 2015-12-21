@@ -2,8 +2,6 @@
   "H_table": 0.74295,
   "L_table": 2.3368,
   "ball_diameter": 0.05715,
-  "cubeMap": true,
-  "disableLocalStorage": false,
   "gravity": 9.8,
   "initialPosition": [
     0,
@@ -12,13 +10,16 @@
   ],
   "pointLight": null,
   "pyserver": true,
-  "shadowMap": null,
-  "tipShape": "Cylinder",
-  "toolOffset": [
-    -0.21828871548438455,
-    -0.4452017508042664,
-    -0.5409228274112684
-  ],
-  "toolRotation": 0.2088639528002434,
-  "useBasicMaterials": true
+  "skybox": true,
+  "toolOptions": {
+    "tipShape": "Cylinder",
+    "toolOffset": [
+      -0.1466600062661825,
+      -0.5270266134264965,
+      -0.5362493488593195
+    ],
+    "toolRotation": 0.191269221897682
+  },
+  "useBasicMaterials": true,
+  "useShadowMap": false
 }

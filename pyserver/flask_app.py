@@ -33,9 +33,11 @@ POOLVR = {
         'L_table'               : 2.3368,
         'H_table'               : 0.74295,
         'ball_diameter'         : 2.25 * pool_table.IN2METER,
-        'toolOffset'            : [0, -0.42, -0.4],
-        'toolRotation'          : 0,
-        'tipShape'              : 'Cylinder'
+        'toolOptions': {
+            'toolOffset'       : [0, -0.42, -0.4],
+            'toolRotation'     : 0,
+            'tipShape'         : 'Cylinder'
+        }
     },
     'version': '0.1.0dev'
 }
@@ -43,11 +45,14 @@ POOLVR = {
 
 def get_poolvr_config():
     config = deepcopy(POOLVR['config'])
-    # try:
-    #     with open(os.path.join(WRITE_FOLDER, request.args.get('config', 'config.json'))) as f:
-    #         config.update(json.loads(f.read()))
-    # except Exception as err:
-    #     _logger.warning(err);
+    filename = request.args.get('config')
+    if filename:
+        try:
+            with open(os.path.join(WRITE_FOLDER, filename)) as f:
+                config.update(json.loads(f.read()))
+        except Exception as err:
+            _logger.warning("could not load requested configuration:")
+            _logger.warning(err);
     args = dict({k: v for k, v in request.args.items()
                  if k in config})
     # TODO: better way

@@ -13,6 +13,21 @@ textGeomLogger.root.position.set(-1.5, -0.23, -2);
 
 var toolRoot;
 
+
+function setupMenu(parent) {
+    "use strict";
+    var menu = new THREE.Object3D();
+    var textGeom = new THREE.TextGeometry('RESET TABLE', {font: 'anonymous pro', size: 0.2, height: 0, curveSegments: 2});
+    var textMesh = new THREE.Mesh(textGeom);
+    textMesh.position.set(0, 1, -2);
+    menu.add(textMesh);
+    parent.add(menu);
+    menu.visible = true;
+    return menu;
+}
+var menu = setupMenu(avatar);
+
+
 var animate = function (avatar, keyboard, gamepad, leapController, animateLeap,
                         toolRoot, stickMesh,
                         animateMousePointer,
@@ -124,29 +139,32 @@ function onLoad() {
         // centerSpotLightHelper.visible = false;
     }
 
-    // textGeomLogger.log(JSON.stringify(POOLVR.config, undefined, 2));
+    textGeomLogger.log(JSON.stringify(POOLVR.config, undefined, 2));
 
     var mouseStuff = setupMouse(avatar, undefined, '../images/mouseParticle.png');
 
     var UP = new THREE.Vector3(0, 1, 0);
-    POOLVR.config.onResetVRSensor = function (lastRotation, lastPosition) {
-        pyserver.log('updating the toolRoot position...');
-        app.camera.updateMatrix();
-        avatar.heading += lastRotation - app.camera.rotation.y;
-        toolRoot.rotation.y -= (lastRotation - app.camera.rotation.y);
-        toolRoot.position.sub(lastPosition);
-        toolRoot.position.applyAxisAngle(UP, -lastRotation + app.camera.rotation.y);
-        toolRoot.position.add(app.camera.position);
-        toolRoot.updateMatrix();
-    };
+    var appConfig = combineObjects(POOLVR.config, {
+        onResetVRSensor: function (lastRotation, lastPosition) {
+            // TODO
+            pyserver.log('updating the toolRoot position...');
+            app.camera.updateMatrix();
+            avatar.heading += lastRotation - app.camera.rotation.y;
+            toolRoot.rotation.y -= (lastRotation - app.camera.rotation.y);
+            toolRoot.position.sub(lastPosition);
+            toolRoot.position.applyAxisAngle(UP, -lastRotation + app.camera.rotation.y);
+            toolRoot.position.add(app.camera.position);
+            toolRoot.updateMatrix();
+        }
+    });
+    app = new WebVRApplication(scene, appConfig);
 
-    app = new WebVRApplication(scene, POOLVR.config);
     THREE.py.CANNONize(scene, app.world);
 
     scene.add(avatar);
     avatar.add(app.camera);
 
-    var toolStuff = addTool(avatar, app.world, POOLVR.config.toolOptions);
+    var toolStuff = addTool(avatar, app.world, POOLVR.toolOptions);
     toolRoot = toolStuff.toolRoot;
 
     app.start( animate(avatar, POOLVR.keyboard, POOLVR.gamepad,

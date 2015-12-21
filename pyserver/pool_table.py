@@ -162,46 +162,47 @@ def pool_table(L_table=2.3368, W_table=None, H_table=0.74295,
 
     # RAILSSSSSSSS
     headRailGeom = BoxGeometry(W_playable, H_cushion, W_rail)
-    headRailMesh = Mesh(geometry=headRailGeom,
+    headRailMesh = Mesh(name='headRailMesh',
+                        geometry=headRailGeom,
                         material=railMaterial,
                         position=[0, H_table + 0.5*H_cushion, 0.5*L_table + 0.5*W_rail],
                         receiveShadow=True,
                         userData={'cannonData': {'mass': 0, 'shapes': ['Box']}})
     poolTable.add(headRailMesh)
-
-    footRailMesh = Mesh(geometry=headRailGeom,
+    footRailMesh = Mesh(name='footRailMesh',
+                        geometry=headRailGeom,
                         material=railMaterial,
                         position=[0, H_table + 0.5*H_cushion, -(0.5*L_table + 0.5*W_rail)],
                         rotation=[0, np.pi, 0],
                         receiveShadow=True,
                         userData={'cannonData': {'mass': 0, 'shapes': ['Box']}})
     poolTable.add(footRailMesh)
-
-    leftHeadRailMesh = Mesh(geometry=headRailGeom,
+    leftHeadRailMesh = Mesh(name='leftHeadRailMesh',
+                            geometry=headRailGeom,
                             material=railMaterial,
                             position=[-(0.5*W_table + 0.5*W_rail), H_table + 0.5*H_cushion, 0.25*L_table],
                             rotation=[0, np.pi/2, 0],
                             receiveShadow=True,
                             userData={'cannonData': {'mass': 0, 'shapes': ['Box']}})
     poolTable.add(leftHeadRailMesh)
-
-    rightHeadRailMesh = Mesh(geometry=headRailGeom,
+    rightHeadRailMesh = Mesh(name='rightHeadRailMesh',
+                             geometry=headRailGeom,
                              material=railMaterial,
                              position=[0.5*W_table + 0.5*W_rail, H_table + 0.5*H_cushion, 0.25*L_table],
                              rotation=[0, np.pi/2, 0],
                              receiveShadow=True,
                              userData={'cannonData': {'mass': 0, 'shapes': ['Box']}})
     poolTable.add(rightHeadRailMesh)
-
-    leftFootRailMesh = Mesh(geometry=headRailGeom,
+    leftFootRailMesh = Mesh(name='leftFootRailMesh',
+                            geometry=headRailGeom,
                             material=railMaterial,
                             position=[-(0.5*W_table + 0.5*W_rail), H_table + 0.5*H_cushion, -0.25*L_table],
                             rotation=[0, np.pi/2, 0],
                             receiveShadow=True,
                             userData={'cannonData': {'mass': 0, 'shapes': ['Box']}})
     poolTable.add(leftFootRailMesh)
-
-    rightFootRailMesh = Mesh(geometry=headRailGeom,
+    rightFootRailMesh = Mesh(name='rightFootRailMesh',
+                             geometry=headRailGeom,
                              material=railMaterial,
                              position=[0.5*W_table + 0.5*W_rail, H_table + 0.5*H_cushion, -0.25*L_table],
                              rotation=[0, np.pi/2, 0],

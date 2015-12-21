@@ -15,11 +15,11 @@ avatar.toolMode = false;
 
 var toolRoot;
 
-
 // POOLVR.config.onfullscreenchange = function (fullscreen) {
 //     if (fullscreen) pyserver.log('going fullscreen');
 //     else pyserver.log('exiting fullscreen');
 // };
+
 var synthSpeaker = new SynthSpeaker({volume: 0.5, rate: 0.8, pitch: 0.5});
 
 var textGeomLogger;
@@ -47,6 +47,7 @@ function setupMenu(parent) {
     menu.visible = false;
     return menu;
 }
+var menu = setupMenu(avatar);
 
 
 function startTutorial() {
@@ -219,27 +220,25 @@ function onLoad() {
     }
 
 
-    var UP = new THREE.Vector3(0, 1, 0);
-    POOLVR.config.onResetVRSensor = function (lastRotation, lastPosition) {
-        pyserver.log('updating the toolRoot position...');
-        // app.camera.updateMatrix();
-        avatar.heading += lastRotation - app.camera.rotation.y;
-        toolRoot.rotation.y -= (lastRotation - app.camera.rotation.y);
-        toolRoot.position.sub(lastPosition);
-        toolRoot.position.applyAxisAngle(UP, -lastRotation + app.camera.rotation.y);
-        toolRoot.position.add(app.camera.position);
-        avatar.updateMatrixWorld();
-    };
-
-
-    var menu = setupMenu(avatar);
-
-
     var mouseStuff = setupMouse(avatar);
     var animateMousePointer = mouseStuff.animateMousePointer;
 
 
-    app = new WebVRApplication(scene, POOLVR.config);
+    var UP = new THREE.Vector3(0, 1, 0);
+    var appConfig = combineObjects(POOLVR.config, {
+        onResetVRSensor: function (lastRotation, lastPosition) {
+            pyserver.log('updating the toolRoot position...');
+            // app.camera.updateMatrix();
+            avatar.heading += lastRotation - app.camera.rotation.y;
+            toolRoot.rotation.y -= (lastRotation - app.camera.rotation.y);
+            toolRoot.position.sub(lastPosition);
+            toolRoot.position.applyAxisAngle(UP, -lastRotation + app.camera.rotation.y);
+            toolRoot.position.add(app.camera.position);
+            // toolRoot.updateMatrix();
+            avatar.updateMatrixWorld();
+        }
+    });
+    app = new WebVRApplication(scene, appConfig);
 
     THREE.py.CANNONize(scene, app.world);
 
@@ -260,13 +259,11 @@ function onLoad() {
     app.world.addContactMaterial(POOLVR.tipBallContactMaterial);
     app.world.addContactMaterial(POOLVR.railBallContactMaterial);
 
-    var toolStuff = addTool(avatar, app.world, POOLVR.config.toolOptions);
+    var toolStuff = addTool(avatar, app.world, POOLVR.toolOptions);
 
     var leapController = toolStuff.leapController;
     var stickMesh      = toolStuff.stickMesh;
     var animateLeap    = toolStuff.animateLeap;
-    var leftRoot       = toolStuff.leftRoot;
-    var rightRoot      = toolStuff.rightRoot;
     var tipBody        = toolStuff.tipBody;
     toolRoot           = toolStuff.toolRoot;
 
@@ -309,6 +306,11 @@ function onLoad() {
             else if (node.name === 'floorMesh') {
                 node.body.material = POOLVR.floorMaterial;
             }
+
+            else if (node.name.endsWith('RailMesh')) {
+                node.body.material = POOLVR.railMaterial;
+            }
+
         }
     });
     // second pass:

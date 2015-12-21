@@ -22,7 +22,7 @@ var URL_PARAMS = (function () {
 })();
 
 
-function combineDefaults(a, b) {
+function combineObjects(a, b) {
     "use strict";
     var c = {},
         k;
@@ -85,6 +85,9 @@ POOLVR.keyboardCommands = {
     resetVRSensor: {buttons: [Primrose.Input.Keyboard.Z],
                     commandDown: function(){app.resetVRSensor();}, dt: 0.25},
 
+    toggleMenu: {buttons: [Primrose.Input.Keyboard.SPACEBAR],
+                 commandDown: function(){menu.visible=!menu.visible;}, dt: 0.25},
+
     saveConfig: {buttons: [Primrose.Input.Keyboard.NUMBER1],
                  commandDown: saveConfig, dt: 1.0}
 };
@@ -110,17 +113,25 @@ POOLVR.gamepadCommands = {
     toggleToolFloatMode: {buttons: [Primrose.Input.Gamepad.XBOX_BUTTONS.rightStick],
                           commandDown: function () { avatar.toolMode = true; },
                           commandUp: function(){avatar.toolMode=false;}},
+
     nextBall: {buttons: [Primrose.Input.Gamepad.XBOX_BUTTONS.rightBumper],
                commandDown: function () { POOLVR.nextBall = Math.max(1, (POOLVR.nextBall + 1) % 16); },
                dt: 0.5},
+
     prevBall: {buttons: [Primrose.Input.Gamepad.XBOX_BUTTONS.leftBumper],
-               commandDown: function () { POOLVR.nextBall = Math.max(1, (POOLVR.nextBall - 1) % 16); },
+               commandDown: function(){POOLVR.nextBall=Math.max(1,(POOLVR.nextBall-1)%16);},
                dt: 0.5},
+
     autoPosition: {buttons: [Primrose.Input.Gamepad.XBOX_BUTTONS.Y],
                    commandDown: function(){autoPosition(avatar);}, dt: 0.5},
+
     resetVRSensor: {buttons: [Primrose.Input.Gamepad.XBOX_BUTTONS.back],
-                    commandDown: function(){app.resetVRSensor();}, dt: 0.25}
+                    commandDown: function(){app.resetVRSensor();}, dt: 0.25},
+
+    toggleMenu: {buttons: [Primrose.Input.Gamepad.XBOX_BUTTONS.start],
+                 commandDown: function(){menu.visible=!menu.visible;}, dt: 0.25}
 };
+
 POOLVR.gamepadCommands = makeObjectArray(POOLVR.gamepadCommands, 'name');
 POOLVR.gamepad = new Primrose.Input.Gamepad("gamepad", POOLVR.gamepadCommands);
 POOLVR.gamepad.addEventListener("gamepadconnected", function(id) {
@@ -175,27 +186,19 @@ POOLVR.tipBallContactMaterial = new CANNON.ContactMaterial(POOLVR.tipMaterial, P
 //     }
 // }
 
+POOLVR.config.toolOptions = POOLVR.config.toolOptions || {};
+POOLVR.config.toolOptions.toolLength   = URL_PARAMS.toolLength   || POOLVR.config.toolOptions.toolLength;
+POOLVR.config.toolOptions.toolRadius   = URL_PARAMS.toolRadius   || POOLVR.config.toolOptions.toolRadius;
+POOLVR.config.toolOptions.toolMass     = URL_PARAMS.toolMass     || POOLVR.config.toolOptions.toolMass;
+POOLVR.config.toolOptions.toolOffset   = URL_PARAMS.toolOffset   || POOLVR.config.toolOptions.toolOffset;
+POOLVR.config.toolOptions.toolRotation = URL_PARAMS.toolRotation || POOLVR.config.toolOptions.toolRotation;
+POOLVR.config.toolOptions.tipShape     = URL_PARAMS.tipShape     || POOLVR.config.toolOptions.tipShape;
 
-POOLVR.config.toolLength   = URL_PARAMS.toolLength   || POOLVR.config.toolLength;
-POOLVR.config.toolRadius   = URL_PARAMS.toolRadius   || POOLVR.config.toolRadius;
-POOLVR.config.toolMass     = URL_PARAMS.toolMass     || POOLVR.config.toolMass;
-POOLVR.config.toolOffset   = URL_PARAMS.toolOffset   || POOLVR.config.toolOffset;
-POOLVR.config.toolRotation = URL_PARAMS.toolRotation || POOLVR.config.toolRotation;
-POOLVR.config.tipShape     = URL_PARAMS.tipShape     || POOLVR.config.tipShape;
-POOLVR.config.toolOptions = {
-    // ##### Desktop mode (default): #####
-    transformOptions : POOLVR.config.transformOptions, // || {vr: 'desktop'},
-    useBasicMaterials: POOLVR.config.useBasicMaterials,
-    toolLength       : POOLVR.config.toolLength,
-    toolRadius       : POOLVR.config.toolRadius,
-    toolMass         : POOLVR.config.toolMass,
-    toolOffset       : POOLVR.config.toolOffset,
-    toolRotation     : POOLVR.config.toolRotation,
-    tipShape         : POOLVR.config.tipShape
-};
 pyserver.log('POOLVR.config.toolOptions =\n' + JSON.stringify(POOLVR.config.toolOptions, undefined, 2));
-POOLVR.config.toolOptions.keyboard = POOLVR.keyboard;
-POOLVR.config.toolOptions.gamepad = POOLVR.gamepad;
+POOLVR.toolOptions = combineObjects(
+    POOLVR.config.toolOptions,
+    {keyboard: POOLVR.keyboard, gamepad: POOLVR.gamepad, useBasicMaterials: POOLVR.config.useBasicMaterials}
+);
 
 // POOLVR.config.vrLeap = URL_PARAMS.vrLeap || POOLVR.config.vrLeap;
 // if (POOLVR.config.vrLeap) {
@@ -211,11 +214,11 @@ POOLVR.config.textGeomLogger = URL_PARAMS.textGeomLogger || POOLVR.config.textGe
 
 function saveConfig() {
     "use strict";
-    if (window.toolRoot) {
-        POOLVR.config.toolOffset = [window.toolRoot.position.x, window.toolRoot.position.y, window.toolRoot.position.z];
-        POOLVR.config.toolRotation = window.toolRoot.rotation.y;
-    }
     if (POOLVR.config.pyserver) {
+        if (window.toolRoot) {
+            POOLVR.config.toolOptions.toolOffset = [window.toolRoot.position.x, window.toolRoot.position.y, window.toolRoot.position.z];
+            POOLVR.config.toolOptions.toolRotation = window.toolRoot.rotation.y;
+        }
         delete POOLVR.config.onResetVRSensor;
         pyserver.saveConfig('config.json', POOLVR.config);
     }
@@ -244,8 +247,11 @@ POOLVR.nextBall = 1;
 function resetTable() {
     "use strict";
     POOLVR.ballBodies.forEach(function (body, ballNum) {
-        body.position.copy(POOLVR.initialPositions[ballNum]);
         body.wakeUp();
+        body.position.copy(POOLVR.initialPositions[ballNum]);
+        body.velocity.set(0,0,0);
+        body.acceleration.set(0,0,0);
+        //body.bounces = 0;
     });
     if (synthSpeaker.speaking === false) {
         synthSpeaker.speak("Table reset.");
@@ -281,7 +287,8 @@ var autoPosition = ( function () {
     return autoPosition;
 } )();
 
-POOLVR.config.useWebVRBoilerplate = URL_PARAMS.useWebVRBoilerplate;
+
+POOLVR.config.useWebVRBoilerplate = URL_PARAMS.useWebVRBoilerplate || POOLVR.config.useWebVRBoilerplate;
 
 var WebVRConfig = WebVRConfig || POOLVR.config.WebVRConfig || {};
 WebVRConfig.FORCE_DISTORTION = URL_PARAMS.FORCE_DISTORTION || WebVRConfig.FORCE_DISTORTION;
