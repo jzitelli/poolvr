@@ -3,9 +3,6 @@ WebVRApplication = ( function () {
         this.name = name;
         this.avatar = avatar;
         this.scene = scene;
-        // TODO: copy
-        this.config = config;
-
 
         var camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
         this.camera = camera;
@@ -49,8 +46,8 @@ WebVRApplication = ( function () {
             var lastRotation = this.camera.rotation.y;
             this.vrControls.resetSensor();
             this.vrControls.update();
-            if (this.config.onResetVRSensor) {
-                this.config.onResetVRSensor(lastRotation, lastPosition);
+            if (config.onResetVRSensor) {
+                config.onResetVRSensor(lastRotation, lastPosition);
             }
         }.bind(this);
 
@@ -64,7 +61,7 @@ WebVRApplication = ( function () {
         }.bind(this);
 
 
-        this.menu = this.config.menu;
+        this.menu = config.menu;
         this.toggleMenu = function () {
             if (this.menu) this.menu.visible = !this.menu.visible;
         }.bind(this);
