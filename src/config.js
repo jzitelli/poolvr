@@ -109,7 +109,7 @@ POOLVR.tipBallContactMaterial = new CANNON.ContactMaterial(POOLVR.tipMaterial, P
 if (!URL_PARAMS.disableLocalStorage) {
     var localStorageConfig = localStorage.getItem(POOLVR.version);
     if (localStorageConfig) {
-        pyserver.log("loaded from localStorage:");
+        pyserver.log("POOLVR.config loaded from localStorage:");
         pyserver.log(localStorageConfig);
         POOLVR.config = JSON.parse(localStorageConfig);
     }
