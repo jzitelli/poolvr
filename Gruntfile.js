@@ -17,7 +17,8 @@ var fs = require( "fs" ),
       "lib/ColladaLoader.js",
       "lib/Primrose.js",
       "lib/SPE.js",
-      "obj/poolvr.js"
+      "obj/poolvr.js",
+      "obj/configurator.js"
     ],
     uglifyFiles = files.map( function ( s ) {
       return {
@@ -53,7 +54,7 @@ module.exports = function ( grunt ) {
       default: {
         files: {
           "obj/poolvr.js": [
-              "src/WebVRApplication.js",
+              "three.py/js/WebVRApplication.js",
               "three.py/js/three.py.js",
               "src/LeapTools.js",
               "src/TextGeomLogger.js",
@@ -65,6 +66,20 @@ module.exports = function ( grunt ) {
               "src/config.js",
               "src/sound.js",
               "src/app.js"
+          ],
+          "obj/configurator.js": [
+              "three.py/js/WebVRApplication.js",
+              "three.py/js/three.py.js",
+              "src/LeapTools.js",
+              "src/TextGeomLogger.js",
+              "src/WebVRSound.js",
+              "src/SynthSpeaker.js",
+              "src/MouseStuff.js",
+              "src/GfxTablet.js",
+              "src/pyserver.js",
+              "src/config.js",
+              "src/sound.js",
+              "src/configurator.js"
           ]
         }
       }

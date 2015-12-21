@@ -16,15 +16,6 @@ avatar.toolMode = false;
 var toolRoot;
 
 
-POOLVR.ballMeshes = [];
-POOLVR.ballBodies = [];
-POOLVR.initialPositions = [];
-POOLVR.onTable = [false,
-                  true, true, true, true, true, true, true,
-                  true,
-                  true, true, true, true, true, true, true];
-POOLVR.nextBall = 1;
-
 // POOLVR.config.onfullscreenchange = function (fullscreen) {
 //     if (fullscreen) pyserver.log('going fullscreen');
 //     else pyserver.log('exiting fullscreen');
@@ -43,47 +34,6 @@ if (POOLVR.config.textGeomLogger) {
 
 avatar.add(textGeomLogger.root);
 textGeomLogger.root.position.set(-2.5, 1.0, -3.5);
-
-
-function resetTable() {
-    "use strict";
-    POOLVR.ballBodies.forEach(function (body, ballNum) {
-        body.position.copy(POOLVR.initialPositions[ballNum]);
-        body.wakeUp();
-    });
-    if (synthSpeaker.speaking === false) {
-        synthSpeaker.speak("Table reset.");
-    }
-    POOLVR.nextBall = 1;
-    textGeomLogger.log("TABLE RESET.");
-}
-
-
-var autoPosition = ( function () {
-    "use strict";
-    var nextVector = new THREE.Vector3();
-    var UP = new THREE.Vector3(0, 1, 0);
-    function autoPosition(avatar) {
-        textGeomLogger.log("YOU ARE BEING AUTO-POSITIONED.");
-        // if (synthSpeaker.speaking === false) {
-        //     synthSpeaker.speak("You are being auto-positioned.");
-        // }
-
-        avatar.heading = Math.atan2(
-            -(POOLVR.ballMeshes[POOLVR.nextBall].position.x - POOLVR.ballMeshes[0].position.x),
-            -(POOLVR.ballMeshes[POOLVR.nextBall].position.z - POOLVR.ballMeshes[0].position.z)
-        );
-        avatar.quaternion.setFromAxisAngle(UP, avatar.heading);
-        avatar.updateMatrixWorld();
-
-        nextVector.copy(toolRoot.position);
-        avatar.localToWorld(nextVector);
-        nextVector.sub(POOLVR.ballMeshes[0].position);
-        nextVector.y = 0;
-        avatar.position.sub(nextVector);
-    }
-    return autoPosition;
-} )();
 
 
 function setupMenu(parent) {
@@ -118,7 +68,7 @@ function startTutorial() {
 
 
 
-var animate = function (leapController, animateLeap,
+var animate = function (keyboard, gamepad, leapController, animateLeap,
                         toolRoot, shadowMap,
                         stickMesh, tipMesh,
                         H_table,
@@ -170,20 +120,20 @@ var animate = function (leapController, animateLeap,
 
         app.world.step(1/75, dt, 10);
 
-        app.keyboard.update(dt);
-        app.gamepad.update(dt);
+        keyboard.update(dt);
+        gamepad.update(dt);
 
-        var floatUp = app.keyboard.getValue("floatUp") + app.keyboard.getValue("floatDown");
-        var drive = app.keyboard.getValue("driveBack") + app.keyboard.getValue("driveForward");
-        var strafe = app.keyboard.getValue("strafeRight") + app.keyboard.getValue("strafeLeft");
+        var floatUp = keyboard.getValue("floatUp") + keyboard.getValue("floatDown");
+        var drive = keyboard.getValue("driveBack") + keyboard.getValue("driveForward");
+        var strafe = keyboard.getValue("strafeRight") + keyboard.getValue("strafeLeft");
 
-        var heading = -0.8 * dt * (app.keyboard.getValue("turnLeft") + app.keyboard.getValue("turnRight"));
+        var heading = -0.8 * dt * (keyboard.getValue("turnLeft") + keyboard.getValue("turnRight"));
         if (avatar.floatMode) {
-            floatUp += app.gamepad.getValue("float");
-            strafe += app.gamepad.getValue("strafe");
+            floatUp += gamepad.getValue("float");
+            strafe += gamepad.getValue("strafe");
         } else {
-            drive += app.gamepad.getValue("drive");
-            heading += 0.8 * dt * app.gamepad.getValue("dheading");
+            drive += gamepad.getValue("drive");
+            heading += 0.8 * dt * gamepad.getValue("dheading");
         }
         floatUp *= floatSpeed;
         if (strafe || drive) {
@@ -202,7 +152,7 @@ var animate = function (leapController, animateLeap,
                 sinHeading = Math.sin(avatar.heading);
 
             // if (!app.vrControls.enabled) {
-            //     pitch -= 0.8 * dt * (app.keyboard.getValue("pitchUp") + app.keyboard.getValue("pitchDown"));
+            //     pitch -= 0.8 * dt * (keyboard.getValue("pitchUp") + keyboard.getValue("pitchDown"));
             //     pitchQuat.setFromAxisAngle(RIGHT, pitch);
             // }
             // var cosPitch = Math.cos(pitch),
@@ -268,28 +218,6 @@ function onLoad() {
         scene.add(centerSpotLight);
     }
 
-    POOLVR.config.keyboardCommands = POOLVR.keyboardCommands;
-    POOLVR.config.gamepadCommands = POOLVR.gamepadCommands;
-
-    var toolOptions = {
-        // ##### Desktop mode (default): #####
-        transformOptions : POOLVR.config.transformOptions, // || {vr: 'desktop'},
-        useBasicMaterials: POOLVR.config.useBasicMaterials,
-        toolLength       : POOLVR.config.toolLength,
-        toolRadius       : POOLVR.config.toolRadius,
-        toolMass         : POOLVR.config.toolMass,
-        toolOffset       : POOLVR.config.toolOffset,
-        toolRotation     : POOLVR.config.toolRotation,
-        tipShape         : POOLVR.config.tipShape
-    };
-    if (POOLVR.config.vrLeap) {
-        // ##### Leap Motion VR tracking mode: #####
-        toolOptions.transformOptions = {vr: true, effectiveParent: app.camera};
-    }
-    // toolOptions.onStreamingStarted = function () { textGeomLogger.log("YOUR LEAP MOTION CONTROLLER IS CONNECTED.  GOOD JOB."); };
-    // toolOptions.onStreamingStopped = function () { textGeomLogger.log("YOUR LEAP MOTION CONTROLLER IS DISCONNECTED!  HOW WILL YOU PLAY?!"); };
-    pyserver.log('toolOptions =\n' + JSON.stringify(toolOptions, undefined, 2));
-
 
     var UP = new THREE.Vector3(0, 1, 0);
     POOLVR.config.onResetVRSensor = function (lastRotation, lastPosition) {
@@ -312,29 +240,27 @@ function onLoad() {
 
 
     app = new WebVRApplication(scene, POOLVR.config);
-    avatar.add(app.camera);
-    scene.add(avatar);
-
 
     THREE.py.CANNONize(scene, app.world);
+
+    avatar.add(app.camera);
+    scene.add(avatar);
 
     app.world.addMaterial(POOLVR.ballMaterial);
     app.world.addMaterial(POOLVR.playableSurfaceMaterial);
     app.world.addMaterial(POOLVR.cushionMaterial);
     app.world.addMaterial(POOLVR.floorMaterial);
     app.world.addMaterial(POOLVR.tipMaterial);
+    app.world.addMaterial(POOLVR.railMaterial);
 
     app.world.addContactMaterial(POOLVR.ballBallContactMaterial);
     app.world.addContactMaterial(POOLVR.ballPlayableSurfaceContactMaterial);
     app.world.addContactMaterial(POOLVR.ballCushionContactMaterial);
     app.world.addContactMaterial(POOLVR.floorBallContactMaterial);
     app.world.addContactMaterial(POOLVR.tipBallContactMaterial);
+    app.world.addContactMaterial(POOLVR.railBallContactMaterial);
 
-
-    toolOptions.keyboard = app.keyboard;
-    toolOptions.gamepad = app.gamepad;
-
-    var toolStuff = addTool(avatar, app.world, toolOptions);
+    var toolStuff = addTool(avatar, app.world, POOLVR.config.toolOptions);
 
     var leapController = toolStuff.leapController;
     var stickMesh      = toolStuff.stickMesh;
@@ -468,7 +394,8 @@ function onLoad() {
     //     //scene.updateMatrixWorld();
     // });
 
-    app.start( animate(leapController, animateLeap,
+    app.start( animate(POOLVR.keyboard, POOLVR.gamepad,
+                       leapController, animateLeap,
                        toolRoot, POOLVR.config.shadowMap,
                        toolStuff.stickMesh, toolStuff.tipMesh,
                        POOLVR.config.H_table,

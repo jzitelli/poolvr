@@ -13,7 +13,7 @@ textGeomLogger.root.position.set(-1.5, -0.23, -2);
 
 var toolRoot;
 
-var animate = function (avatar, leapController, animateLeap,
+var animate = function (avatar, keyboard, gamepad, leapController, animateLeap,
                         toolRoot, stickMesh,
                         animateMousePointer,
                         shadowMap) {
@@ -44,19 +44,19 @@ var animate = function (avatar, leapController, animateLeap,
             app.vrControls.update();
         }
         app.vrManager.render(app.scene, app.camera, t);
-        app.keyboard.update(dt);
-        app.gamepad.update(dt);
+        keyboard.update(dt);
+        gamepad.update(dt);
 
-        var floatUp = app.keyboard.getValue("floatUp") + app.keyboard.getValue("floatDown");
-        var drive = app.keyboard.getValue("driveBack") + app.keyboard.getValue("driveForward");
-        var strafe = app.keyboard.getValue("strafeRight") + app.keyboard.getValue("strafeLeft");
-        var heading = -0.8 * dt * (app.keyboard.getValue("turnLeft") + app.keyboard.getValue("turnRight"));
+        var floatUp = keyboard.getValue("floatUp") + keyboard.getValue("floatDown");
+        var drive = keyboard.getValue("driveBack") + keyboard.getValue("driveForward");
+        var strafe = keyboard.getValue("strafeRight") + keyboard.getValue("strafeLeft");
+        var heading = -0.8 * dt * (keyboard.getValue("turnLeft") + keyboard.getValue("turnRight"));
         if (avatar.floatMode) {
-            floatUp += app.gamepad.getValue("float");
-            strafe += app.gamepad.getValue("strafe");
+            floatUp += gamepad.getValue("float");
+            strafe += gamepad.getValue("strafe");
         } else {
-            drive += app.gamepad.getValue("drive");
-            heading += 0.8 * dt * app.gamepad.getValue("dheading");
+            drive += gamepad.getValue("drive");
+            heading += 0.8 * dt * gamepad.getValue("dheading");
         }
         if (strafe || drive) {
             var len = walkSpeed * Math.min(1, 1 / Math.sqrt(drive * drive +
@@ -73,7 +73,7 @@ var animate = function (avatar, leapController, animateLeap,
         var cosHeading = Math.cos(avatar.heading),
             sinHeading = Math.sin(avatar.heading);
         // if (!app.vrControls.enabled) {
-        //     pitch -= 0.8 * dt * (app.keyboard.getValue("pitchUp") + app.keyboard.getValue("pitchDown"));
+        //     pitch -= 0.8 * dt * (keyboard.getValue("pitchUp") + keyboard.getValue("pitchDown"));
         //     pitchQuat.setFromAxisAngle(RIGHT, pitch);
         // }
         // var cosPitch = Math.cos(pitch),
@@ -124,15 +124,9 @@ function onLoad() {
         // centerSpotLightHelper.visible = false;
     }
 
-    scene.add(avatar);
-
-
-    textGeomLogger.log(JSON.stringify(POOLVR.config, undefined, 2));
+    // textGeomLogger.log(JSON.stringify(POOLVR.config, undefined, 2));
 
     var mouseStuff = setupMouse(avatar, undefined, '../images/mouseParticle.png');
-
-    POOLVR.config.keyboardCommands = POOLVR.keyboardCommands;
-    POOLVR.config.gamepadCommands = POOLVR.gamepadCommands;
 
     var UP = new THREE.Vector3(0, 1, 0);
     POOLVR.config.onResetVRSensor = function (lastRotation, lastPosition) {
@@ -147,14 +141,15 @@ function onLoad() {
     };
 
     app = new WebVRApplication(scene, POOLVR.config);
+    THREE.py.CANNONize(scene, app.world);
+
+    scene.add(avatar);
     avatar.add(app.camera);
 
-    POOLVR.config.keyboard = app.keyboard;
-    POOLVR.config.gamepad = app.gamepad;
-    var toolStuff = addTool(avatar, app.world, POOLVR.config);
+    var toolStuff = addTool(avatar, app.world, POOLVR.config.toolOptions);
     toolRoot = toolStuff.toolRoot;
 
-    app.start( animate(avatar,
+    app.start( animate(avatar, POOLVR.keyboard, POOLVR.gamepad,
                        toolStuff.leapController,
                        toolStuff.animateLeap,
                        toolStuff.toolRoot,
