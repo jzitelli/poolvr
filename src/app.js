@@ -245,19 +245,7 @@ function onLoad() {
     avatar.add(app.camera);
     scene.add(avatar);
 
-    app.world.addMaterial(POOLVR.ballMaterial);
-    app.world.addMaterial(POOLVR.playableSurfaceMaterial);
-    app.world.addMaterial(POOLVR.cushionMaterial);
-    app.world.addMaterial(POOLVR.floorMaterial);
-    app.world.addMaterial(POOLVR.tipMaterial);
-    app.world.addMaterial(POOLVR.railMaterial);
-
-    app.world.addContactMaterial(POOLVR.ballBallContactMaterial);
-    app.world.addContactMaterial(POOLVR.ballPlayableSurfaceContactMaterial);
-    app.world.addContactMaterial(POOLVR.ballCushionContactMaterial);
-    app.world.addContactMaterial(POOLVR.floorBallContactMaterial);
-    app.world.addContactMaterial(POOLVR.tipBallContactMaterial);
-    app.world.addContactMaterial(POOLVR.railBallContactMaterial);
+    POOLVR.setupMaterials(app.world);
 
     var toolStuff = addTool(avatar, app.world, POOLVR.toolOptions);
 
@@ -267,134 +255,7 @@ function onLoad() {
     var tipBody        = toolStuff.tipBody;
     toolRoot           = toolStuff.toolRoot;
 
-    tipBody.material = POOLVR.tipMaterial;
-
-
-    // referenced by cannon.js callbacks:
-    var ballStripeMeshes = [],
-        ballShadowMeshes = [];
-    // first pass:
-    scene.traverse(function (node) {
-        if (node instanceof THREE.Mesh) {
-            var ballNum;
-            if (node.name.startsWith('ball ')) {
-                ballNum = Number(node.name.split(' ')[1]);
-                POOLVR.ballMeshes[ballNum] = node;
-                POOLVR.ballBodies[ballNum] = node.body;
-                POOLVR.initialPositions[ballNum] = new THREE.Vector3().copy(node.position);
-                node.body.bounces = 0;
-                node.body.ballNum = ballNum;
-                node.body.material = POOLVR.ballMaterial;
-            }
-            else if (node.name.startsWith('ballStripeMesh')) {
-                ballNum = Number(node.name.split(' ')[1]);
-                ballStripeMeshes[ballNum] = node;
-            }
-            else if (node.name.startsWith('ballShadowMesh')) {
-                ballNum = Number(node.name.split(' ')[1]);
-                ballShadowMeshes[ballNum] = node;
-            }
-
-            else if (node.name === 'playableSurfaceMesh') {
-                node.body.material = POOLVR.playableSurfaceMaterial;
-            }
-
-            else if (node.name.endsWith('CushionMesh')) {
-                node.body.material = POOLVR.cushionMaterial;
-            }
-
-            else if (node.name === 'floorMesh') {
-                node.body.material = POOLVR.floorMaterial;
-            }
-
-            else if (node.name.endsWith('RailMesh')) {
-                node.body.material = POOLVR.railMaterial;
-            }
-
-        }
-    });
-    // second pass:
-    var H_table     = POOLVR.config.H_table,
-        ball_radius = POOLVR.config.ball_diameter / 2;
-    scene.traverse(function (node) {
-        if (node instanceof THREE.Mesh && node.name.startsWith('ball ')) {
-            var ballBum = node.body.ballNum;
-            var body = node.body;
-            var mesh = node;
-            body.addEventListener(CANNON.Body.COLLIDE_EVENT_NAME, function(evt) {
-                var body = evt.body;
-                var contact = evt.contact;
-                // ball-ball collision:
-                if (contact.bi === body && contact.bi.material === contact.bj.material) {
-                    var impactVelocity = contact.getImpactVelocityAlongNormal();
-                    playCollisionSound(impactVelocity);
-                }
-            });
-            // post step callback: reposition mesh, shadow, stripe
-            app.world.addEventListener("postStep", function () {
-                this.position.copy(this.body.position);
-                var ballNum = this.body.ballNum;
-                var stripeMesh = ballStripeMeshes[ballNum];
-                if (stripeMesh !== undefined) {
-                    stripeMesh.quaternion.copy(this.body.quaternion);
-                }
-                var shadowMesh = ballShadowMeshes[ballNum];
-                if (shadowMesh) {
-                    shadowMesh.position.y = -(this.position.y - H_table) + 0.0004;
-                }
-                // var awakes = false;
-                // for (var j = 0; j < ballBodies.length; ++j) {
-                //     // if (body.sleepState === CANNON.Body.AWAKE) {
-                //     //     awakes = true;
-                //     //     doAutoPosition = true;
-                //     // }
-                // }
-            }.bind(mesh));
-        }
-        else if (node instanceof THREE.Mesh && node.name === 'floorMesh') {
-            // ball-floor collision
-            node.body.addEventListener(CANNON.Body.COLLIDE_EVENT_NAME, function (evt) {
-                var body = evt.body;
-                if (body.ballNum === 0) {
-                    textGeomLogger.log("SCRATCH.");
-                    synthSpeaker.speak("Scratch.");
-                    body.position.copy(POOLVR.initialPositions[0]);
-                    body.velocity.set(0, 0, 0);
-                } else {
-                    body.bounces++;
-                    if (body.bounces === 1) {
-                        textGeomLogger.log(body.mesh.name + " HIT THE FLOOR!");
-                        playPocketedSound();
-                        POOLVR.onTable[body.ballNum] = false;
-                        POOLVR.nextBall = POOLVR.onTable.indexOf(true);
-                        if (POOLVR.nextBall === -1) {
-                            synthSpeaker.speak("You cleared the table.  Well done.");
-                            textGeomLogger.log("YOU CLEARED THE TABLE.  WELL DONE.");
-                            resetTable();
-                        }
-                    } else if (body.bounces === 7) {
-                        body.sleep();
-                        // autoPosition(avatar, 5);
-                    }
-                }
-            });
-        }
-    });
-    var tipEventCounter = 0;
-    tipBody.addEventListener(CANNON.Body.COLLIDE_EVENT_NAME, function (evt) {
-        tipEventCounter++;
-        if (tipEventCounter === 1) {
-            synthSpeaker.speak("You moved a ball.  Good job.");
-        }
-        else if (tipEventCounter === 16) {
-            synthSpeaker.speak("Hi.");
-        }
-    });
-    // app.world.addEventListener("postStep", function () {
-    //     stickMesh.position.copy(tipBody.position);
-    //     stickMesh.parent.worldToLocal(stickMesh.position);
-    //     //scene.updateMatrixWorld();
-    // });
+    POOLVR.setupWorld(scene, app.world, tipBody);
 
     app.start( animate(POOLVR.keyboard, POOLVR.gamepad,
                        leapController, animateLeap,

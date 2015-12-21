@@ -9,10 +9,11 @@ avatar.toolMode = false;
 
 var textGeomLogger = new TextGeomLogger(undefined, {nrows: 20, size: 0.043});
 avatar.add(textGeomLogger.root);
-textGeomLogger.root.position.set(-1.5, -0.23, -2);
+textGeomLogger.root.position.set(-1.5, -0.23, -1.8);
 
 var toolRoot;
 
+var mouseStuff = setupMouse(avatar, undefined, '../images/mouseParticle.png');
 
 function setupMenu(parent) {
     "use strict";
@@ -31,10 +32,10 @@ var menu = setupMenu(avatar);
 var animate = function (avatar, keyboard, gamepad, leapController, animateLeap,
                         toolRoot, stickMesh,
                         animateMousePointer,
-                        shadowMap) {
+                        useShadowMap) {
     "use strict";
     var H_table = POOLVR.config.H_table;
-    if (!shadowMap) {
+    if (!useShadowMap) {
         var stickShadow = new THREE.Object3D();
         stickShadow.position.set(stickMesh.position.x,
             (H_table + 0.001 - toolRoot.position.y - avatar.position.y) / toolRoot.scale.y,
@@ -106,7 +107,7 @@ var animate = function (avatar, keyboard, gamepad, leapController, animateLeap,
             lastFrameID = frame.id;
         }
 
-        if (!shadowMap) {
+        if (!useShadowMap) {
             stickShadow.position.set(stickMesh.position.x,
                 (H_table + 0.001 - toolRoot.position.y - avatar.position.y) / toolRoot.scale.y,
                 stickMesh.position.z);
@@ -121,8 +122,32 @@ var animate = function (avatar, keyboard, gamepad, leapController, animateLeap,
 };
 
 
+/* jshint multistr: true */
 function onLoad() {
     "use strict";
+    pyserver.log("\n\
+*********************************************----\n\
+*********************************************----\n\
+*********************************************----\n\
+    ---- starting poolvr CONFIGURATOR... --------\n\
+*********************************************----\n\
+*********************************************----\n\
+*********************************************----\n\
+    ---------------------------------------------\n");
+    pyserver.log('WebVRConfig =\n' + JSON.stringify(WebVRConfig, undefined, 2));
+    pyserver.log('userAgent = ' + userAgent);
+    if (navigator.getVRDevices) {
+        navigator.getVRDevices().then(function (devices) {
+            devices.forEach(function (device, i) {
+                pyserver.log('\nVR device ' + i + ': ' + device.deviceName);
+                console.log(device);
+            });
+        });
+    }
+    pyserver.log("POOLVR.config =\n" + JSON.stringify(POOLVR.config, undefined, 2));
+
+    textGeomLogger.log(JSON.stringify(POOLVR.config, undefined, 2));
+
     var scene = THREE.py.parse(JSON_SCENE);
 
     if (!POOLVR.config.useBasicMaterials) {
@@ -139,22 +164,20 @@ function onLoad() {
         // centerSpotLightHelper.visible = false;
     }
 
-    textGeomLogger.log(JSON.stringify(POOLVR.config, undefined, 2));
-
-    var mouseStuff = setupMouse(avatar, undefined, '../images/mouseParticle.png');
 
     var UP = new THREE.Vector3(0, 1, 0);
     var appConfig = combineObjects(POOLVR.config, {
         onResetVRSensor: function (lastRotation, lastPosition) {
             // TODO
             pyserver.log('updating the toolRoot position...');
-            app.camera.updateMatrix();
+            //app.camera.updateMatrix();
             avatar.heading += lastRotation - app.camera.rotation.y;
             toolRoot.rotation.y -= (lastRotation - app.camera.rotation.y);
             toolRoot.position.sub(lastPosition);
             toolRoot.position.applyAxisAngle(UP, -lastRotation + app.camera.rotation.y);
             toolRoot.position.add(app.camera.position);
-            toolRoot.updateMatrix();
+            //toolRoot.updateMatrix();
+            avatar.updateMatrixWorld();
         }
     });
     app = new WebVRApplication(scene, appConfig);
@@ -164,8 +187,12 @@ function onLoad() {
     scene.add(avatar);
     avatar.add(app.camera);
 
+    POOLVR.setupMaterials(app.world);
+
     var toolStuff = addTool(avatar, app.world, POOLVR.toolOptions);
     toolRoot = toolStuff.toolRoot;
+
+    POOLVR.setupWorld(scene, app.world, toolStiff.tipBody);
 
     app.start( animate(avatar, POOLVR.keyboard, POOLVR.gamepad,
                        toolStuff.leapController,
@@ -173,5 +200,5 @@ function onLoad() {
                        toolStuff.toolRoot,
                        toolStuff.stickMesh,
                        mouseStuff.animateMousePointer,
-                       POOLVR.config.shadowMap) );
+                       POOLVR.config.useShadowMap) );
 }
