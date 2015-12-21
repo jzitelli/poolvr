@@ -20,10 +20,17 @@ var menu = setupMenu(avatar);
 function setupMenu(parent) {
     "use strict";
     var menu = new THREE.Object3D();
+
     var textGeom = new THREE.TextGeometry('RESET TABLE', {font: 'anonymous pro', size: 0.2, height: 0, curveSegments: 2});
     var textMesh = new THREE.Mesh(textGeom);
     textMesh.position.set(0, 1, -2);
     menu.add(textMesh);
+
+    textGeom = new THREE.TextGeometry('SAVE CONFIG', {font: 'anonymous pro', size: 0.2, height: 0, curveSegments: 2});
+    textMesh = new THREE.Mesh(textGeom);
+    textMesh.position.set(0, 0.7, -2);
+    menu.add(textMesh);
+
     parent.add(menu);
     menu.visible = true;
     return menu;
@@ -115,7 +122,7 @@ var animate = function (avatar, keyboard, gamepad, leapController, animateLeap,
             stickShadowMesh.quaternion.copy(stickMesh.quaternion);
         }
 
-        animateMousePointer(t);
+        animateMousePointer(t, app.camera);
 
         lt = t;
     }

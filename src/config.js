@@ -74,10 +74,10 @@ POOLVR.keyboardCommands = {
     rotateToolCCW:   {buttons: [Primrose.Input.Keyboard.Y]},
 
     resetTable: {buttons: [Primrose.Input.Keyboard.R],
-                 commandDown: function(){resetTable();}, dt: 0.5},
+                 commandDown: function(){POOLVR.resetTable();}, dt: 0.5},
 
     autoPosition: {buttons: [Primrose.Input.Keyboard.P],
-                   commandDown: function(){autoPosition(avatar);}, dt: 0.5},
+                   commandDown: function(){POOLVR.autoPosition(avatar);}, dt: 0.5},
 
     toggleVRControls: {buttons: [Primrose.Input.Keyboard.V],
                        commandDown: function(){app.toggleVRControls();}, dt: 0.25},
@@ -126,7 +126,7 @@ POOLVR.gamepadCommands = {
                dt: 0.5},
 
     autoPosition: {buttons: [Primrose.Input.Gamepad.XBOX_BUTTONS.Y],
-                   commandDown: function(){autoPosition(avatar);}, dt: 0.5},
+                   commandDown: function(){POOLVR.autoPosition(avatar);}, dt: 0.5},
 
     resetVRSensor: {buttons: [Primrose.Input.Gamepad.XBOX_BUTTONS.back],
                     commandDown: function(){app.resetVRSensor();}, dt: 0.25},
@@ -217,7 +217,7 @@ POOLVR.onTable = [false,
 POOLVR.nextBall = 1;
 
 
-function resetTable() {
+POOLVR.resetTable = function () {
     "use strict";
     POOLVR.ballBodies.forEach(function (body, ballNum) {
         body.wakeUp();
@@ -231,10 +231,10 @@ function resetTable() {
     }
     POOLVR.nextBall = 1;
     textGeomLogger.log("TABLE RESET.");
-}
+};
 
 
-var autoPosition = ( function () {
+POOLVR.autoPosition = ( function () {
     "use strict";
     var nextVector = new THREE.Vector3();
     var UP = new THREE.Vector3(0, 1, 0);
@@ -264,6 +264,7 @@ var autoPosition = ( function () {
 POOLVR.toggleMenu = function () {
     menu.visible = !menu.visible;
     mouseStuff.mousePointerMesh.visible = menu.visible;
+    mouseStuff.setPickables(menu.children);
 };
 
 
@@ -420,7 +421,7 @@ POOLVR.setupWorld = function (scene, world, tipBody) {
                         if (POOLVR.nextBall === -1) {
                             synthSpeaker.speak("You cleared the table.  Well done.");
                             textGeomLogger.log("YOU CLEARED THE TABLE.  WELL DONE.");
-                            resetTable();
+                            POOLVR.resetTable();
                         }
                     } else if (body.bounces === 7) {
                         body.sleep();

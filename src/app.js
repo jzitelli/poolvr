@@ -44,7 +44,8 @@ function setupMenu(parent) {
     var menu = new THREE.Object3D();
     var textGeom = new THREE.TextGeometry('RESET TABLE', {font: 'anonymous pro', size: 0.2, height: 0, curveSegments: 2});
     var textMesh = new THREE.Mesh(textGeom);
-    textMesh.position.set(0, 1, -2);
+    textMesh.onSelect = POOLVR.resetTable;
+    textMesh.position.set(0, 0.8, -2);
     menu.add(textMesh);
     parent.add(menu);
     menu.visible = false;
@@ -175,7 +176,7 @@ var animate = function (keyboard, gamepad, leapController, animateLeap,
             stickShadowMesh.quaternion.copy(stickMesh.quaternion);
         }
 
-        animateMousePointer(t);
+        animateMousePointer(t, app.camera);
 
         lt = t;
     }
