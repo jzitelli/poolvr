@@ -20,15 +20,16 @@ var menu = setupMenu(avatar);
 function setupMenu(parent) {
     "use strict";
     var menu = new THREE.Object3D();
+    var material = new THREE.MeshBasicMaterial({color: 0x22ee33});
 
     var textGeom = new THREE.TextGeometry('RESET TABLE', {font: 'anonymous pro', size: 0.2, height: 0, curveSegments: 2});
-    var textMesh = new THREE.Mesh(textGeom);
+    var textMesh = new THREE.Mesh(textGeom, material);
     textMesh.position.set(0, 1, -2);
     menu.add(textMesh);
     textMesh.onSelect = POOLVR.resetTable;
 
     textGeom = new THREE.TextGeometry('SAVE CONFIG', {font: 'anonymous pro', size: 0.2, height: 0, curveSegments: 2});
-    textMesh = new THREE.Mesh(textGeom);
+    textMesh = new THREE.Mesh(textGeom, material.clone());
     textMesh.position.set(0, 0.7, -2);
     menu.add(textMesh);
     textMesh.onSelect = POOLVR.saveConfig;

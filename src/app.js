@@ -42,11 +42,14 @@ var menu = setupMenu(avatar);
 function setupMenu(parent) {
     "use strict";
     var menu = new THREE.Object3D();
+    var material = new THREE.MeshBasicMaterial({color: 0x22ee33});
+
     var textGeom = new THREE.TextGeometry('RESET TABLE', {font: 'anonymous pro', size: 0.2, height: 0, curveSegments: 2});
-    var textMesh = new THREE.Mesh(textGeom);
+    var textMesh = new THREE.Mesh(textGeom, material);
     textMesh.onSelect = POOLVR.resetTable;
     textMesh.position.set(0, 0.8, -2);
     menu.add(textMesh);
+
     parent.add(menu);
     menu.visible = false;
     return menu;
