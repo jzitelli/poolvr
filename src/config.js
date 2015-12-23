@@ -459,26 +459,61 @@ POOLVR.setupWorld = function (scene, world, tipBody) {
 
 ( function () {
     "use strict";
+    if (!POOLVR.config.pyserver) {
+        var localStorageConfig = localStorage.getItem(POOLVR.version);
+        if (localStorageConfig) {
+            localStorageConfig = JSON.parse(localStorageConfig);
+            for (var k in localStorageConfig) {
+                if (POOLVR.config.hasOwnProperty(k)) {
+                    POOLVR.config[k] = localStorageConfig[k];
+                }
+            }
+            console.log("POOLVR.config was loaded from localStorage");
+        }
+    }
+
+
     for (var k in POOLVR.config) {
         if (k === 'pyserver') continue;
         var v = POOLVR.config[k];
         if ((v === true) || (v === false)) {
-            var input = document.createElement('input');
-            input.setAttribute('type', 'checkbox');
-            input.setAttribute('text', k);
-            if (v) input.setAttribute('checked', v);
-            var label = document.createElement('label');
-            label.appendChild(input);
-            label.appendChild(document.createTextNode(k));
-            document.body.appendChild(label);
+            function setup(name, v) {
+                var input = document.getElementById(k);
+                if (input) {
+                    // var input = document.createElement('input');
+                    // input.setAttribute('type', 'checkbox');
+                    // input.setAttribute('text', name);
+                    // var label = document.createElement('label');
+                    // label.appendChild(input);
+                    // label.appendChild(document.createTextNode(k));
+                    // document.body.appendChild(label);
+                    if (v) input.setAttribute('checked', v);
+                    input.addEventListener('click', function () {
+                        POOLVR.config[name] = this.getAttribute('checked') || false;
+                        console.log(this.getAttribute('checked'));
+                        console.log('POOLVR.config.'+name+' = '+POOLVR.config[name]);
+                        if (POOLVR.config[name]) {
+                            this.setAttribute('checked', POOLVR.config[name]);
+                        }
+                    }.bind(input));
+                }
+            }
+            setup(k, v);
         }
     }
+    
     if (!POOLVR.config.useWebVRBoilerplate) {
         var vrButton = document.createElement('a');
         vrButton.setAttribute('class', 'primary button');
         vrButton.setAttribute('id', 'enterVR');
         vrButton.appendChild(document.createTextNode('ENTER VR'));
-        document.body.appendChild(vrButton);        
+        document.body.appendChild(vrButton);
+
+        var fullscreenButton = document.createElement('a');
+        fullscreenButton.setAttribute('class', 'primary button');
+        fullscreenButton.setAttribute('id', 'enterFullscreen');
+        fullscreenButton.appendChild(document.createTextNode('ENTER FULLSCREEN'));
+        document.body.appendChild(fullscreenButton);
     }
 } )();
 
@@ -497,21 +532,11 @@ if (POOLVR.fullscreenButton) {
 }
 
 POOLVR.saveConfigButton = document.getElementById('saveConfig');
-POOLVR.saveConfigButton.addEventListener('click', function () {
-    POOLVR.saveConfig();
-    textGeomLogger.log("CONFIGURATION SAVED:");
-    textGeomLogger.log(JSON.stringify(POOLVR.config, undefined, 2));
-});
-
-if (!POOLVR.config.pyserver) {
-    var localStorageConfig = localStorage.getItem(POOLVR.version);
-    if (localStorageConfig) {
-        localStorageConfig = JSON.parse(localStorageConfig);
-        for (var k in localStorageConfig) {
-            if (POOLVR.config.hasOwnProperty(k)) {
-                POOLVR.config[k] = localStorageConfig[k];
-            }
-        }
-        console.log("POOLVR.config was loaded from localStorage");
-    }
+if (POOLVR.saveConfigButton) {
+    POOLVR.saveConfigButton.addEventListener('click', function () {
+        // TODO: callback
+        POOLVR.saveConfig();
+        textGeomLogger.log("CONFIGURATION SAVED:");
+        textGeomLogger.log(JSON.stringify(POOLVR.config, undefined, 2));
+    });
 }

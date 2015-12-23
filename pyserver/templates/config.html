@@ -22,6 +22,10 @@
         padding: 0;
         overflow: hidden;
       }
+      form {
+        padding: 15px;
+        margin: 15px;
+      }
       .button
       {
         cursor: pointer;
@@ -52,9 +56,6 @@
 
   <body onLoad='onLoad()'>
 
-    
-    <section>
-
       <!-- {% if not useWebVRBoilerplate %} -->
       <!-- <a class="primary button" id="goVR"> -->
       <!--   ENTER VR -->
@@ -63,20 +64,30 @@
       <!--   ENTER FULLSCREEN -->
       <!-- </a> -->
       <!-- {% endif %} -->
-       
-      <a class="primary button" id='saveConfig'>
-        SAVE CONFIGURATION
-      </a>
 
-      <label>Tip shape:
-        <select name='tipShapeSelect'>
-          <option value='Cylinder' >Cylinder</option>
-          <option value='Sphere'   >Sphere</option>
-          <option value='Ellipsoid'>Ellipsoid</option>
-        </select>
-      </label>
-      
-    </section>
+      <form>
+        
+        <a class="primary button" id='saveConfig'>
+          SAVE CONFIGURATION
+        </a>
+        
+        <label>Tip shape:
+          <select name='tipShapeSelect'>
+            <option value='Cylinder' >Cylinder</option>
+            <option value='Sphere'   >Sphere</option>
+            <option value='Ellipsoid'>Ellipsoid</option>
+          </select>
+        </label>
+
+        <input type="checkbox" id="useWebVRBoilerplate">useWebVRBoilerplate</input>
+
+        <input type="checkbox" id="useSkybox">useSkybox</input>
+
+        <input type="checkbox" id="useBasicMaterials">useBasicMaterials</input>
+
+        <input type="checkbox" id="useShadowMap">useShadowMap</input>
+
+      </form>
 
     
     <script src="../lib/three.js"></script>
