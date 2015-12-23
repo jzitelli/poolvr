@@ -89,10 +89,7 @@ POOLVR.keyboardCommands = {
                     commandDown: function(){app.resetVRSensor();}, dt: 0.25},
 
     toggleMenu: {buttons: [Primrose.Input.Keyboard.SPACEBAR],
-                 commandDown: function(){POOLVR.toggleMenu();}, dt: 0.25},
-
-    saveConfig: {buttons: [Primrose.Input.Keyboard.NUMBER1],
-                 commandDown: function(){POOLVR.saveConfig();}, dt: 1.0}
+                 commandDown: function(){POOLVR.toggleMenu();}, dt: 0.25}
 };
 POOLVR.keyboardCommands = makeObjectArray(POOLVR.keyboardCommands, 'name');
 POOLVR.keyboard = new Primrose.Input.Keyboard("keyboard", window, POOLVR.keyboardCommands);
@@ -458,7 +455,3 @@ POOLVR.fullscreenButton.addEventListener('click', function () {
     app.enterFullscreen();
 });
 
-POOLVR.saveConfigButton = document.getElementById('saveConfig');
-POOLVR.saveConfigButton.addEventListener('click', function () {
-    
-});

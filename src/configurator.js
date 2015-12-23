@@ -1,3 +1,11 @@
+POOLVR.saveConfigButton = document.getElementById('saveConfig');
+POOLVR.saveConfigButton.addEventListener('click', function () {
+    POOLVR.saveConfig();
+    textGeomLogger.log("CONFIGURATION SAVED:");
+    textGeomLogger.log(JSON.stringify(POOLVR.config, undefined, 2));
+});
+
+
 var app;
 
 var avatar = new THREE.Object3D();
@@ -28,14 +36,10 @@ function setupMenu(parent) {
     menu.add(textMesh);
     textMesh.onSelect = POOLVR.resetTable;
 
-    textGeom = new THREE.TextGeometry('SAVE CONFIG', {font: 'anonymous pro', size: 0.2, height: 0, curveSegments: 2});
-    textMesh = new THREE.Mesh(textGeom, material.clone());
-    textMesh.position.set(0, 0.7, -2);
-    menu.add(textMesh);
-    textMesh.onSelect = POOLVR.saveConfig;
-
     parent.add(menu);
-    menu.visible = true;
+
+    menu.visible = false;
+    
     return menu;
 }
 

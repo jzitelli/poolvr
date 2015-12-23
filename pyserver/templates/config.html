@@ -87,29 +87,23 @@
   </head>
 
   <body onLoad='onLoad()'>
-
-    <a class="primary button" id="goVR">
-      <div id="fullScreenMsg">Go VR!</div>
-      <small>hit ESC to exit.</small>
-    </a>
-
-    <a class="primary button" id="goFullscreen">
-      Go full-screen<br>
-      <small>hit ESC to exit.</small>
-    </a>
-
-    <br>
-
-    <a class="primary button" id='saveConfig'>
-      Save configuration
-    </a>
-
-    <a class="primary button" id='loadConfig'>
-      Load configuration
-    </a>
-
+    
+    <section>
+      <a class="primary button" id="goVR">
+        ENTER VR
+      </a>
+      
+      <a class="primary button" id="goFullscreen">
+        ENTER FULLSCREEN
+      </a>
+     
+      <a class="primary button" id='saveConfig'>
+        SAVE CONFIGURATION
+      </a>
+    </section>
 
     <script src="../lib/three.js"></script>
+
     <script src="../lib/TextGeometry.js"></script>
     <script src="../lib/FontUtils.js"></script>
 
@@ -124,7 +118,7 @@
 
     <script src="../lib/leap-0.6.4.js"></script>
     <!-- enhanced version w/ tool tracking: -->
-    <script src="../lib/leap.transform.js"></script>
+    <!-- <script src="../lib/leap.transform.js"></script> -->
     <!-- <script src="../lib/leap-widgets-0.1.0.js"></script> -->
 
     <script src="../lib/socket.io.js"></script>
