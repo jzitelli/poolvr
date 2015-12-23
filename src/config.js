@@ -91,10 +91,10 @@ POOLVR.keyboardCommands = {
     toggleMenu: {buttons: [Primrose.Input.Keyboard.SPACEBAR],
                  commandDown: function(){POOLVR.toggleMenu();}, dt: 0.25},
 
-    nextBall: {buttons: [Primrose.Input.Keyboard.PLUS],
+    nextBall: {buttons: [Primrose.Input.Keyboard.ADD],
                commandDown: function(){POOLVR.selectNextBall();}, dt: 0.5},
 
-    prevBall: {buttons: [Primrose.Input.Keyboard.MINUS],
+    prevBall: {buttons: [Primrose.Input.Keyboard.SUBTRACT],
                commandDown: function(){POOLVR.selectNextBall(-1);}, dt: 0.5}
 };
 POOLVR.keyboardCommands = makeObjectArray(POOLVR.keyboardCommands, 'name');
@@ -145,16 +145,6 @@ POOLVR.gamepad.addEventListener("gamepadconnected", function(id) {
         console.log("gamepad " + id + " connected");
     }
 }.bind(POOLVR.gamepad), false);
-
-
-// if (!URL_PARAMS.disableLocalStorage) {
-//     var localStorageConfig = localStorage.getItem(POOLVR.version);
-//     if (localStorageConfig) {
-//         pyserver.log("POOLVR.config loaded from localStorage:");
-//         pyserver.log(localStorageConfig);
-//         POOLVR.config = JSON.parse(localStorageConfig);
-//     }
-// }
 
 
 if (POOLVR.config.useShadowMap) {
@@ -212,14 +202,17 @@ POOLVR.nextBall = 1;
 POOLVR.selectNextBall = function (inc) {
     "use strict";
     inc = inc || 1;
-    var next = (POOLVR.nextBall + inc) % POOLVR.onTable.length;
+    var next = Math.max(1, Math.min(15, POOLVR.nextBall + inc));
     while (!POOLVR.onTable[next]) {
-        next = (next + inc) % POOLVR.onTable.length;
+        next = Math.max(1, Math.min(15, POOLVR.nextBall + inc));
         if (next === POOLVR.nextBall) {
             break;
         }
     }
-    POOLVR.nextBall = next;
+    if (POOLVR.nextBall != next) {
+        POOLVR.nextBall = next;
+        textGeomLogger.log("BALL " + POOLVR.nextBall + " SELECTED");
+    }
 };
 
 
@@ -476,4 +469,18 @@ if (POOLVR.fullscreenButton) {
     POOLVR.fullscreenButton.addEventListener('click', function () {
         app.enterFullscreen();
     });
+}
+
+
+if (!POOLVR.config.pyserver) {
+    var localStorageConfig = localStorage.getItem(POOLVR.version);
+    if (localStorageConfig) {
+        localStorageConfig = JSON.parse(localStorageConfig);
+        for (var k in localStorageConfig) {
+            if (POOLVR.config.hasOwnProperty(k)) {
+                POOLVR.config[k] = localStorageConfig[k];
+            }
+        }
+        console.log("POOLVR.config was loaded from localStorage");
+    }
 }
