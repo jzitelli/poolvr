@@ -45,7 +45,7 @@
     </style>
 
 <!-- three.js scene definition is embedded here -->
-{{ json_config if json_config else "" }}
+{{ json_config }}
 <!-- end three.js scene definition -->
 
   </head>
@@ -58,11 +58,10 @@
       <a class="primary button" id="goVR">
         ENTER VR
       </a>
-      
       <a class="primary button" id="goFullscreen">
         ENTER FULLSCREEN
       </a>
-    <section>
+    </section>
     {% endif %}
 
     
@@ -85,12 +84,11 @@
     <!-- <script src="lib/leap.transform.js"></script> -->
     <!-- <script src="lib/leap-widgets-0.1.0.js"></script> -->
 
-    <script src="lib/socket.io.js"></script>
     <script src="lib/Primrose.js"></script>
 
     <script src="lib/SPE.js"></script>
 
-    <script src="fonts/helvetiker_regular.typeface.js"></script>
+    <!-- <script src="fonts/helvetiker_regular.typeface.js"></script> -->
     <script src="fonts/Anonymous Pro_Regular.js"></script>
 
     <script src="three.py/js/three.py.js"></script>
@@ -102,7 +100,8 @@
     <script src="src/VRShot.js"></script>
     <script src="src/WebVRSound.js"></script>
     <script src="src/SynthSpeaker.js"></script>
-    <script src="src/GfxTablet.js"></script>
+    
+    <!-- <script src="src/GfxTablet.js"></script> -->
 
     <script src="src/pyserver.js"></script>
     <script src="src/config.js"></script>
