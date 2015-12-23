@@ -216,8 +216,9 @@ POOLVR.resetTable = function () {
         body.wakeUp();
         body.position.copy(POOLVR.initialPositions[ballNum]);
         body.velocity.set(0, 0, 0);
-        //body.acceleration.set(0,0,0);
-        //body.bounces = 0;
+        // body.angularVelocity.set(0, 0, 0);
+        // body.bounces = 0;
+        body.mesh.visible = true;
     });
     if (synthSpeaker.speaking === false) {
         synthSpeaker.speak("Table reset.");
@@ -404,6 +405,8 @@ POOLVR.setupWorld = function (scene, world, tipBody) {
                     synthSpeaker.speak("Scratch.");
                     body.position.copy(POOLVR.initialPositions[0]);
                     body.velocity.set(0, 0, 0);
+                    // i like it when it keeps moving
+                    // body.angularVelocity.set(0, 0, 0);
                 } else {
                     body.bounces++;
                     if (body.bounces === 1) {
@@ -418,6 +421,7 @@ POOLVR.setupWorld = function (scene, world, tipBody) {
                         }
                     } else if (body.bounces === 7) {
                         body.sleep();
+                        body.mesh.visible = false;
                         // autoPosition(avatar, 5);
                     }
                 }
