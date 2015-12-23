@@ -1,0 +1,27 @@
+{
+  "H_table": 0.74295,
+  "L_table": 2.3368,
+  "ball_diameter": 0.05715,
+  "gravity": 9.8,
+  "initialPosition": [
+    0,
+    0.9,
+    0.9
+  ],
+  "pyserver": true,
+  "toolOptions": {
+    "tipShape": "Cylinder",
+    "toolOffset": [
+      -0.38763017730789745,
+      -0.5486977669197683,
+      -0.3332906145650899
+    ],
+    "toolRotation": 0.5591837967233252
+  },
+  "useBasicMaterials": true,
+  "usePointLight": false,
+  "useShadowMap": false,
+  "useSkybox": true,
+  "useTextGeomLogger": true,
+  "useWebVRBoilerplate": false
+}

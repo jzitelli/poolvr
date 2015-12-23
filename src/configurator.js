@@ -1,30 +1,3 @@
-POOLVR.saveConfigButton = document.getElementById('saveConfig');
-POOLVR.saveConfigButton.addEventListener('click', function () {
-    POOLVR.saveConfig();
-    textGeomLogger.log("CONFIGURATION SAVED:");
-    textGeomLogger.log(JSON.stringify(POOLVR.config, undefined, 2));
-});
-
-
-( function () {
-    "use strict";
-    for (var k in POOLVR.config) {
-        if (k === 'pyserver') continue;
-        var v = POOLVR.config[k];
-        if ((v === true) || (v === false)) {
-            var input = document.createElement('input');
-            input.setAttribute('type', 'checkbox');
-            input.setAttribute('text', k);
-            if (v) input.setAttribute('checked', v);
-            var label = document.createElement('label');
-            label.appendChild(input);
-            label.appendChild(document.createTextNode(k));
-            document.body.appendChild(label);
-        }
-    }
-} )();
-
-
 var app;
 
 var avatar = new THREE.Object3D();

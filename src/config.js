@@ -456,21 +456,52 @@ POOLVR.setupWorld = function (scene, world, tipBody) {
 };
 
 
-POOLVR.vrButton = document.getElementById('goVR');
+
+( function () {
+    "use strict";
+    for (var k in POOLVR.config) {
+        if (k === 'pyserver') continue;
+        var v = POOLVR.config[k];
+        if ((v === true) || (v === false)) {
+            var input = document.createElement('input');
+            input.setAttribute('type', 'checkbox');
+            input.setAttribute('text', k);
+            if (v) input.setAttribute('checked', v);
+            var label = document.createElement('label');
+            label.appendChild(input);
+            label.appendChild(document.createTextNode(k));
+            document.body.appendChild(label);
+        }
+    }
+    if (!POOLVR.config.useWebVRBoilerplate) {
+        var vrButton = document.createElement('a');
+        vrButton.setAttribute('class', 'primary button');
+        vrButton.setAttribute('id', 'enterVR');
+        vrButton.appendChild(document.createTextNode('ENTER VR'));
+        document.body.appendChild(vrButton);        
+    }
+} )();
+
+POOLVR.vrButton = document.getElementById('enterVR');
 if (POOLVR.vrButton) {
     POOLVR.vrButton.addEventListener('click', function () {
         app.enterVR();
     });
 }
 
-
-POOLVR.fullscreenButton = document.getElementById('goFullscreen');
+POOLVR.fullscreenButton = document.getElementById('enterFullscreen');
 if (POOLVR.fullscreenButton) {
     POOLVR.fullscreenButton.addEventListener('click', function () {
         app.enterFullscreen();
     });
 }
 
+POOLVR.saveConfigButton = document.getElementById('saveConfig');
+POOLVR.saveConfigButton.addEventListener('click', function () {
+    POOLVR.saveConfig();
+    textGeomLogger.log("CONFIGURATION SAVED:");
+    textGeomLogger.log(JSON.stringify(POOLVR.config, undefined, 2));
+});
 
 if (!POOLVR.config.pyserver) {
     var localStorageConfig = localStorage.getItem(POOLVR.version);

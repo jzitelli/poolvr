@@ -55,18 +55,26 @@
     
     <section>
 
-      {% if not useWebVRBoilerplate %}
-      <a class="primary button" id="goVR">
-        ENTER VR
-      </a>
-      <a class="primary button" id="goFullscreen">
-        ENTER FULLSCREEN
-      </a>
-      {% endif %}
-     
+      <!-- {% if not useWebVRBoilerplate %} -->
+      <!-- <a class="primary button" id="goVR"> -->
+      <!--   ENTER VR -->
+      <!-- </a> -->
+      <!-- <a class="primary button" id="goFullscreen"> -->
+      <!--   ENTER FULLSCREEN -->
+      <!-- </a> -->
+      <!-- {% endif %} -->
+       
       <a class="primary button" id='saveConfig'>
         SAVE CONFIGURATION
       </a>
+
+      <label>Tip shape:
+        <select name='tipShapeSelect'>
+          <option value='Cylinder' >Cylinder</option>
+          <option value='Sphere'   >Sphere</option>
+          <option value='Ellipsoid'>Ellipsoid</option>
+        </select>
+      </label>
       
     </section>
 
