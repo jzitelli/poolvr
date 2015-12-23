@@ -22,7 +22,6 @@ app.config.from_object(site_settings)
 
 import pyserver.pool_table as pool_table
 
-#WRITE_FOLDER = os.path.join(os.getcwd(), 'saves')
 WRITE_FOLDER = os.path.join(STATIC_FOLDER, 'saves')
 
 POOLVR = {
@@ -32,12 +31,12 @@ POOLVR = {
         'useWebVRBoilerplate': False,
         'useBasicMaterials'  : True,
         'useShadowMap'       : False,
-        'pointLight'         : None,
-        'skybox'             : True,
+        'usePointLight'      : False,
+        'useSkybox'          : True,
         'L_table'            : 2.3368,
         'H_table'            : 0.74295,
         'ball_diameter'      : 2.25 * pool_table.IN2METER,
-        'textGeomLogger'     : True,
+        'useTextGeomLogger'  : True,
         'toolOptions': {
             'toolOffset'       : [0, -0.42, -0.4],
             'toolRotation'     : 0,

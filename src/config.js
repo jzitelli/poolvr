@@ -56,22 +56,31 @@ var userAgent = navigator.userAgent;
 
 
 POOLVR.keyboardCommands = {
-    turnLeft: {buttons: [-Primrose.Input.Keyboard.LEFTARROW]},
-    turnRight: {buttons: [Primrose.Input.Keyboard.RIGHTARROW]},
+
+    turnLeft:     {buttons: [-Primrose.Input.Keyboard.LEFTARROW]},
+    turnRight:    {buttons: [ Primrose.Input.Keyboard.RIGHTARROW]},
     driveForward: {buttons: [-Primrose.Input.Keyboard.W]},
-    driveBack: {buttons: [Primrose.Input.Keyboard.S]},
-    strafeLeft: {buttons: [-Primrose.Input.Keyboard.A]},
-    strafeRight: {buttons: [Primrose.Input.Keyboard.D]},
-    floatUp: {buttons: [Primrose.Input.Keyboard.E, Primrose.Input.Keyboard.NUMBER9]},
-    floatDown: {buttons: [-Primrose.Input.Keyboard.C, -Primrose.Input.Keyboard.NUMBER3]},
+    driveBack:    {buttons: [ Primrose.Input.Keyboard.S]},
+    strafeLeft:   {buttons: [-Primrose.Input.Keyboard.A]},
+    strafeRight:  {buttons: [ Primrose.Input.Keyboard.D]},
+    floatUp:      {buttons: [ Primrose.Input.Keyboard.E]},
+    floatDown:    {buttons: [-Primrose.Input.Keyboard.C]},
+    
     moveToolUp:        {buttons: [Primrose.Input.Keyboard.O]},
     moveToolDown:      {buttons: [Primrose.Input.Keyboard.PERIOD]},
     moveToolForwards:  {buttons: [Primrose.Input.Keyboard.I]},
     moveToolBackwards: {buttons: [Primrose.Input.Keyboard.K]},
     moveToolLeft:      {buttons: [Primrose.Input.Keyboard.J]},
     moveToolRight:     {buttons: [Primrose.Input.Keyboard.L]},
-    rotateToolCW:    {buttons: [Primrose.Input.Keyboard.U]},
-    rotateToolCCW:   {buttons: [Primrose.Input.Keyboard.Y]},
+    rotateToolCW:      {buttons: [Primrose.Input.Keyboard.U]},
+    rotateToolCCW:     {buttons: [Primrose.Input.Keyboard.Y]},
+
+    toggleVRControls: {buttons: [Primrose.Input.Keyboard.V],
+                       commandDown: function(){app.toggleVRControls();}, dt: 0.25},
+    toggleWireframe: {buttons: [Primrose.Input.Keyboard.NUMBER0],
+                      commandDown: function(){app.toggleWireframe();}, dt: 0.25},
+    resetVRSensor: {buttons: [Primrose.Input.Keyboard.Z],
+                    commandDown: function(){app.resetVRSensor();}, dt: 0.25},
 
     resetTable: {buttons: [Primrose.Input.Keyboard.R],
                  commandDown: function(){POOLVR.resetTable();}, dt: 0.5},
@@ -79,54 +88,49 @@ POOLVR.keyboardCommands = {
     autoPosition: {buttons: [Primrose.Input.Keyboard.P],
                    commandDown: function(){POOLVR.autoPosition(avatar);}, dt: 0.5},
 
-    toggleVRControls: {buttons: [Primrose.Input.Keyboard.V],
-                       commandDown: function(){app.toggleVRControls();}, dt: 0.25},
-
-    toggleWireframe: {buttons: [Primrose.Input.Keyboard.NUMBER0],
-                      commandDown: function(){app.toggleWireframe();}, dt: 0.25},
-
-    resetVRSensor: {buttons: [Primrose.Input.Keyboard.Z],
-                    commandDown: function(){app.resetVRSensor();}, dt: 0.25},
-
     toggleMenu: {buttons: [Primrose.Input.Keyboard.SPACEBAR],
-                 commandDown: function(){POOLVR.toggleMenu();}, dt: 0.25}
+                 commandDown: function(){POOLVR.toggleMenu();}, dt: 0.25},
+
+    nextBall: {buttons: [Primrose.Input.Keyboard.PLUS],
+               commandDown: function(){POOLVR.selectNextBall();}, dt: 0.5},
+
+    prevBall: {buttons: [Primrose.Input.Keyboard.MINUS],
+               commandDown: function(){POOLVR.selectNextBall(-1);}, dt: 0.5}
 };
 POOLVR.keyboardCommands = makeObjectArray(POOLVR.keyboardCommands, 'name');
 POOLVR.keyboard = new Primrose.Input.Keyboard("keyboard", window, POOLVR.keyboardCommands);
 
 var DEADZONE = 0.2;
 POOLVR.gamepadCommands = {
-    strafe: {axes: [Primrose.Input.Gamepad.LSX], deadzone: DEADZONE},
-    drive: {axes: [Primrose.Input.Gamepad.LSY], deadzone: DEADZONE},
+    
+    strafe:   {axes: [ Primrose.Input.Gamepad.LSX], deadzone: DEADZONE},
+    drive:    {axes: [ Primrose.Input.Gamepad.LSY], deadzone: DEADZONE},
+    float:    {axes: [-Primrose.Input.Gamepad.LSY], deadzone: DEADZONE},
     dheading: {axes: [-Primrose.Input.Gamepad.LSX], deadzone: DEADZONE},
-    pitch: {axes: [Primrose.Input.Gamepad.LSY], integrate: true, deadzone: DEADZONE,
-            max: 0.5 * Math.PI, min: -0.5 * Math.PI},
-    float: {axes: [-Primrose.Input.Gamepad.LSY], deadzone: DEADZONE},
+    pitch:    {axes: [ Primrose.Input.Gamepad.LSY], deadzone: DEADZONE,
+               integrate: true, max: 0.5 * Math.PI, min: -0.5 * Math.PI},
     toggleFloatMode: {buttons: [Primrose.Input.Gamepad.XBOX_BUTTONS.leftStick],
-                      commandDown: function () { avatar.floatMode = true; },
-                      commandUp: function () { avatar.floatMode = false; }},
-    toolStrafe: {axes: [Primrose.Input.Gamepad.RSX], deadzone: DEADZONE},
-    toolDrive: {axes: [Primrose.Input.Gamepad.RSY], deadzone: DEADZONE},
-    toolFloat: {axes: [-Primrose.Input.Gamepad.RSY], deadzone: DEADZONE},
-    toolRotY: {axes: [Primrose.Input.Gamepad.RSY], integrate: true, deadzone: DEADZONE,
-               max: 2 * Math.PI, min: 0},
+                      commandDown: function(){avatar.floatMode=true;},
+                      commandUp: function(){avatar.floatMode=false;}},
+
+    toolStrafe: {axes: [ Primrose.Input.Gamepad.RSX], deadzone: DEADZONE},
+    toolDrive:  {axes: [ Primrose.Input.Gamepad.RSY], deadzone: DEADZONE},
+    toolFloat:  {axes: [-Primrose.Input.Gamepad.RSY], deadzone: DEADZONE},
     toggleToolFloatMode: {buttons: [Primrose.Input.Gamepad.XBOX_BUTTONS.rightStick],
-                          commandDown: function () { avatar.toolMode = true; },
+                          commandDown: function(){avatar.toolMode=true;},
                           commandUp: function(){avatar.toolMode=false;}},
-
-    nextBall: {buttons: [Primrose.Input.Gamepad.XBOX_BUTTONS.rightBumper],
-               commandDown: function () { POOLVR.nextBall = Math.max(1, (POOLVR.nextBall + 1) % 16); },
-               dt: 0.5},
-
-    prevBall: {buttons: [Primrose.Input.Gamepad.XBOX_BUTTONS.leftBumper],
-               commandDown: function(){POOLVR.nextBall=Math.max(1,(POOLVR.nextBall-1)%16);},
-               dt: 0.5},
-
-    autoPosition: {buttons: [Primrose.Input.Gamepad.XBOX_BUTTONS.Y],
-                   commandDown: function(){POOLVR.autoPosition(avatar);}, dt: 0.5},
 
     resetVRSensor: {buttons: [Primrose.Input.Gamepad.XBOX_BUTTONS.back],
                     commandDown: function(){app.resetVRSensor();}, dt: 0.25},
+
+    nextBall: {buttons: [Primrose.Input.Gamepad.XBOX_BUTTONS.rightBumper],
+               commandDown: function(){POOLVR.selectNextBall();}, dt: 0.5},
+
+    prevBall: {buttons: [Primrose.Input.Gamepad.XBOX_BUTTONS.leftBumper],
+               commandDown: function(){POOLVR.selectNextBall(-1);}, dt: 0.5},
+
+    autoPosition: {buttons: [Primrose.Input.Gamepad.XBOX_BUTTONS.Y],
+                   commandDown: function(){POOLVR.autoPosition(avatar);}, dt: 0.5},
 
     toggleMenu: {buttons: [Primrose.Input.Gamepad.XBOX_BUTTONS.start],
                  commandDown: function(){POOLVR.toggleMenu();}, dt: 0.25}
@@ -181,9 +185,6 @@ POOLVR.toolOptions = combineObjects(POOLVR.config.toolOptions, {
 // toolOptions.onStreamingStopped = function () { textGeomLogger.log("YOUR LEAP MOTION CONTROLLER IS DISCONNECTED!  HOW WILL YOU PLAY?!"); };
 
 
-POOLVR.config.textGeomLogger = URL_PARAMS.textGeomLogger || POOLVR.config.textGeomLogger;
-
-
 POOLVR.saveConfig = function () {
     "use strict";
     if (POOLVR.config.pyserver) {
@@ -206,6 +207,20 @@ POOLVR.onTable = [false,
                   true,
                   true, true, true, true, true, true, true];
 POOLVR.nextBall = 1;
+
+
+POOLVR.selectNextBall = function (inc) {
+    "use strict";
+    inc = inc || 1;
+    var next = (POOLVR.nextBall + inc) % POOLVR.onTable.length;
+    while (!POOLVR.onTable[next]) {
+        next = (next + inc) % POOLVR.onTable.length;
+        if (next === POOLVR.nextBall) {
+            break;
+        }
+    }
+    POOLVR.nextBall = next;
+};
 
 
 POOLVR.resetTable = function () {
@@ -432,7 +447,9 @@ POOLVR.setupWorld = function (scene, world, tipBody) {
     tipBody.addEventListener(CANNON.Body.COLLIDE_EVENT_NAME, function (evt) {
         tipEventCounter++;
         if (tipEventCounter === 1) {
-            synthSpeaker.speak("You moved a ball.  Good job.");
+            setTimeout(function () {
+                synthSpeaker.speak("You moved a ball.  Good job.");
+            }, 250);
         }
         else if (tipEventCounter === 16) {
             synthSpeaker.speak("Hi.");

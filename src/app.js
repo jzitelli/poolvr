@@ -25,7 +25,7 @@ var toolRoot;
 var synthSpeaker = new SynthSpeaker({volume: 0.5, rate: 0.8, pitch: 0.5});
 
 var textGeomLogger;
-if (POOLVR.config.textGeomLogger) {
+if (POOLVR.config.useTextGeomLogger) {
    textGeomLogger = new TextGeomLogger();
 } else {
     textGeomLogger = {

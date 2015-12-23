@@ -33,7 +33,7 @@ def pool_table(L_table=2.3368, W_table=None, H_table=0.74295,
                L_playable=None, W_playable=None,
                ball_diameter=2.25*IN2METER,
                W_cushion=2*IN2METER, H_cushion=None, W_rail=None,
-               useBasicMaterials=True, useShadowMap=False, **kwargs):
+               useBasicMaterials=True, **kwargs):
     """Procedurally defined three.js pool table 'Object3D' (three.js Object format V4)
 
     :param L_table: length of the pool table (longer than the playable surface); default is 8ft.
@@ -215,12 +215,12 @@ def pool_table(L_table=2.3368, W_table=None, H_table=0.74295,
 
 def pool_hall(useBasicMaterials=True,
               useShadowMap=False,
-              pointLight=None,
-              url_prefix="",
+              usePointLight=False,
+              useSkybox=False,
               L_table=2.3368,
               H_table=0.74295,
               ball_diameter=2.25*IN2METER,
-              skybox=False,
+              url_prefix="",
               **kwargs):
     scene = Scene()
     L_room, W_room = 10, 10
@@ -235,16 +235,16 @@ def pool_hall(useBasicMaterials=True,
                                               'shapes': ['Plane']}})
     scene.add(floorMesh)
 
-    if pointLight:
+    if usePointLight:
         light = PointLight(color=0xaa8866, position=[4, 5, 2.5], intensity=0.8, distance=40)
         scene.add(light)
 
-    if skybox:
+    if useSkybox:
         scene.add(Skybox(cube_images=[url_prefix + "images/%s.png" % pos
                                       for pos in ('px', 'nx', 'py', 'ny', 'pz', 'nz')]))
 
     poolTable = pool_table(L_table=L_table, H_table=H_table, ball_diameter=ball_diameter,
-                           useBasicMaterials=useBasicMaterials, useShadowMap=useShadowMap, pointLight=pointLight, **kwargs)
+                           useBasicMaterials=useBasicMaterials, **kwargs)
     scene.add(poolTable)
 
     # balls:
