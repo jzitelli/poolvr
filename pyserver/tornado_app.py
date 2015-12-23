@@ -6,7 +6,7 @@ _logger = logging.getLogger(__name__)
 from operator import itemgetter
 
 from tornado.wsgi import WSGIContainer
-from tornado.web import Application, FallbackHandler, StaticFileHandler
+from tornado.web import Application, FallbackHandler
 from tornado.ioloop import IOLoop
 
 import sys
