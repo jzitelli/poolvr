@@ -125,8 +125,14 @@ var animate = function (keyboard, gamepad, leapController, animateLeap,
             lastFrameID = frame.id;
         }
 
-        app.world.step(1/75, dt, 10);
-
+        // app.world.step(1/75, dt, 10);
+        // app.world.step(dt);
+        if (dt < 1/60) {
+            app.world.step(dt);
+        } else {
+            app.world.step(1/60, dt, 10);
+        }
+        
         keyboard.update(dt);
         gamepad.update(dt);
 
