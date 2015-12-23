@@ -57,36 +57,86 @@ WebVRApplication = ( function () {
         this.vrControls = new THREE.VRControls(this.camera);
         this.vrControls.enabled = true;
 
+
         if (useWebVRBoilerplate) {
+
             this.vrManager = new WebVRManager(this.renderer, this.vrEffect, {
                 hideButton: false
             });
+
+            this.enterVR = function () {
+            };
+
         } else {
-            // TODO: HTML/CSS interface
+
+            var vrMode = 0;
+
+            window.addEventListener("resize", function () {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                vrEffect.setSize(window.innerWidth, window.innerHeight);
+            });
+
+            this.enterVR = function () {
+                if (vrMode === 0) {
+                    vrMode = 1;
+                    this.vrEffect.setFullScreen(true);
+                }
+            }.bind(this);
+
             this.vrManager = ( function () {
-                var mode = 0;
-                var onFullscreenChange = function () {
-                    mode = 1 - mode;
-                    vrEffect.setSize(window.innerWidth, window.innerHeight);
-                };
-                document.addEventListener('webkitfullscreenchange', onFullscreenChange);
-                document.addEventListener('mozfullscreenchange', onFullscreenChange);
-                window.addEventListener('keydown', function (evt) {
-                    if (evt.keyCode === 70) { // F
-                        vrEffect.setFullScreen((mode === 0));
-                    }
-                });
+                // var onFullscreenChange = function () {
+                //     vrEffect.setSize(window.innerWidth, window.innerHeight);
+                // };
+                // document.addEventListener('webkitfullscreenchange', onFullscreenChange);
+                // document.addEventListener('mozfullscreenchange', onFullscreenChange);
+                // window.addEventListener('keydown', function (evt) {
+                //     if (evt.keyCode === 70) { // F
+                //         this.enterVR();
+                //     }
+                // });
                 return {
                     isVRMode: function () {
-                        return mode === 1;
+                        return vrMode === 1;
                     },
                     render: function (scene, camera, t) {
-                        if (mode === 1) vrEffect.render(scene, camera);
+                        if (vrMode === 1) vrEffect.render(scene, camera);
                         else renderer.render(scene, camera);
                     }
                 };
-            } )();
+            }.bind(this) )();
+
+            this.enterFullscreen = function () {
+                // Primrose function:
+                function requestFullScreen ( elem, vrDisplay ) {
+                    var fullScreenParam;
+                    if ( window.HMDVRDevice && vrDisplay && vrDisplay instanceof HMDVRDevice) {
+                        fullScreenParam = {vrDisplay: vrDisplay};
+                    }
+                    if ( elem.webkitRequestFullscreen && fullScreenParam ) {
+                        elem.webkitRequestFullscreen( fullScreenParam );
+                    }
+                    else if ( elem.webkitRequestFullscreen && !fullScreenParam ) {
+                        elem.webkitRequestFullscreen( window.Element.ALLOW_KEYBOARD_INPUT );
+                    }
+                    else if ( elem.mozRequestFullScreen && fullScreenParam ) {
+                        elem.mozRequestFullScreen( fullScreenParam );
+                    }
+                    else if ( elem.mozRequestFullScreen && !fullScreenParam ) {
+                        elem.mozRequestFullScreen( );
+                    }
+                    else if ( elem.requestFullscreen ) {
+                        elem.requestFullscreen();
+                    }
+                    else if ( elem.msRequestFullscreen ) {
+                        elem.msRequestFullscreen();
+                    }
+                }
+                requestFullScreen(domElement);
+            };
+
         }
+
 
         this.toggleVRControls = function () {
             if (this.vrControls.enabled) {
@@ -95,7 +145,6 @@ WebVRApplication = ( function () {
                 this.camera.quaternion.set(0, 0, 0, 1);
             } else {
                 this.vrControls.enabled = true;
-                // this.vrControls.update();
             }
         }.bind(this);
 
@@ -668,7 +717,7 @@ var TextGeomLogger = (function () {
             bufferGeom.fromGeometry(geom);
             geom.dispose();
             this.geometries[c] = bufferGeom;
-            this.meshes[c] = new THREE.Mesh(geom, material);
+            this.meshes[c] = new THREE.Mesh(bufferGeom, material);
         }
 
         var nrows = options.nrows || 7;
@@ -900,6 +949,8 @@ function addTool(parent, world, options) {
     }
 
     world.addBody(tipBody);
+    tipBody.sleep();
+
     toolRoot.visible = false;
 
     // three.js hands: ############################
@@ -975,6 +1026,28 @@ function addTool(parent, world, options) {
             interactionBoxMesh.scale.set(interactionBox.width*scalar, interactionBox.height*scalar, interactionBox.depth*scalar);
         }
 
+        var toolDrive = 0;
+        var toolFloat = 0;
+        var toolStrafe = 0;
+        var rotateToolCW = 0;
+        if (keyboard) {
+            toolDrive += keyboard.getValue("moveToolForwards") - keyboard.getValue("moveToolBackwards");
+            toolFloat += keyboard.getValue("moveToolUp") - keyboard.getValue("moveToolDown");
+            toolStrafe += keyboard.getValue("moveToolRight") - keyboard.getValue("moveToolLeft");
+            rotateToolCW += keyboard.getValue("rotateToolCW") - keyboard.getValue("rotateToolCCW");
+        }
+        if (gamepad) {
+            if (parent.toolMode) {
+                toolFloat += gamepad.getValue("toolFloat");
+                toolStrafe += gamepad.getValue("toolStrafe");
+            } else {
+                toolDrive -= gamepad.getValue("toolDrive");
+                rotateToolCW -= gamepad.getValue("toolStrafe");
+            }
+        }
+        var toolMoved = toolDrive !== 0 || toolStrafe !== 0 || toolFloat !== 0 || rotateToolCW !== 0;
+
+        
         if (frame.tools.length === 1) {
 
             var tool = frame.tools[0];
@@ -1032,7 +1105,7 @@ function addTool(parent, world, options) {
             tipBody.sleep();
             tipMaterial.color.setHex(tipColor);
 
-        } else {
+        } else if (!toolMoved) {
 
             // fade out stick
             if (tipMaterial.opacity > 0.1) {
@@ -1070,27 +1143,7 @@ function addTool(parent, world, options) {
             }
         }
 
-
-        var toolDrive = 0;
-        var toolFloat = 0;
-        var toolStrafe = 0;
-        var rotateToolCW = 0;
-        if (keyboard) {
-            toolDrive += keyboard.getValue("moveToolForwards") - keyboard.getValue("moveToolBackwards");
-            toolFloat += keyboard.getValue("moveToolUp") - keyboard.getValue("moveToolDown");
-            toolStrafe += keyboard.getValue("moveToolRight") - keyboard.getValue("moveToolLeft");
-            rotateToolCW += keyboard.getValue("rotateToolCW") - keyboard.getValue("rotateToolCCW");
-        }
-        if (gamepad) {
-            if (parent.toolMode) {
-                toolFloat += gamepad.getValue("toolFloat");
-                toolStrafe += gamepad.getValue("toolStrafe");
-            } else {
-                toolDrive -= gamepad.getValue("toolDrive");
-                rotateToolCW -= gamepad.getValue("toolStrafe");
-            }
-        }
-        if (toolDrive !== 0 || toolStrafe !== 0 || toolFloat !== 0 || rotateToolCW !== 0) {
+        if (toolMoved) {
             toolRoot.position.x += 0.2  * dt * toolStrafe;
             toolRoot.position.z += -0.2 * dt * toolDrive;
             toolRoot.position.y += 0.2  * dt * toolFloat;
@@ -1099,13 +1152,14 @@ function addTool(parent, world, options) {
             toolRoot.rotation.y += 0.15 * dt * rotateToolCW;
             leftRoot.rotation.y = rightRoot.rotation.y = toolRoot.rotation.y;
 
-            if (toolRoot.visible === false || stickMaterial.opacity !== 1) {
+            if (toolRoot.visible === false) {
                 toolRoot.visible = true;
                 stickMaterial.opacity = tipMaterial.opacity = 1;
                 interactionBoxMaterial.opacity = interactionBoxOpacity;
                 interactionPlaneMaterial.opacity = interactionPlaneOpacity;
             }
         }
+
     }
 
     // leapController.on('frame', animateLeap);
@@ -1251,122 +1305,6 @@ var SynthSpeaker = ( function() {
     }
 } )();
 ;
-/* global pyserver */
-function addGfxTablet(width, height, logger) {
-    "use strict";
-    if (pyserver.config.WEBSOCKETS.indexOf('/gfxtablet') == -1) {
-        pyserver.log('configure pyserver to open gfxtablet websocket at /gfxtablet');
-        return;
-    }
-    width = width || 2560 / 2;
-    height = height || 1600 / 2;
-
-    var socket = new WebSocket('ws://' + document.domain + ':' + location.port + '/gfxtablet');
-
-    var gfxtabletCanvas = document.createElement('canvas');
-    gfxtabletCanvas.width = width;
-    gfxtabletCanvas.height = height;
-    var aspect = gfxtabletCanvas.width / gfxtabletCanvas.height;
-    var texture = new THREE.Texture(gfxtabletCanvas, THREE.UVMapping, THREE.ClampToEdgeWrapping, THREE.ClampToEdgeWrapping,
-                                    THREE.LinearFilter, THREE.LinearFilter);
-
-    var paintableMaterial = new THREE.MeshBasicMaterial({color: 0xffffff, map: texture});
-
-    var image = paintableMaterial.map.image;
-    var ctx = image.getContext('2d');
-    ctx.fillStyle = 'rgb(255, 255, 255)';
-    ctx.fillRect(0, 0, gfxtabletCanvas.width, gfxtabletCanvas.height);
-
-    var scale = 2;
-    paintableMaterial.map.needsUpdate = true;
-
-    var cursorMaterial = new THREE.MeshBasicMaterial({color: 0xee9966});
-    cursorMaterial.transparent = true;
-    cursorMaterial.opacity = 0.666;
-    var cursor = new THREE.Mesh(new THREE.CircleGeometry(0.02), cursorMaterial);
-    canvasMesh.add(cursor);
-    cursor.position.z = 0.01;
-    cursor.visible = false;
-
-    ctx.lineCap = 'round';
-    //ctx.lineJoin = stroke.join;
-    //ctx.miterLimit = stroke.miterLimit;
-
-    function drawStroke (points) {
-        if (points.length === 0)
-            return;
-        var start = points[0];
-        ctx.beginPath();
-        ctx.strokeStyle = 'rgba(0,255,50,0.92)'; //stroke.color;
-        ctx.lineWidth = start.p * 10; //normalizeLineSize(stroke.size);
-        ctx.moveTo(gfxtabletCanvas.width * start.x, gfxtabletCanvas.height * start.y);
-        for (var j = 1; j < points.length; j++) {
-            var end = points[j];
-            ctx.lineTo(gfxtabletCanvas.width * end.x, gfxtabletCanvas.height * end.y);
-        }
-        ctx.stroke();
-    }
-
-    function circle(x, y, r, c, o) {
-        var opacity = o || 1;
-        ctx.beginPath();
-        var rad = ctx.createRadialGradient(x, y, r/2, x, y, r);
-        rad.addColorStop(0, 'rgba('+c+','+opacity+')');
-        rad.addColorStop(0.5, 'rgba('+c+','+opacity+')');
-        rad.addColorStop(1, 'rgba('+c+',0)');
-        ctx.fillStyle = rad;
-        ctx.arc(x, y, r, 0, Math.PI*2, false);
-        ctx.fill();
-        ctx.closePath();
-    }
-
-    socket.onopen = function () {
-        logger.log("GfxTable WebSocket opened");
-    };
-    socket.onerror = function (error) {
-        logger.log("could not connect to GfxTablet WebSocket");
-    };
-    var points = [];
-    var stroking = false;
-    var NP = 2;
-    socket.onmessage = function (message) {
-        var data = JSON.parse(message.data);
-        if (data.p > 0) {
-            points.push(data);
-            // circle(gfxtabletCanvas.width * data.x, gfxtabletCanvas.height * data.y,
-            //     2 + 50*data.p * data.p, '255,0,0', 0.1 + 0.9 * data.p);
-            if (points.length > NP) {
-                drawStroke(points);
-                paintableMaterial.map.needsUpdate = true;
-                points.splice(0, NP);
-            }
-        }
-        if (data.button !== undefined) {
-            if (data.button_down === 0) {
-                drawStroke(points);
-                stroking = false;
-                paintableMaterial.map.needsUpdate = true;
-                points = [];
-            } else {
-                stroking = true;
-            }
-        }
-        if (stroking) {
-            cursor.visible = false;
-        } else {
-            cursor.visible = true;
-            cursor.position.x = -aspect * scale / 2 + aspect * scale * data.x;
-            cursor.position.y = scale / 2 - scale * data.y;
-        }
-    };
-
-    return {paintableMaterial: paintableMaterial,
-            cursor: cursor};
-}
-
-// var canvasMesh = new THREE.Mesh(new THREE.PlaneBufferGeometry(scale * aspect, scale), paintableMaterial);
-// canvasMesh.position.z = -4;
-;
 var pyserver;
 if (!POOLVR.config.pyserver) {
     pyserver = {log: function (msg) { console.log('pyserver.log: ' + msg); },
@@ -1492,22 +1430,31 @@ var userAgent = navigator.userAgent;
 
 
 POOLVR.keyboardCommands = {
-    turnLeft: {buttons: [-Primrose.Input.Keyboard.LEFTARROW]},
-    turnRight: {buttons: [Primrose.Input.Keyboard.RIGHTARROW]},
+
+    turnLeft:     {buttons: [-Primrose.Input.Keyboard.LEFTARROW]},
+    turnRight:    {buttons: [ Primrose.Input.Keyboard.RIGHTARROW]},
     driveForward: {buttons: [-Primrose.Input.Keyboard.W]},
-    driveBack: {buttons: [Primrose.Input.Keyboard.S]},
-    strafeLeft: {buttons: [-Primrose.Input.Keyboard.A]},
-    strafeRight: {buttons: [Primrose.Input.Keyboard.D]},
-    floatUp: {buttons: [Primrose.Input.Keyboard.E, Primrose.Input.Keyboard.NUMBER9]},
-    floatDown: {buttons: [-Primrose.Input.Keyboard.C, -Primrose.Input.Keyboard.NUMBER3]},
+    driveBack:    {buttons: [ Primrose.Input.Keyboard.S]},
+    strafeLeft:   {buttons: [-Primrose.Input.Keyboard.A]},
+    strafeRight:  {buttons: [ Primrose.Input.Keyboard.D]},
+    floatUp:      {buttons: [ Primrose.Input.Keyboard.E]},
+    floatDown:    {buttons: [-Primrose.Input.Keyboard.C]},
+    
     moveToolUp:        {buttons: [Primrose.Input.Keyboard.O]},
     moveToolDown:      {buttons: [Primrose.Input.Keyboard.PERIOD]},
     moveToolForwards:  {buttons: [Primrose.Input.Keyboard.I]},
     moveToolBackwards: {buttons: [Primrose.Input.Keyboard.K]},
     moveToolLeft:      {buttons: [Primrose.Input.Keyboard.J]},
     moveToolRight:     {buttons: [Primrose.Input.Keyboard.L]},
-    rotateToolCW:    {buttons: [Primrose.Input.Keyboard.U]},
-    rotateToolCCW:   {buttons: [Primrose.Input.Keyboard.Y]},
+    rotateToolCW:      {buttons: [Primrose.Input.Keyboard.U]},
+    rotateToolCCW:     {buttons: [Primrose.Input.Keyboard.Y]},
+
+    toggleVRControls: {buttons: [Primrose.Input.Keyboard.V],
+                       commandDown: function(){app.toggleVRControls();}, dt: 0.25},
+    toggleWireframe: {buttons: [Primrose.Input.Keyboard.NUMBER0],
+                      commandDown: function(){app.toggleWireframe();}, dt: 0.25},
+    resetVRSensor: {buttons: [Primrose.Input.Keyboard.Z],
+                    commandDown: function(){app.resetVRSensor();}, dt: 0.25},
 
     resetTable: {buttons: [Primrose.Input.Keyboard.R],
                  commandDown: function(){POOLVR.resetTable();}, dt: 0.5},
@@ -1515,57 +1462,49 @@ POOLVR.keyboardCommands = {
     autoPosition: {buttons: [Primrose.Input.Keyboard.P],
                    commandDown: function(){POOLVR.autoPosition(avatar);}, dt: 0.5},
 
-    toggleVRControls: {buttons: [Primrose.Input.Keyboard.V],
-                       commandDown: function(){app.toggleVRControls();}, dt: 0.25},
-
-    toggleWireframe: {buttons: [Primrose.Input.Keyboard.NUMBER0],
-                      commandDown: function(){app.toggleWireframe();}, dt: 0.25},
-
-    resetVRSensor: {buttons: [Primrose.Input.Keyboard.Z],
-                    commandDown: function(){app.resetVRSensor();}, dt: 0.25},
-
     toggleMenu: {buttons: [Primrose.Input.Keyboard.SPACEBAR],
                  commandDown: function(){POOLVR.toggleMenu();}, dt: 0.25},
 
-    saveConfig: {buttons: [Primrose.Input.Keyboard.NUMBER1],
-                 commandDown: function(){POOLVR.saveConfig();}, dt: 1.0}
+    nextBall: {buttons: [Primrose.Input.Keyboard.ADD],
+               commandDown: function(){POOLVR.selectNextBall();}, dt: 0.5},
+
+    prevBall: {buttons: [Primrose.Input.Keyboard.SUBTRACT],
+               commandDown: function(){POOLVR.selectNextBall(-1);}, dt: 0.5}
 };
 POOLVR.keyboardCommands = makeObjectArray(POOLVR.keyboardCommands, 'name');
 POOLVR.keyboard = new Primrose.Input.Keyboard("keyboard", window, POOLVR.keyboardCommands);
 
 var DEADZONE = 0.2;
 POOLVR.gamepadCommands = {
-    strafe: {axes: [Primrose.Input.Gamepad.LSX], deadzone: DEADZONE},
-    drive: {axes: [Primrose.Input.Gamepad.LSY], deadzone: DEADZONE},
+    
+    strafe:   {axes: [ Primrose.Input.Gamepad.LSX], deadzone: DEADZONE},
+    drive:    {axes: [ Primrose.Input.Gamepad.LSY], deadzone: DEADZONE},
+    float:    {axes: [-Primrose.Input.Gamepad.LSY], deadzone: DEADZONE},
     dheading: {axes: [-Primrose.Input.Gamepad.LSX], deadzone: DEADZONE},
-    pitch: {axes: [Primrose.Input.Gamepad.LSY], integrate: true, deadzone: DEADZONE,
-            max: 0.5 * Math.PI, min: -0.5 * Math.PI},
-    float: {axes: [-Primrose.Input.Gamepad.LSY], deadzone: DEADZONE},
+    pitch:    {axes: [ Primrose.Input.Gamepad.LSY], deadzone: DEADZONE,
+               integrate: true, max: 0.5 * Math.PI, min: -0.5 * Math.PI},
     toggleFloatMode: {buttons: [Primrose.Input.Gamepad.XBOX_BUTTONS.leftStick],
-                      commandDown: function () { avatar.floatMode = true; },
-                      commandUp: function () { avatar.floatMode = false; }},
-    toolStrafe: {axes: [Primrose.Input.Gamepad.RSX], deadzone: DEADZONE},
-    toolDrive: {axes: [Primrose.Input.Gamepad.RSY], deadzone: DEADZONE},
-    toolFloat: {axes: [-Primrose.Input.Gamepad.RSY], deadzone: DEADZONE},
-    toolRotY: {axes: [Primrose.Input.Gamepad.RSY], integrate: true, deadzone: DEADZONE,
-               max: 2 * Math.PI, min: 0},
+                      commandDown: function(){avatar.floatMode=true;},
+                      commandUp: function(){avatar.floatMode=false;}},
+
+    toolStrafe: {axes: [ Primrose.Input.Gamepad.RSX], deadzone: DEADZONE},
+    toolDrive:  {axes: [ Primrose.Input.Gamepad.RSY], deadzone: DEADZONE},
+    toolFloat:  {axes: [-Primrose.Input.Gamepad.RSY], deadzone: DEADZONE},
     toggleToolFloatMode: {buttons: [Primrose.Input.Gamepad.XBOX_BUTTONS.rightStick],
-                          commandDown: function () { avatar.toolMode = true; },
+                          commandDown: function(){avatar.toolMode=true;},
                           commandUp: function(){avatar.toolMode=false;}},
-
-    nextBall: {buttons: [Primrose.Input.Gamepad.XBOX_BUTTONS.rightBumper],
-               commandDown: function () { POOLVR.nextBall = Math.max(1, (POOLVR.nextBall + 1) % 16); },
-               dt: 0.5},
-
-    prevBall: {buttons: [Primrose.Input.Gamepad.XBOX_BUTTONS.leftBumper],
-               commandDown: function(){POOLVR.nextBall=Math.max(1,(POOLVR.nextBall-1)%16);},
-               dt: 0.5},
-
-    autoPosition: {buttons: [Primrose.Input.Gamepad.XBOX_BUTTONS.Y],
-                   commandDown: function(){POOLVR.autoPosition(avatar);}, dt: 0.5},
 
     resetVRSensor: {buttons: [Primrose.Input.Gamepad.XBOX_BUTTONS.back],
                     commandDown: function(){app.resetVRSensor();}, dt: 0.25},
+
+    nextBall: {buttons: [Primrose.Input.Gamepad.XBOX_BUTTONS.rightBumper],
+               commandDown: function(){POOLVR.selectNextBall();}, dt: 0.5},
+
+    prevBall: {buttons: [Primrose.Input.Gamepad.XBOX_BUTTONS.leftBumper],
+               commandDown: function(){POOLVR.selectNextBall(-1);}, dt: 0.5},
+
+    autoPosition: {buttons: [Primrose.Input.Gamepad.XBOX_BUTTONS.Y],
+                   commandDown: function(){POOLVR.autoPosition(avatar);}, dt: 0.5},
 
     toggleMenu: {buttons: [Primrose.Input.Gamepad.XBOX_BUTTONS.start],
                  commandDown: function(){POOLVR.toggleMenu();}, dt: 0.25}
@@ -1582,16 +1521,6 @@ POOLVR.gamepad.addEventListener("gamepadconnected", function(id) {
 }.bind(POOLVR.gamepad), false);
 
 
-// if (!URL_PARAMS.disableLocalStorage) {
-//     var localStorageConfig = localStorage.getItem(POOLVR.version);
-//     if (localStorageConfig) {
-//         pyserver.log("POOLVR.config loaded from localStorage:");
-//         pyserver.log(localStorageConfig);
-//         POOLVR.config = JSON.parse(localStorageConfig);
-//     }
-// }
-
-
 if (POOLVR.config.useShadowMap) {
     POOLVR.config.useBasicMaterials = false;
 }
@@ -1603,12 +1532,13 @@ POOLVR.config.toolOptions.toolMass     = URL_PARAMS.toolMass     || POOLVR.confi
 POOLVR.config.toolOptions.toolOffset   = URL_PARAMS.toolOffset   || POOLVR.config.toolOptions.toolOffset;
 POOLVR.config.toolOptions.toolRotation = URL_PARAMS.toolRotation || POOLVR.config.toolOptions.toolRotation;
 POOLVR.config.toolOptions.tipShape     = URL_PARAMS.tipShape     || POOLVR.config.toolOptions.tipShape;
-
 pyserver.log('POOLVR.config.toolOptions =\n' + JSON.stringify(POOLVR.config.toolOptions, undefined, 2));
-POOLVR.toolOptions = combineObjects(
-    POOLVR.config.toolOptions,
-    {keyboard: POOLVR.keyboard, gamepad: POOLVR.gamepad, useBasicMaterials: POOLVR.config.useBasicMaterials}
-);
+
+POOLVR.toolOptions = combineObjects(POOLVR.config.toolOptions, {
+    keyboard: POOLVR.keyboard,
+    gamepad: POOLVR.gamepad,
+    useBasicMaterials: POOLVR.config.useBasicMaterials
+});
 
 // POOLVR.config.vrLeap = URL_PARAMS.vrLeap || POOLVR.config.vrLeap;
 // if (POOLVR.config.vrLeap) {
@@ -1617,9 +1547,6 @@ POOLVR.toolOptions = combineObjects(
 // }
 // toolOptions.onStreamingStarted = function () { textGeomLogger.log("YOUR LEAP MOTION CONTROLLER IS CONNECTED.  GOOD JOB."); };
 // toolOptions.onStreamingStopped = function () { textGeomLogger.log("YOUR LEAP MOTION CONTROLLER IS DISCONNECTED!  HOW WILL YOU PLAY?!"); };
-
-
-POOLVR.config.textGeomLogger = URL_PARAMS.textGeomLogger || POOLVR.config.textGeomLogger;
 
 
 POOLVR.saveConfig = function () {
@@ -1644,6 +1571,23 @@ POOLVR.onTable = [false,
                   true,
                   true, true, true, true, true, true, true];
 POOLVR.nextBall = 1;
+
+
+POOLVR.selectNextBall = function (inc) {
+    "use strict";
+    inc = inc || 1;
+    var next = Math.max(1, Math.min(15, POOLVR.nextBall + inc));
+    while (!POOLVR.onTable[next]) {
+        next = Math.max(1, Math.min(15, POOLVR.nextBall + inc));
+        if (next === POOLVR.nextBall) {
+            break;
+        }
+    }
+    if (POOLVR.nextBall != next) {
+        POOLVR.nextBall = next;
+        textGeomLogger.log("BALL " + POOLVR.nextBall + " SELECTED");
+    }
+};
 
 
 POOLVR.resetTable = function () {
@@ -1739,6 +1683,7 @@ POOLVR.tipBallContactMaterial = new CANNON.ContactMaterial(POOLVR.tipMaterial, P
     frictionEquationRelaxation: 3
 });
 
+
 POOLVR.setupMaterials = function (world) {
     world.addMaterial(POOLVR.ballMaterial);
     world.addMaterial(POOLVR.playableSurfaceMaterial);
@@ -1753,6 +1698,7 @@ POOLVR.setupMaterials = function (world) {
     world.addContactMaterial(POOLVR.tipBallContactMaterial);
     world.addContactMaterial(POOLVR.railBallContactMaterial);
 };
+
 
 POOLVR.setupWorld = function (scene, world, tipBody) {
     tipBody.material = POOLVR.tipMaterial;
@@ -1846,7 +1792,7 @@ POOLVR.setupWorld = function (scene, world, tipBody) {
                 } else {
                     body.bounces++;
                     if (body.bounces === 1) {
-                        textGeomLogger.log(body.mesh.name + " HIT THE FLOOR!");
+                        // textGeomLogger.log(body.mesh.name + " HIT THE FLOOR!");
                         playPocketedSound();
                         POOLVR.onTable[body.ballNum] = false;
                         POOLVR.nextBall = POOLVR.onTable.indexOf(true);
@@ -1868,7 +1814,9 @@ POOLVR.setupWorld = function (scene, world, tipBody) {
     tipBody.addEventListener(CANNON.Body.COLLIDE_EVENT_NAME, function (evt) {
         tipEventCounter++;
         if (tipEventCounter === 1) {
-            synthSpeaker.speak("You moved a ball.  Good job.");
+            setTimeout(function () {
+                synthSpeaker.speak("You moved a ball.  Good job.");
+            }, 250);
         }
         else if (tipEventCounter === 16) {
             synthSpeaker.speak("Hi.");
@@ -1880,6 +1828,80 @@ POOLVR.setupWorld = function (scene, world, tipBody) {
     //     //scene.updateMatrixWorld();
     // });
 };
+
+
+
+( function () {
+    "use strict";
+    if (!POOLVR.config.pyserver) {
+        var localStorageConfig = localStorage.getItem(POOLVR.version);
+        if (localStorageConfig) {
+            localStorageConfig = JSON.parse(localStorageConfig);
+            for (var k in localStorageConfig) {
+                if (POOLVR.config.hasOwnProperty(k)) {
+                    POOLVR.config[k] = localStorageConfig[k];
+                }
+            }
+            console.log("POOLVR.config was loaded from localStorage");
+        }
+    }
+
+
+    var onClick = function () {
+        POOLVR.config[this.id] = this.checked;
+        console.log(this.id);
+        console.log(POOLVR.config[this.id]);
+    };
+
+    for (var name in POOLVR.config) {
+        if (name === 'pyserver') continue;
+        var v = POOLVR.config[name];
+        if ((v === true) || (v === false)) {
+            var input = document.getElementById(name);
+            if (input) {
+                input.onclick = onClick;
+            }
+        }
+    }
+    
+    if (!POOLVR.config.useWebVRBoilerplate) {
+        var vrButton = document.createElement('a');
+        vrButton.setAttribute('class', 'primary button');
+        vrButton.setAttribute('id', 'enterVR');
+        vrButton.appendChild(document.createTextNode('ENTER VR'));
+        document.body.appendChild(vrButton);
+
+        var fullscreenButton = document.createElement('a');
+        fullscreenButton.setAttribute('class', 'primary button');
+        fullscreenButton.setAttribute('id', 'enterFullscreen');
+        fullscreenButton.appendChild(document.createTextNode('ENTER FULLSCREEN'));
+        document.body.appendChild(fullscreenButton);
+    }
+} )();
+
+POOLVR.vrButton = document.getElementById('enterVR');
+if (POOLVR.vrButton) {
+    POOLVR.vrButton.addEventListener('click', function () {
+        app.enterVR();
+    });
+}
+
+POOLVR.fullscreenButton = document.getElementById('enterFullscreen');
+if (POOLVR.fullscreenButton) {
+    POOLVR.fullscreenButton.addEventListener('click', function () {
+        app.enterFullscreen();
+    });
+}
+
+POOLVR.saveConfigButton = document.getElementById('saveConfig');
+if (POOLVR.saveConfigButton) {
+    POOLVR.saveConfigButton.addEventListener('click', function () {
+        // TODO: callback
+        POOLVR.saveConfig();
+        textGeomLogger.log("CONFIGURATION SAVED:");
+        textGeomLogger.log(JSON.stringify(POOLVR.config, undefined, 2));
+    });
+}
 ;
 var playCollisionSound = (function () {
     "use strict";
@@ -1901,18 +1923,18 @@ var playCollisionSound = (function () {
 
 var playPocketedSound = (function () {
     "use strict";
-    var ballBallBuffer;
+    var ballPocketedBuffer;
     var request = new XMLHttpRequest();
     request.responseType = 'arraybuffer';
     request.open('GET', '/sounds/ballPocketed.ogg', true);
     request.onload = function() {
         WebVRSound.audioContext.decodeAudioData(request.response, function(buffer) {
-            ballBallBuffer = buffer;
+            ballPocketedBuffer = buffer;
         });
     };
     request.send();
     var playPocketedSound = function () {
-        WebVRSound.playBuffer(ballBallBuffer, 1);
+        WebVRSound.playBuffer(ballPocketedBuffer, 0.5);
     };
     return playPocketedSound;
 })();
@@ -1947,14 +1969,10 @@ function setupMenu(parent) {
     menu.add(textMesh);
     textMesh.onSelect = POOLVR.resetTable;
 
-    textGeom = new THREE.TextGeometry('SAVE CONFIG', {font: 'anonymous pro', size: 0.2, height: 0, curveSegments: 2});
-    textMesh = new THREE.Mesh(textGeom, material.clone());
-    textMesh.position.set(0, 0.7, -2);
-    menu.add(textMesh);
-    textMesh.onSelect = POOLVR.saveConfig;
-
     parent.add(menu);
-    menu.visible = true;
+
+    menu.visible = false;
+    
     return menu;
 }
 
