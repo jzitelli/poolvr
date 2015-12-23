@@ -164,12 +164,13 @@ POOLVR.config.toolOptions.toolMass     = URL_PARAMS.toolMass     || POOLVR.confi
 POOLVR.config.toolOptions.toolOffset   = URL_PARAMS.toolOffset   || POOLVR.config.toolOptions.toolOffset;
 POOLVR.config.toolOptions.toolRotation = URL_PARAMS.toolRotation || POOLVR.config.toolOptions.toolRotation;
 POOLVR.config.toolOptions.tipShape     = URL_PARAMS.tipShape     || POOLVR.config.toolOptions.tipShape;
-
 pyserver.log('POOLVR.config.toolOptions =\n' + JSON.stringify(POOLVR.config.toolOptions, undefined, 2));
-POOLVR.toolOptions = combineObjects(
-    POOLVR.config.toolOptions,
-    {keyboard: POOLVR.keyboard, gamepad: POOLVR.gamepad, useBasicMaterials: POOLVR.config.useBasicMaterials}
-);
+
+POOLVR.toolOptions = combineObjects(POOLVR.config.toolOptions, {
+    keyboard: POOLVR.keyboard,
+    gamepad: POOLVR.gamepad,
+    useBasicMaterials: POOLVR.config.useBasicMaterials
+});
 
 // POOLVR.config.vrLeap = URL_PARAMS.vrLeap || POOLVR.config.vrLeap;
 // if (POOLVR.config.vrLeap) {
@@ -446,12 +447,16 @@ POOLVR.setupWorld = function (scene, world, tipBody) {
 
 
 POOLVR.vrButton = document.getElementById('goVR');
-POOLVR.vrButton.addEventListener('click', function () {
-    app.enterVR();
-});
+if (POOLVR.vrButton) {
+    POOLVR.vrButton.addEventListener('click', function () {
+        app.enterVR();
+    });
+}
+
 
 POOLVR.fullscreenButton = document.getElementById('goFullscreen');
-POOLVR.fullscreenButton.addEventListener('click', function () {
-    app.enterFullscreen();
-});
-
+if (POOLVR.fullscreenButton) {
+    POOLVR.fullscreenButton.addEventListener('click', function () {
+        app.enterFullscreen();
+    });
+}

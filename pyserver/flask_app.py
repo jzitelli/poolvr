@@ -113,8 +113,6 @@ def poolvr_config():
     config = get_poolvr_config()
     config['initialPosition'] = [0, 0.9, 0.9]
     version = request.args.get('version', POOLVR['version'])
-    configScene = pool_table.config_scene(url_prefix='../',
-                                            **config)
     poolvr_config = json.dumps({'config' : config,
                                 'version': version},
                                indent=2)
@@ -123,7 +121,9 @@ def poolvr_config():
 var POOLVR = %s;
 var JSON_SCENE = %s;
 </script>""" % (poolvr_config,
-                json.dumps(configScene.export(), indent=2))))
+                json.dumps(pool_table.config_scene(url_prefix='../',
+                                                   **config).export(),
+                           indent=2))), **config)
 
 
 @app.route('/log', methods=['POST'])

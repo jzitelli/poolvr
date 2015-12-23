@@ -89,13 +89,15 @@
   <body onLoad='onLoad()'>
     
     <section>
+
+      {% if not useWebVRBoilerplate %}
       <a class="primary button" id="goVR">
         ENTER VR
       </a>
-      
       <a class="primary button" id="goFullscreen">
         ENTER FULLSCREEN
       </a>
+      {% endif %}
      
       <a class="primary button" id='saveConfig'>
         SAVE CONFIGURATION
