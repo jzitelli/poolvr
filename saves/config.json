@@ -11,15 +11,17 @@
   "pointLight": null,
   "pyserver": true,
   "skybox": true,
+  "textGeomLogger": true,
   "toolOptions": {
     "tipShape": "Cylinder",
     "toolOffset": [
-      -0.1466600062661825,
-      -0.5270266134264965,
-      -0.5362493488593195
+      -0.1919676216497052,
+      -0.5488856914869163,
+      -0.46457326775080254
     ],
-    "toolRotation": 0.191269221897682
+    "toolRotation": 0.005793788863641349
   },
   "useBasicMaterials": true,
-  "useShadowMap": false
+  "useShadowMap": false,
+  "useWebVRBoilerplate": false
 }
