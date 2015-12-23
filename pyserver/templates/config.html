@@ -23,6 +23,63 @@
       a {
         color: #df2;
       }
+      .button
+      {
+        cursor: pointer;
+        display: inline-block;
+        text-align: center;
+        text-decoration: none;
+        padding: 10px;
+        font-weight: bold;
+        width: 50%;
+      }       
+      .button > small{
+        font-weight: normal;
+        opacity: 0.85;
+      }
+      .button:hover{
+        box-shadow: 0px 0px 15px #bbb;
+      }       
+      .primary.button{
+        box-shadow: 3px 3px 10px #71767C;
+        background-color: rgb(245, 250, 50);
+        background-image: linear-gradient(1deg, rgb(242, 194, 5), rgb(245, 250, 50), rgb(254, 255, 216));
+        color: #3B3D13;
+        text-shadow: 1px 1px 5px rgb(134, 134, 40);
+      }
+      .secondary.button{
+        box-shadow: 3px 3px 10px #71767C;
+        background-color: rgb(39, 103, 137);
+        background-image: linear-gradient(1deg, rgb(44, 115, 152), rgb(39, 103, 137), rgb(30, 152, 213));
+        color: #FFFFFF;
+        text-shadow: 1px 1px 5px rgb(13, 54, 74);
+      }
+      #menu > ul > li > a.button{
+        text-align: left;
+      }
+      #menu > ul > li > a.selected.button{
+        background-color: #B3C2D7;
+      }
+      #menu > ul > li > a.button::after{
+        content: " ";
+        float: right;
+        width: 16px;
+        height: 16px;
+        background-color: #53698B;
+      }
+      #menu > ul > li > a.selected.button::after{
+        background-color: #ffffff;
+        box-shadow: 2px 2px 5px #24344C;
+        margin-right: 3px;
+      }
+      .disabled.button{
+        background-color: #ddd;
+        color: #fff;
+        cursor: not-allowed;
+      }
+      .disabled.button:hover{
+        box-shadow: none;
+      }
     </style>
 
 {{ json_config }}
@@ -31,29 +88,26 @@
 
   <body onLoad='onLoad()'>
 
-<!--     <a id='save' href="/poolvr/config/save">
-    <h2>
-    Save config
-    </h2>
+    <a class="primary button" id="goVR">
+      <div id="fullScreenMsg">Go VR!</div>
+      <small>hit ESC to exit.</small>
+    </a>
+
+    <a class="primary button" id="goFullscreen">
+      Go full-screen<br>
+      <small>hit ESC to exit.</small>
     </a>
 
     <br>
 
-    <a id='load' href="/poolvr/config/load">
-    <h2>
-    Load config
-    </h2>
-    </a> -->
-<!--
-    <br>
-    <a id='import' href="importConfig">
-    Import config
+    <a class="primary button" id='saveConfig'>
+      Save configuration
     </a>
-    <br>
-    <a id='export' href="exportConfig">
-    Export config
+
+    <a class="primary button" id='loadConfig'>
+      Load configuration
     </a>
- -->
+
 
     <script src="../lib/three.js"></script>
     <script src="../lib/TextGeometry.js"></script>

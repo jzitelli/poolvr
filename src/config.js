@@ -303,6 +303,7 @@ POOLVR.tipBallContactMaterial = new CANNON.ContactMaterial(POOLVR.tipMaterial, P
     frictionEquationRelaxation: 3
 });
 
+
 POOLVR.setupMaterials = function (world) {
     world.addMaterial(POOLVR.ballMaterial);
     world.addMaterial(POOLVR.playableSurfaceMaterial);
@@ -317,6 +318,7 @@ POOLVR.setupMaterials = function (world) {
     world.addContactMaterial(POOLVR.tipBallContactMaterial);
     world.addContactMaterial(POOLVR.railBallContactMaterial);
 };
+
 
 POOLVR.setupWorld = function (scene, world, tipBody) {
     tipBody.material = POOLVR.tipMaterial;
@@ -444,3 +446,19 @@ POOLVR.setupWorld = function (scene, world, tipBody) {
     //     //scene.updateMatrixWorld();
     // });
 };
+
+
+POOLVR.vrButton = document.getElementById('goVR');
+POOLVR.vrButton.addEventListener('click', function () {
+    app.enterVR();
+});
+
+POOLVR.fullscreenButton = document.getElementById('goFullscreen');
+POOLVR.fullscreenButton.addEventListener('click', function () {
+    app.enterFullscreen();
+});
+
+POOLVR.saveConfigButton = document.getElementById('saveConfig');
+POOLVR.saveConfigButton.addEventListener('click', function () {
+    
+});
