@@ -118,6 +118,12 @@ var animate = function (avatar, keyboard, gamepad, leapController, animateLeap,
             lastFrameID = frame.id;
         }
 
+        // if (dt < 1/60) {
+        //     app.world.step(dt);
+        // } else {
+        //     app.world.step(1/60, dt, 10);
+        // }
+
         if (!useShadowMap) {
             stickShadow.position.set(stickMesh.position.x,
                 (H_table + 0.001 - toolRoot.position.y - avatar.position.y) / toolRoot.scale.y,
