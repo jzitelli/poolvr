@@ -473,40 +473,19 @@ POOLVR.setupWorld = function (scene, world, tipBody) {
     }
 
 
-    function onClick() {
-        console.log(this.getAttribute('text'));
-        console.log(this.getAttribute('checked'));
-        var name = this.getAttribute('text');
-        var checked = this.getAttribute('checked') || false;
-        POOLVR.config[name] = !checked;
-        if (!checked) {
-            this.setAttribute('checked', true);
-        }
-    }
-    
+    var onClick = function () {
+        POOLVR.config[this.id] = this.checked;
+        console.log(this.id);
+        console.log(POOLVR.config[this.id]);
+    };
+
     for (var name in POOLVR.config) {
         if (name === 'pyserver') continue;
         var v = POOLVR.config[name];
         if ((v === true) || (v === false)) {
             var input = document.getElementById(name);
             if (input) {
-                // var input = document.createElement('input');
-                // input.setAttribute('type', 'checkbox');
-                input.setAttribute('text', name);
-                // var label = document.createElement('label');
-                // label.appendChild(input);
-                // label.appendChild(document.createTextNode(k));
-                // document.body.appendChild(label);
-
-                if (v) input.setAttribute('checked', v);
-                input.addEventListener('click', onClick.bind(input));
-
-                //     console.log(this.getAttribute('checked'));
-                //     console.log('POOLVR.config.'+name+' = '+POOLVR.config[name]);
-                //     if (POOLVR.config[name]) {
-                //         this.setAttribute('checked', POOLVR.config[name]);
-                //     }
-                // }.bind(input));
+                input.onclick = onClick;
             }
         }
     }
