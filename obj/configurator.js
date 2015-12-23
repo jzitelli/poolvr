@@ -1,5 +1,5 @@
 /*
-  poolvr v0.1.0 2015-12-22
+  poolvr v0.1.0 2015-12-23
   
   Copyright (C) 2015 Jeffrey Zitelli <jeffrey.zitelli@gmail.com> (https://github.com/jzitelli)
   http://subvr.info/poolvr
@@ -55,12 +55,14 @@ WebVRApplication = ( function () {
         this.vrEffect.setSize(window.innerWidth, window.innerHeight);
 
         this.vrControls = new THREE.VRControls(this.camera);
+        this.vrControls.enabled = true;
 
         if (useWebVRBoilerplate) {
             this.vrManager = new WebVRManager(this.renderer, this.vrEffect, {
                 hideButton: false
             });
         } else {
+            // TODO: HTML/CSS interface
             this.vrManager = ( function () {
                 var mode = 0;
                 var onFullscreenChange = function () {
@@ -1650,8 +1652,9 @@ POOLVR.resetTable = function () {
         body.wakeUp();
         body.position.copy(POOLVR.initialPositions[ballNum]);
         body.velocity.set(0, 0, 0);
-        //body.acceleration.set(0,0,0);
-        //body.bounces = 0;
+        // body.angularVelocity.set(0, 0, 0);
+        // body.bounces = 0;
+        body.mesh.visible = true;
     });
     if (synthSpeaker.speaking === false) {
         synthSpeaker.speak("Table reset.");
@@ -1838,6 +1841,8 @@ POOLVR.setupWorld = function (scene, world, tipBody) {
                     synthSpeaker.speak("Scratch.");
                     body.position.copy(POOLVR.initialPositions[0]);
                     body.velocity.set(0, 0, 0);
+                    // i like it when it keeps moving
+                    // body.angularVelocity.set(0, 0, 0);
                 } else {
                     body.bounces++;
                     if (body.bounces === 1) {
@@ -1852,6 +1857,7 @@ POOLVR.setupWorld = function (scene, world, tipBody) {
                         }
                     } else if (body.bounces === 7) {
                         body.sleep();
+                        body.mesh.visible = false;
                         // autoPosition(avatar, 5);
                     }
                 }
@@ -2030,6 +2036,12 @@ var animate = function (avatar, keyboard, gamepad, leapController, animateLeap,
             animateLeap(frame, dt);
             lastFrameID = frame.id;
         }
+
+        // if (dt < 1/60) {
+        //     app.world.step(dt);
+        // } else {
+        //     app.world.step(1/60, dt, 10);
+        // }
 
         if (!useShadowMap) {
             stickShadow.position.set(stickMesh.position.x,
