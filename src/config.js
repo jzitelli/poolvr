@@ -425,7 +425,7 @@ POOLVR.setupWorld = function (scene, world, tipBody) {
                 } else {
                     body.bounces++;
                     if (body.bounces === 1) {
-                        textGeomLogger.log(body.mesh.name + " HIT THE FLOOR!");
+                        // textGeomLogger.log(body.mesh.name + " HIT THE FLOOR!");
                         playPocketedSound();
                         POOLVR.onTable[body.ballNum] = false;
                         POOLVR.nextBall = POOLVR.onTable.indexOf(true);

@@ -18,18 +18,18 @@ var playCollisionSound = (function () {
 
 var playPocketedSound = (function () {
     "use strict";
-    var ballBallBuffer;
+    var ballPocketedBuffer;
     var request = new XMLHttpRequest();
     request.responseType = 'arraybuffer';
     request.open('GET', '/sounds/ballPocketed.ogg', true);
     request.onload = function() {
         WebVRSound.audioContext.decodeAudioData(request.response, function(buffer) {
-            ballBallBuffer = buffer;
+            ballPocketedBuffer = buffer;
         });
     };
     request.send();
     var playPocketedSound = function () {
-        WebVRSound.playBuffer(ballBallBuffer, 1);
+        WebVRSound.playBuffer(ballPocketedBuffer, 0.5);
     };
     return playPocketedSound;
 })();
