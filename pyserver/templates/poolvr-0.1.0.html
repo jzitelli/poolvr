@@ -26,12 +26,14 @@
 
 <!-- three.js scene definition is embedded here -->
 {{ json_config if json_config else "" }}
+<!-- end three.js scene definition -->
 
   </head>
 
   <body onload="onLoad()">
 
     <script src="{{ 'bin/three-r73'      + js_suffix }}"></script>
+
     <script src="{{ 'bin/TextGeometry'   + js_suffix }}"></script>
     <script src="{{ 'bin/FontUtils'      + js_suffix }}"></script>
 
@@ -41,14 +43,14 @@
     <script src="{{ 'bin/webvr-polyfill' + js_suffix }}"></script>
     <script src="{{ 'bin/webvr-manager'  + js_suffix }}"></script>
 
-    <script src="{{ 'bin/socket.io'      + js_suffix }}"></script>
     <script src="{{ 'bin/cannon'         + js_suffix }}"></script>
+    
     <script src="{{ 'bin/leap-0.6.4'     + js_suffix }}"></script>
 
     <!-- enhanced version w/ tool tracking: -->
-    <script src="{{ 'bin/leap.transform' + js_suffix }}"></script>
+    <!-- <script src="{{ 'bin/leap.transform' + js_suffix }}"></script> -->
 
-    <script src="{{ 'bin/ColladaLoader'  + js_suffix }}"></script>
+    <script src="{{ 'bin/socket.io'      + js_suffix }}"></script>
     <script src="{{ 'bin/Primrose'       + js_suffix }}"></script>
 
     <script src="{{ 'bin/SPE'            + js_suffix }}"></script>
