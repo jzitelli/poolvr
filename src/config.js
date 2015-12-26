@@ -65,7 +65,7 @@ POOLVR.keyboardCommands = {
     strafeRight:  {buttons: [ Primrose.Input.Keyboard.D]},
     floatUp:      {buttons: [ Primrose.Input.Keyboard.E]},
     floatDown:    {buttons: [-Primrose.Input.Keyboard.C]},
-    
+
     moveToolUp:        {buttons: [Primrose.Input.Keyboard.O]},
     moveToolDown:      {buttons: [Primrose.Input.Keyboard.PERIOD]},
     moveToolForwards:  {buttons: [Primrose.Input.Keyboard.I]},
@@ -102,7 +102,7 @@ POOLVR.keyboard = new Primrose.Input.Keyboard("keyboard", window, POOLVR.keyboar
 
 var DEADZONE = 0.2;
 POOLVR.gamepadCommands = {
-    
+
     strafe:   {axes: [ Primrose.Input.Gamepad.LSX], deadzone: DEADZONE},
     drive:    {axes: [ Primrose.Input.Gamepad.LSY], deadzone: DEADZONE},
     float:    {axes: [-Primrose.Input.Gamepad.LSY], deadzone: DEADZONE},
@@ -158,6 +158,10 @@ POOLVR.config.toolOptions.toolMass     = URL_PARAMS.toolMass     || POOLVR.confi
 POOLVR.config.toolOptions.toolOffset   = URL_PARAMS.toolOffset   || POOLVR.config.toolOptions.toolOffset;
 POOLVR.config.toolOptions.toolRotation = URL_PARAMS.toolRotation || POOLVR.config.toolOptions.toolRotation;
 POOLVR.config.toolOptions.tipShape     = URL_PARAMS.tipShape     || POOLVR.config.toolOptions.tipShape;
+
+POOLVR.config.toolOptions.host = URL_PARAMS.host;
+POOLVR.config.toolOptions.port = URL_PARAMS.port;
+
 pyserver.log('POOLVR.config.toolOptions =\n' + JSON.stringify(POOLVR.config.toolOptions, undefined, 2));
 
 POOLVR.toolOptions = combineObjects(POOLVR.config.toolOptions, {
@@ -489,7 +493,7 @@ POOLVR.setupWorld = function (scene, world, tipBody) {
             }
         }
     }
-    
+
     if (!POOLVR.config.useWebVRBoilerplate) {
         var vrButton = document.createElement('a');
         vrButton.setAttribute('class', 'primary button');
