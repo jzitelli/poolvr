@@ -62,6 +62,7 @@ module.exports = function ( grunt ) {
               "src/pyserver.js",
               "src/config.js",
               "src/sound.js",
+              "src/setupCannon.js",
               "src/app.js"
           ],
           "obj/configurator.js": [
@@ -75,6 +76,7 @@ module.exports = function ( grunt ) {
               "src/pyserver.js",
               "src/config.js",
               "src/sound.js",
+              "src/setupCannon.js",
               "src/configurator.js"
           ]
         }

@@ -31,7 +31,7 @@ function setupMenu(parent) {
     parent.add(menu);
 
     menu.visible = false;
-    
+
     return menu;
 }
 
@@ -95,12 +95,6 @@ var animate = function (avatar, keyboard, gamepad, leapController, animateLeap,
         avatar.heading += heading;
         var cosHeading = Math.cos(avatar.heading),
             sinHeading = Math.sin(avatar.heading);
-        // if (!app.vrControls.enabled) {
-        //     pitch -= 0.8 * dt * (keyboard.getValue("pitchUp") + keyboard.getValue("pitchDown"));
-        //     pitchQuat.setFromAxisAngle(RIGHT, pitch);
-        // }
-        // var cosPitch = Math.cos(pitch),
-        //     sinPitch = Math.sin(pitch);
 
         avatar.quaternion.setFromAxisAngle(UP, avatar.heading);
         avatar.position.x += dt * (strafe * cosHeading + drive * sinHeading);
