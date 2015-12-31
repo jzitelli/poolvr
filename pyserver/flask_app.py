@@ -44,7 +44,7 @@ POOLVR = {
             'tipShape'         : 'Cylinder'
         },
     },
-    'version': '0.1.0dev'
+    'version': '0.1.0'
 }
 
 
@@ -107,23 +107,23 @@ var JSON_SCENE = %s;
                            indent=(2 if app.debug else None)))), **config)
 
 
-@app.route('/poolvr/config')
-def poolvr_config():
-    """app configurator"""
-    config = get_poolvr_config()
-    config['initialPosition'] = [0, 0.9, 0.9]
-    version = request.args.get('version', POOLVR['version'])
-    poolvr_config = json.dumps({'config' : config,
-                                'version': version},
-                               indent=2)
-    return render_template('configurator.html',
-                           json_config=Markup(r"""<script>
-var POOLVR = %s;
-var JSON_SCENE = %s;
-</script>""" % (poolvr_config,
-                json.dumps(pool_table.config_scene(url_prefix='../',
-                                                   **config).export(),
-                           indent=2))), **config)
+# @app.route('/poolvr/config')
+# def poolvr_config():
+#     """app configurator"""
+#     config = get_poolvr_config()
+#     config['initialPosition'] = [0, 0.9, 0.9]
+#     version = request.args.get('version', POOLVR['version'])
+#     poolvr_config = json.dumps({'config' : config,
+#                                 'version': version},
+#                                indent=2)
+#     return render_template('configurator.html',
+#                            json_config=Markup(r"""<script>
+# var POOLVR = %s;
+# var JSON_SCENE = %s;
+# </script>""" % (poolvr_config,
+#                 json.dumps(pool_table.config_scene(url_prefix='../',
+#                                                    **config).export(),
+#                            indent=2))), **config)
 
 
 @app.route('/log', methods=['POST'])

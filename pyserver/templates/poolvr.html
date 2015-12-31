@@ -22,11 +22,19 @@
         padding: 0;
         overflow: hidden;
       }
+      form {
+        background-color: rgba(100, 80, 20, 0.4);
+        position: absolute;
+        left: 180px;
+        padding: 35px;
+        margin: 35px;
+      }
       .button
       {
+        background-color: rgba(20, 80, 100, 0.6);
         position: absolute;
         cursor: pointer;
-        display: inline-block;
+        /*display: inline-block;*/
         text-align: center;
         text-decoration: none;
         padding: 10px;
@@ -42,12 +50,53 @@
 
   </head>
 
-  <body onload="onLoad(true)">
+  <body onload="onLoad()">
+
+
+      <form id="profileForm">
+
+        <label>Stored profiles:
+          <select id='profileSelect' name='profileSelect'>
+          </select>
+        </label>
+
+        <label>Profile name:
+          <input type="text" id="profileName"></input>
+        </label>
+
+        <label>Tip shape:
+          <select name='tipShapeSelect'>
+            <option value='Cylinder' >Cylinder</option>
+            <option value='Sphere'   >Sphere</option>
+            <option value='Ellipsoid'>Ellipsoid</option>
+          </select>
+        </label>
+
+        <label>Leap Motion controller position:
+          <input type='number' id='leapPositionX'>
+          <input type='number' id='leapPositionY'>
+          <input type='number' id='leapPositionZ'>
+        </label>
+
+        <input type="checkbox" id="useSkybox">useSkybox</input>
+
+        <input type="checkbox" id="useBasicMaterials">useBasicMaterials</input>
+
+        <input type="checkbox" id="useShadowMap">useShadowMap</input>
+
+        <input type="checkbox" id="usePointLight">usePointLight</input>
+
+        <a class="button" id='saveConfig'>SAVE PROFILE</a>
+
+      </form>
+
 
     {% if not useWebVRBoilerplate %}
-    <a id="enterVR" class="button">ENTER VR</a>
-    <a id="enterFullscreen" class="button" style="top:64px;">ENTER FULLSCREEN</a>
+    <a class="button" id="enterVR">ENTER VR</a>
+
+    <a class="button" id="enterFullscreen" style="top:64px;">ENTER FULLSCREEN</a>
     {% endif %}
+
 
     <script src="lib/three.js"></script>
 
