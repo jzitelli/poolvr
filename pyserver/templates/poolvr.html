@@ -22,6 +22,18 @@
         padding: 0;
         overflow: hidden;
       }
+      .button
+      {
+        position: absolute;
+        cursor: pointer;
+        display: inline-block;
+        text-align: center;
+        text-decoration: none;
+        padding: 10px;
+        margin: 10px;
+        font-weight: bold;
+        /*z-index: 1;*/
+      }
     </style>
 
 <!-- three.js scene definition is embedded here -->
@@ -30,7 +42,12 @@
 
   </head>
 
-  <body onload="onLoad()">
+  <body onload="onLoad(true)">
+
+    {% if not useWebVRBoilerplate %}
+    <a id="enterVR" class="button">ENTER VR</a>
+    <a id="enterFullscreen" class="button" style="top:64px;">ENTER FULLSCREEN</a>
+    {% endif %}
 
     <script src="lib/three.js"></script>
 

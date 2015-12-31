@@ -37,6 +37,7 @@ POOLVR = {
         'H_table'            : 0.74295,
         'ball_diameter'      : 2.25 * pool_table.IN2METER,
         'useTextGeomLogger'  : True,
+        'synthSpeakerVolume' : 0.1,
         'toolOptions': {
             'toolOffset'       : [0, -0.42, -0.4],
             'toolRotation'     : 0,

@@ -170,26 +170,31 @@ POOLVR.toolOptions = combineObjects(POOLVR.config.toolOptions, {
     useBasicMaterials: POOLVR.config.useBasicMaterials
 });
 
+POOLVR.config.synthSpeakerVolume = URL_PARAMS.synthSpeakerVolume || POOLVR.config.synthSpeakerVolume || 0.25;
+
+
 // POOLVR.config.vrLeap = URL_PARAMS.vrLeap || POOLVR.config.vrLeap;
 // if (POOLVR.config.vrLeap) {
 //     // ##### Leap Motion VR tracking mode: #####
 //     POOLVR.config.toolOptions.transformOptions = {vr: true, effectiveParent: app.camera};
 // }
-// toolOptions.onStreamingStarted = function () { textGeomLogger.log("YOUR LEAP MOTION CONTROLLER IS CONNECTED.  GOOD JOB."); };
-// toolOptions.onStreamingStopped = function () { textGeomLogger.log("YOUR LEAP MOTION CONTROLLER IS DISCONNECTED!  HOW WILL YOU PLAY?!"); };
 
 
 POOLVR.saveConfig = function () {
     "use strict";
-    if (POOLVR.config.pyserver) {
-        if (window.toolRoot) {
-            POOLVR.config.toolOptions.toolOffset = [window.toolRoot.position.x, window.toolRoot.position.y, window.toolRoot.position.z];
-            POOLVR.config.toolOptions.toolRotation = window.toolRoot.rotation.y;
-        }
-        pyserver.writeFile('config.json', POOLVR.config);
+    var profileName = document.getElementById('profileName');
+    if (profileName) {
+        console.log(profileName.value);
+        profileName = profileName.value;
     } else {
-        localStorage.setItem(POOLVR.version, JSON.stringify(POOLVR.config));
+        profileName = 'unnamed profile';
     }
+    if (window.toolRoot) {
+        POOLVR.config.toolOptions.toolOffset = [window.toolRoot.position.x, window.toolRoot.position.y, window.toolRoot.position.z];
+        POOLVR.config.toolOptions.toolRotation = window.toolRoot.rotation.y;
+    }
+    pyserver.log(JSON.stringify(POOLVR.config, undefined, 2));
+    localStorage.setItem(profileName, JSON.stringify(POOLVR.config));
 };
 
 
@@ -208,7 +213,7 @@ POOLVR.selectNextBall = function (inc) {
     inc = inc || 1;
     var next = Math.max(1, Math.min(15, POOLVR.nextBall + inc));
     while (!POOLVR.onTable[next]) {
-        next = Math.max(1, Math.min(15, POOLVR.nextBall + inc));
+        next = Math.max(1, Math.min(15, next + inc));
         if (next === POOLVR.nextBall) {
             break;
         }
@@ -243,10 +248,7 @@ POOLVR.autoPosition = ( function () {
     var nextVector = new THREE.Vector3();
     var UP = new THREE.Vector3(0, 1, 0);
     function autoPosition(avatar) {
-        textGeomLogger.log("YOU ARE BEING AUTO-POSITIONED.");
-        // if (synthSpeaker.speaking === false) {
-        //     synthSpeaker.speak("You are being auto-positioned.");
-        // }
+        textGeomLogger.log("YOU ARE BEING AUTO-POSITIONED.  NEXT BALL: " + POOLVR.nextBall);
 
         avatar.heading = Math.atan2(
             -(POOLVR.ballMeshes[POOLVR.nextBall].position.x - POOLVR.ballMeshes[0].position.x),
@@ -281,24 +283,19 @@ WebVRConfig.FORCE_ENABLE_VR  = URL_PARAMS.FORCE_ENABLE_VR  || WebVRConfig.FORCE_
 
 ( function () {
     "use strict";
-    if (!POOLVR.config.pyserver) {
-        var localStorageConfig = localStorage.getItem(POOLVR.version);
-        if (localStorageConfig) {
-            localStorageConfig = JSON.parse(localStorageConfig);
-            for (var k in localStorageConfig) {
-                if (POOLVR.config.hasOwnProperty(k)) {
-                    POOLVR.config[k] = localStorageConfig[k];
-                }
+    var localStorageConfig = localStorage.getItem(POOLVR.version);
+    if (localStorageConfig) {
+        localStorageConfig = JSON.parse(localStorageConfig);
+        for (var k in localStorageConfig) {
+            if (POOLVR.config.hasOwnProperty(k)) {
+                POOLVR.config[k] = localStorageConfig[k];
             }
-            console.log("POOLVR.config was loaded from localStorage");
         }
+        pyserver.log("POOLVR.config was loaded from localStorage");
     }
-
 
     var onClick = function () {
         POOLVR.config[this.id] = this.checked;
-        console.log(this.id);
-        console.log(POOLVR.config[this.id]);
     };
 
     for (var name in POOLVR.config) {
@@ -312,19 +309,6 @@ WebVRConfig.FORCE_ENABLE_VR  = URL_PARAMS.FORCE_ENABLE_VR  || WebVRConfig.FORCE_
         }
     }
 
-    if (!POOLVR.config.useWebVRBoilerplate) {
-        var vrButton = document.createElement('a');
-        vrButton.setAttribute('style', 'position:fixed;cursor:pointer;');
-        vrButton.setAttribute('id', 'enterVR');
-        vrButton.appendChild(document.createTextNode('ENTER VR'));
-        document.body.appendChild(vrButton);
-
-        // var fullscreenButton = document.createElement('a');
-        // fullscreenButton.setAttribute('class', 'primary button');
-        // fullscreenButton.setAttribute('id', 'enterFullscreen');
-        // fullscreenButton.appendChild(document.createTextNode('ENTER FULLSCREEN'));
-        // document.body.appendChild(fullscreenButton);
-    }
 } )();
 
 POOLVR.vrButton = document.getElementById('enterVR');

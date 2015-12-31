@@ -17,16 +17,12 @@ var mouseStuff = setupMouse(avatar);
 
 var toolRoot;
 
-// POOLVR.config.onfullscreenchange = function (fullscreen) {
-//     if (fullscreen) pyserver.log('going fullscreen');
-//     else pyserver.log('exiting fullscreen');
-// };
-
-var synthSpeaker = new SynthSpeaker({volume: 0.5, rate: 0.8, pitch: 0.5});
+var synthSpeaker = new SynthSpeaker({volume: POOLVR.config.synthSpeakerVolume, rate: 0.8, pitch: 0.5});
 
 var textGeomLogger;
 if (POOLVR.config.useTextGeomLogger) {
    textGeomLogger = new TextGeomLogger();
+   //textGeomLogger = new TextGeomLogger(undefined, {nrows: 20, size: 0.043});
 } else {
     textGeomLogger = {
         root: new THREE.Object3D(),
@@ -36,6 +32,7 @@ if (POOLVR.config.useTextGeomLogger) {
 
 avatar.add(textGeomLogger.root);
 textGeomLogger.root.position.set(-2.5, 1.0, -3.5);
+//textGeomLogger.root.position.set(-1.5, -0.23, -1.8);
 
 var menu = setupMenu(avatar);
 
@@ -127,12 +124,12 @@ var animate = function (keyboard, gamepad, leapController, animateLeap,
 
         // app.world.step(1/75, dt, 10);
         // app.world.step(dt);
-        if (dt < 1/60) {
+        if (dt < 1/30) {
             app.world.step(dt);
         } else {
             app.world.step(1/60, dt, 10);
         }
-        
+
         keyboard.update(dt);
         gamepad.update(dt);
 
@@ -196,7 +193,7 @@ var animate = function (keyboard, gamepad, leapController, animateLeap,
 
 
 /* jshint multistr: true */
-function onLoad() {
+function onLoad(doTutorial) {
     "use strict";
     pyserver.log("\n\
 *********************************************----\n\
@@ -273,5 +270,7 @@ function onLoad() {
                        POOLVR.config.H_table,
                        animateMousePointer) );
 
-    startTutorial();
+    if (doTutorial) {
+        startTutorial();
+    }
 }

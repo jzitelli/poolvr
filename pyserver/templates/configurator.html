@@ -23,19 +23,20 @@
         overflow: hidden;
       }
       form {
+        position: absolute;
         padding: 15px;
         margin: 15px;
       }
       .button
       {
-        position: fixed;
+        position: absolute;
         cursor: pointer;
         display: inline-block;
         text-align: center;
         text-decoration: none;
         padding: 10px;
         font-weight: bold;
-        z-index: 1;
+        /*z-index: 1;*/
       }
     </style>
 
@@ -61,8 +62,6 @@
           </select>
         </label>
 
-        <input type="checkbox" id="useWebVRBoilerplate">useWebVRBoilerplate</input>
-
         <input type="checkbox" id="useSkybox">useSkybox</input>
 
         <input type="checkbox" id="useBasicMaterials">useBasicMaterials</input>
@@ -71,12 +70,13 @@
 
         <input type="checkbox" id="usePointLight">usePointLight</input>
 
-        <a class="button" id='saveConfig'>
-          SAVE CONFIGURATION
-        </a>
+        <a class="button" id='saveConfig'>SAVE CONFIGURATION</a>
 
       </form>
 
+    {% if not useWebVRBoilerplate %}
+    <a id="enterVR" class="button">ENTER VR</a>
+    {% endif %}
 
     <script src="../lib/three.js"></script>
 
@@ -119,7 +119,7 @@
     <script src="../src/sound.js"></script>
     <script src="../src/setupCannon.js"></script>
 
-    <script src="../src/configurator.js"></script>
+    <script src="../src/app.js"></script>
 
   </body>
 </html>

@@ -15,8 +15,7 @@ var fs = require( "fs" ),
       "lib/leap.transform.js",
       "lib/Primrose.js",
       "lib/SPE.js",
-      "obj/poolvr.js",
-      "obj/configurator.js"
+      "obj/poolvr.js"
     ],
     uglifyFiles = files.map( function ( s ) {
       return {
@@ -64,20 +63,6 @@ module.exports = function ( grunt ) {
               "src/sound.js",
               "src/setupCannon.js",
               "src/app.js"
-          ],
-          "obj/configurator.js": [
-              "three.py/js/WebVRApplication.js",
-              "three.py/js/three.py.js",
-              "three.py/js/MouseStuff.js",
-              "three.py/js/TextGeomLogger.js",
-              "three.py/js/LeapTools.js",
-              "src/WebVRSound.js",
-              "src/SynthSpeaker.js",
-              "src/pyserver.js",
-              "src/config.js",
-              "src/sound.js",
-              "src/setupCannon.js",
-              "src/configurator.js"
           ]
         }
       }
