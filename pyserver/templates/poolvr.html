@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
 
-    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0, shrink-to-fit=no">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -34,12 +34,12 @@
         background-color: rgba(20, 80, 100, 0.6);
         position: absolute;
         cursor: pointer;
-        /*display: inline-block;*/
         text-align: center;
         text-decoration: none;
         padding: 10px;
         margin: 10px;
         font-weight: bold;
+        /*display: inline-block;*/
         /*z-index: 1;*/
       }
     </style>
@@ -50,10 +50,11 @@
 
   </head>
 
+
   <body onload="onLoad()">
 
 
-<!--       <form id="profileForm">
+      <form id="profileForm">
 
         <label>Stored profiles:
           <select id='profileSelect' name='profileSelect'>
@@ -89,7 +90,7 @@
         <a class="button" id='saveConfig'>SAVE PROFILE</a>
 
       </form>
- -->
+
 
     {% if not useWebVRBoilerplate %}
     <a class="button" id="enterVR">ENTER VR</a>
