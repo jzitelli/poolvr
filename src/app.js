@@ -274,5 +274,7 @@ function onLoad(doTutorial) {
         startTutorial();
     }
 
-    POOLVR.profileForm.style.display = 'none';
+    if (POOLVR.profileForm) {
+        POOLVR.profileForm.style.display = 'none';
+    }
 }
