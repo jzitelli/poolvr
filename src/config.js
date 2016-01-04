@@ -198,6 +198,22 @@ POOLVR.saveConfig = function () {
 };
 
 
+POOLVR.loadConfig = function (profileName) {
+    "use strict";
+    var localStorageConfig = localStorage.getItem(profileName);
+    if (localStorageConfig) {
+        localStorageConfig = JSON.parse(localStorageConfig);
+        for (var k in localStorageConfig) {
+            if (POOLVR.config.hasOwnProperty(k)) {
+                POOLVR.config[k] = localStorageConfig[k];
+            }
+        }
+        pyserver.log("loaded profile " + profileName);
+        pyserver.log(JSON.stringify(POOLVR.config, undefined, 2));
+    }
+};
+
+
 POOLVR.ballMeshes = [];
 POOLVR.ballBodies = [];
 POOLVR.initialPositions = [];
@@ -268,6 +284,7 @@ POOLVR.autoPosition = ( function () {
 
 
 POOLVR.toggleMenu = function () {
+    "use strict";
     menu.visible = !menu.visible;
     mouseStuff.mousePointerMesh.visible = menu.visible;
     mouseStuff.setPickables(menu.children);
@@ -283,27 +300,21 @@ WebVRConfig.FORCE_ENABLE_VR  = URL_PARAMS.FORCE_ENABLE_VR  || WebVRConfig.FORCE_
 
 ( function () {
     "use strict";
-    var profiles = [];
+    var profileSelect = document.getElementById('profileSelect');
+    profileSelect.onchange = function (evt) {
+        console.log(this.value);
+        POOLVR.loadConfig(this.value);
+    };
     for (var i = 0; i < localStorage.length; i++) {
         var profileName = localStorage.key(i);
-        profiles.push(profileName);
+        var option = document.createElement('option');
+        option.text = profileName;
+        option.value = profileName;
+        profileSelect.appendChild(option);
     }
-    console.log(profiles);
-    // var localStorageConfig = localStorage.getItem(POOLVR.version);
-    // if (localStorageConfig) {
-    //     localStorageConfig = JSON.parse(localStorageConfig);
-    //     for (var k in localStorageConfig) {
-    //         if (POOLVR.config.hasOwnProperty(k)) {
-    //             POOLVR.config[k] = localStorageConfig[k];
-    //         }
-    //     }
-    //     pyserver.log("POOLVR.config was loaded from localStorage");
-    // }
-
     var onClick = function () {
         POOLVR.config[this.id] = this.checked;
     };
-
     for (var name in POOLVR.config) {
         if (name === 'pyserver') continue;
         var v = POOLVR.config[name];
@@ -314,7 +325,6 @@ WebVRConfig.FORCE_ENABLE_VR  = URL_PARAMS.FORCE_ENABLE_VR  || WebVRConfig.FORCE_
             }
         }
     }
-
 } )();
 
 POOLVR.profileForm = document.getElementById('profileForm');
