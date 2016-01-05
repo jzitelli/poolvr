@@ -111,27 +111,28 @@ var animate = function (keyboard, gamepad, leapController, animateLeap,
         var dt = (t - lt) * 0.001;
         requestAnimationFrame(animate);
 
-        app.vrManager.render(app.scene, app.camera, t);
-
         if (app.vrControls.enabled) {
             app.vrControls.update();
         }
+        app.vrManager.render(app.scene, app.camera, t);
+
+        keyboard.update(dt);
+        gamepad.update(dt);
+
         var frame = leapController.frame();
         if (frame.valid && frame.id != lastFrameID) {
             animateLeap(frame, dt);
             lastFrameID = frame.id;
         }
 
-        app.world.step(1/60, dt, 5);
+        app.world.step(1/75, dt, 5);
+
         // app.world.step(dt);
         // if (dt < 1/30) {
         //     app.world.step(dt);
         // } else {
         //     app.world.step(1/60, dt, 10);
         // }
-
-        keyboard.update(dt);
-        gamepad.update(dt);
 
         var floatUp = keyboard.getValue("floatUp") + keyboard.getValue("floatDown");
         var drive = keyboard.getValue("driveBack") + keyboard.getValue("driveForward");
@@ -261,7 +262,7 @@ function onLoad(doTutorial) {
     var tipBody        = toolStuff.tipBody;
     toolRoot           = toolStuff.toolRoot;
 
-    POOLVR.setupWorld(scene, app.world, tipBody);
+    POOLVR.setupWorld(scene, app.world, tipBody, stickMesh);
 
     app.start( animate(POOLVR.keyboard, POOLVR.gamepad,
                        leapController, animateLeap,
@@ -274,7 +275,7 @@ function onLoad(doTutorial) {
         startTutorial();
     }
 
-    if (POOLVR.profileForm) {
-        POOLVR.profileForm.style.display = 'none';
-    }
+    // if (POOLVR.profileForm) {
+    //     POOLVR.profileForm.style.display = 'none';
+    // }
 }

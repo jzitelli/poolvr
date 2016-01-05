@@ -49,7 +49,7 @@ POOLVR.setupMaterials = function (world) {
 };
 
 
-POOLVR.setupWorld = function (scene, world, tipBody) {
+POOLVR.setupWorld = function (scene, world, tipBody, stickMesh) {
     tipBody.material = POOLVR.tipMaterial;
     // referenced by cannon.js callbacks:
     var ballStripeMeshes = [],
@@ -171,9 +171,10 @@ POOLVR.setupWorld = function (scene, world, tipBody) {
             synthSpeaker.speak("Hi.");
         }
     });
-    // app.world.addEventListener("postStep", function () {
-    //     stickMesh.position.copy(tipBody.position);
-    //     stickMesh.parent.worldToLocal(stickMesh.position);
-    //     //scene.updateMatrixWorld();
-    // });
+    app.world.addEventListener("postStep", function () {
+        stickMesh.position.copy(tipBody.position);
+        stickMesh.parent.worldToLocal(stickMesh.position);
+        //stickMesh.quaternion.copy(tipBody.quaternion);
+        //scene.updateMatrixWorld();
+    });
 };
