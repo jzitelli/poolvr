@@ -1,27 +1,28 @@
 {
+  "useBasicMaterials": true,
+  "synthSpeakerVolume": 0.1,
+  "useWebVRBoilerplate": false,
+  "useTextGeomLogger": true,
+  "useShadowMap": false,
   "H_table": 0.74295,
   "L_table": 2.3368,
-  "ball_diameter": 0.05715,
   "gravity": 9.8,
+  "ball_diameter": 0.05715,
+  "pyserver": true,
+  "toolOptions": {
+    "toolOffset": [
+      -0.028227319609749654,
+      -0.3605490013654637,
+      -0.5560805543220533
+    ],
+    "tipShape": "Cylinder",
+    "toolRotation": -0.3165338984924169
+  },
+  "useSkybox": true,
+  "usePointLight": false,
   "initialPosition": [
     0,
     0.98295,
     1.0042
-  ],
-  "pointLight": null,
-  "pyserver": true,
-  "skybox": true,
-  "textGeomLogger": true,
-  "toolOptions": {
-    "tipShape": "Cylinder",
-    "toolOffset": [
-      -0.1919676216497052,
-      -0.5488856914869163,
-      -0.46457326775080254
-    ],
-    "toolRotation": 0.005793788863641349
-  },
-  "useBasicMaterials": true,
-  "useShadowMap": false,
-  "useWebVRBoilerplate": false
+  ]
 }

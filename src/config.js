@@ -124,16 +124,20 @@ POOLVR.gamepadCommands = {
                     commandDown: function(){app.resetVRSensor();}, dt: 0.25},
 
     nextBall: {buttons: [Primrose.Input.Gamepad.XBOX_BUTTONS.rightBumper],
-               commandDown: function(){POOLVR.selectNextBall();}, dt: 0.5},
+               commandDown: function(){POOLVR.selectNextBall();}, dt: 0.25},
 
     prevBall: {buttons: [Primrose.Input.Gamepad.XBOX_BUTTONS.leftBumper],
-               commandDown: function(){POOLVR.selectNextBall(-1);}, dt: 0.5},
+               commandDown: function(){POOLVR.selectNextBall(-1);}, dt: 0.25},
 
     autoPosition: {buttons: [Primrose.Input.Gamepad.XBOX_BUTTONS.Y],
-                   commandDown: function(){POOLVR.autoPosition(avatar);}, dt: 0.5},
+                   commandDown: function(){POOLVR.autoPosition(avatar);}, dt: 0.25},
 
     toggleMenu: {buttons: [Primrose.Input.Gamepad.XBOX_BUTTONS.start],
-                 commandDown: function(){POOLVR.toggleMenu();}, dt: 0.25}
+                 commandDown: function(){POOLVR.toggleMenu();}, dt: 0.25},
+
+    saveConfig: {buttons: [Primrose.Input.Gamepad.XBOX_BUTTONS.right],
+                 commandDown: function(){POOLVR.saveConfig();}, dt: 0.25}
+
 };
 
 
@@ -195,6 +199,8 @@ POOLVR.saveConfig = function () {
     }
     pyserver.log(JSON.stringify(POOLVR.config, undefined, 2));
     localStorage.setItem(profileName, JSON.stringify(POOLVR.config));
+
+    pyserver.writeFile('config.json', JSON.stringify(POOLVR.config, undefined, 2));
 };
 
 
