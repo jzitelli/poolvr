@@ -269,7 +269,7 @@ def pool_hall(useBasicMaterials=True,
         ball_materials = [MeshPhongMaterial(color=color, shading=SmoothShading) for color in ball_colors]
 
     ballData = {'cannonData': {'mass': 0.17, 'shapes': ['Sphere'],
-                               'linearDamping': 0.23, 'angularDamping': 0.28}}
+                               'linearDamping': 0.25, 'angularDamping': 0.32}}
 
     y_position = H_table + ball_radius + 0.0001 # epsilon distance which the ball will fall from initial position
 
