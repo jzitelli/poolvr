@@ -105,8 +105,8 @@ def pool_table(L_table=2.3368, W_table=None, H_table=0.74295,
                                                    [ 0.5*W_playable - np.sqrt(2)*W_cushion, H_cushion, -0.5*W_cushion],
                                                    [-0.5*W_playable + np.sqrt(2)*W_cushion, H_cushion, -0.5*W_cushion]])
     ###
-    # cushionShape = 'ConvexPolyhedron'
-    cushionShape = 'Box'
+    cushionShape = 'ConvexPolyhedron'
+    # cushionShape = 'Box'
     headCushionMesh = Mesh(name='headCushionMesh',
                            geometry=headCushionGeom,
                            material=cushionMaterial,
