@@ -89,9 +89,9 @@ var animate = function (keyboard, gamepad, leapController, animateLeap,
         var stickShadowMesh = new THREE.Mesh(stickShadowGeom, stickShadowMaterial);
         stickShadowMesh.quaternion.copy(stickMesh.quaternion);
         stickShadow.add(stickShadowMesh);
-        if (POOLVR.config.tipShape === 'Ellipsoid') {
+        if (POOLVR.config.toolOptions.tipShape === 'Ellipsoid') {
             // TODO: new projection approach for ellipsoid tip
-        } else if (POOLVR.config.tipShape === 'Sphere') {
+        } else if (POOLVR.config.toolOptions.tipShape === 'Sphere') {
             tipMesh.geometry.computeBoundingSphere();
             var tipShadowGeom = new THREE.CircleBufferGeometry(tipMesh.geometry.boundingSphere.radius).rotateX(-Math.PI / 2);
             var tipShadowMesh = new THREE.Mesh(tipShadowGeom, stickShadowMaterial);

@@ -1,0 +1,28 @@
+{
+  "useTextGeomLogger": true,
+  "synthSpeakerVolume": 0.1,
+  "initialPosition": [
+    0,
+    0.98295,
+    1.0042
+  ],
+  "useWebVRBoilerplate": false,
+  "gravity": 9.8,
+  "pyserver": true,
+  "useBasicMaterials": true,
+  "useShadowMap": false,
+  "useSkybox": true,
+  "toolOptions": {
+    "toolOffset": [
+      0.2805401591371024,
+      -0.35564424340957185,
+      -0.4918223641343749
+    ],
+    "toolRotation": -0.38691907463313546,
+    "tipShape": "Sphere"
+  },
+  "ball_diameter": 0.05715,
+  "L_table": 2.3368,
+  "H_table": 0.74295,
+  "usePointLight": false
+}
