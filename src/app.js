@@ -14,7 +14,6 @@ avatar.floatMode = false;
 avatar.toolMode = false;
 
 var mouseStuff = setupMouse(avatar);
-
 var toolRoot;
 
 var synthSpeaker = new SynthSpeaker({volume: POOLVR.config.synthSpeakerVolume, rate: 0.8, pitch: 0.5});
@@ -22,7 +21,6 @@ var synthSpeaker = new SynthSpeaker({volume: POOLVR.config.synthSpeakerVolume, r
 var textGeomLogger;
 if (POOLVR.config.useTextGeomLogger) {
    textGeomLogger = new TextGeomLogger();
-   //textGeomLogger = new TextGeomLogger(undefined, {nrows: 20, size: 0.043});
 } else {
     textGeomLogger = {
         root: new THREE.Object3D(),
@@ -32,7 +30,6 @@ if (POOLVR.config.useTextGeomLogger) {
 
 avatar.add(textGeomLogger.root);
 textGeomLogger.root.position.set(-2.5, 1.0, -3.5);
-//textGeomLogger.root.position.set(-1.5, -0.23, -1.8);
 
 var menu = setupMenu(avatar);
 
@@ -107,6 +104,7 @@ var animate = function (keyboard, gamepad, leapController, animateLeap,
         floatSpeed = 0.1;
     var lastFrameID;
     var lt = 0;
+
     var position = new THREE.Vector3(),
         direction = new THREE.Vector3(),
         raycaster = new THREE.Raycaster();
@@ -143,6 +141,12 @@ var animate = function (keyboard, gamepad, leapController, animateLeap,
                         direction.applyQuaternion(toolRoot.getWorldQuaternion());
                         raycaster.set(position, direction);
 
+                        // var intersects = raycaster.intersectObjects(POOLVR.ballMeshes);
+                        // if (intersects.length > 1) {
+                        //     mouseStuff.mousePointerMesh.visible = true;
+                        //     mouseStuff.mousePointerMesh.position.copy(intersects[1].object.position);
+                        // }
+
                         arrowHelper.visible = true;
                         arrowHelper.position.copy(position);
                         arrowHelper.setDirection(direction);
@@ -155,14 +159,8 @@ var animate = function (keyboard, gamepad, leapController, animateLeap,
             }
         }
 
-        app.world.step(1/75, dt, 5);
-
         // app.world.step(dt);
-        // if (dt < 1/30) {
-        //     app.world.step(dt);
-        // } else {
-        //     app.world.step(1/60, dt, 10);
-        // }
+        app.world.step(1/75, dt, 5);
 
         var floatUp = keyboard.getValue("floatUp") + keyboard.getValue("floatDown");
         var drive = keyboard.getValue("driveBack") + keyboard.getValue("driveForward");
@@ -192,13 +190,6 @@ var animate = function (keyboard, gamepad, leapController, animateLeap,
             var cosHeading = Math.cos(avatar.heading),
                 sinHeading = Math.sin(avatar.heading);
 
-            // if (!app.vrControls.enabled) {
-            //     pitch -= 0.8 * dt * (keyboard.getValue("pitchUp") + keyboard.getValue("pitchDown"));
-            //     pitchQuat.setFromAxisAngle(RIGHT, pitch);
-            // }
-            // var cosPitch = Math.cos(pitch),
-            //     sinPitch = Math.sin(pitch);
-
             avatar.quaternion.setFromAxisAngle(UP, avatar.heading);
 
             avatar.position.x += dt * (strafe * cosHeading + drive * sinHeading);
@@ -213,7 +204,7 @@ var animate = function (keyboard, gamepad, leapController, animateLeap,
             stickShadowMesh.quaternion.copy(stickMesh.quaternion);
         }
 
-        animateMousePointer(t, app.camera);
+        // animateMousePointer(t, app.camera);
 
         lt = t;
     }
