@@ -107,6 +107,14 @@ var animate = function (keyboard, gamepad, leapController, animateLeap,
         floatSpeed = 0.1;
     var lastFrameID;
     var lt = 0;
+    var position = new THREE.Vector3(),
+        direction = new THREE.Vector3(),
+        raycaster = new THREE.Raycaster();
+
+    var arrowHelper = new THREE.ArrowHelper(UP, new THREE.Vector3(), 3);
+    arrowHelper.visible = false;
+    app.scene.add(arrowHelper);
+
     function animate(t) {
         var dt = (t - lt) * 0.001;
         requestAnimationFrame(animate);
@@ -123,6 +131,28 @@ var animate = function (keyboard, gamepad, leapController, animateLeap,
         if (frame.valid && frame.id != lastFrameID) {
             animateLeap(frame, dt);
             lastFrameID = frame.id;
+
+            if (frame.hands.length === 1) {
+                var hand = frame.hands[0];
+                if (hand.confidence > 0.2) {
+                    var finger = hand.indexFinger;
+                    if (finger.extended) {
+                        position.fromArray(finger.stabilizedTipPosition);
+                        toolRoot.localToWorld(position);
+                        direction.fromArray(finger.direction);
+                        direction.applyQuaternion(toolRoot.getWorldQuaternion());
+                        raycaster.set(position, direction);
+
+                        arrowHelper.visible = true;
+                        arrowHelper.position.copy(position);
+                        arrowHelper.setDirection(direction);
+                    }
+                } else {
+                    arrowHelper.visible = false;
+                }
+            } else {
+                arrowHelper.visible = false;
+            }
         }
 
         app.world.step(1/75, dt, 5);
