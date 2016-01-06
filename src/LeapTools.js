@@ -99,12 +99,13 @@ function addTool(parent, world, options) {
     toolRoot.quaternion.setFromAxisAngle(UP, toolRotation);
 
     // interaction box visual guide:
-    var boxGeom = new THREE.BoxGeometry(1/scalar, 1/scalar, 1/scalar);
-    var interactionBoxGeom = new THREE.BufferGeometry();
-    interactionBoxGeom.fromGeometry(boxGeom);
-    boxGeom.dispose();
-    var interactionBoxMaterial = new THREE.MeshBasicMaterial({color: 0x00dd44, transparent: true, opacity: interactionBoxOpacity, side: THREE.BackSide});
-    var interactionBoxMesh = new THREE.Mesh(interactionBoxGeom, interactionBoxMaterial);
+    //var boxGeom = new THREE.BoxGeometry(1/scalar, 1/scalar, 1/scalar);
+    //var interactionBoxGeom = new THREE.BufferGeometry();
+    //interactionBoxGeom.fromGeometry(boxGeom);
+    //boxGeom.dispose();
+    //var interactionBoxMaterial = new THREE.MeshBasicMaterial({color: 0x00dd44, transparent: true, opacity: interactionBoxOpacity, side: THREE.BackSide});
+    //var interactionBoxMesh = new THREE.Mesh(interactionBoxGeom, interactionBoxMaterial);
+    var interactionBoxMesh = new THREE.Object3D();
     toolRoot.add(interactionBoxMesh);
     var interactionPlaneMaterial = new THREE.MeshBasicMaterial({color: 0x00dd44, transparent: true, opacity: interactionPlaneOpacity});
     var interactionPlaneGeom = new THREE.PlaneBufferGeometry(1/scalar, 1/scalar);
@@ -115,7 +116,7 @@ function addTool(parent, world, options) {
     interactionPlaneMesh.position.z = 1/2/scalar - 2/3/scalar;
     interactionBoxMesh.add(interactionPlaneMesh);
     // leap motion controller:
-    boxGeom = new THREE.BoxGeometry(0.0254*3/scalar, 0.0254*0.5/scalar, 0.0254*1.2/scalar);
+    var boxGeom = new THREE.BoxGeometry(0.0254*3/scalar, 0.0254*0.5/scalar, 0.0254*1.2/scalar);
     var leapGeom = new THREE.BufferGeometry();
     leapGeom.fromGeometry(boxGeom);
     boxGeom.dispose();
@@ -314,10 +315,10 @@ function addTool(parent, world, options) {
                     // velocity.multiplyScalar(0.5);
                     tipBody.velocity.copy(velocity);
 
-                    if (interactionBoxMaterial.opacity > 0.1 && tool.timeVisible > toolTimeC) {
+                    if (interactionPlaneMaterial.opacity > 0.1 && tool.timeVisible > toolTimeC) {
                         // dim the interaction box:
-                        interactionBoxMaterial.opacity *= 0.93;
-                        interactionPlaneMaterial.opacity = interactionBoxMaterial.opacity;
+                        interactionPlaneMaterial.opacity *= 0.93;
+                        //interactionPlaneMaterial.opacity = interactionBoxMaterial.opacity;
                     }
 
                 }
@@ -325,7 +326,7 @@ function addTool(parent, world, options) {
                 if (toolRoot.visible === false || stickMaterial.opacity !== 1) {
                     toolRoot.visible = true;
                     stickMaterial.opacity = tipMaterial.opacity = 1;
-                    interactionBoxMaterial.opacity = interactionBoxOpacity;
+                    //interactionBoxMaterial.opacity = interactionBoxOpacity;
                     interactionPlaneMaterial.opacity = interactionPlaneOpacity;
                 }
 
@@ -342,8 +343,8 @@ function addTool(parent, world, options) {
             if (tipMaterial.opacity > 0.1) {
                 stickMaterial.opacity *= 0.9;
                 tipMaterial.opacity = stickMaterial.opacity;
-                interactionBoxMaterial.opacity *= 0.9;
-                interactionPlaneMaterial.opacity = interactionBoxMaterial.opacity;
+                interactionPlaneMaterial.opacity *= 0.9;
+                //interactionPlaneMaterial.opacity = interactionBoxMaterial.opacity;
             } else {
                 toolRoot.visible = false;
             }
@@ -386,7 +387,7 @@ function addTool(parent, world, options) {
             if (toolRoot.visible === false) {
                 toolRoot.visible = true;
                 stickMaterial.opacity = tipMaterial.opacity = 1;
-                interactionBoxMaterial.opacity = interactionBoxOpacity;
+                //interactionBoxMaterial.opacity = interactionBoxOpacity;
                 interactionPlaneMaterial.opacity = interactionPlaneOpacity;
             }
         }
