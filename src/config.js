@@ -193,10 +193,10 @@ POOLVR.saveConfig = function () {
     } else {
         profileName = 'unnamed profile';
     }
-    if (window.toolRoot) {
-        POOLVR.config.toolOptions.toolOffset = [window.toolRoot.position.x, window.toolRoot.position.y, window.toolRoot.position.z];
-        POOLVR.config.toolOptions.toolRotation = window.toolRoot.rotation.y;
-    }
+
+    POOLVR.config.toolOptions.toolOffset = [POOLVR.toolRoot.position.x, POOLVR.toolRoot.position.y, POOLVR.toolRoot.position.z];
+    POOLVR.config.toolOptions.toolRotation = POOLVR.toolRoot.rotation.y;
+
     pyserver.log(JSON.stringify(POOLVR.config, undefined, 2));
     localStorage.setItem(profileName, JSON.stringify(POOLVR.config));
 
@@ -279,7 +279,7 @@ POOLVR.autoPosition = ( function () {
         avatar.quaternion.setFromAxisAngle(UP, avatar.heading);
         avatar.updateMatrixWorld();
 
-        nextVector.copy(toolRoot.position);
+        nextVector.copy(POOLVR.toolRoot.position);
         avatar.localToWorld(nextVector);
         nextVector.sub(POOLVR.ballMeshes[0].position);
         nextVector.y = 0;

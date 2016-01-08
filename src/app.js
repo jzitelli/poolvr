@@ -14,7 +14,6 @@ avatar.floatMode = false;
 avatar.toolMode = false;
 
 var mouseStuff = setupMouse(avatar);
-var toolRoot;
 
 var synthSpeaker = new SynthSpeaker({volume: POOLVR.config.synthSpeakerVolume, rate: 0.8, pitch: 0.5});
 
@@ -70,7 +69,7 @@ function startTutorial() {
 
 
 var animate = function (keyboard, gamepad, leapController, animateLeap,
-                        toolRoot, useShadowMap,
+                        useShadowMap,
                         stickMesh, tipMesh,
                         H_table,
                         animateMousePointer) {
@@ -80,10 +79,10 @@ var animate = function (keyboard, gamepad, leapController, animateLeap,
         // create shadow mesh from projection:
         var stickShadow = new THREE.Object3D();
         stickShadow.position.set(stickMesh.position.x,
-            (H_table + 0.001 - toolRoot.position.y - avatar.position.y) / toolRoot.scale.y,
+            (H_table + 0.001 - POOLVR.toolRoot.position.y - avatar.position.y) / POOLVR.toolRoot.scale.y,
             stickMesh.position.z);
         stickShadow.scale.set(1, 0.001, 1);
-        toolRoot.add(stickShadow);
+        POOLVR.toolRoot.add(stickShadow);
         var stickShadowMaterial = new THREE.MeshBasicMaterial({color: 0x002200});
         var stickShadowGeom = stickMesh.geometry.clone();
         var stickShadowMesh = new THREE.Mesh(stickShadowGeom, stickShadowMaterial);
@@ -136,9 +135,9 @@ var animate = function (keyboard, gamepad, leapController, animateLeap,
                     var finger = hand.indexFinger;
                     if (finger.extended) {
                         position.fromArray(finger.stabilizedTipPosition);
-                        toolRoot.localToWorld(position);
+                        POOLVR.toolRoot.localToWorld(position);
                         direction.fromArray(finger.direction);
-                        direction.applyQuaternion(toolRoot.getWorldQuaternion());
+                        direction.applyQuaternion(POOLVR.toolRoot.getWorldQuaternion());
                         raycaster.set(position, direction);
 
                         // var intersects = raycaster.intersectObjects(POOLVR.ballMeshes);
@@ -199,7 +198,7 @@ var animate = function (keyboard, gamepad, leapController, animateLeap,
 
         if (!useShadowMap) {
             stickShadow.position.set(stickMesh.position.x,
-                (H_table + 0.001 - toolRoot.position.y - avatar.position.y) / toolRoot.scale.y,
+                (H_table + 0.001 - POOLVR.toolRoot.position.y - avatar.position.y) / POOLVR.toolRoot.scale.y,
                 stickMesh.position.z);
             stickShadowMesh.quaternion.copy(stickMesh.quaternion);
         }
@@ -255,14 +254,13 @@ function onLoad(doTutorial) {
     var UP = new THREE.Vector3(0, 1, 0);
     var appConfig = combineObjects(POOLVR.config, {
         onResetVRSensor: function (lastRotation, lastPosition) {
-            pyserver.log('updating the toolRoot position...');
             // app.camera.updateMatrix();
             avatar.heading += lastRotation - app.camera.rotation.y;
-            toolRoot.rotation.y -= (lastRotation - app.camera.rotation.y);
-            toolRoot.position.sub(lastPosition);
-            toolRoot.position.applyAxisAngle(UP, -lastRotation + app.camera.rotation.y);
-            toolRoot.position.add(app.camera.position);
-            // toolRoot.updateMatrix();
+            POOLVR.toolRoot.rotation.y -= (lastRotation - app.camera.rotation.y);
+            POOLVR.toolRoot.position.sub(lastPosition);
+            POOLVR.toolRoot.position.applyAxisAngle(UP, -lastRotation + app.camera.rotation.y);
+            POOLVR.toolRoot.position.add(app.camera.position);
+            // POOLVR.toolRoot.updateMatrix();
             avatar.updateMatrixWorld();
         }
     });
@@ -281,13 +279,13 @@ function onLoad(doTutorial) {
     var stickMesh      = toolStuff.stickMesh;
     var animateLeap    = toolStuff.animateLeap;
     var tipBody        = toolStuff.tipBody;
-    toolRoot           = toolStuff.toolRoot;
+    POOLVR.toolRoot = toolStuff.toolRoot;
 
     POOLVR.setupWorld(scene, app.world, tipBody, stickMesh);
 
     app.start( animate(POOLVR.keyboard, POOLVR.gamepad,
                        leapController, animateLeap,
-                       toolRoot, POOLVR.config.useShadowMap,
+                       POOLVR.config.useShadowMap,
                        toolStuff.stickMesh, toolStuff.tipMesh,
                        POOLVR.config.H_table,
                        animateMousePointer) );
