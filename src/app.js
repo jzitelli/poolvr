@@ -68,23 +68,13 @@ function startTutorial() {
 
 
 
-var animate = function (keyboard, gamepad, leapController, animateLeap,
+var animate = function (keyboard, gamepad, updateTool,
                         animateMousePointer) {
     "use strict";
     var UP = new THREE.Vector3(0, 1, 0),
         walkSpeed = 0.333,
         floatSpeed = 0.1;
-    var lastFrameID;
     var lt = 0;
-
-    var position = new THREE.Vector3(),
-        direction = new THREE.Vector3(),
-        raycaster = new THREE.Raycaster(),
-        worldQuaternion = new THREE.Quaternion();
-
-    var arrowHelper = new THREE.ArrowHelper(UP, new THREE.Vector3(), 3);
-    arrowHelper.visible = false;
-    app.scene.add(arrowHelper);
 
     function animate(t) {
         var dt = (t - lt) * 0.001;
@@ -98,40 +88,7 @@ var animate = function (keyboard, gamepad, leapController, animateLeap,
         keyboard.update(dt);
         gamepad.update(dt);
 
-        var frame = leapController.frame();
-        if (frame.valid && frame.id != lastFrameID) {
-            animateLeap(frame, dt);
-            lastFrameID = frame.id;
-
-            if (frame.hands.length === 1) {
-                var hand = frame.hands[0];
-                if (hand.confidence > 0.2) {
-                    var finger = hand.indexFinger;
-                    if (finger.extended) {
-                        position.fromArray(finger.stabilizedTipPosition);
-                        POOLVR.toolRoot.localToWorld(position);
-                        direction.fromArray(finger.direction);
-                        POOLVR.toolRoot.getWorldQuaternion(worldQuaternion);
-                        direction.applyQuaternion(worldQuaternion);
-                        raycaster.set(position, direction);
-
-                        // var intersects = raycaster.intersectObjects(POOLVR.ballMeshes);
-                        // if (intersects.length > 1) {
-                        //     mouseStuff.mousePointerMesh.visible = true;
-                        //     mouseStuff.mousePointerMesh.position.copy(intersects[1].object.position);
-                        // }
-
-                        arrowHelper.visible = true;
-                        arrowHelper.position.copy(position);
-                        arrowHelper.setDirection(direction);
-                    }
-                } else {
-                    arrowHelper.visible = false;
-                }
-            } else {
-                arrowHelper.visible = false;
-            }
-        }
+        updateTool(dt);
 
         // app.world.step(dt);
         app.world.step(1/75, dt, 5);
@@ -242,16 +199,14 @@ function onLoad(doTutorial) {
     POOLVR.setupMaterials(app.world);
     POOLVR.setupWorld(scene, app.world);
 
-    var toolStuff = addTool(avatar, app.world, POOLVR.toolOptions);
 
-    var leapController = toolStuff.leapController;
-    var animateLeap    = toolStuff.animateLeap;
+    var toolStuff = addTool(avatar, app.world, POOLVR.toolOptions);
+    var updateTool  = toolStuff.updateTool;
     POOLVR.toolRoot = toolStuff.toolRoot;
 
 
     app.start( animate(POOLVR.keyboard, POOLVR.gamepad,
-                       leapController, animateLeap,
-                       animateMousePointer) );
+                       updateTool, animateMousePointer) );
 
     if (doTutorial) {
         startTutorial();
