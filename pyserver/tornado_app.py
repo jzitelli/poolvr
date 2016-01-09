@@ -18,13 +18,6 @@ import pyserver.site_settings as site_settings
 app_flask = flask_app.app
 
 websocket_handlers = []
-if site_settings.GFXTABLET:
-    from GfxTablet import GfxTabletHandler
-    websocket_handlers.append((r'/gfxtablet', GfxTabletHandler))
-# from PointerEventHandler import PointerEventHandler
-# from TouchEventHandler import TouchEventHandler
-# if site_settings.POINTEREVENTS:
-#     websocket_handlers.append((r'/pointerevents', PointerEventHandler))
 handlers = websocket_handlers + [(r'.*', FallbackHandler, dict(fallback=WSGIContainer(app_flask)))]
 
 
