@@ -23,10 +23,10 @@ if (POOLVR.config.useTextGeomLogger) {
 } else {
     textGeomLogger = {
         root: new THREE.Object3D(),
-        log: function (msg) { console.log(msg); }
+        log: function (msg) { console.log(msg); },
+        clear: function () {}
     };
 }
-
 avatar.add(textGeomLogger.root);
 textGeomLogger.root.position.set(-2.5, 1.0, -3.5);
 
@@ -69,35 +69,8 @@ function startTutorial() {
 
 
 var animate = function (keyboard, gamepad, leapController, animateLeap,
-                        useShadowMap,
-                        stickMesh, tipMesh,
-                        H_table,
                         animateMousePointer) {
     "use strict";
-
-    if (!useShadowMap) {
-        // create shadow mesh from projection:
-        var stickShadow = new THREE.Object3D();
-        stickShadow.position.set(stickMesh.position.x,
-            (H_table + 0.001 - POOLVR.toolRoot.position.y - avatar.position.y) / POOLVR.toolRoot.scale.y,
-            stickMesh.position.z);
-        stickShadow.scale.set(1, 0.001, 1);
-        POOLVR.toolRoot.add(stickShadow);
-        var stickShadowMaterial = new THREE.MeshBasicMaterial({color: 0x002200});
-        var stickShadowGeom = stickMesh.geometry.clone();
-        var stickShadowMesh = new THREE.Mesh(stickShadowGeom, stickShadowMaterial);
-        stickShadowMesh.quaternion.copy(stickMesh.quaternion);
-        stickShadow.add(stickShadowMesh);
-        if (POOLVR.config.toolOptions.tipShape === 'Ellipsoid') {
-            // TODO: new projection approach for ellipsoid tip
-        } else if (POOLVR.config.toolOptions.tipShape === 'Sphere') {
-            tipMesh.geometry.computeBoundingSphere();
-            var tipShadowGeom = new THREE.CircleBufferGeometry(tipMesh.geometry.boundingSphere.radius).rotateX(-Math.PI / 2);
-            var tipShadowMesh = new THREE.Mesh(tipShadowGeom, stickShadowMaterial);
-            stickShadow.add(tipShadowMesh);
-        }
-    }
-
     var UP = new THREE.Vector3(0, 1, 0),
         walkSpeed = 0.333,
         floatSpeed = 0.1;
@@ -106,7 +79,8 @@ var animate = function (keyboard, gamepad, leapController, animateLeap,
 
     var position = new THREE.Vector3(),
         direction = new THREE.Vector3(),
-        raycaster = new THREE.Raycaster();
+        raycaster = new THREE.Raycaster(),
+        worldQuaternion = new THREE.Quaternion();
 
     var arrowHelper = new THREE.ArrowHelper(UP, new THREE.Vector3(), 3);
     arrowHelper.visible = false;
@@ -137,7 +111,8 @@ var animate = function (keyboard, gamepad, leapController, animateLeap,
                         position.fromArray(finger.stabilizedTipPosition);
                         POOLVR.toolRoot.localToWorld(position);
                         direction.fromArray(finger.direction);
-                        direction.applyQuaternion(POOLVR.toolRoot.getWorldQuaternion());
+                        POOLVR.toolRoot.getWorldQuaternion(worldQuaternion);
+                        direction.applyQuaternion(worldQuaternion);
                         raycaster.set(position, direction);
 
                         // var intersects = raycaster.intersectObjects(POOLVR.ballMeshes);
@@ -194,13 +169,6 @@ var animate = function (keyboard, gamepad, leapController, animateLeap,
             avatar.position.x += dt * (strafe * cosHeading + drive * sinHeading);
             avatar.position.z += dt * (drive * cosHeading - strafe * sinHeading);
             avatar.position.y += dt * floatUp;
-        }
-
-        if (!useShadowMap) {
-            stickShadow.position.set(stickMesh.position.x,
-                (H_table + 0.001 - POOLVR.toolRoot.position.y - avatar.position.y) / POOLVR.toolRoot.scale.y,
-                stickMesh.position.z);
-            stickShadowMesh.quaternion.copy(stickMesh.quaternion);
         }
 
         // animateMousePointer(t, app.camera);
@@ -272,22 +240,17 @@ function onLoad(doTutorial) {
     scene.add(avatar);
 
     POOLVR.setupMaterials(app.world);
+    POOLVR.setupWorld(scene, app.world);
 
     var toolStuff = addTool(avatar, app.world, POOLVR.toolOptions);
 
     var leapController = toolStuff.leapController;
-    var stickMesh      = toolStuff.stickMesh;
     var animateLeap    = toolStuff.animateLeap;
-    var tipBody        = toolStuff.tipBody;
     POOLVR.toolRoot = toolStuff.toolRoot;
 
-    POOLVR.setupWorld(scene, app.world, tipBody, stickMesh);
 
     app.start( animate(POOLVR.keyboard, POOLVR.gamepad,
                        leapController, animateLeap,
-                       POOLVR.config.useShadowMap,
-                       toolStuff.stickMesh, toolStuff.tipMesh,
-                       POOLVR.config.H_table,
                        animateMousePointer) );
 
     if (doTutorial) {

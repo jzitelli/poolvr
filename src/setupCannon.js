@@ -49,8 +49,7 @@ POOLVR.setupMaterials = function (world) {
 };
 
 
-POOLVR.setupWorld = function (scene, world, tipBody, stickMesh) {
-    tipBody.material = POOLVR.tipMaterial;
+POOLVR.setupWorld = function (scene, world) {
     // referenced by cannon.js callbacks:
     var ballStripeMeshes = [],
         ballShadowMeshes = [];
@@ -158,23 +157,5 @@ POOLVR.setupWorld = function (scene, world, tipBody, stickMesh) {
                 }
             });
         }
-    });
-    var tipEventCounter = 0;
-    tipBody.addEventListener(CANNON.Body.COLLIDE_EVENT_NAME, function (evt) {
-        tipEventCounter++;
-        if (tipEventCounter === 1) {
-            setTimeout(function () {
-                synthSpeaker.speak("You moved a ball.  Good job.");
-            }, 250);
-        }
-        else if (tipEventCounter === 16) {
-            synthSpeaker.speak("Hi.");
-        }
-    });
-    app.world.addEventListener("postStep", function () {
-        stickMesh.position.copy(tipBody.position);
-        stickMesh.parent.worldToLocal(stickMesh.position);
-        //stickMesh.quaternion.copy(tipBody.quaternion);
-        //scene.updateMatrixWorld();
     });
 };
