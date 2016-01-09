@@ -44,8 +44,6 @@ def pool_table(L_table=2.3368, W_table=None, H_table=0.74295,
     :param W_cushion: width of the cushions
     :param H_cushion: height of the nose of the cushions; default is 63.5% of ball diameter
     :param useBasicMaterials: if True, use only three.js BasicMeshMaterials
-    :param useShadowMap: by default, plane-projected geometries/meshes representing shadows are created;
-                      if useShadowMap is True, they are not
     """
     if W_table is None:
         W_table = 0.5*L_table
@@ -215,13 +213,17 @@ def pool_table(L_table=2.3368, W_table=None, H_table=0.74295,
 
 def pool_hall(useBasicMaterials=True,
               useShadowMap=False,
-              usePointLight=False,
               useSkybox=False,
               L_table=2.3368,
               H_table=0.74295,
               ball_diameter=2.25*IN2METER,
               url_prefix="",
               **kwargs):
+    """Defines a three.js scene containing a pool table + billiard balls.
+
+    :param useShadowMap: by default, plane-projected geometries/meshes representing shadows are created;
+                         if useShadowMap is True, they are not
+    """
     scene = Scene()
     L_room, W_room = 10, 10
     floorMesh = Mesh(name="floorMesh",
@@ -234,10 +236,6 @@ def pool_hall(useBasicMaterials=True,
                      userData={'cannonData': {'mass': 0,
                                               'shapes': ['Plane']}})
     scene.add(floorMesh)
-
-    if usePointLight:
-        light = PointLight(color=0xaa8866, position=[4, 5, 2.5], intensity=0.8, distance=40)
-        scene.add(light)
 
     if useSkybox:
         scene.add(Skybox(cube_images=[url_prefix + "images/%s.png" % pos

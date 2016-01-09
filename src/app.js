@@ -174,6 +174,12 @@ function onLoad(doTutorial) {
         scene.add(centerSpotLight);
     }
 
+    if (POOLVR.config.usePointLight) {
+        var pointLight = new THREE.PointLight(0xaa8866, 0.8, 40);
+        pointLight.position.set(4, 5, 2.5);
+        scene.add(pointLight);
+    }
+
     var animateMousePointer = mouseStuff.animateMousePointer;
 
     var UP = new THREE.Vector3(0, 1, 0);

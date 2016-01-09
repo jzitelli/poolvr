@@ -37,7 +37,7 @@ POOLVR = {
         'H_table'            : 0.74295,
         'ball_diameter'      : 2.25 * pool_table.IN2METER,
         'useTextGeomLogger'  : True,
-        'synthSpeakerVolume' : 0.1,
+        'synthSpeakerVolume' : 0.2,
         'toolOptions': {
             'toolOffset'       : [0, -0.42, -0.4],
             'toolRotation'     : 0,
@@ -50,7 +50,7 @@ POOLVR = {
 
 def get_poolvr_config():
     config = deepcopy(POOLVR['config'])
-    filename = request.args.get('config')
+    filename = request.args.get('file')
     if filename:
         try:
             with open(os.path.join(WRITE_FOLDER, filename)) as f:
@@ -134,6 +134,7 @@ def write():
         _logger.info('wrote %s' % filename)
     except Exception as err:
         response = {'error': str(err)}
+        _logger.warning('could not write %s' % filename)
     return jsonify(response)
 
 
