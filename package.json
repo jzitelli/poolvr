@@ -28,6 +28,9 @@
     "cannon.js",
     "three.js"
   ],
+  "dependencies": [
+    "leapjs"
+  ],
   "devDependencies": {
     "grunt": "^0.4.5",
     "grunt-contrib-clean": "^0.6.0",
