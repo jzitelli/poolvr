@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "author": "Jeffrey Zitelli <jeffrey.zitelli@gmail.com> (https://github.com/jzitelli)",
   "license": "MIT",
-  "homepage": "http://subvr.info/poolvr",
+  "homepage": "http://subvr.info",
   "repository": {
     "type": "git",
     "url": "https://github.com/jzitelli/poolvr.git"
@@ -26,10 +26,13 @@
     "WebVR",
     "Leap Motion",
     "cannon.js",
-    "three.js"
+    "three.js",
+    "Primrose",
+    "VR"
   ],
   "dependencies": [
-    "leapjs"
+    "leapjs",
+    "shader-particle-engine"
   ],
   "devDependencies": {
     "grunt": "^0.4.5",
