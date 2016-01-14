@@ -1,14 +1,9 @@
-Leap.py
-LeapPython.so
-libLeap.so
-LeapPython.pyd
-Leap.dll
-
 bin
 
 node_modules
+
 __pycache__
-*.min.js
 *.pyc
+*.min.js
 
 **~
