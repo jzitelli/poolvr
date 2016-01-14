@@ -53,7 +53,7 @@
 
   <body onload="onLoad()">
 
-
+<!--
       <form id="profileForm">
 
         <label>Stored profiles:
@@ -77,7 +77,6 @@
           </select>
         </label>
 
-<!--
         <label>Leap Motion controller
           <label>position (meters):
             <input type='number' id='leapPositionX'>
@@ -88,7 +87,6 @@
             <input type='number' id='leapRotationY'>
           </label>
         </label>
- -->
 
         <br>
 
@@ -99,8 +97,8 @@
 
         <br>
 
-
       </form>
+ -->
 
 
     {% if not useWebVRBoilerplate %}
@@ -118,6 +116,8 @@
     <script src="lib/VRControls.js"></script>
     <script src="lib/VREffect.js"></script>
 
+    <!-- <script src="lib/CardboardEffect.js"></script> -->
+
     {% if useWebVRBoilerplate %}
     <script src="lib/webvr-polyfill.js"></script>
     <script src="lib/webvr-manager.js"></script>
@@ -125,8 +125,7 @@
 
     <script src="lib/cannon.js"></script>
 
-    <script src="lib/leap-0.6.4.js"></script>
-    <!-- <script src="node_modules/leapjs/leap-0.6.4.js"></script> -->
+    <script src="node_modules/leapjs/leap-0.6.4.js"></script>
 
     <!-- enhanced version w/ tool tracking: -->
     <!-- <script src="lib/leap.transform.js"></script> -->
@@ -135,7 +134,8 @@
 
     <script src="lib/Primrose.js"></script>
 
-    <script src="lib/SPE.js"></script>
+    <!-- <script src="lib/SPE.js"></script> -->
+    <script src="node_modules/shader-particle-engine/build/SPE.js"></script>
 
     <!-- <script src="fonts/helvetiker_regular.typeface.js"></script> -->
     <script src="fonts/Anonymous Pro_Regular.js"></script>
