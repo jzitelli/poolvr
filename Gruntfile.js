@@ -20,13 +20,13 @@ var fs = require( "fs" ),
     uglifyFiles = files.map( function ( s ) {
       return {
         src: s,
-        dest: s.replace( /.*\/(.*).js/, "bin/$1.min.js" )
+        dest: s.replace( /.*\/(.*).js/, "build/$1.min.js" )
       };
     } ),
     copyFiles = files.map( function ( s ) {
       return {
         src: s,
-        dest: s.replace( /.*\/(.*).js/, "bin/$1.js" )
+        dest: s.replace( /.*\/(.*).js/, "build/$1.js" )
       };
     } );
 
@@ -35,7 +35,7 @@ module.exports = function ( grunt ) {
   grunt.initConfig( {
     pkg: grunt.file.readJSON( "package.json" ),
     jshint: { default: "src/*.js" },
-    clean: [ "obj", "bin" ],
+    clean: [ "obj", "build" ],
     concat: {
       options: {
         banner: "/*\n\
