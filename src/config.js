@@ -307,27 +307,29 @@ WebVRConfig.FORCE_ENABLE_VR  = URL_PARAMS.FORCE_ENABLE_VR  || WebVRConfig.FORCE_
 ( function () {
     "use strict";
     var profileSelect = document.getElementById('profileSelect');
-    profileSelect.onchange = function (evt) {
-        console.log(this.value);
-        POOLVR.loadConfig(this.value);
-    };
-    for (var i = 0; i < localStorage.length; i++) {
-        var profileName = localStorage.key(i);
-        var option = document.createElement('option');
-        option.text = profileName;
-        option.value = profileName;
-        profileSelect.appendChild(option);
-    }
-    var onClick = function () {
-        POOLVR.config[this.id] = this.checked;
-    };
-    for (var name in POOLVR.config) {
-        if (name === 'pyserver') continue;
-        var v = POOLVR.config[name];
-        if ((v === true) || (v === false)) {
-            var input = document.getElementById(name);
-            if (input) {
-                input.onclick = onClick;
+    if (profileSelect) {
+        profileSelect.onchange = function (evt) {
+            console.log(this.value);
+            POOLVR.loadConfig(this.value);
+        };
+        for (var i = 0; i < localStorage.length; i++) {
+            var profileName = localStorage.key(i);
+            var option = document.createElement('option');
+            option.text = profileName;
+            option.value = profileName;
+            profileSelect.appendChild(option);
+        }
+        var onClick = function () {
+            POOLVR.config[this.id] = this.checked;
+        };
+        for (var name in POOLVR.config) {
+            if (name === 'pyserver') continue;
+            var v = POOLVR.config[name];
+            if ((v === true) || (v === false)) {
+                var input = document.getElementById(name);
+                if (input) {
+                    input.onclick = onClick;
+                }
             }
         }
     }
