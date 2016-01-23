@@ -30,7 +30,7 @@ It's been improved since the [Leap Motion 3D Jam](http://itch.io/jam/leapmotion3
 
 
 
-
+<!--
 ## Desktop and VR tracking modes:
 
 The default stick tracking mode (aka 'desktop') assumes that the Leap Motion sensor is stationary, facing up.
@@ -39,36 +39,50 @@ The VR stick tracking mode assumes that the sensor is [mounted to your HMD](http
 Currently this mode is selected using a `vrLeap` URL parameter, e.g. you would point your browser to `http://127.0.0.1:5000?vrLeap=true`.
 
 **I highly recommend using desktop tracking at the moment - in my experience it provides much better tool tracking in the context of cue stick in/out motions.**
+-->
+
+
+
+## Configuration:
+
+You can configure the graphics and other aspects of **poolvr** via URL parameters.  Some of the recognized URL parameters are:
+
+- `useBasicMaterials`: defaults to `true`, which configures bare-bones, low-expectation setting "EGA" graphics for max performance and compatibility
+- `useShadowMap`: defaults to `false`, shadows will be rendered as projected meshes.  If `true`, shadows are rendered via three.js shadow maps.
 
 
 
 
 ## How to run locally (tested under (64 bit) Windows 7, Windows 10, Ubuntu 14, Fedora 22):
 
-### Method A (serving the static file `index.html`):
+1. Clone this repository
+2. From your cloned poolvr root directory, do
+```
+git submodule init
+git submodule update
+```
+3. Follow either A or B:
+   A. Serving the static file `index.html`:
+      1. Start a Python HTTP server from the root directory:
+         - using Python 2: `python -m SimpleHTTPServer`
+         - using Python 3: `python -m http.server`
+      2. Point your browser to `http://127.0.0.1:8000`
+   B. Tornado / Flask application serving dynamically generated HTML:
+      This method requires some extra Python packages, but offers more functionality.
 
-1. Start a Python HTTP server in the root directory:
-    - using Python 2: `python -m SimpleHTTPServer`
-    - using Python 3: `python -m http.server`
-2. Point your browser to `http://127.0.0.1:8000`
+      I recommend using the [Miniconda Python distribution](http://conda.pydata.org/miniconda.html),
+      which will let you easily install the Python dependencies (using the `conda` Python package manager): ```
+      conda install tornado
+      conda install flask
+      conda install numpy
+      ```
 
+      1. Run the Python script `pyserver/tornado_app.py`: ```bash
+         python pyserver/tornado_app.py```
+      2. Point your browser to `http://127.0.0.1:5000/poolvr`
 
-### Method B (Tornado/Flask application serving dynamically generated HTML):
-
-This method requires some extra Python packages, but offers more functionality.  I recommend using the [Miniconda Python distribution](http://conda.pydata.org/miniconda.html), which will let you easily install the Python dependencies.
-
-1. Run the Python script `pyserver/tornado_app.py`: ```bash
-python pyserver/tornado_app.py```
-2. Point your browser to `http://127.0.0.1:5000`
-
-The Tornado server is configured to also serve any file within the project tree (nice for local development, but probably a bad idea to deploy to an actual web server).
-For instance, you can access the static `index.html` that you would obtain with method A via `http://127.0.0.1:5000/index.html`.
-
-
-You can configure the graphics and other aspects of **poolvr** via URL parameters.  Some of the recognized URL parameters are:
-
-- `useBasicMaterials`: defaults to `true`, which configures bare-bones, low-expectation setting "EGA" graphics for max performance and compatibility
-- `useShadowMap`: defaults to `false`, shadows will be rendered as projected meshes.  If `true`, shadows are rendered via three.js shadow maps.
+      The Tornado server is configured to also serve any file within the project tree (nice for local development, but probably a bad idea to deploy to an actual web server).
+      For instance, you can access the static `index.html` that you would obtain with method A via `http://127.0.0.1:5000/index.html`.
 
 
 
