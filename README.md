@@ -56,11 +56,10 @@ You can configure the graphics and other aspects of **poolvr** via URL parameter
 ## How to run locally (tested under (64 bit) Windows 7, Windows 10, Ubuntu 14, Fedora 22):
 
 1. Clone this repository
-2. From your cloned poolvr root directory, do
-```
-git submodule init
-git submodule update
-```
+2. From your cloned poolvr root directory, do ```
+   git submodule init
+   git submodule update
+   ```
 3. Follow either A or B:
    A. Serving the static file `index.html`:
       1. Start a Python HTTP server from the root directory:
