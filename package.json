@@ -1,6 +1,6 @@
 {
   "name": "poolvr",
-  "description": "Play pool / billiards in VR with your Leap Motion sensor, in a web browser!",
+  "description": "Play VR pool / billiards with your Leap Motion controller, in a web browser!",
   "version": "0.1.0",
   "author": "Jeffrey Zitelli <jeffrey.zitelli@gmail.com> (https://github.com/jzitelli)",
   "license": "MIT",
@@ -11,13 +11,17 @@
   },
   "bugs": "https://github.com/jzitelli/poolvr/issues",
   "files": [
-    "LICENSE",
-    "README.md",
-    "lib/",
-    "sounds/",
-    "images/",
+    "build/",
     "fonts/",
+    "images/",
+    "lib/",
     "pyserver/",
+    "sounds/",
+    "src/",
+    "test/",
+    "three.py/",
+    "Gruntfile.js",
+    "start_poolvr_server.sh",
     "favicon.ico"
   ],
   "keywords": [
@@ -28,12 +32,16 @@
     "cannon.js",
     "three.js",
     "Primrose",
-    "VR"
+    "VR",
+    "virtual reality",
+    "WebGL"
   ],
-  "dependencies": [
-    "leapjs",
-    "shader-particle-engine"
-  ],
+  "dependencies": {
+    "leapjs": "^0.6.4",
+    "shader-particle-engine": "^1.0.2",
+    "cannon": "git://github.com/schteppe/cannon.js.git",
+    "primrose": "git://github.com/capnmidnight/Primrose.git#dev"
+  },
   "devDependencies": {
     "grunt": "^0.4.5",
     "grunt-contrib-clean": "^0.6.0",

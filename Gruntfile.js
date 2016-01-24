@@ -3,18 +3,12 @@
 var fs = require( "fs" ),
     files = [
       "lib/three.js",
-      "lib/three-r73.js",
       "lib/TextGeometry.js",
       "lib/FontUtils.js",
       "lib/VREffect.js",
       "lib/VRControls.js",
       "lib/webvr-polyfill.js",
       "lib/webvr-manager.js",
-      "lib/cannon.js",
-      "lib/leap-0.6.4.js",
-      "lib/leap.transform.js",
-      "lib/Primrose.js",
-      "lib/SPE.js",
       "obj/poolvr.js"
     ],
     uglifyFiles = files.map( function ( s ) {
@@ -51,18 +45,18 @@ module.exports = function ( grunt ) {
       default: {
         files: {
           "obj/poolvr.js": [
-              "three.py/js/WebVRApplication.js",
-              "three.py/js/three.py.js",
-              "three.py/js/MouseStuff.js",
-              "three.py/js/TextGeomLogger.js",
-              "src/LeapTools.js",
-              "src/WebVRSound.js",
-              "src/SynthSpeaker.js",
-              "src/pyserver.js",
-              "src/config.js",
-              "src/sound.js",
-              "src/setupCannon.js",
-              "src/app.js"
+            "three.py/js/WebVRApplication.js",
+            "three.py/js/three.py.js",
+            "three.py/js/MouseStuff.js",
+            "three.py/js/TextGeomLogger.js",
+            "src/LeapTools.js",
+            "src/WebVRSound.js",
+            "src/SynthSpeaker.js",
+            "src/pyserver.js",
+            "src/config.js",
+            "src/sound.js",
+            "src/setupCannon.js",
+            "src/app.js"
           ]
         }
       }
