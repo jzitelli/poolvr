@@ -19,11 +19,11 @@
     "sounds/",
     "src/",
     "test/",
-    "three.py/",
     "Gruntfile.js",
     "start_poolvr_server.sh",
     "favicon.ico"
   ],
+  "main": "build/poolvr.js",
   "keywords": [
     "pool",
     "billiards",
@@ -34,13 +34,16 @@
     "Primrose",
     "VR",
     "virtual reality",
+    "Google Cardboard",
     "WebGL"
   ],
   "dependencies": {
     "leapjs": "^0.6.4",
     "shader-particle-engine": "^1.0.2",
     "cannon": "git://github.com/schteppe/cannon.js.git",
-    "primrose": "git://github.com/capnmidnight/Primrose.git#dev"
+    "primrose": "git://github.com/capnmidnight/Primrose.git#dev",
+    "three.js": "git://github.com/jzitelli/three.js.git",
+    "three.py": "git://github.com/jzitelli/three.py.git"
   },
   "devDependencies": {
     "grunt": "^0.4.5",
