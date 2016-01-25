@@ -9,13 +9,11 @@ import sys
 
 
 from flask import Flask, render_template, request, Markup, jsonify
-#STATIC_FOLDER = os.getcwd()
 STATIC_FOLDER = os.path.abspath(os.path.join(os.path.split(__file__)[0], os.path.pardir))
 app = Flask(__name__,
             static_folder=STATIC_FOLDER,
             static_url_path='')
 
-# sys.path.append(os.getcwd())
 sys.path.insert(0, os.path.join(os.path.split(__file__)[0], os.path.pardir))
 import pyserver.site_settings as site_settings
 app.config.from_object(site_settings)
@@ -117,10 +115,12 @@ def log():
     return jsonify(response)
 
 
-if not os.path.exists(WRITE_FOLDER):
-    raise Exception('write is disabled, you need to create the write folder %s' % WRITE_FOLDER)
 @app.route("/write", methods=['POST'])
 def write():
+    if not os.path.exists(WRITE_FOLDER):
+        _logger.warning('write is disabled, you need to create the write folder %s' % WRITE_FOLDER)
+        return jsonify({'error': 'write is disabled'})
+
     filename = os.path.join(WRITE_FOLDER, os.path.split(request.args['file'])[1])
     try:
         if request.json is not None:
