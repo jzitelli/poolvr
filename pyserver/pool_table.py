@@ -5,7 +5,7 @@ import numpy as np
 
 import sys
 import os.path
-sys.path.insert(0, os.path.join(os.path.split(__file__)[0], os.path.pardir, 'three.py'))
+sys.path.insert(0, os.path.join(os.path.split(__file__)[0], os.path.pardir, 'node_modules', 'three.py'))
 import three
 from three import *
 
