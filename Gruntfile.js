@@ -2,13 +2,6 @@
 
 var fs = require( "fs" ),
     files = [
-      "lib/three.js",
-      "lib/TextGeometry.js",
-      "lib/FontUtils.js",
-      "lib/VREffect.js",
-      "lib/VRControls.js",
-      "lib/webvr-polyfill.js",
-      "lib/webvr-manager.js",
       "obj/poolvr.js"
     ],
     uglifyFiles = files.map( function ( s ) {
