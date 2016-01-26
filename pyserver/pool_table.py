@@ -5,10 +5,12 @@ import numpy as np
 
 import sys
 import os.path
-sys.path.insert(0, os.path.join(os.path.split(__file__)[0], os.path.pardir, 'node_modules', 'three.py'))
+
+# TODO: use inspect
+THREEPY_DIR = os.path.join(os.path.split(__file__)[0], os.path.pardir, 'node_modules', 'three.py')
+sys.path.insert(0, THREEPY_DIR)
 import three
 from three import *
-
 
 IN2METER = 0.0254
 FT2METER = IN2METER / 12
@@ -29,6 +31,9 @@ ball_colors.append(0x111111); black  = ball_colors[-1]
 
 ball_colors = ball_colors + ball_colors[1:-1]
 
+
+
+# TODO: handle material switching client-side
 def pool_table(L_table=2.3368, W_table=None, H_table=0.74295,
                L_playable=None, W_playable=None,
                ball_diameter=2.25*IN2METER,
@@ -211,6 +216,7 @@ def pool_table(L_table=2.3368, W_table=None, H_table=0.74295,
     return poolTable
 
 
+
 def pool_hall(useBasicMaterials=True,
               useShadowMap=False,
               useSkybox=False,
@@ -321,6 +327,7 @@ def pool_hall(useBasicMaterials=True,
             ballMesh.add(ballShadowMesh)
 
     return scene
+
 
 
 def config_scene(**config):

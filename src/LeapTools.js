@@ -261,7 +261,7 @@ function addTool(parent, world, options) {
     app.scene.add(arrowHelper);
 
     var numParticles = 50;
-    var particleTexture = '/images/mouseParticle.png';
+    var particleTexture = '/images/particle.png';
     var particleGroup = new SPE.Group({
         texture: {value: THREE.ImageUtils.loadTexture(particleTexture)},
         maxParticleCount: numParticles

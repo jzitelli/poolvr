@@ -1,10 +1,10 @@
 {
   "name": "poolvr",
-  "description": "Play VR pool / billiards with your Leap Motion controller, in a web browser!",
+  "description": "Play pool / billiards in VR with your Leap Motion controller, in a web browser!",
   "version": "0.1.0",
-  "author": "Jeffrey Zitelli <jeffrey.zitelli@gmail.com> (https://github.com/jzitelli)",
+  "author": "Jeffrey Zitelli (https://github.com/jzitelli)",
   "license": "MIT",
-  "homepage": "http://subvr.info",
+  "homepage": "https://jzitelli.github.io/poolvr",
   "repository": {
     "type": "git",
     "url": "https://github.com/jzitelli/poolvr.git"
@@ -14,13 +14,13 @@
     "build/",
     "fonts/",
     "images/",
-    "lib/",
     "pyserver/",
     "sounds/",
-    "src/",
-    "test/",
-    "Gruntfile.js",
+    "lib/Primrose.js",
+    "README.md",
+    "LICENSE",
     "start_poolvr_server.sh",
+    "start_poolvr_server.bat",
     "favicon.ico"
   ],
   "main": "build/poolvr.js",
@@ -40,10 +40,11 @@
   "dependencies": {
     "leapjs": "^0.6.4",
     "shader-particle-engine": "^1.0.2",
-    "cannon": "git://github.com/schteppe/cannon.js.git",
-    "primrose": "git://github.com/capnmidnight/Primrose.git#dev",
-    "three.js": "git://github.com/jzitelli/three.js.git",
-    "three.py": "git://github.com/jzitelli/three.py.git"
+    "cannon": "git://github.com/jzitelli/cannon.js.git",
+    "three.js": "git://github.com/jzitelli/three.js.git#dev",
+    "three.py": "git://github.com/jzitelli/three.py.git#dev",
+    "webvr-boilerplate": "git://github.com/jzitelli/webvr-boilerplate.git#dev",
+    "webvr-polyfill": "git://github.com/jzitelli/webvr-polyfill.git"
   },
   "devDependencies": {
     "grunt": "^0.4.5",

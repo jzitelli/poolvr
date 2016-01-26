@@ -107,25 +107,22 @@
 
     <script src="node_modules/three.js/build/three.js"></script>
 
+<!-- TODO: r74 textgeometry handling
     <script src="node_modules/three.js/examples/js/geometries/TextGeometry.js"></script>
     <script src="node_modules/three.js/examples/js/utils/FontUtils.js"></script>
+ -->
+
+    {% if useWebVRBoilerplate %}
+    <script src="node_modules/webvr-polyfill/build/webvr-polyfill.js"></script>
+    <script src="node_modules/webvr-boilerplate/build/webvr-manager.js"></script>
+    {% endif %}
 
     <script src="node_modules/three.js/examples/js/effects/VREffect.js"></script>
     <script src="node_modules/three.js/examples/js/controls/VRControls.js"></script>
 
-    {% if useWebVRBoilerplate %}
-    <script src="lib/webvr-polyfill.js"></script>
-    <script src="lib/webvr-manager.js"></script>
-    {% endif %}
-
     <script src="node_modules/cannon/build/cannon.js"></script>
 
     <script src="node_modules/leapjs/leap-0.6.4.js"></script>
-
-    <!-- enhanced version w/ tool tracking: -->
-    <!-- <script src="lib/leap.transform.js"></script> -->
-
-    <!-- <script src="lib/leap-widgets-0.1.0.js"></script> -->
 
 <!--     
     <script src="node_modules/Primrose/bin/pliny.js"></script>
@@ -135,7 +132,7 @@
 
     <script src="node_modules/shader-particle-engine/build/SPE.js"></script>
 
-    <script src="fonts/Anonymous Pro_Regular.js"></script>
+    <!-- <script src="fonts/Anonymous Pro_Regular.js"></script> -->
 
     <script src="node_modules/three.py/js/three.py.js"></script>
     <script src="node_modules/three.py/js/WebVRApplication.js"></script>

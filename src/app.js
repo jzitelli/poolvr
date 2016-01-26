@@ -13,8 +13,6 @@ avatar.heading = 0;
 avatar.floatMode = false;
 avatar.toolMode = false;
 
-var mouseStuff = setupMouse(avatar);
-
 var synthSpeaker = new SynthSpeaker({volume: POOLVR.config.synthSpeakerVolume, rate: 0.8, pitch: 0.5});
 
 var textGeomLogger;
@@ -68,8 +66,7 @@ function startTutorial() {
 
 
 
-var animate = function (keyboard, gamepad, updateTool,
-                        animateMousePointer) {
+var animate = function (keyboard, gamepad, updateTool) {
     "use strict";
     var UP = new THREE.Vector3(0, 1, 0),
         walkSpeed = 0.333,
@@ -128,8 +125,6 @@ var animate = function (keyboard, gamepad, updateTool,
             avatar.position.y += dt * floatUp;
         }
 
-        // animateMousePointer(t, app.camera);
-
         lt = t;
     }
 
@@ -180,8 +175,6 @@ function onLoad(doTutorial) {
         scene.add(pointLight);
     }
 
-    var animateMousePointer = mouseStuff.animateMousePointer;
-
     var UP = new THREE.Vector3(0, 1, 0);
     var appConfig = combineObjects(POOLVR.config, {
         onResetVRSensor: function (lastRotation, lastPosition) {
@@ -206,17 +199,12 @@ function onLoad(doTutorial) {
     POOLVR.setupWorld(scene, app.world);
 
 
-    var toolStuff = addTool(avatar, app.world, POOLVR.toolOptions);
-    var updateTool  = toolStuff.updateTool;
-    POOLVR.toolRoot = toolStuff.toolRoot;
+    var leapTool = addTool(avatar, app.world, POOLVR.toolOptions);
+    POOLVR.toolRoot = leapTool.toolRoot;
 
+    app.start( animate(POOLVR.keyboard, POOLVR.gamepad, leapTool.updateTool) );
 
-    app.start( animate(POOLVR.keyboard, POOLVR.gamepad,
-                       updateTool, animateMousePointer) );
-
-    if (doTutorial) {
-        startTutorial();
-    }
+    startTutorial();
 
     if (POOLVR.profileForm) {
         POOLVR.profileForm.style.display = 'none';

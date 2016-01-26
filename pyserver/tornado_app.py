@@ -10,7 +10,6 @@ from tornado.web import Application, FallbackHandler
 from tornado.ioloop import IOLoop
 
 import sys
-#sys.path.append(os.getcwd())
 sys.path.insert(0, os.path.join(os.path.split(__file__)[0], os.path.pardir))
 import pyserver
 import pyserver.flask_app as flask_app
@@ -21,8 +20,10 @@ websocket_handlers = []
 handlers = websocket_handlers + [(r'.*', FallbackHandler, dict(fallback=WSGIContainer(app_flask)))]
 
 
+
 def make_app():
     return Application(handlers, debug=app_flask.debug)
+
 
 
 def main():
@@ -39,15 +40,18 @@ def main():
     _logger.info("""
                 *
            ***********
+           p o o l v r
     *************************
 *********************************
 STARTING TORNADO APP!!!!!!!!!!!!!
 *********************************
     *************************
+           p o o l v r
            ***********
                 *
 """)
     IOLoop.instance().start()
+
 
 
 if __name__ == "__main__":

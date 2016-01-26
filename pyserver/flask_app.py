@@ -7,7 +7,6 @@ import json
 from copy import deepcopy
 import sys
 
-
 from flask import Flask, render_template, request, Markup, jsonify
 STATIC_FOLDER = os.path.abspath(os.path.join(os.path.split(__file__)[0], os.path.pardir))
 app = Flask(__name__,
@@ -26,27 +25,32 @@ POOLVR = {
     'config': {
         'pyserver'           : True,
         'gravity'            : 9.8,
-        'useWebVRBoilerplate': False,
+        'useWebVRBoilerplate': True,
         'useBasicMaterials'  : True,
         'useShadowMap'       : False,
         'usePointLight'      : False,
         'useSkybox'          : True,
+        'useTextGeomLogger'  : True,
         'L_table'            : 2.3368,
         'H_table'            : 0.74295,
         'ball_diameter'      : 2.25 * pool_table.IN2METER,
-        'useTextGeomLogger'  : True,
-        'synthSpeakerVolume' : 0.2,
+        'initialPosition'    : [0, 0.98295, 1.0042],
+        'synthSpeakerVolume' : 0.3,
         'toolOptions': {
-            'toolOffset'       : [0, -0.42, -0.4],
-            'toolRotation'     : 0,
-            'tipShape'         : 'Cylinder'
+            'toolOffset'  : [0, -0.42, -0.4],
+            'toolRotation': 0,
+            'tipShape'    : 'Cylinder'
         }
     },
     'version': '0.1.0'
 }
 
 
+
 def get_poolvr_config():
+    """
+    Constructs poolvr config dict based on request url parameters.
+    """
     config = deepcopy(POOLVR['config'])
     filename = request.args.get('file')
     if filename:
@@ -75,6 +79,7 @@ def get_poolvr_config():
     return config
 
 
+
 @app.context_processor
 def js_suffix():
     if app.debug:
@@ -83,36 +88,35 @@ def js_suffix():
         return {'js_suffix': '.min.js'}
 
 
+
 @app.route('/poolvr')
 def poolvr_app():
-    """Serves the poolvr HTML app"""
+    """
+    Serves the poolvr app HTML.
+    """
     config = get_poolvr_config()
-    config['initialPosition'] = [0, 0.98295, 1.0042]
-    version = request.args.get('version')
-    if version is not None:
-        template = 'poolvr-%s.html' % version
-    else:
-        template = 'poolvr.html'
-        version = POOLVR['version']
-    return render_template(template,
+    return render_template("poolvr.html",
                            json_config=Markup(r"""<script>
 var POOLVR = %s;
 var JSON_SCENE = %s;
 </script>""" % (json.dumps({'config' : config,
-                            'version': version},
+                            'version': POOLVR['version']},
                            indent=2),
                 json.dumps(pool_table.pool_hall(**config).export(),
                            indent=(2 if app.debug else None)))), **config)
 
 
+
 @app.route('/log', methods=['POST'])
 def log():
-    """Post message from client to the server log
+    """
+    Post message from client to the server log
     """
     msg = request.form['msg']
     _logger.info(msg)
     response = {'status': 0}
     return jsonify(response)
+
 
 
 @app.route("/write", methods=['POST'])
@@ -138,20 +142,24 @@ def write():
     return jsonify(response)
 
 
+
 def main():
     _logger.info("app.config =\n%s" % '\n'.join(['%s: %s' % (k, str(v))
                                                 for k, v in sorted(app.config.items(),
                                                                    key=lambda i: i[0])]))
     _logger.info("""
           ***********
+          p o o l v r
    *************************
 *******************************
 STARTING FLASK APP!!!!!!!!!!!!!
 *******************************
    *************************
+          p o o l v r
           ***********
 """)
     app.run(host='0.0.0.0', port=app.config['PORT'])
+
 
 
 if __name__ == "__main__":

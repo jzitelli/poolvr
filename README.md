@@ -30,6 +30,7 @@ It's been improved since the [Leap Motion 3D Jam](http://itch.io/jam/leapmotion3
 
 
 
+
 <!--
 ## Desktop and VR tracking modes:
 
@@ -43,6 +44,7 @@ Currently this mode is selected using a `vrLeap` URL parameter, e.g. you would p
 
 
 
+
 ## Configuration:
 
 You can configure the graphics and other aspects of **poolvr** via URL parameters.  Some of the recognized URL parameters are:
@@ -53,35 +55,20 @@ You can configure the graphics and other aspects of **poolvr** via URL parameter
 
 
 
-## How to host locally (tested under Windows 7, Windows 10, Ubuntu 14, Fedora 22):
+
+## How to host locally (tested under Windows 7, Windows 10, Ubuntu 14.04, Fedora 22):
 
 1. Clone this repository
-2. From your cloned **poolvr** root directory: ```bash
-   git submodule init
-   git submodule update```
-3. Follow either A or B:
-   A. Serving the static file `index.html`:
-      ** BROKEN AT THE MOMENT **
+2. Install JavaScript dependencies via Node Package Manager: `npm install`
+3. Set up a Python environment with the required packages.  I recommend using the [Miniconda Python distribution](http://conda.pydata.org/miniconda.html), which will let you easily install the Python dependencies (using the `conda` Python package manager): ```
+conda install tornado
+conda install flask
+conda install numpy```
+4. Start the Tornado server via: `python pyserver/tornado_app.py`
 
-      1. Start a Python HTTP server from the root directory:
-         - using Python 2: `python -m SimpleHTTPServer`
-         - using Python 3: `python -m http.server`
-      2. Point your browser to `http://127.0.0.1:8000`
-   B. Tornado / Flask application serving dynamically generated HTML:
-      This method requires some extra Python packages, but offers more functionality.
+If all goes well, you should be able to access **poolvr** at `http://127.0.0.1:5000/poolvr`.
 
-      1. Set up a Python environment with the required packages.
-         I recommend using the [Miniconda Python distribution](http://conda.pydata.org/miniconda.html),
-         which will let you easily install the Python dependencies (using the `conda` Python package manager): ```bash
-         conda install tornado
-         conda install flask
-         conda install numpy```
-      2. Run the Python script `pyserver/tornado_app.py`: ```bash
-         python pyserver/tornado_app.py```
-      3. Point your browser to `http://127.0.0.1:5000/poolvr`
-
-      The Tornado server is configured to also serve any file within the project tree (nice for local development, but probably a bad idea to deploy to an actual web server).
-      For instance, you can access the static `index.html` that you would obtain with method A via `http://127.0.0.1:5000/index.html`.
+The Tornado server is configured to also serve any file within the project tree (nice for local development, but probably a bad idea to deploy to an actual web server).
 
 
 
@@ -95,7 +82,7 @@ JavaScript libraries:
   - [LeapJS-Plugins](https://github.com/leapmotion/leapjs-plugins)
   - [three.js](http://threejs.org)
   - [Cannon.js](http://www.cannonjs.org)
-  - [Primrose](https://www.primroseeditor.com)
+  - [Primrose](https://www.primrosevr.com)
   - [webvr-boilerplate](https://github.com/borismus/webvr-boilerplate)
   - [Shader Particle Engine](https://github.com/squarefeet/ShaderParticleEngine)
 
@@ -106,17 +93,3 @@ Python packages:
 
 
 The space nebula cube map background was created with [Space 3D](http://wwwtyro.github.io/space-3d/#animationSpeed=1&fov=90&nebulae=true&pointStars=true&resolution=1024&seed=1bblx79ds&stars=true&sun=false).
-
-
-
-
-## TODO list:
-
-- add 8-ball / other pool/billiards game logic
-- Leap Motion hand interactions (e.g. point at the ball you want to pocket next)
-- improve and add more sounds
-- menu / menus
-- tweak cannon.js parameters
-- multi-user
-- render balls as sphere imposters
-- improve cardboard / mobile experience
