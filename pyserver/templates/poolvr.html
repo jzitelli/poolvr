@@ -53,53 +53,6 @@
 
   <body onload="onLoad()">
 
-    <!-- 
-      <form id="profileForm">
-
-        <label>Stored profiles:
-          <select id='profileSelect' name='profileSelect'>
-          </select>
-        </label>
-
-        <label>Profile name:
-          <input type="text" id="profileName"></input>
-        </label>
-
-        <a class="button" id='saveConfig'>SAVE PROFILE</a>
-
-        <br>
-
-        <label>Tip shape:
-          <select name='tipShapeSelect'>
-            <option value='Cylinder' >Cylinder</option>
-            <option value='Sphere'   >Sphere</option>
-            <option value='Ellipsoid'>Ellipsoid</option>
-          </select>
-        </label>
-
-        <label>Leap Motion controller
-          <label>position (meters):
-            <input type='number' id='leapPositionX'>
-            <input type='number' id='leapPositionY'>
-            <input type='number' id='leapPositionZ'>
-          </label>
-          <label>rotation (radians):
-            <input type='number' id='leapRotationY'>
-          </label>
-        </label>
-
-        <br>
-
-        <input type="checkbox" id="useSkybox">useSkybox</input>
-        <input type="checkbox" id="useBasicMaterials">useBasicMaterials</input>
-        <input type="checkbox" id="useShadowMap">useShadowMap</input>
-        <input type="checkbox" id="usePointLight">usePointLight</input>
-
-        <br>
-
-      </form>
-    -->
-
     {% if not useWebVRBoilerplate %}
     <a class="button" id="enterVR">ENTER VR</a>
     <a class="button" id="enterFullscreen" style="top:64px;">ENTER FULLSCREEN</a>
@@ -107,10 +60,8 @@
 
     <script src="node_modules/three.js/build/three.js"></script>
 
-<!-- TODO: r74 textgeometry handling
     <script src="node_modules/three.js/examples/js/geometries/TextGeometry.js"></script>
     <script src="node_modules/three.js/examples/js/utils/FontUtils.js"></script>
- -->
 
     {% if useWebVRBoilerplate %}
     <script src="node_modules/webvr-polyfill/build/webvr-polyfill.js"></script>
