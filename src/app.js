@@ -28,14 +28,14 @@ if (POOLVR.config.useTextGeomLogger) {
 avatar.add(textGeomLogger.root);
 textGeomLogger.root.position.set(-2.5, 1.0, -3.5);
 
-var menu = setupMenu(avatar);
+// var menu = setupMenu(avatar);
 
 function setupMenu(parent) {
     "use strict";
     var menu = new THREE.Object3D();
     var material = new THREE.MeshBasicMaterial({color: 0x22ee33});
 
-    var textGeom = new THREE.TextGeometry('RESET TABLE', {font: 'anonymous pro', size: 0.2, height: 0, curveSegments: 2});
+    var textGeom = new THREE.TextGeometry('RESET TABLE', {font: THREE.py.fonts.anonymous_pro, size: 0.2, height: 0, curveSegments: 2});
     var textMesh = new THREE.Mesh(textGeom, material);
     textMesh.onSelect = POOLVR.resetTable;
     textMesh.position.set(0, 0.8, -2);

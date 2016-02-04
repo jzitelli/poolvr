@@ -244,7 +244,7 @@ function addTool(parent, world, options) {
 
     var H_table = POOLVR.config.H_table;
     world.addEventListener("postStep", function () {
-        stickMesh.position.copy(tipBody.position);
+        stickMesh.position.copy(tipBody.interpolatedPosition);
         toolRoot.worldToLocal(stickMesh.position);
         stickShadow.position.set(
             stickMesh.position.x,
