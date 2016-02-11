@@ -98,7 +98,7 @@ def poolvr_app():
     return render_template("poolvr.html",
                            json_config=Markup(r"""<script>
 var POOLVR = %s;
-var JSON_SCENE = %s;
+var THREEPY_SCENE = %s;
 </script>""" % (json.dumps({'config' : config,
                             'version': POOLVR['version']},
                            indent=2),

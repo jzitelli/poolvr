@@ -1,7 +1,5 @@
 var app;
 
-var scene;
-
 var avatar = new THREE.Object3D();
 if (POOLVR.config.initialPosition) {
     avatar.position.fromArray(POOLVR.config.initialPosition);
@@ -66,7 +64,7 @@ function startTutorial() {
 
 
 
-var animate = function (keyboard, gamepad, updateTool) {
+var animate = function (world, keyboard, gamepad, updateTool) {
     "use strict";
     var UP = new THREE.Vector3(0, 1, 0),
         walkSpeed = 0.333,
@@ -87,8 +85,8 @@ var animate = function (keyboard, gamepad, updateTool) {
 
         updateTool(dt);
 
-        // app.world.step(dt);
-        app.world.step(1/75, dt, 5);
+        // world.step(dt);
+        world.step(1/75, dt, 5);
 
         var floatUp = keyboard.getValue("floatUp") + keyboard.getValue("floatDown");
         var drive = keyboard.getValue("driveBack") + keyboard.getValue("driveForward");
@@ -134,7 +132,7 @@ var animate = function (keyboard, gamepad, updateTool) {
 
 
 /* jshint multistr: true */
-function onLoad(doTutorial) {
+function onLoad() {
     "use strict";
     pyserver.log("\n\
 *********************************************----\n\
@@ -145,68 +143,66 @@ function onLoad(doTutorial) {
 *********************************************----\n\
 *********************************************----\n\
     ---------------------------------------------\n");
-    pyserver.log('WebVRConfig =\n' + JSON.stringify(WebVRConfig, undefined, 2));
-    pyserver.log('userAgent = ' + userAgent);
-    if (navigator.getVRDevices) {
-        navigator.getVRDevices().then(function (devices) {
-            devices.forEach(function (device, i) {
-                pyserver.log('\nVR device ' + i + ': ' + device.deviceName);
-                console.log(device);
-            });
-        });
-    }
     pyserver.log("POOLVR.config =\n" + JSON.stringify(POOLVR.config, undefined, 2));
 
-    scene = THREE.py.parse(JSON_SCENE);
+    THREE.py.parse(THREEPY_SCENE).then( function (scene) {
 
-    if (!POOLVR.config.useBasicMaterials) {
-        var centerSpotLight = new THREE.SpotLight(0xffffee, 1, 10, 90);
-        centerSpotLight.position.set(0, 3, 0);
-        centerSpotLight.castShadow = true;
-        centerSpotLight.shadowCameraNear = 0.01;
-        centerSpotLight.shadowCameraFar = 4;
-        centerSpotLight.shadowCameraFov = 90;
-        scene.add(centerSpotLight);
-    }
-
-    if (POOLVR.config.usePointLight) {
-        var pointLight = new THREE.PointLight(0xaa8866, 0.8, 40);
-        pointLight.position.set(4, 5, 2.5);
-        scene.add(pointLight);
-    }
-
-    var UP = new THREE.Vector3(0, 1, 0);
-    var appConfig = combineObjects(POOLVR.config, {
-        onResetVRSensor: function (lastRotation, lastPosition) {
-            // app.camera.updateMatrix();
-            avatar.heading += lastRotation - app.camera.rotation.y;
-            POOLVR.toolRoot.rotation.y -= (lastRotation - app.camera.rotation.y);
-            POOLVR.toolRoot.position.sub(lastPosition);
-            POOLVR.toolRoot.position.applyAxisAngle(UP, -lastRotation + app.camera.rotation.y);
-            POOLVR.toolRoot.position.add(app.camera.position);
-            // POOLVR.toolRoot.updateMatrix();
-            avatar.updateMatrixWorld();
+        if (!POOLVR.config.useBasicMaterials) {
+            var centerSpotLight = new THREE.SpotLight(0xffffee, 1, 10, 90);
+            centerSpotLight.position.set(0, 3, 0);
+            centerSpotLight.castShadow = true;
+            centerSpotLight.shadowCameraNear = 0.01;
+            centerSpotLight.shadowCameraFar = 4;
+            centerSpotLight.shadowCameraFov = 90;
+            scene.add(centerSpotLight);
         }
-    });
-    app = new WebVRApplication(scene, appConfig);
 
-    THREE.py.CANNONize(scene, app.world);
+        if (POOLVR.config.usePointLight) {
+            var pointLight = new THREE.PointLight(0xaa8866, 0.8, 40);
+            pointLight.position.set(4, 5, 2.5);
+            scene.add(pointLight);
+        }
 
-    avatar.add(app.camera);
-    scene.add(avatar);
+        var UP = new THREE.Vector3(0, 1, 0);
+        var appConfig = combineObjects(POOLVR.config, {
+            onResetVRSensor: function (lastRotation, lastPosition) {
+                // app.camera.updateMatrix();
+                avatar.heading += lastRotation - app.camera.rotation.y;
+                POOLVR.toolRoot.rotation.y -= (lastRotation - app.camera.rotation.y);
+                POOLVR.toolRoot.position.sub(lastPosition);
+                POOLVR.toolRoot.position.applyAxisAngle(UP, -lastRotation + app.camera.rotation.y);
+                POOLVR.toolRoot.position.add(app.camera.position);
+                // POOLVR.toolRoot.updateMatrix();
+                avatar.updateMatrixWorld();
+            }
+        });
 
-    POOLVR.setupMaterials(app.world);
-    POOLVR.setupWorld(scene, app.world);
+        app = new WebVRApplication(scene, appConfig);
 
+        var world = new CANNON.World();
+        world.gravity.set( 0, -POOLVR.config.gravity, 0 );
+        //world.broadphase = new CANNON.SAPBroadphase( world );
+        world.defaultContactMaterial.contactEquationStiffness   = 1e6;
+        world.defaultContactMaterial.frictionEquationStiffness  = 1e6;
+        world.defaultContactMaterial.contactEquationRelaxation  = 3;
+        world.defaultContactMaterial.frictionEquationRelaxation = 3;
+        world.solver.iterations = 9;
 
-    var leapTool = addTool(avatar, app.world, POOLVR.toolOptions);
-    POOLVR.toolRoot = leapTool.toolRoot;
+        CANNONize(scene, world);
 
-    app.start( animate(POOLVR.keyboard, POOLVR.gamepad, leapTool.updateTool) );
+        avatar.add(app.camera);
+        scene.add(avatar);
 
-    startTutorial();
+        POOLVR.setupMaterials(world);
+        POOLVR.setupWorld(scene, world);
 
-    if (POOLVR.profileForm) {
-        POOLVR.profileForm.style.display = 'none';
-    }
+        var leapTool = addTool(avatar, world, POOLVR.toolOptions);
+        POOLVR.toolRoot = leapTool.toolRoot;
+
+        requestAnimationFrame( animate(world, POOLVR.keyboard, POOLVR.gamepad, leapTool.updateTool) );
+
+        startTutorial();
+
+    } );
+
 }
