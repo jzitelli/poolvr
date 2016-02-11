@@ -185,7 +185,7 @@ POOLVR.selectNextBall = function (inc) {
     }
     if (POOLVR.nextBall != next) {
         POOLVR.nextBall = next;
-        textGeomLogger.log("BALL " + POOLVR.nextBall + " SELECTED");
+        POOLVR.textGeomLogger.log("BALL " + POOLVR.nextBall + " SELECTED");
     }
 };
 
@@ -200,11 +200,11 @@ POOLVR.resetTable = function () {
         // body.bounces = 0;
         body.mesh.visible = true;
     });
-    if (synthSpeaker.speaking === false) {
-        synthSpeaker.speak("Table reset.");
+    if (POOLVR.synthSpeaker.speaking === false) {
+        POOLVR.synthSpeaker.speak("Table reset.");
     }
     POOLVR.nextBall = 1;
-    textGeomLogger.log("TABLE RESET.");
+    POOLVR.textGeomLogger.log("TABLE RESET.");
 };
 
 
@@ -213,7 +213,7 @@ POOLVR.autoPosition = ( function () {
     var nextVector = new THREE.Vector3();
     var UP = new THREE.Vector3(0, 1, 0);
     function autoPosition(avatar) {
-        textGeomLogger.log("YOU ARE BEING AUTO-POSITIONED.  NEXT BALL: " + POOLVR.nextBall);
+        POOLVR.textGeomLogger.log("YOU ARE BEING AUTO-POSITIONED.  NEXT BALL: " + POOLVR.nextBall);
 
         avatar.heading = Math.atan2(
             -(POOLVR.ballMeshes[POOLVR.nextBall].position.x - POOLVR.ballMeshes[0].position.x),
@@ -299,7 +299,7 @@ if (POOLVR.saveConfigButton) {
     POOLVR.saveConfigButton.addEventListener('click', function () {
         // TODO: callback
         POOLVR.saveConfig();
-        textGeomLogger.log("CONFIGURATION SAVED:");
-        textGeomLogger.log(JSON.stringify(POOLVR.config, undefined, 2));
+        POOLVR.textGeomLogger.log("CONFIGURATION SAVED:");
+        POOLVR.textGeomLogger.log(JSON.stringify(POOLVR.config, undefined, 2));
     });
 }

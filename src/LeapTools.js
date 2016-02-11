@@ -233,26 +233,15 @@ function addTool(parent, world, options) {
         tipCollisionCounter++;
         if (tipCollisionCounter === 1) {
             setTimeout(function () {
-                synthSpeaker.speak("You moved a ball.  Good job.");
+                POOLVR.synthSpeaker.speak("You moved a ball.  Good job.");
             }, 250);
         }
         else if (tipCollisionCounter === 16) {
-            synthSpeaker.speak("Hi.");
+            POOLVR.synthSpeaker.speak("You are doing a great job.");
         }
     });
 
 
-    var H_table = POOLVR.config.H_table;
-    world.addEventListener("postStep", function () {
-        stickMesh.position.copy(tipBody.interpolatedPosition);
-        toolRoot.worldToLocal(stickMesh.position);
-        stickShadow.position.set(
-            stickMesh.position.x,
-            (H_table + 0.001 - toolRoot.position.y - parent.position.y) / toolRoot.scale.y,
-            stickMesh.position.z
-        );
-        //stickShadow.position.y = -(tipBody.position.y - H_table - 0.001) / toolRoot.scale.y;
-    });
 
 
     var raycaster = new THREE.Raycaster();
@@ -282,6 +271,18 @@ function addTool(parent, world, options) {
     app.scene.add(particleMesh);
     particleMesh.visible = false;
     var pickedBall;
+
+    var H_table = POOLVR.config.H_table;
+    function updateGraphics() {
+        stickMesh.position.copy(tipBody.interpolatedPosition);
+        toolRoot.worldToLocal(stickMesh.position);
+        stickShadow.position.set(
+            stickMesh.position.x,
+            (H_table + 0.001 - toolRoot.position.y - parent.position.y) / toolRoot.scale.y,
+            stickMesh.position.z
+        );
+        //stickShadow.position.y = -(tipBody.position.y - H_table - 0.001) / toolRoot.scale.y;
+    }
 
     var direction = new THREE.Vector3();
     var position = new THREE.Vector3();
@@ -362,9 +363,6 @@ function addTool(parent, world, options) {
 
                     toolRoot.localToWorld(position);
                     tipBody.position.copy(position);
-
-                    // now handled in cannon.js world poststep callback:
-                    //stickMesh.position.copy(position);
 
                     direction.fromArray(tool.direction);
 
@@ -489,6 +487,7 @@ function addTool(parent, world, options) {
     return {
         toolRoot: toolRoot,
         leapController: leapController,
-        updateTool: updateTool
+        updateTool: updateTool,
+        updateGraphics: updateGraphics
     };
 }

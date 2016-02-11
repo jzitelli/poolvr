@@ -123,8 +123,8 @@ POOLVR.setupWorld = function (scene, world) {
         
         if (body.ballNum === 0) {
         
-            textGeomLogger.log("SCRATCH.");
-            synthSpeaker.speak("Scratch.");
+            POOLVR.textGeomLogger.log("SCRATCH.");
+            POOLVR.synthSpeaker.speak("Scratch.");
             body.position.copy(POOLVR.initialPositions[0]);
             body.velocity.set(0, 0, 0);
             // i like it when it keeps moving
@@ -134,13 +134,13 @@ POOLVR.setupWorld = function (scene, world) {
         
             body.bounces++;
             if (body.bounces === 1) {
-                // textGeomLogger.log(body.mesh.name + " HIT THE FLOOR!");
+                // POOLVR.textGeomLogger.log(body.mesh.name + " HIT THE FLOOR!");
                 playPocketedSound();
                 POOLVR.onTable[body.ballNum] = false;
                 POOLVR.nextBall = POOLVR.onTable.indexOf(true);
                 if (POOLVR.nextBall === -1) {
-                    synthSpeaker.speak("You cleared the table.  Well done.");
-                    textGeomLogger.log("YOU CLEARED THE TABLE.  WELL DONE.");
+                    POOLVR.synthSpeaker.speak("You cleared the table.  Well done.");
+                    POOLVR.textGeomLogger.log("YOU CLEARED THE TABLE.  WELL DONE.");
                     POOLVR.resetTable();
                 }
             } else if (body.bounces === 7) {

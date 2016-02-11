@@ -11,21 +11,6 @@ avatar.heading = 0;
 avatar.floatMode = false;
 avatar.toolMode = false;
 
-var synthSpeaker = new SynthSpeaker({volume: POOLVR.config.synthSpeakerVolume, rate: 0.8, pitch: 0.5});
-
-var textGeomLogger;
-if (POOLVR.config.useTextGeomLogger) {
-   textGeomLogger = new TextGeomLogger();
-} else {
-    textGeomLogger = {
-        root: new THREE.Object3D(),
-        log: function (msg) { console.log(msg); },
-        clear: function () {}
-    };
-}
-avatar.add(textGeomLogger.root);
-textGeomLogger.root.position.set(-2.5, 1.0, -3.5);
-
 // var menu = setupMenu(avatar);
 
 function setupMenu(parent) {
@@ -47,24 +32,24 @@ function setupMenu(parent) {
 
 function startTutorial() {
     "use strict";
-    synthSpeaker.speak("Hello.  Welcome. To. Pool-ver.", function () {
-        textGeomLogger.log("HELLO.  WELCOME TO POOLVR.");
+    POOLVR.synthSpeaker.speak("Hello.  Welcome. To. Pool-ver.", function () {
+        POOLVR.textGeomLogger.log("HELLO.  WELCOME TO POOLVR.");
     });
 
-    synthSpeaker.speak("Please wave a stick-like object in front of your Leap Motion controller.", function () {
-        textGeomLogger.log("PLEASE WAVE A STICK-LIKE OBJECT IN FRONT OF YOUR");
-        textGeomLogger.log("LEAP MOTION CONTROLLER.");
+    POOLVR.synthSpeaker.speak("Please wave a stick-like object in front of your Leap Motion controller.", function () {
+        POOLVR.textGeomLogger.log("PLEASE WAVE A STICK-LIKE OBJECT IN FRONT OF YOUR");
+        POOLVR.textGeomLogger.log("LEAP MOTION CONTROLLER.");
     });
 
-    synthSpeaker.speak("Keep the stick within the interaction box when you want to make contact with.  A ball.", function () {
-        textGeomLogger.log("KEEP THE STICK WITHIN THE INTERACTION BOX WHEN YOU WANT");
-        textGeomLogger.log("TO MAKE CONTACT WITH A BALL...");
+    POOLVR.synthSpeaker.speak("Keep the stick within the interaction box when you want to make contact with.  A ball.", function () {
+        POOLVR.textGeomLogger.log("KEEP THE STICK WITHIN THE INTERACTION BOX WHEN YOU WANT");
+        POOLVR.textGeomLogger.log("TO MAKE CONTACT WITH A BALL...");
     });
 }
 
 
 
-var animate = function (world, keyboard, gamepad, updateTool) {
+var animate = function (world, keyboard, gamepad, updateTool, updateGraphics) {
     "use strict";
     var UP = new THREE.Vector3(0, 1, 0),
         walkSpeed = 0.333,
@@ -75,6 +60,13 @@ var animate = function (world, keyboard, gamepad, updateTool) {
         var dt = (t - lt) * 0.001;
         requestAnimationFrame(animate);
 
+        updateTool(dt);
+        
+        // world.step(dt);
+        world.step(1/75, dt, 5);
+        
+        updateGraphics();
+
         if (app.vrControls.enabled) {
             app.vrControls.update();
         }
@@ -82,11 +74,6 @@ var animate = function (world, keyboard, gamepad, updateTool) {
 
         keyboard.update(dt);
         gamepad.update(dt);
-
-        updateTool(dt);
-
-        // world.step(dt);
-        world.step(1/75, dt, 5);
 
         var floatUp = keyboard.getValue("floatUp") + keyboard.getValue("floatDown");
         var drive = keyboard.getValue("driveBack") + keyboard.getValue("driveForward");
@@ -145,6 +132,22 @@ function onLoad() {
     ---------------------------------------------\n");
     pyserver.log("POOLVR.config =\n" + JSON.stringify(POOLVR.config, undefined, 2));
 
+    POOLVR.synthSpeaker = new SynthSpeaker({volume: POOLVR.config.synthSpeakerVolume, rate: 0.8, pitch: 0.5});
+
+    POOLVR.textGeomLogger = {
+        root: new THREE.Object3D(),
+        log: function (msg) { console.log(msg); },
+        clear: function () {}
+    };
+    if (POOLVR.config.useTextGeomLogger) {
+        var fontLoader = new THREE.FontLoader();
+        fontLoader.load('fonts/Anonymous Pro_Regular.js', function (font) {
+            POOLVR.textGeomLogger = new TextGeomLogger(font);
+            avatar.add(POOLVR.textGeomLogger.root);
+            POOLVR.textGeomLogger.root.position.set(-2.5, 1.0, -3.5);
+        });
+    }
+
     THREE.py.parse(THREEPY_SCENE).then( function (scene) {
 
         if (!POOLVR.config.useBasicMaterials) {
@@ -199,7 +202,7 @@ function onLoad() {
         var leapTool = addTool(avatar, world, POOLVR.toolOptions);
         POOLVR.toolRoot = leapTool.toolRoot;
 
-        requestAnimationFrame( animate(world, POOLVR.keyboard, POOLVR.gamepad, leapTool.updateTool) );
+        requestAnimationFrame( animate(world, POOLVR.keyboard, POOLVR.gamepad, leapTool.updateTool, leapTool.updateGraphics) );
 
         startTutorial();
 
