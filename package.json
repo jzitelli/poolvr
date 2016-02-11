@@ -7,7 +7,7 @@
   "homepage": "https://jzitelli.github.io/poolvr",
   "repository": {
     "type": "git",
-    "url": "https://github.com/jzitelli/poolvr.git"
+    "url": "git+https://github.com/jzitelli/poolvr.git"
   },
   "bugs": "https://github.com/jzitelli/poolvr/issues",
   "files": [
