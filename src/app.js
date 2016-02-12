@@ -1,16 +1,5 @@
 var app;
 
-var avatar = new THREE.Object3D();
-if (POOLVR.config.initialPosition) {
-    avatar.position.fromArray(POOLVR.config.initialPosition);
-} else {
-    avatar.position.y = 1.0;
-    avatar.position.z = 1.86;
-}
-avatar.heading = 0;
-avatar.floatMode = false;
-avatar.toolMode = false;
-
 // var menu = setupMenu(avatar);
 
 function setupMenu(parent) {
@@ -49,11 +38,12 @@ function startTutorial() {
 
 
 
-var animate = function (world, keyboard, gamepad, updateTool, updateGraphics) {
+var animate = function (world, keyboard, gamepad, updateTool, updateGraphics, moveToolRoot) {
     "use strict";
     var UP = new THREE.Vector3(0, 1, 0),
         walkSpeed = 0.333,
         floatSpeed = 0.1;
+    var avatar = POOLVR.avatar;
     var lt = 0;
 
     function animate(t) {
@@ -74,6 +64,8 @@ var animate = function (world, keyboard, gamepad, updateTool, updateGraphics) {
 
         keyboard.update(dt);
         gamepad.update(dt);
+
+        moveToolRoot(keyboard, gamepad, dt);
 
         var floatUp = keyboard.getValue("floatUp") + keyboard.getValue("floatDown");
         var drive = keyboard.getValue("driveBack") + keyboard.getValue("driveForward");
@@ -131,6 +123,13 @@ function onLoad() {
 *********************************************----\n\
     ---------------------------------------------\n");
     pyserver.log("POOLVR.config =\n" + JSON.stringify(POOLVR.config, undefined, 2));
+
+    var avatar = new THREE.Object3D();
+    avatar.position.fromArray(POOLVR.config.initialPosition);
+    avatar.heading = 0;
+    avatar.floatMode = false;
+    avatar.toolMode = false;
+    POOLVR.avatar = avatar;
 
     POOLVR.synthSpeaker = new SynthSpeaker({volume: POOLVR.config.synthSpeakerVolume, rate: 0.8, pitch: 0.5});
 
@@ -205,7 +204,7 @@ function onLoad() {
         var leapTool = addTool(avatar, world, POOLVR.toolOptions);
         POOLVR.toolRoot = leapTool.toolRoot;
 
-        requestAnimationFrame( animate(world, POOLVR.keyboard, POOLVR.gamepad, leapTool.updateTool, leapTool.updateGraphics) );
+        requestAnimationFrame( animate(world, POOLVR.keyboard, POOLVR.gamepad, leapTool.updateTool, leapTool.updateGraphics, leapTool.moveToolRoot) );
 
         startTutorial();
 

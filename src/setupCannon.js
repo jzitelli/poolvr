@@ -115,7 +115,6 @@ POOLVR.setupWorld = function (scene, world) {
 
     });
 
-
     // ball-floor collision
     floorMesh.body.addEventListener(CANNON.Body.COLLIDE_EVENT_NAME, function (evt) {
 
@@ -127,9 +126,8 @@ POOLVR.setupWorld = function (scene, world) {
             POOLVR.synthSpeaker.speak("Scratch.");
             body.position.copy(POOLVR.initialPositions[0]);
             body.velocity.set(0, 0, 0);
-            // i like it when it keeps moving
-            // body.angularVelocity.set(0, 0, 0);
-        
+            body.angularVelocity.set(0, 0, 0);
+
         } else {
         
             body.bounces++;
@@ -152,7 +150,6 @@ POOLVR.setupWorld = function (scene, world) {
         }
 
     });
-
 
     // scene.traverse(function (node) {
     //     if (node instanceof THREE.Mesh && node.name.startsWith('ball ')) {

@@ -21,6 +21,23 @@ import pyserver.pool_table as pool_table
 
 WRITE_FOLDER = os.path.join(STATIC_FOLDER, 'saves')
 
+WebVRConfig = {
+    #### webvr-polyfill configuration
+    #"FORCE_ENABLE_VR":       True,
+    "K_FILTER":              0.98,
+    "PREDICTION_TIME_S":     0.020,
+    #"TOUCH_PANNER_DISABLED": True,
+    #"YAW_ONLY":              True,
+    "MOUSE_KEYBOARD_CONTROLS_DISABLED": True
+    #"KEYBOARD_CONTROLS_DISABLED": True
+
+    #### webvr-boilerplate configuration
+    #"FORCE_DISTORTION":      True,
+    #"PREVENT_DISTORTION":    True,
+    #"SHOW_EYE_CENTERS":      True,
+    #"NO_DPDB_FETCH":         True
+}
+
 POOLVR = {
     'config': {
         'pyserver'           : True,
@@ -35,7 +52,7 @@ POOLVR = {
         'H_table'            : 0.74295,
         'ball_diameter'      : 2.25 * pool_table.IN2METER,
         'initialPosition'    : [0, 0.98295, 1.0042],
-        'synthSpeakerVolume' : 0.3,
+        'synthSpeakerVolume' : 0.12,
         'toolOptions': {
             'toolOffset'  : [0, -0.42, -0.4],
             'toolRotation': 0,
@@ -97,13 +114,17 @@ def poolvr_app():
     config = get_poolvr_config()
     return render_template("poolvr.html",
                            json_config=Markup(r"""<script>
+var WebVRConfig = %s;
+
 var POOLVR = %s;
+
 var THREEPY_SCENE = %s;
-</script>""" % (json.dumps({'config' : config,
+</script>""" % (json.dumps(WebVRConfig, indent=2),
+                json.dumps({'config' : config,
                             'version': POOLVR['version']},
                            indent=2),
                 json.dumps(pool_table.pool_hall(**config).export(),
-                           indent=(2 if app.debug else None)))), **config)
+                           indent=(2 if app.debug else None)))))
 
 
 

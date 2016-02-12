@@ -10,6 +10,8 @@ function addTool(parent, world, options) {
     "use strict";
     options = options || {};
 
+    // parse options:
+
     var toolLength = options.toolLength || 0.5;
     var toolRadius = options.toolRadius || 0.013;
     var toolMass   = options.toolMass   || 0.04;
@@ -44,11 +46,10 @@ function addTool(parent, world, options) {
     var tipColor   = options.tipColor   || 0x004488;
     var handColor  = options.handColor  || 0x113399;
 
-    var keyboard = options.keyboard;
-    var gamepad  = options.gamepad;
-
     var host = options.host || '127.0.0.1';
     var port = options.port || 6437;
+
+    // set up / connect to leap controller:
 
     var leapController = new Leap.Controller({frameEventName: 'animationFrame',
                                               background: true,
@@ -56,19 +57,24 @@ function addTool(parent, world, options) {
 
     // leap motion event callbacks:
     var onConnect = options.onConnect || function () {
-        pyserver.log('Leap Motion WebSocket connected');
+        console.log('Leap Motion WebSocket connected');
     };
     leapController.on('connect', onConnect);
-    if (options.onStreamingStarted) {
-        leapController.on('streamingStarted', options.onStreamingStarted);
-    }
-    if (options.onStreamingStopped) {
-        leapController.on('streamingStopped', options.onStreamingStopped);
-    }
+
+    var onStreamingStarted = options.onStreamingStarted || function () {
+        console.log('Leap Motion streaming started');
+    };
+    leapController.on('streamingStarted', onStreamingStarted);
+
+    var onStreamingStopped = options.onStreamingStopped || function () {
+        console.warn('Leap Motion streaming stopped');
+    };
+    leapController.on('streamingStopped', onStreamingStopped);
 
     leapController.connect();
 
-    // setup three.js tool graphics: ########################################################################
+    // setup three.js tool graphics:
+
     var toolRoot = new THREE.Object3D();
     toolRoot.position.copy(toolOffset);
     var scalar = 0.001;
@@ -105,6 +111,7 @@ function addTool(parent, world, options) {
     leapMesh.position.y = 0.0254*0.25/scalar;
     toolRoot.add(leapMesh);
 
+    // the stick:
     var stickGeom = new THREE.CylinderGeometry(toolRadius/scalar, toolRadius/scalar, toolLength/scalar, 10, 1, false);
     stickGeom.translate(0, -toolLength/scalar / 2, 0);
     var bufferGeom = new THREE.BufferGeometry();
@@ -128,6 +135,8 @@ function addTool(parent, world, options) {
     toolRoot.add(stickMesh);
 
     var tipBody = new CANNON.Body({mass: toolMass, type: CANNON.Body.KINEMATIC});
+    tipBody.material = POOLVR.tipMaterial;
+
     var tipMesh = null;
     if (tipShape !== 'Cylinder') {
         var tipGeom = new THREE.SphereBufferGeometry(tipRadius/scalar, 10);
@@ -169,7 +178,8 @@ function addTool(parent, world, options) {
         stickShadow.add(tipShadowMesh);
     }
 
-    // three.js hands: ############################
+    // setup three.js hands:
+
     // hands don't necessarily correspond the left / right labels, but doesn't matter to me because they look indistinguishable
     var leftRoot = new THREE.Object3D(),
         rightRoot = new THREE.Object3D();
@@ -224,9 +234,6 @@ function addTool(parent, world, options) {
     rightRoot.add(joint2s[1][0], joint2s[1][1], joint2s[1][2], joint2s[1][3], joint2s[1][4]);
 
 
-    tipBody.material = POOLVR.tipMaterial;
-
-
     var tipCollisionCounter = 0;
     tipBody.addEventListener(CANNON.Body.COLLIDE_EVENT_NAME, function (evt) {
         // TODO: move this function definition elsewhere, pass as option
@@ -237,42 +244,43 @@ function addTool(parent, world, options) {
             }, 250);
         }
         else if (tipCollisionCounter === 16) {
-            POOLVR.synthSpeaker.speak("You are doing a great job.");
+            setTimeout(function () {
+                POOLVR.synthSpeaker.speak("You are doing a great job.");
+            }, 3000);
         }
     });
 
 
+    // var raycaster = new THREE.Raycaster();
+    // var arrowHelper = new THREE.ArrowHelper(UP, new THREE.Vector3(), 2.5);
+    // arrowHelper.visible = false;
+    // app.scene.add(arrowHelper);
 
-
-    var raycaster = new THREE.Raycaster();
-    var arrowHelper = new THREE.ArrowHelper(UP, new THREE.Vector3(), 2.5);
-    arrowHelper.visible = false;
-    app.scene.add(arrowHelper);
-
-    var numParticles = 50;
-    var particleTexture = '/images/particle.png';
-    var particleGroup = new SPE.Group({
-        texture: {value: THREE.ImageUtils.loadTexture(particleTexture)},
-        maxParticleCount: numParticles
-    });
-    var particleEmitter = new SPE.Emitter({
-        maxAge: {value: 0.5},
-        position: {value: new THREE.Vector3(0, 0, 0),
-                   spread: new THREE.Vector3(0, 0, 0)},
-        velocity: {value: new THREE.Vector3(0, 0.2, 0),
-                   spread: new THREE.Vector3(0.4, 0.3, 0.4)},
-        color: {value: [new THREE.Color('blue'), new THREE.Color('red')]},
-        opacity: {value: [1, 0.1]},
-        size: {value: 0.1},
-        particleCount: numParticles
-    });
-    particleGroup.addEmitter(particleEmitter);
-    var particleMesh = particleGroup.mesh;
-    app.scene.add(particleMesh);
-    particleMesh.visible = false;
-    var pickedBall;
+    // var numParticles = 50;
+    // var particleTexture = '/images/particle.png';
+    // var particleGroup = new SPE.Group({
+    //     texture: {value: THREE.ImageUtils.loadTexture(particleTexture)},
+    //     maxParticleCount: numParticles
+    // });
+    // var particleEmitter = new SPE.Emitter({
+    //     maxAge: {value: 0.5},
+    //     position: {value: new THREE.Vector3(0, 0, 0),
+    //                spread: new THREE.Vector3(0, 0, 0)},
+    //     velocity: {value: new THREE.Vector3(0, 0.2, 0),
+    //                spread: new THREE.Vector3(0.4, 0.3, 0.4)},
+    //     color: {value: [new THREE.Color('blue'), new THREE.Color('red')]},
+    //     opacity: {value: [1, 0.1]},
+    //     size: {value: 0.1},
+    //     particleCount: numParticles
+    // });
+    // particleGroup.addEmitter(particleEmitter);
+    // var particleMesh = particleGroup.mesh;
+    // app.scene.add(particleMesh);
+    // particleMesh.visible = false;
+    // var pickedBall;
 
     var H_table = POOLVR.config.H_table;
+
     function updateGraphics() {
         stickMesh.position.copy(tipBody.interpolatedPosition);
         toolRoot.worldToLocal(stickMesh.position);
@@ -281,24 +289,11 @@ function addTool(parent, world, options) {
             (H_table + 0.001 - toolRoot.position.y - parent.position.y) / toolRoot.scale.y,
             stickMesh.position.z
         );
-        //stickShadow.position.y = -(tipBody.position.y - H_table - 0.001) / toolRoot.scale.y;
     }
-
-    var direction = new THREE.Vector3();
-    var position = new THREE.Vector3();
-    var velocity = new THREE.Vector3();
 
     var worldQuaternion = new THREE.Quaternion();
 
-    var cannonUP = new CANNON.Vec3(0, 1, 0);
-    var cannonVec = new CANNON.Vec3();
-
-    var useShadowMap = POOLVR.config.useShadowMap;
-
-    var lastFrameID;
-
-    function updateTool(dt) {
-
+    function moveToolRoot(keyboard, gamepad, dt) {
         var toolDrive = 0;
         var toolFloat = 0;
         var toolStrafe = 0;
@@ -318,21 +313,32 @@ function addTool(parent, world, options) {
                 rotateToolCW -= gamepad.getValue("toolStrafe");
             }
         }
-        var toolMoved = (toolDrive !== 0) || (toolStrafe !== 0) || (toolFloat !== 0) || (rotateToolCW !== 0);
-        if (toolMoved) {
+        if ((toolDrive !== 0) || (toolStrafe !== 0) || (toolFloat !== 0) || (rotateToolCW !== 0)) {
             toolRoot.position.x +=  0.16 * dt * toolStrafe;
             toolRoot.position.z += -0.16 * dt * toolDrive;
             toolRoot.position.y +=  0.16 * dt * toolFloat;
-            toolRoot.rotation.y += 0.15 * dt * rotateToolCW;
-
+            toolRotation += 0.15 * dt * rotateToolCW;
+            toolRoot.quaternion.setFromAxisAngle(UP, toolRotation);
             if (interactionBoxMesh.visible === false) {
                 interactionBoxMesh.visible = true;
                 stickMaterial.opacity = tipMaterial.opacity = 1;
                 interactionPlaneMaterial.opacity = interactionPlaneOpacity;
             }
         }
+    }
 
-        if (particleMesh.visible) particleGroup.tick(dt);
+    var direction = new THREE.Vector3();
+    var position = new THREE.Vector3();
+    var velocity = new THREE.Vector3();
+
+    var cannonUP = new CANNON.Vec3(0, 1, 0);
+    var cannonVec = new CANNON.Vec3();
+
+    var useShadowMap = POOLVR.config.useShadowMap;
+
+    var lastFrameID;
+
+    function updateTool(dt) {
 
         var frame = leapController.frame();
         if (frame.valid && frame.id != lastFrameID) {
@@ -358,8 +364,8 @@ function addTool(parent, world, options) {
                         if (!useShadowMap) stickShadow.visible = true;
                     }
 
-                    // position.fromArray(tool.tipPosition);
-                    position.fromArray(tool.stabilizedTipPosition);
+                    position.fromArray(tool.tipPosition);
+                    // position.fromArray(tool.stabilizedTipPosition);
 
                     toolRoot.localToWorld(position);
                     tipBody.position.copy(position);
@@ -401,7 +407,7 @@ function addTool(parent, world, options) {
                 tipBody.sleep();
                 tipMaterial.color.setHex(tipColor);
 
-            } else if (!toolMoved) {
+            } else {
                 // tool is already lost, and the toolRoot is not being moved
                 if (stickMesh.visible && (stickMaterial.opacity > 0.1)) {
                     // fade out tool
@@ -414,7 +420,6 @@ function addTool(parent, world, options) {
                     stickMaterial.opacity = tipMaterial.opacity = 1;
                     interactionPlaneMaterial.opacity = interactionPlaneOpacity;
                 }
-
             }
 
             var hand, finger;
@@ -442,43 +447,43 @@ function addTool(parent, world, options) {
                 }
             }
 
-            if (frame.hands.length === 1) {
+            // if (frame.hands.length === 1) {
 
-                hand = frame.hands[0];
-                if (hand.confidence > minConfidence) {
-                    finger = hand.indexFinger;
-                    if (finger.extended) {
-                        position.fromArray(finger.stabilizedTipPosition);
-                        toolRoot.localToWorld(position);
-                        direction.fromArray(finger.direction);
-                        direction.applyQuaternion(worldQuaternion);
-                        raycaster.set(position, direction);
+            //     hand = frame.hands[0];
+            //     if (hand.confidence > minConfidence) {
+            //         finger = hand.indexFinger;
+            //         if (finger.extended) {
+            //             position.fromArray(finger.stabilizedTipPosition);
+            //             toolRoot.localToWorld(position);
+            //             direction.fromArray(finger.direction);
+            //             direction.applyQuaternion(worldQuaternion);
+            //             raycaster.set(position, direction);
 
-                        var intersects = raycaster.intersectObjects(POOLVR.ballMeshes);
-                        if (intersects.length > 0) {
-                            pickedBall = intersects[0].object;
-                            particleMesh.visible = true;
-                            particleMesh.position.copy(pickedBall.position);
-                        } else {
-                            pickedBall = null;
-                            particleMesh.visible = false;
-                        }
+            //             var intersects = raycaster.intersectObjects(POOLVR.ballMeshes);
+            //             if (intersects.length > 0) {
+            //                 pickedBall = intersects[0].object;
+            //                 particleMesh.visible = true;
+            //                 particleMesh.position.copy(pickedBall.position);
+            //             } else {
+            //                 pickedBall = null;
+            //                 particleMesh.visible = false;
+            //             }
 
-                        arrowHelper.visible = true;
-                        arrowHelper.position.copy(position);
-                        arrowHelper.setDirection(direction);
-                    }
-                } else {
-                    arrowHelper.visible = false;
-                    particleMesh.visible = false;
-                }
+            //             arrowHelper.visible = true;
+            //             arrowHelper.position.copy(position);
+            //             arrowHelper.setDirection(direction);
+            //         }
+            //     } else {
+            //         arrowHelper.visible = false;
+            //         particleMesh.visible = false;
+            //     }
 
-            } else {
+            // } else {
 
-                arrowHelper.visible = false;
-                particleMesh.visible = false;
+            //     arrowHelper.visible = false;
+            //     particleMesh.visible = false;
 
-            }
+            // }
 
         }
 
@@ -488,6 +493,7 @@ function addTool(parent, world, options) {
         toolRoot: toolRoot,
         leapController: leapController,
         updateTool: updateTool,
-        updateGraphics: updateGraphics
+        updateGraphics: updateGraphics,
+        moveToolRoot: moveToolRoot
     };
 }

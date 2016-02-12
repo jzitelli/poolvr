@@ -29,7 +29,7 @@ POOLVR.keyboardCommands = {
                  commandDown: function(){POOLVR.resetTable();}, dt: 0.5},
 
     autoPosition: {buttons: [Primrose.Input.Keyboard.P],
-                   commandDown: function(){POOLVR.autoPosition(avatar);}, dt: 0.5},
+                   commandDown: function(){POOLVR.autoPosition(POOLVR.avatar);}, dt: 0.5},
 
     toggleMenu: {buttons: [Primrose.Input.Keyboard.SPACEBAR],
                  commandDown: function(){POOLVR.toggleMenu();}, dt: 0.25},
@@ -53,15 +53,15 @@ POOLVR.gamepadCommands = {
     pitch:    {axes: [ Primrose.Input.Gamepad.LSY], deadzone: DEADZONE,
                integrate: true, max: 0.5 * Math.PI, min: -0.5 * Math.PI},
     toggleFloatMode: {buttons: [Primrose.Input.Gamepad.XBOX_BUTTONS.leftStick],
-                      commandDown: function(){avatar.floatMode=true;},
-                      commandUp: function(){avatar.floatMode=false;}},
+                      commandDown: function(){POOLVR.avatar.floatMode=true;},
+                      commandUp: function(){POOLVR.avatar.floatMode=false;}},
 
     toolStrafe: {axes: [ Primrose.Input.Gamepad.RSX], deadzone: DEADZONE},
     toolDrive:  {axes: [ Primrose.Input.Gamepad.RSY], deadzone: DEADZONE},
     toolFloat:  {axes: [-Primrose.Input.Gamepad.RSY], deadzone: DEADZONE},
     toggleToolFloatMode: {buttons: [Primrose.Input.Gamepad.XBOX_BUTTONS.rightStick],
-                          commandDown: function(){avatar.toolMode=true;},
-                          commandUp: function(){avatar.toolMode=false;}},
+                          commandDown: function(){POOLVR.avatar.toolMode=true;},
+                          commandUp: function(){POOLVR.avatar.toolMode=false;}},
 
     resetVRSensor: {buttons: [Primrose.Input.Gamepad.XBOX_BUTTONS.back],
                     commandDown: function(){app.resetVRSensor();}, dt: 0.25},
@@ -73,7 +73,7 @@ POOLVR.gamepadCommands = {
                commandDown: function(){POOLVR.selectNextBall(-1);}, dt: 0.25},
 
     autoPosition: {buttons: [Primrose.Input.Gamepad.XBOX_BUTTONS.Y],
-                   commandDown: function(){POOLVR.autoPosition(avatar);}, dt: 0.25},
+                   commandDown: function(){POOLVR.autoPosition(POOLVR.avatar);}, dt: 0.25},
 
     toggleMenu: {buttons: [Primrose.Input.Gamepad.XBOX_BUTTONS.start],
                  commandDown: function(){POOLVR.toggleMenu();}, dt: 0.25},
@@ -109,8 +109,6 @@ POOLVR.config.toolOptions.tipShape     = URL_PARAMS.tipShape     || POOLVR.confi
 POOLVR.config.toolOptions.host = URL_PARAMS.host;
 POOLVR.config.toolOptions.port = URL_PARAMS.port;
 
-pyserver.log('POOLVR.config.toolOptions =\n' + JSON.stringify(POOLVR.config.toolOptions, undefined, 2));
-
 POOLVR.toolOptions = combineObjects(POOLVR.config.toolOptions, {
     keyboard: POOLVR.keyboard,
     gamepad: POOLVR.gamepad,
@@ -119,37 +117,21 @@ POOLVR.toolOptions = combineObjects(POOLVR.config.toolOptions, {
 
 POOLVR.config.synthSpeakerVolume = URL_PARAMS.synthSpeakerVolume || POOLVR.config.synthSpeakerVolume || 0.25;
 
-
-// POOLVR.config.vrLeap = URL_PARAMS.vrLeap || POOLVR.config.vrLeap;
-// if (POOLVR.config.vrLeap) {
-//     // ##### Leap Motion VR tracking mode: #####
-//     POOLVR.config.toolOptions.transformOptions = {vr: true, effectiveParent: app.camera};
-// }
-
+POOLVR.config.initialPosition = POOLVR.config.initialPosition || [0, 1, 1.86];
 
 POOLVR.saveConfig = function () {
     "use strict";
-    var profileName = document.getElementById('profileName');
-    if (profileName) {
-        console.log(profileName.value);
-        profileName = profileName.value;
-    } else {
-        profileName = 'unnamed profile';
-    }
-
     POOLVR.config.toolOptions.toolOffset = [POOLVR.toolRoot.position.x, POOLVR.toolRoot.position.y, POOLVR.toolRoot.position.z];
     POOLVR.config.toolOptions.toolRotation = POOLVR.toolRoot.rotation.y;
-
-    pyserver.log(JSON.stringify(POOLVR.config, undefined, 2));
-    localStorage.setItem(profileName, JSON.stringify(POOLVR.config));
-
+    localStorage.setItem('config', JSON.stringify(POOLVR.config));
     pyserver.writeFile('config.json', JSON.stringify(POOLVR.config, undefined, 2));
+    console.log('saved configuration');
 };
 
 
-POOLVR.loadConfig = function (profileName) {
+POOLVR.loadConfig = function () {
     "use strict";
-    var localStorageConfig = localStorage.getItem(profileName);
+    var localStorageConfig = localStorage.getItem('config');
     if (localStorageConfig) {
         localStorageConfig = JSON.parse(localStorageConfig);
         for (var k in localStorageConfig) {
@@ -157,8 +139,8 @@ POOLVR.loadConfig = function (profileName) {
                 POOLVR.config[k] = localStorageConfig[k];
             }
         }
-        pyserver.log("loaded profile " + profileName);
-        pyserver.log(JSON.stringify(POOLVR.config, undefined, 2));
+        console.log('loaded configuration');
+        console.log(JSON.stringify(POOLVR.config, undefined, 2));
     }
 };
 
@@ -196,7 +178,7 @@ POOLVR.resetTable = function () {
         body.wakeUp();
         body.position.copy(POOLVR.initialPositions[ballNum]);
         body.velocity.set(0, 0, 0);
-        // body.angularVelocity.set(0, 0, 0);
+        body.angularVelocity.set(0, 0, 0);
         // body.bounces = 0;
         body.mesh.visible = true;
     });
@@ -238,61 +220,6 @@ POOLVR.toggleMenu = function () {
     mouseStuff.mousePointerMesh.visible = menu.visible;
     mouseStuff.setPickables(menu.children);
 };
-
-
-POOLVR.config.useWebVRBoilerplate = URL_PARAMS.useWebVRBoilerplate || POOLVR.config.useWebVRBoilerplate;
-
-var WebVRConfig = WebVRConfig || POOLVR.config.WebVRConfig || {};
-WebVRConfig.FORCE_DISTORTION = URL_PARAMS.FORCE_DISTORTION || WebVRConfig.FORCE_DISTORTION;
-WebVRConfig.FORCE_ENABLE_VR  = URL_PARAMS.FORCE_ENABLE_VR  || WebVRConfig.FORCE_ENABLE_VR;
-
-
-( function () {
-    "use strict";
-    var profileSelect = document.getElementById('profileSelect');
-    if (profileSelect) {
-        profileSelect.onchange = function (evt) {
-            console.log(this.value);
-            POOLVR.loadConfig(this.value);
-        };
-        for (var i = 0; i < localStorage.length; i++) {
-            var profileName = localStorage.key(i);
-            var option = document.createElement('option');
-            option.text = profileName;
-            option.value = profileName;
-            profileSelect.appendChild(option);
-        }
-        var onClick = function () {
-            POOLVR.config[this.id] = this.checked;
-        };
-        for (var name in POOLVR.config) {
-            if (name === 'pyserver') continue;
-            var v = POOLVR.config[name];
-            if ((v === true) || (v === false)) {
-                var input = document.getElementById(name);
-                if (input) {
-                    input.onclick = onClick;
-                }
-            }
-        }
-    }
-} )();
-
-POOLVR.profileForm = document.getElementById('profileForm');
-
-POOLVR.vrButton = document.getElementById('enterVR');
-if (POOLVR.vrButton) {
-    POOLVR.vrButton.addEventListener('click', function () {
-        app.enterVR();
-    });
-}
-
-POOLVR.fullscreenButton = document.getElementById('enterFullscreen');
-if (POOLVR.fullscreenButton) {
-    POOLVR.fullscreenButton.addEventListener('click', function () {
-        app.enterFullscreen();
-    });
-}
 
 POOLVR.saveConfigButton = document.getElementById('saveConfig');
 if (POOLVR.saveConfigButton) {

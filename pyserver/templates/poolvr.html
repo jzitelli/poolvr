@@ -22,18 +22,6 @@
         padding: 0;
         overflow: hidden;
       }
-      .button {
-        background-color: rgba(20, 80, 100, 0.6);
-        position: absolute;
-        cursor: pointer;
-        text-align: center;
-        text-decoration: none;
-        padding: 10px;
-        margin: 10px;
-        font-weight: bold;
-        /*display: inline-block;*/
-        /*z-index: 1;*/
-      }
     </style>
 
 <!-- three.js scene definition is embedded here -->
@@ -45,17 +33,10 @@
 
   <body onload="onLoad()">
 
-    {% if not useWebVRBoilerplate %}
-    <a class="button" id="enterVR">ENTER VR</a>
-    <a class="button" id="enterFullscreen" style="top:64px;">ENTER FULLSCREEN</a>
-    {% endif %}
-
     <script src="node_modules/three.js/build/three.js"></script>
 
-    {% if useWebVRBoilerplate %}
     <script src="node_modules/webvr-polyfill/build/webvr-polyfill.js"></script>
     <script src="node_modules/webvr-boilerplate/build/webvr-manager.js"></script>
-    {% endif %}
 
     <script src="node_modules/three.js/examples/js/effects/VREffect.js"></script>
     <script src="node_modules/three.js/examples/js/controls/VRControls.js"></script>
@@ -70,16 +51,15 @@
  -->
     <script src="lib/Primrose.js"></script>
 
-    <script src="node_modules/shader-particle-engine/build/SPE.js"></script>
+    <!-- <script src="node_modules/shader-particle-engine/build/SPE.js"></script> -->
 
     <script src="node_modules/three.py/js/three.py.js"></script>
     <script src="node_modules/three.py/js/CANNONize.js"></script>
     <script src="node_modules/three.py/js/WebVRApplication.js"></script>
-    <script src="node_modules/three.py/js/MouseStuff.js"></script>
     <script src="node_modules/three.py/js/TextGeomUtils.js"></script>
-    <script src="node_modules/three.py/js/pyserver.js"></script>
     <script src="node_modules/three.py/js/utils.js"></script>
 
+    <script src="src/pyserver.js"></script>
     <script src="src/LeapTools.js"></script>
     <script src="src/WebVRSound.js"></script>
     <script src="src/SynthSpeaker.js"></script>
