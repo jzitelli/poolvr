@@ -40,8 +40,7 @@ module.exports = function ( grunt ) {
           "obj/poolvr.js": [
             "node_modules/three.py/js/WebVRApplication.js",
             "node_modules/three.py/js/three.py.js",
-            "node_modules/three.py/js/MouseStuff.js",
-            "node_modules/three.py/js/TextGeomLogger.js",
+            "node_modules/three.py/js/TextGeomUtils.js",
             "src/LeapTools.js",
             "src/WebVRSound.js",
             "src/SynthSpeaker.js",
