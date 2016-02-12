@@ -61,10 +61,10 @@ var animate = function (world, keyboard, gamepad, updateTool, updateGraphics) {
         requestAnimationFrame(animate);
 
         updateTool(dt);
-        
+
         // world.step(dt);
         world.step(1/75, dt, 5);
-        
+
         updateGraphics();
 
         if (app.vrControls.enabled) {
@@ -191,7 +191,7 @@ function onLoad() {
         world.defaultContactMaterial.frictionEquationRelaxation = 3;
         world.solver.iterations = 9;
 
-        CANNONize(scene, world);
+        THREE.py.CANNONize(scene, world);
 
         avatar.add(app.camera);
         scene.add(avatar);
