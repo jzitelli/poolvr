@@ -8,16 +8,21 @@ from copy import deepcopy
 import sys
 
 from flask import Flask, render_template, request, Markup
-STATIC_FOLDER = os.path.abspath(os.path.join(os.path.split(__file__)[0], os.path.pardir))
+
+import pool_table
+
+import site_settings
+
+STATIC_FOLDER   = os.path.abspath(os.path.split(__file__)[0])
+TEMPLATE_FOLDER = STATIC_FOLDER
+
 app = Flask(__name__,
             static_folder=STATIC_FOLDER,
-            static_url_path='')
+            static_url_path='',
+            template_folder=TEMPLATE_FOLDER)
 
-sys.path.insert(0, os.path.join(os.path.split(__file__)[0], os.path.pardir))
-import pyserver.site_settings as site_settings
 app.config.from_object(site_settings)
 
-import pyserver.pool_table as pool_table
 
 WebVRConfig = {
     #### webvr-polyfill configuration
@@ -28,13 +33,13 @@ WebVRConfig = {
     #"YAW_ONLY":              True,
     #"MOUSE_KEYBOARD_CONTROLS_DISABLED": True
     "KEYBOARD_CONTROLS_DISABLED": True
-
     #### webvr-boilerplate configuration
     #"FORCE_DISTORTION":      True,
     #"PREVENT_DISTORTION":    True,
     #"SHOW_EYE_CENTERS":      True,
     #"NO_DPDB_FETCH":         True
 }
+
 
 POOLVR = {
     'config': {
@@ -48,7 +53,7 @@ POOLVR = {
         'H_table'            : 0.74295,
         'ball_diameter'      : 2.25 * pool_table.IN2METER,
         'initialPosition'    : [0, 0.98295, 1.0042],
-        'synthSpeakerVolume' : 0.12,
+        'synthSpeakerVolume' : 0.25,
         'toolOptions': {
             'toolOffset'  : [0, -0.42, -0.4],
             'toolRotation': 0,
@@ -56,7 +61,6 @@ POOLVR = {
         }
     }
 }
-
 
 
 def get_poolvr_config():
@@ -102,12 +106,12 @@ def js_suffix():
 
 
 @app.route('/poolvr')
-def poolvr_app():
+def poolvr():
     """
     Serves the poolvr app HTML.
     """
     config = get_poolvr_config()
-    return render_template("poolvr.html",
+    return render_template("index_template.html",
                            json_config=Markup(r"""<script>
 var WebVRConfig = %s;
 
@@ -123,8 +127,8 @@ var THREEPY_SCENE = %s;
 
 def main():
     _logger.info("app.config =\n%s" % '\n'.join(['%s: %s' % (k, str(v))
-                                                for k, v in sorted(app.config.items(),
-                                                                   key=lambda i: i[0])]))
+                                                 for k, v in sorted(app.config.items(),
+                                                                    key=lambda i: i[0])]))
     _logger.info("""
           ***********
           p o o l v r

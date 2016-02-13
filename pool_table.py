@@ -1,15 +1,14 @@
 """three.js/Cannon.js pool table definition
 """
-from copy import deepcopy
 import numpy as np
 
 import sys
 import os.path
 
 # TODO: use inspect
-THREEPY_DIR = os.path.join(os.path.split(__file__)[0], os.path.pardir, 'node_modules', 'three.py')
+THREEPY_DIR = os.path.join(os.path.split(__file__)[0], 'node_modules', 'three.py')
 sys.path.insert(0, THREEPY_DIR)
-import three
+#import three
 from three import *
 
 IN2METER = 0.0254
@@ -17,20 +16,6 @@ FT2METER = IN2METER / 12
 
 square = QuadBufferGeometry(vertices=[[-0.5, 0, -0.5], [-0.5, 0, 0.5], [0.5, 0, 0.5], [0.5, 0, -0.5]],
                             uvs=[(0,1), (0,0), (1,0), (1,1)])
-
-ball_colors = []
-ball_colors.append(0xddddde); white  = ball_colors[-1]
-ball_colors.append(0xeeee00); yellow = ball_colors[-1]
-ball_colors.append(0x0000ee); blue   = ball_colors[-1]
-ball_colors.append(0xee0000); red    = ball_colors[-1]
-ball_colors.append(0xee00ee); purple = ball_colors[-1]
-ball_colors.append(0xee7700); orange = ball_colors[-1]
-ball_colors.append(0x00ee00); green  = ball_colors[-1]
-ball_colors.append(0xbb2244); maroon = ball_colors[-1]
-ball_colors.append(0x111111); black  = ball_colors[-1]
-
-ball_colors = ball_colors + ball_colors[1:-1]
-
 
 
 # TODO: handle material switching client-side
@@ -252,19 +237,36 @@ def pool_hall(useBasicMaterials=True,
     scene.add(poolTable)
 
     # balls:
+    ball_colors = []
+    ball_colors.append(0xddddde); white  = ball_colors[-1]
+    ball_colors.append(0xeeee00); yellow = ball_colors[-1]
+    ball_colors.append(0x0000ee); blue   = ball_colors[-1]
+    ball_colors.append(0xee0000); red    = ball_colors[-1]
+    ball_colors.append(0xee00ee); purple = ball_colors[-1]
+    ball_colors.append(0xee7700); orange = ball_colors[-1]
+    ball_colors.append(0x00ee00); green  = ball_colors[-1]
+    ball_colors.append(0xbb2244); maroon = ball_colors[-1]
+    ball_colors.append(0x111111); black  = ball_colors[-1]
+    ball_colors = ball_colors + ball_colors[1:-1]
+
     num_balls = len(ball_colors)
+
     ball_radius = ball_diameter / 2
+
     sphere = SphereBufferGeometry(radius=ball_radius,
                                   widthSegments=16,
                                   heightSegments=12)
-    stripeGeom = SphereBufferGeometry(radius=1.022*ball_radius,
+
+    stripeGeom = SphereBufferGeometry(radius=1.02*ball_radius,
                                       widthSegments=16,
                                       heightSegments=8,
                                       thetaStart=np.pi/3,
                                       thetaLength=np.pi/3)
+
     shadowGeom = CircleBufferGeometry(name='shadowGeom',
                                       radius=ball_radius,
                                       segments=16)
+
     shadowMaterial = MeshBasicMaterial(color=0x002200)
 
     if useBasicMaterials:
