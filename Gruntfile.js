@@ -1,7 +1,6 @@
 /* global module */
 
-var fs = require( "fs" ),
-    files = [
+var files = [
       "obj/poolvr.js"
     ],
     uglifyFiles = files.map( function ( s ) {
