@@ -28,8 +28,8 @@ WebVRConfig = {
     "PREDICTION_TIME_S":     0.020,
     #"TOUCH_PANNER_DISABLED": True,
     #"YAW_ONLY":              True,
-    "MOUSE_KEYBOARD_CONTROLS_DISABLED": True
-    #"KEYBOARD_CONTROLS_DISABLED": True
+    #"MOUSE_KEYBOARD_CONTROLS_DISABLED": True
+    "KEYBOARD_CONTROLS_DISABLED": True
 
     #### webvr-boilerplate configuration
     #"FORCE_DISTORTION":      True,
@@ -42,7 +42,6 @@ POOLVR = {
     'config': {
         'pyserver'           : True,
         'gravity'            : 9.8,
-        'useWebVRBoilerplate': True,
         'useBasicMaterials'  : True,
         'useShadowMap'       : False,
         'usePointLight'      : False,
