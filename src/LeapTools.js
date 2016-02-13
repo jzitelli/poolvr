@@ -88,10 +88,12 @@ function addTool(parent, world, options) {
     var interactionPlaneMaterial = new THREE.MeshBasicMaterial({color: 0x00dd44, transparent: true, opacity: interactionPlaneOpacity});
     var interactionPlaneGeom = new THREE.PlaneBufferGeometry(1/scalar, 1/scalar);
     var interactionPlaneMesh = new THREE.Mesh(interactionPlaneGeom, interactionPlaneMaterial);
-    interactionPlaneMesh.position.z = 1/2/scalar; // - 1/3/scalar;
     interactionBoxMesh.add(interactionPlaneMesh);
     interactionPlaneMesh = interactionPlaneMesh.clone();
-    interactionPlaneMesh.position.z = -1/2/scalar; // 1/2/scalar - 2/3/scalar;
+    interactionPlaneMesh.position.z = 1/2/scalar;
+    interactionBoxMesh.add(interactionPlaneMesh);
+    interactionPlaneMesh = interactionPlaneMesh.clone();
+    interactionPlaneMesh.position.z = -1/2/scalar;
     interactionBoxMesh.add(interactionPlaneMesh);
     interactionBoxMesh.visible = false;
 
@@ -362,8 +364,15 @@ function addTool(parent, world, options) {
                     if (!useShadowMap) stickShadow.visible = true;
                 }
 
-                position.fromArray(tool.tipPosition);
-                // position.fromArray(tool.stabilizedTipPosition);
+                //position.fromArray(tool.tipPosition);
+                position.fromArray(tool.stabilizedTipPosition);
+
+                stickMesh.position.copy(position);
+                stickShadow.position.set(
+                    stickMesh.position.x,
+                    (H_table + 0.001 - toolRoot.position.y - parent.position.y) / toolRoot.scale.y,
+                    stickMesh.position.z
+                );
 
                 toolRoot.localToWorld(position);
                 tipBody.position.copy(position);

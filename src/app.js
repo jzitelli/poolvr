@@ -42,9 +42,10 @@ var animate = function (world, keyboard, gamepad, updateTool, updateGraphics, mo
         }
         app.vrManager.render(app.scene, app.camera, t);
 
-        // world.step(dt);
-        world.step(1/75, dt, 5);
-
+        //world.step(dt);
+        //world.step(1/75, dt, 5);
+        world.step(1/60, dt, 5);
+        
         keyboard.update(dt);
         gamepad.update(dt);
 
