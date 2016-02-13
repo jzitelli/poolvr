@@ -119,19 +119,21 @@ POOLVR.config.synthSpeakerVolume = URL_PARAMS.synthSpeakerVolume || POOLVR.confi
 
 POOLVR.config.initialPosition = POOLVR.config.initialPosition || [0, 1, 1.86];
 
+POOLVR.configName = URL_PARAMS.configName || 'default';
+
 POOLVR.saveConfig = function () {
     "use strict";
     POOLVR.config.toolOptions.toolOffset = [POOLVR.toolRoot.position.x, POOLVR.toolRoot.position.y, POOLVR.toolRoot.position.z];
     POOLVR.config.toolOptions.toolRotation = POOLVR.toolRoot.rotation.y;
-    localStorage.setItem('config', JSON.stringify(POOLVR.config));
-    pyserver.writeFile('config.json', JSON.stringify(POOLVR.config, undefined, 2));
-    console.log('saved configuration');
+    localStorage.setItem(POOLVR.configName, JSON.stringify(POOLVR.config));
+    console.log('saved configuration:');
+    console.log(JSON.stringify(POOLVR.config, undefined, 2));
 };
 
 
 POOLVR.loadConfig = function () {
     "use strict";
-    var localStorageConfig = localStorage.getItem('config');
+    var localStorageConfig = localStorage.getItem(POOLVR.configName);
     if (localStorageConfig) {
         localStorageConfig = JSON.parse(localStorageConfig);
         for (var k in localStorageConfig) {
@@ -139,94 +141,7 @@ POOLVR.loadConfig = function () {
                 POOLVR.config[k] = localStorageConfig[k];
             }
         }
-        console.log('loaded configuration');
+        console.log('loaded configuration:');
         console.log(JSON.stringify(POOLVR.config, undefined, 2));
     }
 };
-
-
-POOLVR.ballMeshes = [];
-POOLVR.ballBodies = [];
-POOLVR.initialPositions = [];
-POOLVR.onTable = [false,
-                  true, true, true, true, true, true, true,
-                  true,
-                  true, true, true, true, true, true, true];
-POOLVR.nextBall = 1;
-
-
-POOLVR.selectNextBall = function (inc) {
-    "use strict";
-    inc = inc || 1;
-    var next = Math.max(1, Math.min(15, POOLVR.nextBall + inc));
-    while (!POOLVR.onTable[next]) {
-        next = Math.max(1, Math.min(15, next + inc));
-        if (next === POOLVR.nextBall) {
-            break;
-        }
-    }
-    if (POOLVR.nextBall != next) {
-        POOLVR.nextBall = next;
-        POOLVR.textGeomLogger.log("BALL " + POOLVR.nextBall + " SELECTED");
-    }
-};
-
-
-POOLVR.resetTable = function () {
-    "use strict";
-    POOLVR.ballBodies.forEach(function (body, ballNum) {
-        body.wakeUp();
-        body.position.copy(POOLVR.initialPositions[ballNum]);
-        body.velocity.set(0, 0, 0);
-        body.angularVelocity.set(0, 0, 0);
-        // body.bounces = 0;
-        body.mesh.visible = true;
-    });
-    if (POOLVR.synthSpeaker.speaking === false) {
-        POOLVR.synthSpeaker.speak("Table reset.");
-    }
-    POOLVR.nextBall = 1;
-    POOLVR.textGeomLogger.log("TABLE RESET.");
-};
-
-
-POOLVR.autoPosition = ( function () {
-    "use strict";
-    var nextVector = new THREE.Vector3();
-    var UP = new THREE.Vector3(0, 1, 0);
-    function autoPosition(avatar) {
-        POOLVR.textGeomLogger.log("YOU ARE BEING AUTO-POSITIONED.  NEXT BALL: " + POOLVR.nextBall);
-
-        avatar.heading = Math.atan2(
-            -(POOLVR.ballMeshes[POOLVR.nextBall].position.x - POOLVR.ballMeshes[0].position.x),
-            -(POOLVR.ballMeshes[POOLVR.nextBall].position.z - POOLVR.ballMeshes[0].position.z)
-        );
-        avatar.quaternion.setFromAxisAngle(UP, avatar.heading);
-        avatar.updateMatrixWorld();
-
-        nextVector.copy(POOLVR.toolRoot.position);
-        avatar.localToWorld(nextVector);
-        nextVector.sub(POOLVR.ballMeshes[0].position);
-        nextVector.y = 0;
-        avatar.position.sub(nextVector);
-    }
-    return autoPosition;
-} )();
-
-
-POOLVR.toggleMenu = function () {
-    "use strict";
-    menu.visible = !menu.visible;
-    mouseStuff.mousePointerMesh.visible = menu.visible;
-    mouseStuff.setPickables(menu.children);
-};
-
-POOLVR.saveConfigButton = document.getElementById('saveConfig');
-if (POOLVR.saveConfigButton) {
-    POOLVR.saveConfigButton.addEventListener('click', function () {
-        // TODO: callback
-        POOLVR.saveConfig();
-        POOLVR.textGeomLogger.log("CONFIGURATION SAVED:");
-        POOLVR.textGeomLogger.log(JSON.stringify(POOLVR.config, undefined, 2));
-    });
-}

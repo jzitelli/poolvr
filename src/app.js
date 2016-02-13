@@ -1,8 +1,76 @@
 var app;
 
 
+POOLVR.ballMeshes = [];
+POOLVR.ballBodies = [];
+POOLVR.initialPositions = [];
+POOLVR.onTable = [false,
+                  true, true, true, true, true, true, true,
+                  true,
+                  true, true, true, true, true, true, true];
+POOLVR.nextBall = 1;
 
-function startTutorial() {
+
+POOLVR.selectNextBall = function (inc) {
+    "use strict";
+    inc = inc || 1;
+    var next = Math.max(1, Math.min(15, POOLVR.nextBall + inc));
+    while (!POOLVR.onTable[next]) {
+        next = Math.max(1, Math.min(15, next + inc));
+        if (next === POOLVR.nextBall) {
+            break;
+        }
+    }
+    if (POOLVR.nextBall != next) {
+        POOLVR.nextBall = next;
+        POOLVR.textGeomLogger.log("BALL " + POOLVR.nextBall + " SELECTED");
+    }
+};
+
+
+POOLVR.resetTable = function () {
+    "use strict";
+    POOLVR.ballBodies.forEach(function (body, ballNum) {
+        body.wakeUp();
+        body.position.copy(POOLVR.initialPositions[ballNum]);
+        body.velocity.set(0, 0, 0);
+        body.angularVelocity.set(0, 0, 0);
+        // body.bounces = 0;
+        body.mesh.visible = true;
+    });
+    if (POOLVR.synthSpeaker.speaking === false) {
+        POOLVR.synthSpeaker.speak("Table reset.");
+    }
+    POOLVR.nextBall = 1;
+    POOLVR.textGeomLogger.log("TABLE RESET.");
+};
+
+
+POOLVR.autoPosition = ( function () {
+    "use strict";
+    var nextVector = new THREE.Vector3();
+    var UP = new THREE.Vector3(0, 1, 0);
+    function autoPosition(avatar) {
+        POOLVR.textGeomLogger.log("YOU ARE BEING AUTO-POSITIONED.  NEXT BALL: " + POOLVR.nextBall);
+
+        avatar.heading = Math.atan2(
+            -(POOLVR.ballMeshes[POOLVR.nextBall].position.x - POOLVR.ballMeshes[0].position.x),
+            -(POOLVR.ballMeshes[POOLVR.nextBall].position.z - POOLVR.ballMeshes[0].position.z)
+        );
+        avatar.quaternion.setFromAxisAngle(UP, avatar.heading);
+        avatar.updateMatrixWorld();
+
+        nextVector.copy(POOLVR.toolRoot.position);
+        avatar.localToWorld(nextVector);
+        nextVector.sub(POOLVR.ballMeshes[0].position);
+        nextVector.y = 0;
+        avatar.position.sub(nextVector);
+    }
+    return autoPosition;
+} )();
+
+
+POOLVR.startTutorial = function () {
     "use strict";
     POOLVR.synthSpeaker.speak("Hello.  Welcome. To. Pool-ver.", function () {
         POOLVR.textGeomLogger.log("HELLO.  WELCOME TO POOLVR.");
@@ -17,8 +85,7 @@ function startTutorial() {
         POOLVR.textGeomLogger.log("KEEP THE STICK WITHIN THE INTERACTION BOX WHEN YOU WANT");
         POOLVR.textGeomLogger.log("TO MAKE CONTACT WITH A BALL...");
     });
-}
-
+};
 
 
 var animate = function (world, keyboard, gamepad, updateTool, updateGraphics, moveToolRoot) {
@@ -97,16 +164,9 @@ var animate = function (world, keyboard, gamepad, updateTool, updateGraphics, mo
 /* jshint multistr: true */
 function onLoad() {
     "use strict";
-    pyserver.log("\n\
-*********************************************----\n\
-*********************************************----\n\
-*********************************************----\n\
-    ------ starting poolvr... -------------------\n\
-*********************************************----\n\
-*********************************************----\n\
-*********************************************----\n\
-    ---------------------------------------------\n");
-    pyserver.log("POOLVR.config =\n" + JSON.stringify(POOLVR.config, undefined, 2));
+
+    POOLVR.loadConfig();
+    console.log("POOLVR.config =\n" + JSON.stringify(POOLVR.config, undefined, 2));
 
     var avatar = new THREE.Object3D();
     avatar.position.fromArray(POOLVR.config.initialPosition);
@@ -190,7 +250,7 @@ function onLoad() {
 
         requestAnimationFrame( animate(world, POOLVR.keyboard, POOLVR.gamepad, leapTool.updateTool, leapTool.updateGraphics, leapTool.moveToolRoot) );
 
-        startTutorial();
+        POOLVR.startTutorial();
 
     } );
 

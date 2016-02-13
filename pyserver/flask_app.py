@@ -7,7 +7,7 @@ import json
 from copy import deepcopy
 import sys
 
-from flask import Flask, render_template, request, Markup, jsonify
+from flask import Flask, render_template, request, Markup
 STATIC_FOLDER = os.path.abspath(os.path.join(os.path.split(__file__)[0], os.path.pardir))
 app = Flask(__name__,
             static_folder=STATIC_FOLDER,
@@ -18,8 +18,6 @@ import pyserver.site_settings as site_settings
 app.config.from_object(site_settings)
 
 import pyserver.pool_table as pool_table
-
-WRITE_FOLDER = os.path.join(STATIC_FOLDER, 'saves')
 
 WebVRConfig = {
     #### webvr-polyfill configuration
@@ -40,7 +38,6 @@ WebVRConfig = {
 
 POOLVR = {
     'config': {
-        'pyserver'           : True,
         'gravity'            : 9.8,
         'useBasicMaterials'  : True,
         'useShadowMap'       : False,
@@ -57,8 +54,7 @@ POOLVR = {
             'toolRotation': 0,
             'tipShape'    : 'Cylinder'
         }
-    },
-    'version': '0.1.0'
+    }
 }
 
 
@@ -119,47 +115,9 @@ var POOLVR = %s;
 
 var THREEPY_SCENE = %s;
 </script>""" % (json.dumps(WebVRConfig, indent=2),
-                json.dumps({'config' : config,
-                            'version': POOLVR['version']},
-                           indent=2),
+                json.dumps(POOLVR, indent=2),
                 json.dumps(pool_table.pool_hall(**config).export(),
                            indent=(2 if app.debug else None)))))
-
-
-
-@app.route('/log', methods=['POST'])
-def log():
-    """
-    Post message from client to the server log
-    """
-    msg = request.form['msg']
-    _logger.info(msg)
-    response = {'status': 0}
-    return jsonify(response)
-
-
-
-@app.route("/write", methods=['POST'])
-def write():
-    if not os.path.exists(WRITE_FOLDER):
-        _logger.warning('write is disabled, you need to create the write folder %s' % WRITE_FOLDER)
-        return jsonify({'error': 'write is disabled'})
-
-    filename = os.path.join(WRITE_FOLDER, os.path.split(request.args['file'])[1])
-    try:
-        if request.json is not None:
-            with open(filename, 'w') as f:
-                f.write(json.dumps(request.json,
-                                   indent=2, sort_keys=True))
-        else:
-            with open(filename, 'w') as f:
-                f.write(request.form['text'])
-        response = {'filename': filename}
-        _logger.info('wrote %s' % filename)
-    except Exception as err:
-        response = {'error': str(err)}
-        _logger.warning('could not write %s' % filename)
-    return jsonify(response)
 
 
 
