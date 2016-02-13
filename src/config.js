@@ -110,8 +110,6 @@ POOLVR.config.toolOptions.host = URL_PARAMS.host;
 POOLVR.config.toolOptions.port = URL_PARAMS.port;
 
 POOLVR.toolOptions = combineObjects(POOLVR.config.toolOptions, {
-    keyboard: POOLVR.keyboard,
-    gamepad: POOLVR.gamepad,
     useBasicMaterials: POOLVR.config.useBasicMaterials
 });
 

@@ -1,4 +1,5 @@
-"""three.js/Cannon.js pool table definition
+"""
+three.js/Cannon.js pool table definition
 """
 import numpy as np
 
@@ -8,7 +9,6 @@ import os.path
 # TODO: use inspect
 THREEPY_DIR = os.path.join(os.path.split(__file__)[0], 'node_modules', 'three.py')
 sys.path.insert(0, THREEPY_DIR)
-#import three
 from three import *
 
 IN2METER = 0.0254
@@ -18,13 +18,13 @@ square = QuadBufferGeometry(vertices=[[-0.5, 0, -0.5], [-0.5, 0, 0.5], [0.5, 0, 
                             uvs=[(0,1), (0,0), (1,0), (1,1)])
 
 
-# TODO: handle material switching client-side
 def pool_table(L_table=2.3368, W_table=None, H_table=0.74295,
                L_playable=None, W_playable=None,
                ball_diameter=2.25*IN2METER,
                W_cushion=2*IN2METER, H_cushion=None, W_rail=None,
-               useBasicMaterials=True, **kwargs):
-    """Procedurally defined three.js pool table 'Object3D' (three.js Object format V4)
+               **kwargs):
+    """
+    Creates parameterized three.js pool table
 
     :param L_table: length of the pool table (longer than the playable surface); default is 8ft.
     :param W_table: width the of the pool table; usually half the length.
@@ -33,7 +33,6 @@ def pool_table(L_table=2.3368, W_table=None, H_table=0.74295,
     :param L_playable: length of the playable area, I still don't understand exactly what it refers to
     :param W_cushion: width of the cushions
     :param H_cushion: height of the nose of the cushions; default is 63.5% of ball diameter
-    :param useBasicMaterials: if True, use only three.js BasicMeshMaterials
     """
     if W_table is None:
         W_table = 0.5*L_table
@@ -46,17 +45,12 @@ def pool_table(L_table=2.3368, W_table=None, H_table=0.74295,
     if W_rail is None:
         W_rail = 1.5*W_cushion
     poolTable = Object3D(name="poolTable")
-    rail_color = 0xdda400 # 0xffff00 # 0xffaa00
-    if useBasicMaterials:
-        surfaceMaterial = MeshBasicMaterial(color=0x00aa00)
-        cushionMaterial = MeshBasicMaterial(color=0x219956) #0x02a800)
-        spotMaterial = MeshBasicMaterial(color=0xaaaaaa)
-        railMaterial = MeshBasicMaterial(color=rail_color)
-    else:
-        spotMaterial = MeshLambertMaterial(color=0xaaaaaa)
-        surfaceMaterial = MeshPhongMaterial(color=0x00aa00, shininess=5, shading=FlatShading)
-        cushionMaterial = MeshPhongMaterial(color=0x07aa16, shininess=5, shading=FlatShading)
-        railMaterial = MeshPhongMaterial(color=0xdda400, shininess=10, shading=FlatShading)
+
+    spotMaterial = MeshLambertMaterial(name="spotMaterial", color=0xaaaaaa)
+    surfaceMaterial = MeshPhongMaterial(name="surfaceMaterial", color=0x00aa00, shininess=5, shading=FlatShading)
+    cushionMaterial = MeshPhongMaterial(name="cushionMaterial", color=0x07aa16, shininess=5, shading=FlatShading)
+    railMaterial = MeshPhongMaterial(name="railMaterial", color=0xdda400, shininess=10, shading=FlatShading)
+    
     playableSurfaceGeom = BoxGeometry(W_playable, H_table, L_playable)
     playableSurfaceMesh = Mesh(name='playableSurfaceMesh',
                                geometry=playableSurfaceGeom,
@@ -92,70 +86,65 @@ def pool_table(L_table=2.3368, W_table=None, H_table=0.74295,
                                                    [ 0.5*W_playable,                        H_cushion,  0.5*W_cushion],
                                                    [ 0.5*W_playable - np.sqrt(2)*W_cushion, H_cushion, -0.5*W_cushion],
                                                    [-0.5*W_playable + np.sqrt(2)*W_cushion, H_cushion, -0.5*W_cushion]])
-    ###
-    cushionShape = 'ConvexPolyhedron'
-    # cushionShape = 'Box'
+    cushionData = {'cannonData': {'mass': 0, 'shapes': ['ConvexPolyhedron']}} #'Box']}}
+
     headCushionMesh = Mesh(name='headCushionMesh',
                            geometry=headCushionGeom,
                            material=cushionMaterial,
                            position=[0, H_table, 0.5*L_table - 0.5*W_cushion],
                            receiveShadow=True,
-                           userData={'cannonData': {'mass': 0, 'shapes': [cushionShape]}})
+                           userData=cushionData)
     poolTable.add(headCushionMesh)
-    ###
     footCushionMesh = Mesh(name='footCushionMesh',
                            geometry=headCushionGeom,
                            material=cushionMaterial,
                            position=[0, H_table, -0.5*L_table + 0.5*W_cushion],
                            rotation=[0, np.pi, 0],
                            receiveShadow=True,
-                           userData={'cannonData': {'mass': 0, 'shapes': [cushionShape]}})
+                           userData=cushionData)
     poolTable.add(footCushionMesh)
-    ###
     leftHeadCushionMesh = Mesh(name='leftHeadCushionMesh',
                                geometry=headCushionGeom,
                                material=cushionMaterial,
                                position=[-0.5*W_table + 0.5*W_cushion, H_table, 0.25*L_table],
                                rotation=[0, -np.pi/2, 0],
                                receiveShadow=True,
-                               userData={'cannonData': {'mass': 0, 'shapes': [cushionShape]}})
+                               userData=cushionData)
     poolTable.add(leftHeadCushionMesh)
-    ###
     leftFootCushionMesh = Mesh(name='leftFootCushionMesh',
                                geometry=headCushionGeom,
                                material=cushionMaterial,
                                position=[-0.5*W_table + 0.5*W_cushion, H_table, -0.25*L_table],
                                rotation=[0, -np.pi/2, 0],
                                receiveShadow=True,
-                               userData={'cannonData': {'mass': 0, 'shapes': [cushionShape]}})
+                               userData=cushionData)
     poolTable.add(leftFootCushionMesh)
-    ##
     rightHeadCushionMesh = Mesh(name='rightHeadCushionMesh',
                                 geometry=headCushionGeom,
                                 material=cushionMaterial,
                                 position=[0.5*W_table - 0.5*W_cushion, H_table, 0.25*L_table],
                                 rotation=[0, np.pi/2, 0],
                                 receiveShadow=True,
-                                userData={'cannonData': {'mass': 0, 'shapes': [cushionShape]}})
+                                userData=cushionData)
     poolTable.add(rightHeadCushionMesh)
-    ###
     rightFootCushionMesh = Mesh(name='rightFootCushionMesh',
                                 geometry=headCushionGeom,
                                 material=cushionMaterial,
                                 position=[0.5*W_table - 0.5*W_cushion, H_table, -0.25*L_table],
                                 rotation=[0, np.pi/2, 0],
                                 receiveShadow=True,
-                                userData={'cannonData': {'mass': 0, 'shapes': [cushionShape]}})
+                                userData=cushionData)
     poolTable.add(rightFootCushionMesh)
 
     # RAILSSSSSSSS
     headRailGeom = BoxGeometry(W_playable, H_cushion, W_rail)
+    railData = {'cannonData': {'mass': 0, 'shapes': ['Box']}}
     headRailMesh = Mesh(name='headRailMesh',
                         geometry=headRailGeom,
                         material=railMaterial,
                         position=[0, H_table + 0.5*H_cushion, 0.5*L_table + 0.5*W_rail],
                         receiveShadow=True,
-                        userData={'cannonData': {'mass': 0, 'shapes': ['Box']}})
+                        userData=railData)
     poolTable.add(headRailMesh)
     footRailMesh = Mesh(name='footRailMesh',
                         geometry=headRailGeom,
@@ -163,7 +152,7 @@ def pool_table(L_table=2.3368, W_table=None, H_table=0.74295,
                         position=[0, H_table + 0.5*H_cushion, -(0.5*L_table + 0.5*W_rail)],
                         rotation=[0, np.pi, 0],
                         receiveShadow=True,
-                        userData={'cannonData': {'mass': 0, 'shapes': ['Box']}})
+                        userData=railData)
     poolTable.add(footRailMesh)
     leftHeadRailMesh = Mesh(name='leftHeadRailMesh',
                             geometry=headRailGeom,
@@ -171,7 +160,7 @@ def pool_table(L_table=2.3368, W_table=None, H_table=0.74295,
                             position=[-(0.5*W_table + 0.5*W_rail), H_table + 0.5*H_cushion, 0.25*L_table],
                             rotation=[0, np.pi/2, 0],
                             receiveShadow=True,
-                            userData={'cannonData': {'mass': 0, 'shapes': ['Box']}})
+                            userData=railData)
     poolTable.add(leftHeadRailMesh)
     rightHeadRailMesh = Mesh(name='rightHeadRailMesh',
                              geometry=headRailGeom,
@@ -179,7 +168,7 @@ def pool_table(L_table=2.3368, W_table=None, H_table=0.74295,
                              position=[0.5*W_table + 0.5*W_rail, H_table + 0.5*H_cushion, 0.25*L_table],
                              rotation=[0, np.pi/2, 0],
                              receiveShadow=True,
-                             userData={'cannonData': {'mass': 0, 'shapes': ['Box']}})
+                             userData=railData)
     poolTable.add(rightHeadRailMesh)
     leftFootRailMesh = Mesh(name='leftFootRailMesh',
                             geometry=headRailGeom,
@@ -187,7 +176,7 @@ def pool_table(L_table=2.3368, W_table=None, H_table=0.74295,
                             position=[-(0.5*W_table + 0.5*W_rail), H_table + 0.5*H_cushion, -0.25*L_table],
                             rotation=[0, np.pi/2, 0],
                             receiveShadow=True,
-                            userData={'cannonData': {'mass': 0, 'shapes': ['Box']}})
+                            userData=railData)
     poolTable.add(leftFootRailMesh)
     rightFootRailMesh = Mesh(name='rightFootRailMesh',
                              geometry=headRailGeom,
@@ -195,25 +184,35 @@ def pool_table(L_table=2.3368, W_table=None, H_table=0.74295,
                              position=[0.5*W_table + 0.5*W_rail, H_table + 0.5*H_cushion, -0.25*L_table],
                              rotation=[0, np.pi/2, 0],
                              receiveShadow=True,
-                             userData={'cannonData': {'mass': 0, 'shapes': ['Box']}})
+                             userData=railData)
     poolTable.add(rightFootRailMesh)
 
     return poolTable
 
 
 
-def pool_hall(useBasicMaterials=True,
-              useShadowMap=False,
-              useSkybox=False,
+ball_colors = []
+ball_colors.append(0xddddde); white  = ball_colors[-1]
+ball_colors.append(0xeeee00); yellow = ball_colors[-1]
+ball_colors.append(0x0000ee); blue   = ball_colors[-1]
+ball_colors.append(0xee0000); red    = ball_colors[-1]
+ball_colors.append(0xee00ee); purple = ball_colors[-1]
+ball_colors.append(0xee7700); orange = ball_colors[-1]
+ball_colors.append(0x00ee00); green  = ball_colors[-1]
+ball_colors.append(0xbb2244); maroon = ball_colors[-1]
+ball_colors.append(0x111111); black  = ball_colors[-1]
+ball_colors = ball_colors + ball_colors[1:-1]
+
+
+
+def pool_hall(useSkybox=False,
               L_table=2.3368,
               H_table=0.74295,
               ball_diameter=2.25*IN2METER,
               url_prefix="",
               **kwargs):
-    """Defines a three.js scene containing a pool table + billiard balls.
-
-    :param useShadowMap: by default, plane-projected geometries/meshes representing shadows are created;
-                         if useShadowMap is True, they are not
+    """
+    Defines a three.js scene containing a pool table + billiard balls.
     """
     scene = Scene()
     L_room, W_room = 10, 10
@@ -233,46 +232,26 @@ def pool_hall(useBasicMaterials=True,
                                       for pos in ('px', 'nx', 'py', 'ny', 'pz', 'nz')]))
 
     poolTable = pool_table(L_table=L_table, H_table=H_table, ball_diameter=ball_diameter,
-                           useBasicMaterials=useBasicMaterials, **kwargs)
+                           **kwargs)
     scene.add(poolTable)
 
     # balls:
-    ball_colors = []
-    ball_colors.append(0xddddde); white  = ball_colors[-1]
-    ball_colors.append(0xeeee00); yellow = ball_colors[-1]
-    ball_colors.append(0x0000ee); blue   = ball_colors[-1]
-    ball_colors.append(0xee0000); red    = ball_colors[-1]
-    ball_colors.append(0xee00ee); purple = ball_colors[-1]
-    ball_colors.append(0xee7700); orange = ball_colors[-1]
-    ball_colors.append(0x00ee00); green  = ball_colors[-1]
-    ball_colors.append(0xbb2244); maroon = ball_colors[-1]
-    ball_colors.append(0x111111); black  = ball_colors[-1]
-    ball_colors = ball_colors + ball_colors[1:-1]
-
     num_balls = len(ball_colors)
-
     ball_radius = ball_diameter / 2
-
     sphere = SphereBufferGeometry(radius=ball_radius,
                                   widthSegments=16,
                                   heightSegments=12)
-
     stripeGeom = SphereBufferGeometry(radius=1.02*ball_radius,
                                       widthSegments=16,
                                       heightSegments=8,
                                       thetaStart=np.pi/3,
                                       thetaLength=np.pi/3)
-
     shadowGeom = CircleBufferGeometry(name='shadowGeom',
                                       radius=ball_radius,
                                       segments=16)
-
     shadowMaterial = MeshBasicMaterial(color=0x002200)
 
-    if useBasicMaterials:
-        ball_materials = [MeshBasicMaterial(color=color) for color in ball_colors]
-    else:
-        ball_materials = [MeshPhongMaterial(color=color, shading=SmoothShading) for color in ball_colors]
+    ball_materials = [MeshPhongMaterial(color=color, shading=SmoothShading) for color in ball_colors]
 
     ballData = {'cannonData': {'mass': 0.17, 'shapes': ['Sphere'],
                                'linearDamping': 0.25, 'angularDamping': 0.32}}
@@ -314,18 +293,17 @@ def pool_hall(useBasicMaterials=True,
                         material=material,
                         userData=ballData,
                         castShadow=True)
+        ballShadowMesh = Mesh(name="ballShadowMesh %d" % i,
+                              geometry=shadowGeom,
+                              material=shadowMaterial,
+                              position=[0, -ball_radius + 0.001, 0],
+                              rotation=[-0.5*np.pi - rotation[0], -rotation[1], -rotation[2]])
+        ballMesh.add(ballShadowMesh)
         scene.add(ballMesh)
         if i > 8:
             stripeMesh = Mesh(name="ballStripeMesh %d" % i,
                               material=ball_materials[i-8],
                               geometry=stripeGeom)
             ballMesh.add(stripeMesh)
-        if not useShadowMap:
-            ballShadowMesh = Mesh(name="ballShadowMesh %d" % i,
-                                  geometry=shadowGeom,
-                                  material=shadowMaterial,
-                                  position=[0, -ball_radius + 0.001, 0],
-                                  rotation=[-0.5*np.pi - rotation[0], -rotation[1], -rotation[2]])
-            ballMesh.add(ballShadowMesh)
 
     return scene

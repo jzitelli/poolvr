@@ -44,7 +44,7 @@ WebVRConfig = {
 POOLVR = {
     'config': {
         'gravity'            : 9.8,
-        'useBasicMaterials'  : True,
+        'useBasicMaterials'  : False,
         'useShadowMap'       : False,
         'usePointLight'      : False,
         'useSkybox'          : True,
@@ -59,8 +59,19 @@ POOLVR = {
             'toolRotation': 0,
             'tipShape'    : 'Cylinder'
         }
-    }
+    },
+    'ballColors': pool_table.ball_colors
 }
+
+
+
+@app.context_processor
+def js_suffix():
+    if app.debug:
+        return {'js_suffix': '.js'}
+    else:
+        return {'js_suffix': '.min.js'}
+
 
 
 def get_poolvr_config():
@@ -68,14 +79,6 @@ def get_poolvr_config():
     Constructs poolvr config dict based on request url parameters.
     """
     config = deepcopy(POOLVR['config'])
-    filename = request.args.get('file')
-    if filename:
-        try:
-            with open(os.path.join(WRITE_FOLDER, filename)) as f:
-                config.update(json.loads(f.read()))
-        except Exception as err:
-            _logger.warning("could not load requested configuration:")
-            _logger.warning(err);
     args = dict({k: v for k, v in request.args.items()
                  if k in config})
     # TODO: better way
@@ -93,15 +96,6 @@ def get_poolvr_config():
     if config.get('useShadowMap'):
         config['useBasicMaterials'] = False
     return config
-
-
-
-@app.context_processor
-def js_suffix():
-    if app.debug:
-        return {'js_suffix': '.js'}
-    else:
-        return {'js_suffix': '.min.js'}
 
 
 
