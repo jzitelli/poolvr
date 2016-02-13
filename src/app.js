@@ -1,22 +1,5 @@
 var app;
 
-// var menu = setupMenu(avatar);
-
-function setupMenu(parent) {
-    "use strict";
-    var menu = new THREE.Object3D();
-    var material = new THREE.MeshBasicMaterial({color: 0x22ee33});
-
-    var textGeom = new THREE.TextGeometry('RESET TABLE', {font: THREE.py.fonts.anonymous_pro, size: 0.2, height: 0, curveSegments: 2});
-    var textMesh = new THREE.Mesh(textGeom, material);
-    textMesh.onSelect = POOLVR.resetTable;
-    textMesh.position.set(0, 0.8, -2);
-    menu.add(textMesh);
-
-    parent.add(menu);
-    menu.visible = false;
-    return menu;
-}
 
 
 function startTutorial() {
@@ -52,15 +35,15 @@ var animate = function (world, keyboard, gamepad, updateTool, updateGraphics, mo
 
         updateTool(dt);
 
-        // world.step(dt);
-        world.step(1/75, dt, 5);
-
         updateGraphics();
 
         if (app.vrControls.enabled) {
             app.vrControls.update();
         }
         app.vrManager.render(app.scene, app.camera, t);
+
+        // world.step(dt);
+        world.step(1/75, dt, 5);
 
         keyboard.update(dt);
         gamepad.update(dt);

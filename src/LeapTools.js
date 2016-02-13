@@ -14,6 +14,7 @@ function addTool(parent, world, options) {
 
     var toolLength = options.toolLength || 0.5;
     var toolRadius = options.toolRadius || 0.013;
+    // should remove, don't think this matters for cannon.js kinematic body:
     var toolMass   = options.toolMass   || 0.04;
 
     var tipShape = options.tipShape || 'Sphere';
@@ -34,9 +35,8 @@ function addTool(parent, world, options) {
     }
     var toolRotation = options.toolRotation || 0;
 
-    var toolTimeA = options.toolTimeA || 0.1;
-    var toolTimeB = options.toolTimeB || toolTimeA + 0.25;
-    var toolTimeC = options.toolTimeC || toolTimeB + 1.5;
+    var toolTimeA = options.toolTimeA || 0.25;
+    var toolTimeB = options.toolTimeB || toolTimeA + 1.5;
 
     var minConfidence = options.minConfidence || 0.3;
 
@@ -51,8 +51,7 @@ function addTool(parent, world, options) {
 
     // set up / connect to leap controller:
 
-    var leapController = new Leap.Controller({frameEventName: 'animationFrame',
-                                              background: true,
+    var leapController = new Leap.Controller({background: true,
                                               host: host, port: port});
 
     // leap motion event callbacks:
@@ -135,6 +134,7 @@ function addTool(parent, world, options) {
     toolRoot.add(stickMesh);
 
     var tipBody = new CANNON.Body({mass: toolMass, type: CANNON.Body.KINEMATIC});
+    // TODO: rename, avoid confusion b/t cannon and three materials
     tipBody.material = POOLVR.tipMaterial;
 
     var tipMesh = null;
@@ -357,47 +357,43 @@ function addTool(parent, world, options) {
 
                 var tool = frame.tools[0];
 
+                if (stickMesh.visible === false) {
+                    stickMesh.visible = interactionBoxMesh.visible = true;
+                    if (!useShadowMap) stickShadow.visible = true;
+                }
+
+                position.fromArray(tool.tipPosition);
+                // position.fromArray(tool.stabilizedTipPosition);
+
+                toolRoot.localToWorld(position);
+                tipBody.position.copy(position);
+
+                direction.fromArray(tool.direction);
+
+                stickMesh.quaternion.setFromUnitVectors(UP, direction);
+                stickShadowMesh.quaternion.copy(stickMesh.quaternion);
+
+                direction.applyQuaternion(worldQuaternion);
+                cannonVec.copy(direction);
+                tipBody.quaternion.setFromVectors(cannonUP, cannonVec);
+
+                velocity.fromArray(tool.tipVelocity);
+                velocity.applyQuaternion(worldQuaternion);
+                velocity.multiplyScalar(0.001);
+                tipBody.velocity.copy(velocity);
+
                 if (tool.timeVisible > toolTimeA) {
 
-                    if (stickMesh.visible === false) {
-                        stickMesh.visible = interactionBoxMesh.visible = true;
-                        if (!useShadowMap) stickShadow.visible = true;
+                    if (tipBody.sleepState === CANNON.Body.SLEEPING) {
+                        // cue becomes collidable
+                        tipBody.wakeUp();
+                        // TODO: indicator (particle effect)
+                        tipMaterial.color.setHex(0xff0000);
                     }
 
-                    position.fromArray(tool.tipPosition);
-                    // position.fromArray(tool.stabilizedTipPosition);
-
-                    toolRoot.localToWorld(position);
-                    tipBody.position.copy(position);
-
-                    direction.fromArray(tool.direction);
-
-                    stickMesh.quaternion.setFromUnitVectors(UP, direction);
-                    stickShadowMesh.quaternion.copy(stickMesh.quaternion);
-
-                    direction.applyQuaternion(worldQuaternion);
-                    cannonVec.copy(direction);
-                    tipBody.quaternion.setFromVectors(cannonUP, cannonVec);
-
-                    velocity.fromArray(tool.tipVelocity);
-                    velocity.applyQuaternion(worldQuaternion);
-                    velocity.multiplyScalar(0.001);
-                    tipBody.velocity.copy(velocity);
-
-                    if (tool.timeVisible > toolTimeB) {
-
-                        if (tipBody.sleepState === CANNON.Body.SLEEPING) {
-                            // cue becomes collidable
-                            tipBody.wakeUp();
-                            // TODO: indicator (particle effect)
-                            tipMaterial.color.setHex(0xff0000);
-                        }
-
-                        if (tool.timeVisible > toolTimeC && interactionPlaneMaterial.opacity > 0.1) {
-                            // dim the interaction box:
-                            interactionPlaneMaterial.opacity *= 0.93;
-                        }
-
+                    if (tool.timeVisible > toolTimeB && interactionPlaneMaterial.opacity > 0.1) {
+                        // dim the interaction box:
+                        interactionPlaneMaterial.opacity *= 0.93;
                     }
 
                 }
@@ -408,7 +404,7 @@ function addTool(parent, world, options) {
                 tipMaterial.color.setHex(tipColor);
 
             } else {
-                // tool is already lost, and the toolRoot is not being moved
+                // tool is already lost
                 if (stickMesh.visible && (stickMaterial.opacity > 0.1)) {
                     // fade out tool
                     stickMaterial.opacity *= 0.8;
