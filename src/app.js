@@ -197,12 +197,12 @@ function onLoad() {
     THREE.py.parse(THREEPY_SCENE).then( function (scene) {
 
         if (!POOLVR.config.useBasicMaterials) {
-            var centerSpotLight = new THREE.SpotLight(0xffffee, 1, 10, 90);
+            var centerSpotLight = new THREE.SpotLight(0xffffee, 1, 8, Math.PI / 2);
             centerSpotLight.position.set(0, 3, 0);
             centerSpotLight.castShadow = true;
-            centerSpotLight.shadowCameraNear = 0.01;
-            centerSpotLight.shadowCameraFar = 4;
-            centerSpotLight.shadowCameraFov = 90;
+            centerSpotLight.shadow.camera.near = 0.01;
+            centerSpotLight.shadow.camera.far = 4;
+            centerSpotLight.shadow.camera.fov = 90;
             scene.add(centerSpotLight);
         }
 
