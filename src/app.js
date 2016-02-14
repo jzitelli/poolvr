@@ -1,6 +1,3 @@
-var app;
-
-
 POOLVR.ballMeshes = [];
 POOLVR.ballBodies = [];
 POOLVR.initialPositions = [];
@@ -88,12 +85,17 @@ POOLVR.startTutorial = function () {
 };
 
 
-var animate = function (world, keyboard, gamepad, updateTool, updateGraphics, moveToolRoot) {
+var animate = function (updateTool, updateGraphics, moveToolRoot) {
     "use strict";
+    var avatar   = POOLVR.avatar,
+        keyboard = POOLVR.keyboard,
+        gamepad  = POOLVR.gamepad,
+        app      = POOLVR.app,
+        world    = POOLVR.world;
+
     var UP = new THREE.Vector3(0, 1, 0),
         walkSpeed = 0.333,
         floatSpeed = 0.1;
-    var avatar = POOLVR.avatar;
     var lt = 0;
 
     function animate(t) {
@@ -177,11 +179,6 @@ function onLoad() {
 
     POOLVR.synthSpeaker = new SynthSpeaker({volume: POOLVR.config.synthSpeakerVolume, rate: 0.8, pitch: 0.5});
 
-    POOLVR.textGeomLogger = {
-        root: new THREE.Object3D(),
-        log: function (msg) { console.log(msg); },
-        clear: function () {}
-    };
     if (POOLVR.config.useTextGeomLogger) {
         var fontLoader = new THREE.FontLoader();
         fontLoader.load('fonts/Anonymous Pro_Regular.js', function (font) {
@@ -192,6 +189,12 @@ function onLoad() {
             avatar.add(POOLVR.textGeomLogger.root);
             POOLVR.textGeomLogger.root.position.set(-2.5, 1.0, -3.5);
         });
+    } else {
+        POOLVR.textGeomLogger = {
+            root: new THREE.Object3D(),
+            log: function (msg) { console.log(msg); },
+            clear: function () {}
+        };
     }
 
     THREE.py.parse(THREEPY_SCENE).then( function (scene) {
@@ -226,7 +229,7 @@ function onLoad() {
             }
         });
 
-        app = new WebVRApplication(scene, appConfig);
+        POOLVR.app = new WebVRApplication(scene, appConfig);
 
         var world = new CANNON.World();
         world.gravity.set( 0, -POOLVR.config.gravity, 0 );
@@ -236,10 +239,11 @@ function onLoad() {
         world.defaultContactMaterial.contactEquationRelaxation  = 3;
         world.defaultContactMaterial.frictionEquationRelaxation = 3;
         world.solver.iterations = 9;
-
+        POOLVR.world = world;
+        
         THREE.py.CANNONize(scene, world);
 
-        avatar.add(app.camera);
+        avatar.add(POOLVR.app.camera);
         scene.add(avatar);
 
         POOLVR.setupMaterials(world);
@@ -248,7 +252,7 @@ function onLoad() {
         var leapTool = addTool(avatar, world, POOLVR.toolOptions);
         POOLVR.toolRoot = leapTool.toolRoot;
 
-        requestAnimationFrame( animate(world, POOLVR.keyboard, POOLVR.gamepad, leapTool.updateTool, leapTool.updateGraphics, leapTool.moveToolRoot) );
+        requestAnimationFrame( animate(leapTool.updateTool, leapTool.updateGraphics, leapTool.moveToolRoot) );
 
         POOLVR.startTutorial();
 

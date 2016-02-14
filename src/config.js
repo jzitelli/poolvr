@@ -1,5 +1,16 @@
-POOLVR.keyboardCommands = {
+POOLVR.commands = {
+  toggleVRControls: function () { POOLVR.app.toogleVRControls(); },
+  toggleWireframe:  function () { POOLVR.app.toggleWireframe(); },
+  resetVRSensor:    function () { POOLVR.app.resetVRSensor(); },
+  resetTable:       function () { POOLVR.resetTable(); },
+  autoPosition:     function () { POOLVR.autoPosition(POOLVR.avatar); },
+  //toggleMenu:       function () { POOLVR.toggleMenu(); },
+  selectNextBall:   function () { POOLVR.selectNextBall(); },
+  selectPrevBall:   function () { POOLVR.selectNextBall(-1); },
+  saveConfig:       function () { POOLVR.saveConfig(); }
+};
 
+POOLVR.keyboardCommands = {
     turnLeft:     {buttons: [-Primrose.Input.Keyboard.LEFTARROW]},
     turnRight:    {buttons: [ Primrose.Input.Keyboard.RIGHTARROW]},
     driveForward: {buttons: [-Primrose.Input.Keyboard.W]},
@@ -19,33 +30,30 @@ POOLVR.keyboardCommands = {
     rotateToolCCW:     {buttons: [Primrose.Input.Keyboard.Y]},
 
     toggleVRControls: {buttons: [Primrose.Input.Keyboard.V],
-                       commandDown: function(){app.toggleVRControls();}, dt: 0.25},
+                       commandDown: POOLVR.commands.toggleVRControls, dt: 0.25},
     toggleWireframe: {buttons: [Primrose.Input.Keyboard.NUMBER0],
-                      commandDown: function(){app.toggleWireframe();}, dt: 0.25},
+                      commandDown: POOLVR.commands.toggleWireframe, dt: 0.25},
     resetVRSensor: {buttons: [Primrose.Input.Keyboard.Z],
-                    commandDown: function(){app.resetVRSensor();}, dt: 0.25},
-
+                    commandDown: POOLVR.commands.resetVRSensor, dt: 0.25},
     resetTable: {buttons: [Primrose.Input.Keyboard.R],
-                 commandDown: function(){POOLVR.resetTable();}, dt: 0.5},
-
+                 commandDown: POOLVR.commands.resetTable, dt: 0.5},
     autoPosition: {buttons: [Primrose.Input.Keyboard.P],
-                   commandDown: function(){POOLVR.autoPosition(POOLVR.avatar);}, dt: 0.5},
-
-    toggleMenu: {buttons: [Primrose.Input.Keyboard.SPACEBAR],
-                 commandDown: function(){POOLVR.toggleMenu();}, dt: 0.25},
-
-    nextBall: {buttons: [Primrose.Input.Keyboard.ADD],
-               commandDown: function(){POOLVR.selectNextBall();}, dt: 0.5},
-
-    prevBall: {buttons: [Primrose.Input.Keyboard.SUBTRACT],
-               commandDown: function(){POOLVR.selectNextBall(-1);}, dt: 0.5}
+                   commandDown: POOLVR.commands.autoPosition, dt: 0.5},
+    // toggleMenu: {buttons: [Primrose.Input.Keyboard.SPACEBAR],
+    //              commandDown: POOLVR.commands.toggleMenu, dt: 0.25},
+    selectNextBall: {buttons: [Primrose.Input.Keyboard.ADD],
+                     commandDown: POOLVR.commands.selectNextBall, dt: 0.5},
+    selectPrevBall: {buttons: [Primrose.Input.Keyboard.SUBTRACT],
+                     commandDown: POOLVR.commands.selectPrevBall, dt: 0.5},
+    saveConfig: {buttons: [Primrose.Input.Keyboard.NUMBER1],
+                 commandDown: POOLVR.commands.saveConfig, dt: 0.5}
 };
+
 POOLVR.keyboardCommands = makeObjectArray(POOLVR.keyboardCommands, 'name');
 POOLVR.keyboard = new Primrose.Input.Keyboard("keyboard", window, POOLVR.keyboardCommands);
 
 var DEADZONE = 0.2;
 POOLVR.gamepadCommands = {
-
     strafe:   {axes: [ Primrose.Input.Gamepad.LSX], deadzone: DEADZONE},
     drive:    {axes: [ Primrose.Input.Gamepad.LSY], deadzone: DEADZONE},
     float:    {axes: [-Primrose.Input.Gamepad.LSY], deadzone: DEADZONE},
@@ -53,34 +61,28 @@ POOLVR.gamepadCommands = {
     pitch:    {axes: [ Primrose.Input.Gamepad.LSY], deadzone: DEADZONE,
                integrate: true, max: 0.5 * Math.PI, min: -0.5 * Math.PI},
     toggleFloatMode: {buttons: [Primrose.Input.Gamepad.XBOX_BUTTONS.leftStick],
-                      commandDown: function(){POOLVR.avatar.floatMode=true;},
-                      commandUp: function(){POOLVR.avatar.floatMode=false;}},
+                      commandDown: function () { POOLVR.avatar.floatMode=true; },
+                      commandUp: function () { POOLVR.avatar.floatMode=false; }},
 
     toolStrafe: {axes: [ Primrose.Input.Gamepad.RSX], deadzone: DEADZONE},
     toolDrive:  {axes: [ Primrose.Input.Gamepad.RSY], deadzone: DEADZONE},
     toolFloat:  {axes: [-Primrose.Input.Gamepad.RSY], deadzone: DEADZONE},
     toggleToolFloatMode: {buttons: [Primrose.Input.Gamepad.XBOX_BUTTONS.rightStick],
-                          commandDown: function(){POOLVR.avatar.toolMode=true;},
-                          commandUp: function(){POOLVR.avatar.toolMode=false;}},
+                          commandDown: function () { POOLVR.avatar.toolMode=true; },
+                          commandUp: function () { POOLVR.avatar.toolMode=false; }},
 
     resetVRSensor: {buttons: [Primrose.Input.Gamepad.XBOX_BUTTONS.back],
-                    commandDown: function(){app.resetVRSensor();}, dt: 0.25},
-
-    nextBall: {buttons: [Primrose.Input.Gamepad.XBOX_BUTTONS.rightBumper],
-               commandDown: function(){POOLVR.selectNextBall();}, dt: 0.25},
-
-    prevBall: {buttons: [Primrose.Input.Gamepad.XBOX_BUTTONS.leftBumper],
-               commandDown: function(){POOLVR.selectNextBall(-1);}, dt: 0.25},
-
+                    commandDown: POOLVR.commands.resetVRSensor, dt: 0.25},
+    selectNextBall: {buttons: [Primrose.Input.Gamepad.XBOX_BUTTONS.rightBumper],
+                     commandDown: POOLVR.commands.selectNextBall, dt: 0.25},
+    selectPrevBall: {buttons: [Primrose.Input.Gamepad.XBOX_BUTTONS.leftBumper],
+                     commandDown: POOLVR.commands.selectPrevBall, dt: 0.25},
     autoPosition: {buttons: [Primrose.Input.Gamepad.XBOX_BUTTONS.Y],
-                   commandDown: function(){POOLVR.autoPosition(POOLVR.avatar);}, dt: 0.25},
-
-    toggleMenu: {buttons: [Primrose.Input.Gamepad.XBOX_BUTTONS.start],
-                 commandDown: function(){POOLVR.toggleMenu();}, dt: 0.25},
-
+                   commandDown: POOLVR.commands.autoPosition, dt: 0.25},
+    // toggleMenu: {buttons: [Primrose.Input.Gamepad.XBOX_BUTTONS.start],
+    //              commandDown: function(){POOLVR.toggleMenu();}, dt: 0.25},
     saveConfig: {buttons: [Primrose.Input.Gamepad.XBOX_BUTTONS.right],
-                 commandDown: function(){POOLVR.saveConfig();}, dt: 0.25}
-
+                 commandDown: POOLVR.commands.saveConfig, dt: 0.5}
 };
 
 
@@ -94,10 +96,6 @@ POOLVR.gamepad.addEventListener("gamepadconnected", function(id) {
 }.bind(POOLVR.gamepad), false);
 
 
-if (POOLVR.config.useShadowMap) {
-    POOLVR.config.useBasicMaterials = false;
-}
-
 POOLVR.config.toolOptions = POOLVR.config.toolOptions || {};
 POOLVR.config.toolOptions.toolLength   = URL_PARAMS.toolLength   || POOLVR.config.toolOptions.toolLength;
 POOLVR.config.toolOptions.toolRadius   = URL_PARAMS.toolRadius   || POOLVR.config.toolOptions.toolRadius;
@@ -105,9 +103,12 @@ POOLVR.config.toolOptions.toolMass     = URL_PARAMS.toolMass     || POOLVR.confi
 POOLVR.config.toolOptions.toolOffset   = URL_PARAMS.toolOffset   || POOLVR.config.toolOptions.toolOffset;
 POOLVR.config.toolOptions.toolRotation = URL_PARAMS.toolRotation || POOLVR.config.toolOptions.toolRotation;
 POOLVR.config.toolOptions.tipShape     = URL_PARAMS.tipShape     || POOLVR.config.toolOptions.tipShape;
+POOLVR.config.toolOptions.host         = URL_PARAMS.host;
+POOLVR.config.toolOptions.port         = URL_PARAMS.port;
 
-POOLVR.config.toolOptions.host = URL_PARAMS.host;
-POOLVR.config.toolOptions.port = URL_PARAMS.port;
+if (POOLVR.config.useShadowMap) {
+    POOLVR.config.useBasicMaterials = false;
+}
 
 POOLVR.toolOptions = combineObjects(POOLVR.config.toolOptions, {
     useBasicMaterials: POOLVR.config.useBasicMaterials
@@ -117,21 +118,21 @@ POOLVR.config.synthSpeakerVolume = URL_PARAMS.synthSpeakerVolume || POOLVR.confi
 
 POOLVR.config.initialPosition = POOLVR.config.initialPosition || [0, 1, 1.86];
 
-POOLVR.configName = URL_PARAMS.configName || 'default';
+POOLVR.profile = URL_PARAMS.profile || 'default';
 
 POOLVR.saveConfig = function () {
     "use strict";
     POOLVR.config.toolOptions.toolOffset = [POOLVR.toolRoot.position.x, POOLVR.toolRoot.position.y, POOLVR.toolRoot.position.z];
     POOLVR.config.toolOptions.toolRotation = POOLVR.toolRoot.rotation.y;
-    localStorage.setItem(POOLVR.configName, JSON.stringify(POOLVR.config));
-    console.log('saved configuration:');
+    localStorage.setItem(POOLVR.profile, JSON.stringify(POOLVR.config));
+    console.log('saved configuration for profile ' + POOLVR.profile + ':');
     console.log(JSON.stringify(POOLVR.config, undefined, 2));
 };
 
 
 POOLVR.loadConfig = function () {
     "use strict";
-    var localStorageConfig = localStorage.getItem(POOLVR.configName);
+    var localStorageConfig = localStorage.getItem(POOLVR.profile);
     if (localStorageConfig) {
         localStorageConfig = JSON.parse(localStorageConfig);
         for (var k in localStorageConfig) {
@@ -139,7 +140,7 @@ POOLVR.loadConfig = function () {
                 POOLVR.config[k] = localStorageConfig[k];
             }
         }
-        console.log('loaded configuration:');
+        console.log('loaded configuration for profile ' + POOLVR.profile + ':');
         console.log(JSON.stringify(POOLVR.config, undefined, 2));
     }
 };
