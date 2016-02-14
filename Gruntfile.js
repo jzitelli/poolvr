@@ -20,7 +20,16 @@ var files = [
 module.exports = function ( grunt ) {
   grunt.initConfig( {
     pkg: grunt.file.readJSON( "package.json" ),
-    jshint: { default: "src/*.js" },
+    jshint: {
+      default: [
+        "src/*.js",
+        "node_modules/three.py/js/three.py.js",
+        "node_modules/three.py/js/CANNONize.js",
+        "node_modules/three.py/js/WebVRApplication.js",
+        "node_modules/three.py/js/TextGeomUtils.js",
+        "node_modules/three.py/js/utils.js"
+      ]
+    },
     clean: [ "obj", "build" ],
     concat: {
       options: {
