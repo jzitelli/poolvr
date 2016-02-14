@@ -27,7 +27,7 @@ module.exports = function ( grunt ) {
         banner: "/*\n\
   <%= pkg.name %> v<%= pkg.version %> <%= grunt.template.today(\"yyyy-mm-dd\") %>\n\
   <%= pkg.license.type %>\n\
-  Copyright (C) 2015 <%= pkg.author %>\n\
+  Copyright (C) 2016 <%= pkg.author %>\n\
   <%= pkg.homepage %>\n\
   <%= pkg.repository.url %>\n\
 */\n",
@@ -37,13 +37,14 @@ module.exports = function ( grunt ) {
       default: {
         files: {
           "obj/poolvr.js": [
-            "node_modules/three.py/js/WebVRApplication.js",
             "node_modules/three.py/js/three.py.js",
+            "node_modules/three.py/js/CANNONize.js",
+            "node_modules/three.py/js/WebVRApplication.js",
             "node_modules/three.py/js/TextGeomUtils.js",
-            "src/LeapTools.js",
+            "node_modules/three.py/js/utils.js",
+            "src/LeapInput.js",
             "src/WebVRSound.js",
             "src/SynthSpeaker.js",
-            "src/pyserver.js",
             "src/config.js",
             "src/sound.js",
             "src/setupCannon.js",
