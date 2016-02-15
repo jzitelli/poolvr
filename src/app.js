@@ -132,6 +132,7 @@ POOLVR.animate = function () {
         moveAvatar          = POOLVR.moveAvatar,
         updateBallsPostStep = POOLVR.updateBallsPostStep;
 
+    /* jshint ignore:start */
     var glS = new glStats();
     var tS = new threeStats( POOLVR.app.renderer );
     var rS = new rStats({
@@ -152,6 +153,7 @@ POOLVR.animate = function () {
         ],
         plugins: [tS, glS]
     });
+    /* jshint ignore:end */
 
     var lt = 0;
 
