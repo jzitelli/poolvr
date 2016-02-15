@@ -11,7 +11,7 @@ var srcFiles = [
       "src/SynthSpeaker.js",
       "src/config.js",
       "src/sound.js",
-      "src/setupCannon.js",
+      "src/setup.js",
       "src/app.js"
     ],
     concatFiles = [

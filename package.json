@@ -39,7 +39,6 @@
   ],
   "dependencies": {
     "leapjs": "^0.6.4",
-    "shader-particle-engine": "^1.0.2",
     "cannon": "git://github.com/jzitelli/cannon.js.git",
     "three": "git://github.com/jzitelli/three.js.git#dev",
     "three.py": "git://github.com/jzitelli/three.py.git#dev",
