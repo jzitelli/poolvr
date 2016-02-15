@@ -125,7 +125,6 @@ function addTool(parent, world, options) {
     // TODO: rename, avoid confusion b/t cannon and three materials
     tipBody.material = POOLVR.tipMaterial;
     var tipMesh = null;
-    var tipMaterial = new THREE.MeshLambertMaterial({color: tipColor, transparent: true});
     if (tipShape !== 'Cylinder') {
         var tipGeom = new THREE.SphereBufferGeometry(tipRadius/scalar, 10);
         if (tipShape === 'Ellipsoid') {
@@ -135,6 +134,7 @@ function addTool(parent, world, options) {
         } else {
             tipBody.addShape(new CANNON.Sphere(tipRadius));
         }
+        var tipMaterial = new THREE.MeshLambertMaterial({color: tipColor, transparent: true});
         tipMesh = new THREE.Mesh(tipGeom, tipMaterial);
         tipMesh.castShadow = true;
         stickMesh.add(tipMesh);
@@ -239,34 +239,6 @@ function addTool(parent, world, options) {
     });
 
 
-    // var raycaster = new THREE.Raycaster();
-    // var arrowHelper = new THREE.ArrowHelper(UP, new THREE.Vector3(), 2.5);
-    // arrowHelper.visible = false;
-    // app.scene.add(arrowHelper);
-
-    // var numParticles = 50;
-    // var particleTexture = '/images/particle.png';
-    // var particleGroup = new SPE.Group({
-    //     texture: {value: THREE.ImageUtils.loadTexture(particleTexture)},
-    //     maxParticleCount: numParticles
-    // });
-    // var particleEmitter = new SPE.Emitter({
-    //     maxAge: {value: 0.5},
-    //     position: {value: new THREE.Vector3(0, 0, 0),
-    //                spread: new THREE.Vector3(0, 0, 0)},
-    //     velocity: {value: new THREE.Vector3(0, 0.2, 0),
-    //                spread: new THREE.Vector3(0.4, 0.3, 0.4)},
-    //     color: {value: [new THREE.Color('blue'), new THREE.Color('red')]},
-    //     opacity: {value: [1, 0.1]},
-    //     size: {value: 0.1},
-    //     particleCount: numParticles
-    // });
-    // particleGroup.addEmitter(particleEmitter);
-    // var particleMesh = particleGroup.mesh;
-    // app.scene.add(particleMesh);
-    // particleMesh.visible = false;
-    // var pickedBall;
-
     var H_table = POOLVR.config.H_table;
 
     function updateToolPostStep() {
@@ -309,7 +281,8 @@ function addTool(parent, world, options) {
             toolRoot.quaternion.setFromAxisAngle(UP, toolRotation);
             if (interactionBoxMesh.visible === false) {
                 interactionBoxMesh.visible = true;
-                stickMaterial.opacity = tipMaterial.opacity = 1;
+                stickMesh.material.opacity = 1;
+                if (tipMesh) tipMesh.material.opacity = 1;
                 interactionPlaneMaterial.opacity = interactionPlaneOpacity;
             }
         }
@@ -321,8 +294,6 @@ function addTool(parent, world, options) {
 
     var cannonUP = new CANNON.Vec3(0, 1, 0);
     var cannonVec = new CANNON.Vec3();
-
-    var useShadowMap = POOLVR.config.useShadowMap;
 
     var lastFrameID;
 
@@ -345,9 +316,13 @@ function addTool(parent, world, options) {
 
                 var tool = frame.tools[0];
 
-                if (stickMesh.visible === false) {
-                    stickMesh.visible = interactionBoxMesh.visible = true;
-                    if (!useShadowMap) stickShadow.visible = true;
+                if (stickMesh.visible === false || stickMesh.material.opacity < 1) {
+                    stickMesh.visible = true;
+                    stickShadow.visible = true;
+                    interactionBoxMesh.visible = true;
+                    stickMesh.material.opacity = 1;
+                    if (tipMesh) tipMesh.material.opacity = 1;
+                    interactionPlaneMaterial.opacity = interactionPlaneOpacity;
                 }
 
                 //position.fromArray(tool.tipPosition);
@@ -383,7 +358,7 @@ function addTool(parent, world, options) {
                         // cue becomes collidable
                         tipBody.wakeUp();
                         // TODO: indicator (particle effect)
-                        tipMaterial.color.setHex(0xff0000);
+                        if (tipMesh) tipMesh.material.color.setHex(0xff0000);
                     }
 
                     if (tool.timeVisible > toolTimeB && interactionPlaneMaterial.opacity > 0.1) {
@@ -396,20 +371,19 @@ function addTool(parent, world, options) {
             } else if (tipBody.sleepState === CANNON.Body.AWAKE) {
                 // tool detection was just lost
                 tipBody.sleep();
-                tipMaterial.color.setHex(tipColor);
+                if (tipMesh) tipMesh.material.color.setHex(tipColor);
 
             } else {
                 // tool is already lost
-                if (stickMesh.visible && (stickMaterial.opacity > 0.1)) {
+                if (stickMesh.visible && stickMesh.material.opacity > 0.1) {
                     // fade out tool
-                    stickMaterial.opacity *= 0.8;
-                    tipMaterial.opacity = stickMaterial.opacity;
+                    stickMesh.material.opacity *= 0.8;
                     interactionPlaneMaterial.opacity *= 0.8;
+                    if (tipMesh) tipMesh.material.opacity = stickMesh.material.opacity;
                 } else {
-                    interactionBoxMesh.visible = stickMesh.visible = false;
+                    stickMesh.visible = false;
+                    interactionBoxMesh.visible = false;
                     stickShadow.visible = false;
-                    stickMaterial.opacity = tipMaterial.opacity = 1;
-                    interactionPlaneMaterial.opacity = interactionPlaneOpacity;
                 }
             }
 
@@ -437,44 +411,6 @@ function addTool(parent, world, options) {
                     }
                 }
             }
-
-            // if (frame.hands.length === 1) {
-
-            //     hand = frame.hands[0];
-            //     if (hand.confidence > minConfidence) {
-            //         finger = hand.indexFinger;
-            //         if (finger.extended) {
-            //             position.fromArray(finger.stabilizedTipPosition);
-            //             toolRoot.localToWorld(position);
-            //             direction.fromArray(finger.direction);
-            //             direction.applyQuaternion(worldQuaternion);
-            //             raycaster.set(position, direction);
-
-            //             var intersects = raycaster.intersectObjects(POOLVR.ballMeshes);
-            //             if (intersects.length > 0) {
-            //                 pickedBall = intersects[0].object;
-            //                 particleMesh.visible = true;
-            //                 particleMesh.position.copy(pickedBall.position);
-            //             } else {
-            //                 pickedBall = null;
-            //                 particleMesh.visible = false;
-            //             }
-
-            //             arrowHelper.visible = true;
-            //             arrowHelper.position.copy(position);
-            //             arrowHelper.setDirection(direction);
-            //         }
-            //     } else {
-            //         arrowHelper.visible = false;
-            //         particleMesh.visible = false;
-            //     }
-
-            // } else {
-
-            //     arrowHelper.visible = false;
-            //     particleMesh.visible = false;
-
-            // }
 
         }
 
