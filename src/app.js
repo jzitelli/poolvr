@@ -109,7 +109,7 @@ POOLVR.animate = function () {
         world.step(1/60, dt, 5);
 
         updateToolPostStep();
-        
+
         keyboard.update(dt);
         gamepad.update(dt);
 
@@ -170,6 +170,7 @@ function onLoad() {
     avatar.heading = 0;
     avatar.floatMode = false;
     avatar.toolMode = false;
+
     POOLVR.avatar = avatar;
 
     POOLVR.synthSpeaker = new SynthSpeaker({volume: POOLVR.config.synthSpeakerVolume, rate: 0.8, pitch: 0.5});
@@ -213,14 +214,15 @@ function onLoad() {
         var UP = new THREE.Vector3(0, 1, 0);
         var appConfig = combineObjects(POOLVR.config, {
             onResetVRSensor: function (lastRotation, lastPosition) {
+                var camera = POOLVR.app.camera;
                 // app.camera.updateMatrix();
-                avatar.heading += lastRotation - app.camera.rotation.y;
-                POOLVR.toolRoot.rotation.y -= (lastRotation - app.camera.rotation.y);
+                POOLVR.avatar.heading += lastRotation - camera.rotation.y;
+                POOLVR.toolRoot.rotation.y -= (lastRotation - camera.rotation.y);
                 POOLVR.toolRoot.position.sub(lastPosition);
-                POOLVR.toolRoot.position.applyAxisAngle(UP, -lastRotation + app.camera.rotation.y);
-                POOLVR.toolRoot.position.add(app.camera.position);
+                POOLVR.toolRoot.position.applyAxisAngle(UP, -lastRotation + camera.rotation.y);
+                POOLVR.toolRoot.position.add(camera.position);
                 // POOLVR.toolRoot.updateMatrix();
-                avatar.updateMatrixWorld();
+                POOLVR.avatar.updateMatrixWorld();
             }
         });
 
