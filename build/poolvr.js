@@ -690,7 +690,6 @@ function addTool(parent, world, options) {
     // TODO: rename, avoid confusion b/t cannon and three materials
     tipBody.material = POOLVR.tipMaterial;
     var tipMesh = null;
-    var tipMaterial = new THREE.MeshLambertMaterial({color: tipColor, transparent: true});
     if (tipShape !== 'Cylinder') {
         var tipGeom = new THREE.SphereBufferGeometry(tipRadius/scalar, 10);
         if (tipShape === 'Ellipsoid') {
@@ -700,6 +699,7 @@ function addTool(parent, world, options) {
         } else {
             tipBody.addShape(new CANNON.Sphere(tipRadius));
         }
+        var tipMaterial = new THREE.MeshLambertMaterial({color: tipColor, transparent: true});
         tipMesh = new THREE.Mesh(tipGeom, tipMaterial);
         tipMesh.castShadow = true;
         stickMesh.add(tipMesh);
@@ -804,34 +804,6 @@ function addTool(parent, world, options) {
     });
 
 
-    // var raycaster = new THREE.Raycaster();
-    // var arrowHelper = new THREE.ArrowHelper(UP, new THREE.Vector3(), 2.5);
-    // arrowHelper.visible = false;
-    // app.scene.add(arrowHelper);
-
-    // var numParticles = 50;
-    // var particleTexture = '/images/particle.png';
-    // var particleGroup = new SPE.Group({
-    //     texture: {value: THREE.ImageUtils.loadTexture(particleTexture)},
-    //     maxParticleCount: numParticles
-    // });
-    // var particleEmitter = new SPE.Emitter({
-    //     maxAge: {value: 0.5},
-    //     position: {value: new THREE.Vector3(0, 0, 0),
-    //                spread: new THREE.Vector3(0, 0, 0)},
-    //     velocity: {value: new THREE.Vector3(0, 0.2, 0),
-    //                spread: new THREE.Vector3(0.4, 0.3, 0.4)},
-    //     color: {value: [new THREE.Color('blue'), new THREE.Color('red')]},
-    //     opacity: {value: [1, 0.1]},
-    //     size: {value: 0.1},
-    //     particleCount: numParticles
-    // });
-    // particleGroup.addEmitter(particleEmitter);
-    // var particleMesh = particleGroup.mesh;
-    // app.scene.add(particleMesh);
-    // particleMesh.visible = false;
-    // var pickedBall;
-
     var H_table = POOLVR.config.H_table;
 
     function updateToolPostStep() {
@@ -874,7 +846,8 @@ function addTool(parent, world, options) {
             toolRoot.quaternion.setFromAxisAngle(UP, toolRotation);
             if (interactionBoxMesh.visible === false) {
                 interactionBoxMesh.visible = true;
-                stickMaterial.opacity = tipMaterial.opacity = 1;
+                stickMesh.material.opacity = 1;
+                if (tipMesh) tipMesh.material.opacity = 1;
                 interactionPlaneMaterial.opacity = interactionPlaneOpacity;
             }
         }
@@ -886,8 +859,6 @@ function addTool(parent, world, options) {
 
     var cannonUP = new CANNON.Vec3(0, 1, 0);
     var cannonVec = new CANNON.Vec3();
-
-    var useShadowMap = POOLVR.config.useShadowMap;
 
     var lastFrameID;
 
@@ -910,9 +881,13 @@ function addTool(parent, world, options) {
 
                 var tool = frame.tools[0];
 
-                if (stickMesh.visible === false) {
-                    stickMesh.visible = interactionBoxMesh.visible = true;
-                    if (!useShadowMap) stickShadow.visible = true;
+                if (stickMesh.visible === false || stickMesh.material.opacity < 1) {
+                    stickMesh.visible = true;
+                    stickShadow.visible = true;
+                    interactionBoxMesh.visible = true;
+                    stickMesh.material.opacity = 1;
+                    if (tipMesh) tipMesh.material.opacity = 1;
+                    interactionPlaneMaterial.opacity = interactionPlaneOpacity;
                 }
 
                 //position.fromArray(tool.tipPosition);
@@ -948,7 +923,7 @@ function addTool(parent, world, options) {
                         // cue becomes collidable
                         tipBody.wakeUp();
                         // TODO: indicator (particle effect)
-                        tipMaterial.color.setHex(0xff0000);
+                        if (tipMesh) tipMesh.material.color.setHex(0xff0000);
                     }
 
                     if (tool.timeVisible > toolTimeB && interactionPlaneMaterial.opacity > 0.1) {
@@ -961,20 +936,19 @@ function addTool(parent, world, options) {
             } else if (tipBody.sleepState === CANNON.Body.AWAKE) {
                 // tool detection was just lost
                 tipBody.sleep();
-                tipMaterial.color.setHex(tipColor);
+                if (tipMesh) tipMesh.material.color.setHex(tipColor);
 
             } else {
                 // tool is already lost
-                if (stickMesh.visible && (stickMaterial.opacity > 0.1)) {
+                if (stickMesh.visible && stickMesh.material.opacity > 0.1) {
                     // fade out tool
-                    stickMaterial.opacity *= 0.8;
-                    tipMaterial.opacity = stickMaterial.opacity;
+                    stickMesh.material.opacity *= 0.8;
                     interactionPlaneMaterial.opacity *= 0.8;
+                    if (tipMesh) tipMesh.material.opacity = stickMesh.material.opacity;
                 } else {
-                    interactionBoxMesh.visible = stickMesh.visible = false;
+                    stickMesh.visible = false;
+                    interactionBoxMesh.visible = false;
                     stickShadow.visible = false;
-                    stickMaterial.opacity = tipMaterial.opacity = 1;
-                    interactionPlaneMaterial.opacity = interactionPlaneOpacity;
                 }
             }
 
@@ -1002,44 +976,6 @@ function addTool(parent, world, options) {
                     }
                 }
             }
-
-            // if (frame.hands.length === 1) {
-
-            //     hand = frame.hands[0];
-            //     if (hand.confidence > minConfidence) {
-            //         finger = hand.indexFinger;
-            //         if (finger.extended) {
-            //             position.fromArray(finger.stabilizedTipPosition);
-            //             toolRoot.localToWorld(position);
-            //             direction.fromArray(finger.direction);
-            //             direction.applyQuaternion(worldQuaternion);
-            //             raycaster.set(position, direction);
-
-            //             var intersects = raycaster.intersectObjects(POOLVR.ballMeshes);
-            //             if (intersects.length > 0) {
-            //                 pickedBall = intersects[0].object;
-            //                 particleMesh.visible = true;
-            //                 particleMesh.position.copy(pickedBall.position);
-            //             } else {
-            //                 pickedBall = null;
-            //                 particleMesh.visible = false;
-            //             }
-
-            //             arrowHelper.visible = true;
-            //             arrowHelper.position.copy(position);
-            //             arrowHelper.setDirection(direction);
-            //         }
-            //     } else {
-            //         arrowHelper.visible = false;
-            //         particleMesh.visible = false;
-            //     }
-
-            // } else {
-
-            //     arrowHelper.visible = false;
-            //     particleMesh.visible = false;
-
-            // }
 
         }
 
@@ -1091,23 +1027,6 @@ var WebVRSound = (function (numGainNodes) {
     };
 
 })();
-
-
-    // this.playSound = function (url, loop) {
-    //     var source = audioContext.createBufferSource();
-    //     source.loop = (loop === true);
-    //     source.connect(gainNode);
-    //     var request = new XMLHttpRequest();
-    //     request.responseType = 'arraybuffer';
-    //     request.open('GET', url, true);
-    //     request.onload = function() {
-    //         audioContext.decodeAudioData(request.response).then(function(buffer) {
-    //             source.buffer = buffer;
-    //             source.start(0);
-    //         });
-    //     };
-    //     request.send();
-    // };
 ;
 var SynthSpeaker = ( function() {
     "use strict";
@@ -1394,7 +1313,7 @@ POOLVR.playCollisionSound = (function () {
     };
     request.send();
     var playCollisionSound = function (v) {
-        WebVRSound.playBuffer(ballBallBuffer, Math.min(1, v / 4));
+        WebVRSound.playBuffer(ballBallBuffer, Math.min(1, v / 10));
     };
     return playCollisionSound;
 })();
@@ -1509,7 +1428,7 @@ POOLVR.setup = function () {
 
     var H_table = POOLVR.config.H_table;
 
-    world.addEventListener("postStep", function () {
+    POOLVR.updateBallsPostStep = function () {
 
         for (var i = 0; i < POOLVR.ballMeshes.length; i++) {
 
@@ -1531,7 +1450,7 @@ POOLVR.setup = function () {
 
         }
 
-    });
+    };
 
     // ball-floor collision
     floorMesh.body.addEventListener(CANNON.Body.COLLIDE_EVENT_NAME, function (evt) {
@@ -1546,7 +1465,7 @@ POOLVR.setup = function () {
             body.velocity.set(0, 0, 0);
             body.angularVelocity.set(0, 0, 0);
 
-        } else {
+        } else if (body.ballNum !== undefined) {
 
             body.bounces++;
             if (body.bounces === 1) {
@@ -1569,27 +1488,16 @@ POOLVR.setup = function () {
 
     });
 
+    var relVelocity = new CANNON.Vec3();
     world.addEventListener('beginContact', function (evt) {
         var bodyA = evt.bodyA;
         var bodyB = evt.bodyB;
         if (bodyA.material === bodyB.material) {
             // ball-ball collision
-            var impactVelocity = 1; // TODO
-            POOLVR.playCollisionSound(impactVelocity);
+            bodyA.velocity.vsub(bodyB.velocity, relVelocity);
+            POOLVR.playCollisionSound(relVelocity.lengthSquared());
         }
     });
-
-    //     var body = evt.body;
-    //     var contact = evt.contact;
-    //     if (contact.bi === body && contact.bi.material === contact.bj.material) {
-    //         var impactVelocity = contact.getImpactVelocityAlongNormal();
-    //         POOLVR.playCollisionSound(impactVelocity);
-    //     }
-    // }
-    // for (var i = 0; i < POOLVR.ballBodies.length; i++) {
-    //     var body = POOLVR.ballBodies[i];
-    //     body.addEventListener(CANNON.Body.COLLIDE_EVENT_NAME, ballCollideCallback);
-    // }
 
 };
 ;
@@ -1653,6 +1561,50 @@ POOLVR.autoPosition = ( function () {
 } )();
 
 
+POOLVR.avatar = new THREE.Object3D();
+
+
+POOLVR.moveAvatar = ( function () {
+    "use strict";
+    var UP = new THREE.Vector3(0, 1, 0),
+        walkSpeed = 0.333,
+        floatSpeed = 0.1;
+    var avatar = POOLVR.avatar;
+
+    return function (keyboard, gamepad, dt) {
+        var floatUp = keyboard.getValue("floatUp") + keyboard.getValue("floatDown");
+        var drive = keyboard.getValue("driveBack") + keyboard.getValue("driveForward");
+        var strafe = keyboard.getValue("strafeRight") + keyboard.getValue("strafeLeft");
+        var heading = -0.8 * dt * (keyboard.getValue("turnLeft") + keyboard.getValue("turnRight"));
+        if (avatar.floatMode) {
+            floatUp += gamepad.getValue("float");
+            strafe += gamepad.getValue("strafe");
+        } else {
+            drive += gamepad.getValue("drive");
+            heading += 0.8 * dt * gamepad.getValue("dheading");
+        }
+        floatUp *= floatSpeed;
+        if (strafe || drive) {
+            var len = walkSpeed * Math.min(1, 1 / Math.sqrt(drive * drive + strafe * strafe));
+            strafe *= len;
+            drive *= len;
+        } else {
+            strafe = 0;
+            drive = 0;
+        }
+        if (floatUp !== 0 || strafe !== 0 || heading !== 0 || drive !== 0) {
+            avatar.heading += heading;
+            var cosHeading = Math.cos(avatar.heading),
+                sinHeading = Math.sin(avatar.heading);
+            avatar.quaternion.setFromAxisAngle(UP, avatar.heading);
+            avatar.position.x += dt * (strafe * cosHeading + drive * sinHeading);
+            avatar.position.z += dt * (drive * cosHeading - strafe * sinHeading);
+            avatar.position.y += dt * floatUp;
+        }
+    };
+} )();
+
+
 POOLVR.startTutorial = function () {
     "use strict";
     POOLVR.synthSpeaker.speak("Hello.  Welcome. To. Pool-ver.", function () {
@@ -1673,79 +1625,58 @@ POOLVR.startTutorial = function () {
 
 POOLVR.animate = function () {
     "use strict";
-    var avatar   = POOLVR.avatar,
-        keyboard = POOLVR.keyboard,
+    var keyboard = POOLVR.keyboard,
         gamepad  = POOLVR.gamepad,
         app      = POOLVR.app,
         world    = POOLVR.world,
-        updateTool         = POOLVR.updateTool,
-        updateToolPostStep = POOLVR.updateToolPostStep,
-        moveToolRoot       = POOLVR.moveToolRoot;
-
-    var UP = new THREE.Vector3(0, 1, 0),
-        walkSpeed = 0.333,
-        floatSpeed = 0.1;
+        updateTool          = POOLVR.updateTool,
+        updateToolPostStep  = POOLVR.updateToolPostStep,
+        moveToolRoot        = POOLVR.moveToolRoot,
+        moveAvatar          = POOLVR.moveAvatar,
+        updateBallsPostStep = POOLVR.updateBallsPostStep;
+    var rS = POOLVR.rS;
     var lt = 0;
 
     function animate(t) {
+        rS('frame').start();
+        rS('raF').tick();
+        rS('FPS').frame();
+
         var dt = (t - lt) * 0.001;
 
+        rS('updateTool').start();
         updateTool();
+        rS('updateTool').end();
 
         if (app.vrControls.enabled) {
             app.vrControls.update();
         }
+
+        rS('render').start();
         app.vrManager.render(app.scene, app.camera, t);
+        rS('render').end();
 
         requestAnimationFrame(animate);
 
+        rS('step').start();
         //world.step(dt);
         //world.step(1/75, dt, 5);
         world.step(1/60, dt, 5);
+        rS('step').end();
 
         updateToolPostStep();
-        
+        updateBallsPostStep();
+
         keyboard.update(dt);
         gamepad.update(dt);
 
+        moveAvatar(keyboard, gamepad, dt);
         moveToolRoot(keyboard, gamepad, dt);
 
-        var floatUp = keyboard.getValue("floatUp") + keyboard.getValue("floatDown");
-        var drive = keyboard.getValue("driveBack") + keyboard.getValue("driveForward");
-        var strafe = keyboard.getValue("strafeRight") + keyboard.getValue("strafeLeft");
-
-        var heading = -0.8 * dt * (keyboard.getValue("turnLeft") + keyboard.getValue("turnRight"));
-        if (avatar.floatMode) {
-            floatUp += gamepad.getValue("float");
-            strafe += gamepad.getValue("strafe");
-        } else {
-            drive += gamepad.getValue("drive");
-            heading += 0.8 * dt * gamepad.getValue("dheading");
-        }
-        floatUp *= floatSpeed;
-        if (strafe || drive) {
-            var len = walkSpeed * Math.min(1, 1 / Math.sqrt(drive * drive +
-                strafe * strafe));
-            strafe *= len;
-            drive *= len;
-        } else {
-            strafe = 0;
-            drive = 0;
-        }
-
-        if (floatUp !== 0 || strafe !== 0 || heading !== 0 || drive !== 0) {
-            avatar.heading += heading;
-            var cosHeading = Math.cos(avatar.heading),
-                sinHeading = Math.sin(avatar.heading);
-
-            avatar.quaternion.setFromAxisAngle(UP, avatar.heading);
-
-            avatar.position.x += dt * (strafe * cosHeading + drive * sinHeading);
-            avatar.position.z += dt * (drive * cosHeading - strafe * sinHeading);
-            avatar.position.y += dt * floatUp;
-        }
-
         lt = t;
+
+        rS('frame').end();
+        rS().update();
     }
 
     return animate;
@@ -1753,19 +1684,19 @@ POOLVR.animate = function () {
 };
 
 
-/* jshint multistr: true */
 function onLoad() {
     "use strict";
 
     POOLVR.loadConfig();
     console.log("POOLVR.config =\n" + JSON.stringify(POOLVR.config, undefined, 2));
 
-    var avatar = new THREE.Object3D();
+    POOLVR.rS = new rStats({CSSPath: "lib/rstats/"}); // jshint ignore:line
+
+    var avatar = POOLVR.avatar;
     avatar.position.fromArray(POOLVR.config.initialPosition);
     avatar.heading = 0;
     avatar.floatMode = false;
     avatar.toolMode = false;
-    POOLVR.avatar = avatar;
 
     POOLVR.synthSpeaker = new SynthSpeaker({volume: POOLVR.config.synthSpeakerVolume, rate: 0.8, pitch: 0.5});
 
@@ -1808,14 +1739,15 @@ function onLoad() {
         var UP = new THREE.Vector3(0, 1, 0);
         var appConfig = combineObjects(POOLVR.config, {
             onResetVRSensor: function (lastRotation, lastPosition) {
+                var camera = POOLVR.app.camera;
                 // app.camera.updateMatrix();
-                avatar.heading += lastRotation - app.camera.rotation.y;
-                POOLVR.toolRoot.rotation.y -= (lastRotation - app.camera.rotation.y);
+                POOLVR.avatar.heading += lastRotation - camera.rotation.y;
+                POOLVR.toolRoot.rotation.y -= (lastRotation - camera.rotation.y);
                 POOLVR.toolRoot.position.sub(lastPosition);
-                POOLVR.toolRoot.position.applyAxisAngle(UP, -lastRotation + app.camera.rotation.y);
-                POOLVR.toolRoot.position.add(app.camera.position);
+                POOLVR.toolRoot.position.applyAxisAngle(UP, -lastRotation + camera.rotation.y);
+                POOLVR.toolRoot.position.add(camera.position);
                 // POOLVR.toolRoot.updateMatrix();
-                avatar.updateMatrixWorld();
+                POOLVR.avatar.updateMatrixWorld();
             }
         });
 
