@@ -181,14 +181,13 @@ POOLVR.animate = function () {
 };
 
 
-/* jshint multistr: true */
 function onLoad() {
     "use strict";
 
     POOLVR.loadConfig();
     console.log("POOLVR.config =\n" + JSON.stringify(POOLVR.config, undefined, 2));
 
-    POOLVR.rS = new rStats({CSSPath: "lib/rstats/"});
+    POOLVR.rS = new rStats({CSSPath: "lib/rstats/"}); // jshint ignore:line
 
     var avatar = POOLVR.avatar;
     avatar.position.fromArray(POOLVR.config.initialPosition);
