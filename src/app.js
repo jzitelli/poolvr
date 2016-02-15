@@ -85,7 +85,8 @@ POOLVR.animate = function () {
         world    = POOLVR.world,
         updateTool         = POOLVR.updateTool,
         updateToolPostStep = POOLVR.updateToolPostStep,
-        moveToolRoot       = POOLVR.moveToolRoot;
+        moveToolRoot       = POOLVR.moveToolRoot,
+        rS = POOLVR.rS;
 
     var UP = new THREE.Vector3(0, 1, 0),
         walkSpeed = 0.333,
@@ -93,6 +94,10 @@ POOLVR.animate = function () {
     var lt = 0;
 
     function animate(t) {
+        rS('frame').start();
+        rS('raF').tick();
+        rS('FPS').frame();
+
         var dt = (t - lt) * 0.001;
 
         updateTool();
@@ -106,7 +111,9 @@ POOLVR.animate = function () {
 
         //world.step(dt);
         //world.step(1/75, dt, 5);
+        rS('step').start();
         world.step(1/60, dt, 5);
+        rS('step').end();
 
         updateToolPostStep();
 
@@ -150,6 +157,9 @@ POOLVR.animate = function () {
             avatar.position.y += dt * floatUp;
         }
 
+        rS('frame').end();
+        rS().update();
+
         lt = t;
     }
 
@@ -164,6 +174,8 @@ function onLoad() {
 
     POOLVR.loadConfig();
     console.log("POOLVR.config =\n" + JSON.stringify(POOLVR.config, undefined, 2));
+
+    POOLVR.rS = new rStats({CSSPath: "lib/rstats/"});
 
     var avatar = new THREE.Object3D();
     avatar.position.fromArray(POOLVR.config.initialPosition);
