@@ -1,11 +1,11 @@
-var playCollisionSound = (function () {
+POOLVR.playCollisionSound = (function () {
     "use strict";
     var ballBallBuffer;
     var request = new XMLHttpRequest();
     request.responseType = 'arraybuffer';
-    request.open('GET', '/sounds/ballBall.ogg', true);
+    request.open('GET', '/sounds/ballBall.ogg');
     request.onload = function() {
-        WebVRSound.audioContext.decodeAudioData(request.response, function(buffer) {
+        WebVRSound.audioContext.decodeAudioData(this.response, function(buffer) {
             ballBallBuffer = buffer;
         });
     };
@@ -16,14 +16,14 @@ var playCollisionSound = (function () {
     return playCollisionSound;
 })();
 
-var playPocketedSound = (function () {
+POOLVR.playPocketedSound = (function () {
     "use strict";
     var ballPocketedBuffer;
     var request = new XMLHttpRequest();
     request.responseType = 'arraybuffer';
-    request.open('GET', '/sounds/ballPocketed.ogg', true);
+    request.open('GET', '/sounds/ballPocketed.ogg');
     request.onload = function() {
-        WebVRSound.audioContext.decodeAudioData(request.response, function(buffer) {
+        WebVRSound.audioContext.decodeAudioData(this.response, function(buffer) {
             ballPocketedBuffer = buffer;
         });
     };
