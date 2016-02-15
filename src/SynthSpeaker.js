@@ -59,7 +59,7 @@ var SynthSpeaker = ( function() {
     if (window.speechSynthesis) {
         return SynthSpeaker;
     } else {
-        console.log("speechSynthesis not supported");
+        console.warn("speechSynthesis not supported");
         return function () {
             this.volume = 0;
             this.rate = 1;
