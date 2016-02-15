@@ -56,7 +56,7 @@ POOLVR.playCollisionSound = (function () {
     };
     request.send();
     var playCollisionSound = function (v) {
-        WebVRSound.playBuffer(ballBallBuffer, Math.min(1, v / 4));
+        WebVRSound.playBuffer(ballBallBuffer, Math.min(1, v / 10));
     };
     return playCollisionSound;
 })();
@@ -208,7 +208,7 @@ POOLVR.setup = function () {
             body.velocity.set(0, 0, 0);
             body.angularVelocity.set(0, 0, 0);
 
-        } else {
+        } else if (body.ballNum !== undefined) {
 
             body.bounces++;
             if (body.bounces === 1) {
@@ -231,26 +231,15 @@ POOLVR.setup = function () {
 
     });
 
+    var relVelocity = new CANNON.Vec3();
     world.addEventListener('beginContact', function (evt) {
         var bodyA = evt.bodyA;
         var bodyB = evt.bodyB;
         if (bodyA.material === bodyB.material) {
             // ball-ball collision
-            var impactVelocity = 1; // TODO
-            POOLVR.playCollisionSound(impactVelocity);
+            bodyA.velocity.vsub(bodyB.velocity, relVelocity);
+            POOLVR.playCollisionSound(relVelocity.lengthSquared());
         }
     });
-
-    //     var body = evt.body;
-    //     var contact = evt.contact;
-    //     if (contact.bi === body && contact.bi.material === contact.bj.material) {
-    //         var impactVelocity = contact.getImpactVelocityAlongNormal();
-    //         POOLVR.playCollisionSound(impactVelocity);
-    //     }
-    // }
-    // for (var i = 0; i < POOLVR.ballBodies.length; i++) {
-    //     var body = POOLVR.ballBodies[i];
-    //     body.addEventListener(CANNON.Body.COLLIDE_EVENT_NAME, ballCollideCallback);
-    // }
 
 };

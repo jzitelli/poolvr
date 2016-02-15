@@ -35,20 +35,3 @@ var WebVRSound = (function (numGainNodes) {
     };
 
 })();
-
-
-    // this.playSound = function (url, loop) {
-    //     var source = audioContext.createBufferSource();
-    //     source.loop = (loop === true);
-    //     source.connect(gainNode);
-    //     var request = new XMLHttpRequest();
-    //     request.responseType = 'arraybuffer';
-    //     request.open('GET', url, true);
-    //     request.onload = function() {
-    //         audioContext.decodeAudioData(request.response).then(function(buffer) {
-    //             source.buffer = buffer;
-    //             source.start(0);
-    //         });
-    //     };
-    //     request.send();
-    // };
