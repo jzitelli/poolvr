@@ -58,6 +58,50 @@ POOLVR.autoPosition = ( function () {
 } )();
 
 
+POOLVR.avatar = new THREE.Object3D();
+
+
+POOLVR.moveAvatar = ( function () {
+    "use strict";
+    var UP = new THREE.Vector3(0, 1, 0),
+        walkSpeed = 0.333,
+        floatSpeed = 0.1;
+    var avatar = POOLVR.avatar;
+
+    return function (keyboard, gamepad, dt) {
+        var floatUp = keyboard.getValue("floatUp") + keyboard.getValue("floatDown");
+        var drive = keyboard.getValue("driveBack") + keyboard.getValue("driveForward");
+        var strafe = keyboard.getValue("strafeRight") + keyboard.getValue("strafeLeft");
+        var heading = -0.8 * dt * (keyboard.getValue("turnLeft") + keyboard.getValue("turnRight"));
+        if (avatar.floatMode) {
+            floatUp += gamepad.getValue("float");
+            strafe += gamepad.getValue("strafe");
+        } else {
+            drive += gamepad.getValue("drive");
+            heading += 0.8 * dt * gamepad.getValue("dheading");
+        }
+        floatUp *= floatSpeed;
+        if (strafe || drive) {
+            var len = walkSpeed * Math.min(1, 1 / Math.sqrt(drive * drive + strafe * strafe));
+            strafe *= len;
+            drive *= len;
+        } else {
+            strafe = 0;
+            drive = 0;
+        }
+        if (floatUp !== 0 || strafe !== 0 || heading !== 0 || drive !== 0) {
+            avatar.heading += heading;
+            var cosHeading = Math.cos(avatar.heading),
+                sinHeading = Math.sin(avatar.heading);
+            avatar.quaternion.setFromAxisAngle(UP, avatar.heading);
+            avatar.position.x += dt * (strafe * cosHeading + drive * sinHeading);
+            avatar.position.z += dt * (drive * cosHeading - strafe * sinHeading);
+            avatar.position.y += dt * floatUp;
+        }
+    };
+} )();
+
+
 POOLVR.startTutorial = function () {
     "use strict";
     POOLVR.synthSpeaker.speak("Hello.  Welcome. To. Pool-ver.", function () {
@@ -78,19 +122,16 @@ POOLVR.startTutorial = function () {
 
 POOLVR.animate = function () {
     "use strict";
-    var avatar   = POOLVR.avatar,
-        keyboard = POOLVR.keyboard,
+    var keyboard = POOLVR.keyboard,
         gamepad  = POOLVR.gamepad,
         app      = POOLVR.app,
         world    = POOLVR.world,
-        updateTool         = POOLVR.updateTool,
-        updateToolPostStep = POOLVR.updateToolPostStep,
-        moveToolRoot       = POOLVR.moveToolRoot,
-        rS = POOLVR.rS;
-
-    var UP = new THREE.Vector3(0, 1, 0),
-        walkSpeed = 0.333,
-        floatSpeed = 0.1;
+        updateTool          = POOLVR.updateTool,
+        updateToolPostStep  = POOLVR.updateToolPostStep,
+        moveToolRoot        = POOLVR.moveToolRoot,
+        moveAvatar          = POOLVR.moveAvatar,
+        updateBallsPostStep = POOLVR.updateBallsPostStep;
+    var rS = POOLVR.rS;
     var lt = 0;
 
     function animate(t) {
@@ -100,67 +141,39 @@ POOLVR.animate = function () {
 
         var dt = (t - lt) * 0.001;
 
+        rS('updateTool').start();
         updateTool();
+        rS('updateTool').end();
 
         if (app.vrControls.enabled) {
             app.vrControls.update();
         }
+
+        rS('render').start();
         app.vrManager.render(app.scene, app.camera, t);
+        rS('render').end();
 
         requestAnimationFrame(animate);
 
+        rS('step').start();
         //world.step(dt);
         //world.step(1/75, dt, 5);
-        rS('step').start();
         world.step(1/60, dt, 5);
         rS('step').end();
 
         updateToolPostStep();
+        updateBallsPostStep();
 
         keyboard.update(dt);
         gamepad.update(dt);
 
+        moveAvatar(keyboard, gamepad, dt);
         moveToolRoot(keyboard, gamepad, dt);
 
-        var floatUp = keyboard.getValue("floatUp") + keyboard.getValue("floatDown");
-        var drive = keyboard.getValue("driveBack") + keyboard.getValue("driveForward");
-        var strafe = keyboard.getValue("strafeRight") + keyboard.getValue("strafeLeft");
-
-        var heading = -0.8 * dt * (keyboard.getValue("turnLeft") + keyboard.getValue("turnRight"));
-        if (avatar.floatMode) {
-            floatUp += gamepad.getValue("float");
-            strafe += gamepad.getValue("strafe");
-        } else {
-            drive += gamepad.getValue("drive");
-            heading += 0.8 * dt * gamepad.getValue("dheading");
-        }
-        floatUp *= floatSpeed;
-        if (strafe || drive) {
-            var len = walkSpeed * Math.min(1, 1 / Math.sqrt(drive * drive +
-                strafe * strafe));
-            strafe *= len;
-            drive *= len;
-        } else {
-            strafe = 0;
-            drive = 0;
-        }
-
-        if (floatUp !== 0 || strafe !== 0 || heading !== 0 || drive !== 0) {
-            avatar.heading += heading;
-            var cosHeading = Math.cos(avatar.heading),
-                sinHeading = Math.sin(avatar.heading);
-
-            avatar.quaternion.setFromAxisAngle(UP, avatar.heading);
-
-            avatar.position.x += dt * (strafe * cosHeading + drive * sinHeading);
-            avatar.position.z += dt * (drive * cosHeading - strafe * sinHeading);
-            avatar.position.y += dt * floatUp;
-        }
+        lt = t;
 
         rS('frame').end();
         rS().update();
-
-        lt = t;
     }
 
     return animate;
@@ -177,13 +190,11 @@ function onLoad() {
 
     POOLVR.rS = new rStats({CSSPath: "lib/rstats/"});
 
-    var avatar = new THREE.Object3D();
+    var avatar = POOLVR.avatar;
     avatar.position.fromArray(POOLVR.config.initialPosition);
     avatar.heading = 0;
     avatar.floatMode = false;
     avatar.toolMode = false;
-
-    POOLVR.avatar = avatar;
 
     POOLVR.synthSpeaker = new SynthSpeaker({volume: POOLVR.config.synthSpeakerVolume, rate: 0.8, pitch: 0.5});
 

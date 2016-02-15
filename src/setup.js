@@ -171,7 +171,7 @@ POOLVR.setup = function () {
 
     var H_table = POOLVR.config.H_table;
 
-    world.addEventListener("postStep", function () {
+    POOLVR.updateBallsPostStep = function () {
 
         for (var i = 0; i < POOLVR.ballMeshes.length; i++) {
 
@@ -193,7 +193,7 @@ POOLVR.setup = function () {
 
         }
 
-    });
+    };
 
     // ball-floor collision
     floorMesh.body.addEventListener(CANNON.Body.COLLIDE_EVENT_NAME, function (evt) {
