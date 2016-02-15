@@ -191,20 +191,6 @@ def pool_table(L_table=2.3368, W_table=None, H_table=0.74295,
 
 
 
-ball_colors = []
-ball_colors.append(0xddddde); white  = ball_colors[-1]
-ball_colors.append(0xeeee00); yellow = ball_colors[-1]
-ball_colors.append(0x0000ee); blue   = ball_colors[-1]
-ball_colors.append(0xee0000); red    = ball_colors[-1]
-ball_colors.append(0xee00ee); purple = ball_colors[-1]
-ball_colors.append(0xee7700); orange = ball_colors[-1]
-ball_colors.append(0x00ee00); green  = ball_colors[-1]
-ball_colors.append(0xbb2244); maroon = ball_colors[-1]
-ball_colors.append(0x111111); black  = ball_colors[-1]
-ball_colors = ball_colors + ball_colors[1:-1]
-
-
-
 def pool_hall(useSkybox=False,
               L_table=2.3368,
               H_table=0.74295,
@@ -236,6 +222,18 @@ def pool_hall(useSkybox=False,
     scene.add(poolTable)
 
     # balls:
+    ball_colors = []
+    ball_colors.append(0xddddde); white  = ball_colors[-1]
+    ball_colors.append(0xeeee00); yellow = ball_colors[-1]
+    ball_colors.append(0x0000ee); blue   = ball_colors[-1]
+    ball_colors.append(0xee0000); red    = ball_colors[-1]
+    ball_colors.append(0xee00ee); purple = ball_colors[-1]
+    ball_colors.append(0xee7700); orange = ball_colors[-1]
+    ball_colors.append(0x00ee00); green  = ball_colors[-1]
+    ball_colors.append(0xbb2244); maroon = ball_colors[-1]
+    ball_colors.append(0x111111); black  = ball_colors[-1]
+    ball_colors = ball_colors + ball_colors[1:-1]
+
     num_balls = len(ball_colors)
     ball_radius = ball_diameter / 2
     sphere = SphereBufferGeometry(radius=ball_radius,
@@ -251,7 +249,10 @@ def pool_hall(useSkybox=False,
                                       segments=16)
     shadowMaterial = MeshBasicMaterial(color=0x002200)
 
-    ball_materials = [MeshPhongMaterial(color=color, shading=SmoothShading) for color in ball_colors]
+    ball_materials = [MeshPhongMaterial(name="ball %d material" % i,
+                                        color=color,
+                                        shading=SmoothShading)
+                      for i, color in enumerate(ball_colors)]
 
     ballData = {'cannonData': {'mass': 0.17, 'shapes': ['Sphere'],
                                'linearDamping': 0.25, 'angularDamping': 0.32}}

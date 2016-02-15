@@ -59,8 +59,7 @@ POOLVR = {
             'toolRotation': 0,
             'tipShape'    : 'Cylinder'
         }
-    },
-    'ballColors': pool_table.ball_colors
+    }
 }
 
 

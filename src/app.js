@@ -1,13 +1,3 @@
-POOLVR.ballMeshes = [];
-POOLVR.ballBodies = [];
-POOLVR.initialPositions = [];
-POOLVR.onTable = [false,
-                  true, true, true, true, true, true, true,
-                  true,
-                  true, true, true, true, true, true, true];
-POOLVR.nextBall = 1;
-
-
 POOLVR.selectNextBall = function (inc) {
     "use strict";
     inc = inc || 1;
@@ -32,7 +22,8 @@ POOLVR.resetTable = function () {
         body.position.copy(POOLVR.initialPositions[ballNum]);
         body.velocity.set(0, 0, 0);
         body.angularVelocity.set(0, 0, 0);
-        // body.bounces = 0;
+        body.bounces = 0;
+        POOLVR.onTable[ballNum] = true;
         body.mesh.visible = true;
     });
     if (POOLVR.synthSpeaker.speaking === false) {
@@ -85,13 +76,16 @@ POOLVR.startTutorial = function () {
 };
 
 
-var animate = function (updateTool, updateGraphics, moveToolRoot) {
+POOLVR.animate = function () {
     "use strict";
     var avatar   = POOLVR.avatar,
         keyboard = POOLVR.keyboard,
         gamepad  = POOLVR.gamepad,
         app      = POOLVR.app,
-        world    = POOLVR.world;
+        world    = POOLVR.world,
+        updateTool         = POOLVR.updateTool,
+        updateToolPostStep = POOLVR.updateToolPostStep,
+        moveToolRoot       = POOLVR.moveToolRoot;
 
     var UP = new THREE.Vector3(0, 1, 0),
         walkSpeed = 0.333,
@@ -100,20 +94,21 @@ var animate = function (updateTool, updateGraphics, moveToolRoot) {
 
     function animate(t) {
         var dt = (t - lt) * 0.001;
-        requestAnimationFrame(animate);
 
-        updateTool(dt);
-
-        updateGraphics();
+        updateTool();
 
         if (app.vrControls.enabled) {
             app.vrControls.update();
         }
         app.vrManager.render(app.scene, app.camera, t);
 
+        requestAnimationFrame(animate);
+
         //world.step(dt);
         //world.step(1/75, dt, 5);
         world.step(1/60, dt, 5);
+
+        updateToolPostStep();
         
         keyboard.update(dt);
         gamepad.update(dt);
@@ -231,28 +226,12 @@ function onLoad() {
 
         POOLVR.app = new WebVRApplication(scene, appConfig);
 
-        var world = new CANNON.World();
-        world.gravity.set( 0, -POOLVR.config.gravity, 0 );
-        //world.broadphase = new CANNON.SAPBroadphase( world );
-        world.defaultContactMaterial.contactEquationStiffness   = 1e6;
-        world.defaultContactMaterial.frictionEquationStiffness  = 1e6;
-        world.defaultContactMaterial.contactEquationRelaxation  = 3;
-        world.defaultContactMaterial.frictionEquationRelaxation = 3;
-        world.solver.iterations = 9;
-        POOLVR.world = world;
-        
-        THREE.py.CANNONize(scene, world);
-
         avatar.add(POOLVR.app.camera);
         scene.add(avatar);
 
-        POOLVR.setupMaterials(world);
-        POOLVR.setupWorld(scene, world);
+        POOLVR.setup();
 
-        var leapTool = addTool(avatar, world, POOLVR.toolOptions);
-        POOLVR.toolRoot = leapTool.toolRoot;
-
-        requestAnimationFrame( animate(leapTool.updateTool, leapTool.updateGraphics, leapTool.moveToolRoot) );
+        requestAnimationFrame( POOLVR.animate() );
 
         POOLVR.startTutorial();
 

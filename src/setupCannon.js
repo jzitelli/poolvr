@@ -21,7 +21,7 @@ POOLVR.floorBallContactMaterial = new CANNON.ContactMaterial(POOLVR.floorMateria
 });
 POOLVR.railMaterial            = new CANNON.Material();
 POOLVR.railBallContactMaterial = new CANNON.ContactMaterial(POOLVR.railMaterial, POOLVR.ballMaterial, {
-    restitution: 0.4,
+    restitution: 0.7,
     friction: 0.07
 });
 POOLVR.tipMaterial            = new CANNON.Material();
@@ -33,7 +33,34 @@ POOLVR.tipBallContactMaterial = new CANNON.ContactMaterial(POOLVR.tipMaterial, P
 });
 
 
-POOLVR.setupMaterials = function (world) {
+POOLVR.ballMeshes = [];
+POOLVR.ballBodies = [];
+POOLVR.initialPositions = [];
+POOLVR.onTable = [false,
+                  true, true, true, true, true, true, true,
+                  true,
+                  true, true, true, true, true, true, true];
+POOLVR.nextBall = 1;
+
+
+POOLVR.setup = function () {
+    "use strict";
+
+    var world = new CANNON.World();
+    world.gravity.set( 0, -POOLVR.config.gravity, 0 );
+    //world.broadphase = new CANNON.SAPBroadphase( world );
+    world.defaultContactMaterial.contactEquationStiffness   = 1e6;
+    world.defaultContactMaterial.frictionEquationStiffness  = 1e6;
+    world.defaultContactMaterial.contactEquationRelaxation  = 3;
+    world.defaultContactMaterial.frictionEquationRelaxation = 3;
+    world.solver.iterations = 9;
+
+    POOLVR.world = world;
+
+    var scene = POOLVR.app.scene;
+
+    THREE.py.CANNONize(scene, world);
+
     world.addMaterial(POOLVR.ballMaterial);
     world.addMaterial(POOLVR.playableSurfaceMaterial);
     world.addMaterial(POOLVR.cushionMaterial);
@@ -46,17 +73,28 @@ POOLVR.setupMaterials = function (world) {
     world.addContactMaterial(POOLVR.floorBallContactMaterial);
     world.addContactMaterial(POOLVR.tipBallContactMaterial);
     world.addContactMaterial(POOLVR.railBallContactMaterial);
-};
 
+    var leapTool = addTool(POOLVR.avatar, world, POOLVR.toolOptions);
 
-POOLVR.setupWorld = function (scene, world) {
+    POOLVR.toolRoot = leapTool.toolRoot;
+    POOLVR.updateTool = leapTool.updateTool;
+    POOLVR.updateToolPostStep = leapTool.updateToolPostStep;
+    POOLVR.moveToolRoot = leapTool.moveToolRoot;
 
     var ballStripeMeshes = [],
         ballShadowMeshes = [];
     var floorMesh;
 
     scene.traverse(function (node) {
+
         if (node instanceof THREE.Mesh) {
+
+            if (POOLVR.config.useBasicMaterials && (node.material instanceof THREE.MeshLambertMaterial || node.material instanceof THREE.MeshPhongMaterial)) {
+                var material = node.material;
+                node.material = new THREE.MeshBasicMaterial({color: material.color.getHex(), transparent: material.transparent, side: material.side});
+                material.dispose();
+            }
+
             var ballNum;
             if (node.name.startsWith('ball ')) {
                 ballNum = Number(node.name.split(' ')[1]);
@@ -88,7 +126,9 @@ POOLVR.setupWorld = function (scene, world) {
             else if (node.name.endsWith('RailMesh')) {
                 node.body.material = POOLVR.railMaterial;
             }
+
         }
+
     });
 
     var H_table = POOLVR.config.H_table;

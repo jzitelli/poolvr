@@ -72,15 +72,16 @@ function addTool(parent, world, options) {
 
     leapController.connect();
 
-    // setup three.js tool graphics:
-
+    // coordinate transformations are performed via three.js scene graph
     var toolRoot = new THREE.Object3D();
     toolRoot.position.copy(toolOffset);
     var scalar = 0.001;
     toolRoot.scale.set(scalar, scalar, scalar);
-    parent.add(toolRoot);
     var UP = new THREE.Vector3(0, 1, 0);
     toolRoot.quaternion.setFromAxisAngle(UP, toolRotation);
+    parent.add(toolRoot);
+
+    // setup three.js tool graphics:
 
     // interaction box visual guide:
     var interactionBoxMesh = new THREE.Object3D();
@@ -102,12 +103,7 @@ function addTool(parent, world, options) {
     var leapGeom = new THREE.BufferGeometry();
     leapGeom.fromGeometry(boxGeom);
     boxGeom.dispose();
-    var leapMaterial;
-    if (options.useBasicMaterials) {
-        leapMaterial = new THREE.MeshBasicMaterial({color: 0x777777});
-    } else {
-        leapMaterial = new THREE.MeshLambertMaterial({color: 0x777777});
-    }
+    var leapMaterial = new THREE.MeshLambertMaterial({color: 0x777777});
     var leapMesh = new THREE.Mesh(leapGeom, leapMaterial);
     leapMesh.position.y = 0.0254*0.25/scalar;
     toolRoot.add(leapMesh);
@@ -119,17 +115,7 @@ function addTool(parent, world, options) {
     bufferGeom.fromGeometry(stickGeom);
     stickGeom.dispose();
     stickGeom = bufferGeom;
-
-    var stickMaterial;
-    var tipMaterial;
-    if (options.useBasicMaterials) {
-        stickMaterial = new THREE.MeshBasicMaterial({color: stickColor, side: THREE.DoubleSide, transparent: true});
-        tipMaterial = new THREE.MeshBasicMaterial({color: tipColor, transparent: true});
-    }
-    else {
-        stickMaterial = new THREE.MeshLambertMaterial({color: stickColor, side: THREE.DoubleSide, transparent: true});
-        tipMaterial = new THREE.MeshLambertMaterial({color: tipColor, transparent: true});
-    }
+    var stickMaterial = new THREE.MeshLambertMaterial({color: stickColor, side: THREE.DoubleSide, transparent: true});
     var stickMesh = new THREE.Mesh(stickGeom, stickMaterial);
     stickMesh.castShadow = true;
     stickMesh.visible = false;
@@ -138,8 +124,8 @@ function addTool(parent, world, options) {
     var tipBody = new CANNON.Body({mass: toolMass, type: CANNON.Body.KINEMATIC});
     // TODO: rename, avoid confusion b/t cannon and three materials
     tipBody.material = POOLVR.tipMaterial;
-
     var tipMesh = null;
+    var tipMaterial = new THREE.MeshLambertMaterial({color: tipColor, transparent: true});
     if (tipShape !== 'Cylinder') {
         var tipGeom = new THREE.SphereBufferGeometry(tipRadius/scalar, 10);
         if (tipShape === 'Ellipsoid') {
@@ -283,7 +269,7 @@ function addTool(parent, world, options) {
 
     var H_table = POOLVR.config.H_table;
 
-    function updateGraphics() {
+    function updateToolPostStep() {
         stickMesh.position.copy(tipBody.interpolatedPosition);
         toolRoot.worldToLocal(stickMesh.position);
         stickShadow.position.set(
@@ -340,7 +326,7 @@ function addTool(parent, world, options) {
 
     var lastFrameID;
 
-    function updateTool(dt) {
+    function updateTool() {
 
         var frame = leapController.frame();
         if (frame.valid && frame.id != lastFrameID) {
@@ -495,10 +481,10 @@ function addTool(parent, world, options) {
     }
 
     return {
-        toolRoot: toolRoot,
-        leapController: leapController,
-        updateTool: updateTool,
-        updateGraphics: updateGraphics,
-        moveToolRoot: moveToolRoot
+        toolRoot:           toolRoot,
+        leapController:     leapController,
+        updateTool:         updateTool,
+        updateToolPostStep: updateToolPostStep,
+        moveToolRoot:       moveToolRoot
     };
 }
