@@ -74,7 +74,7 @@ POOLVR.setup = function () {
     world.addContactMaterial(POOLVR.tipBallContactMaterial);
     world.addContactMaterial(POOLVR.railBallContactMaterial);
 
-    var leapTool = addTool(POOLVR.avatar, world, POOLVR.toolOptions);
+    var leapTool = addTool(POOLVR.avatar, world, POOLVR.config.toolOptions);
 
     POOLVR.toolRoot = leapTool.toolRoot;
     POOLVR.updateTool = leapTool.updateTool;

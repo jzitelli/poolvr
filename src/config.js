@@ -106,13 +106,18 @@ POOLVR.config.toolOptions.tipShape     = URL_PARAMS.tipShape     || POOLVR.confi
 POOLVR.config.toolOptions.host         = URL_PARAMS.host;
 POOLVR.config.toolOptions.port         = URL_PARAMS.port;
 
-if (POOLVR.config.useShadowMap) {
-    POOLVR.config.useBasicMaterials = false;
-}
 
-POOLVR.toolOptions = combineObjects(POOLVR.config.toolOptions, {
-    useBasicMaterials: POOLVR.config.useBasicMaterials
-});
+POOLVR.config.useShadowMap = URL_PARAMS.useShadowMap || POOLVR.config.useShadowMap;
+
+if (POOLVR.config.useShadowMap) {
+
+    POOLVR.config.useBasicMaterials = false;
+
+} else {
+
+    POOLVR.config.useBasicMaterials = URL_PARAMS.useBasicMaterials || POOLVR.config.useBasicMaterials;
+
+}
 
 POOLVR.config.synthSpeakerVolume = URL_PARAMS.synthSpeakerVolume || POOLVR.config.synthSpeakerVolume || 0.25;
 
@@ -120,12 +125,13 @@ POOLVR.config.initialPosition = POOLVR.config.initialPosition || [0, 1, 1.86];
 
 POOLVR.profile = URL_PARAMS.profile || 'default';
 
+
 POOLVR.saveConfig = function () {
     "use strict";
     POOLVR.config.toolOptions.toolOffset = [POOLVR.toolRoot.position.x, POOLVR.toolRoot.position.y, POOLVR.toolRoot.position.z];
     POOLVR.config.toolOptions.toolRotation = POOLVR.toolRoot.rotation.y;
     localStorage.setItem(POOLVR.profile, JSON.stringify(POOLVR.config));
-    console.log('saved configuration for profile ' + POOLVR.profile + ':');
+    console.log("saved configuration for profile '" + POOLVR.profile + "':");
     console.log(JSON.stringify(POOLVR.config, undefined, 2));
 };
 
@@ -140,7 +146,7 @@ POOLVR.loadConfig = function () {
                 POOLVR.config[k] = localStorageConfig[k];
             }
         }
-        console.log('loaded configuration for profile ' + POOLVR.profile + ':');
+        console.log("loaded configuration for profile '" + POOLVR.profile + "':");
         console.log(JSON.stringify(POOLVR.config, undefined, 2));
     }
 };
