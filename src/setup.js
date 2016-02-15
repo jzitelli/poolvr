@@ -141,6 +141,8 @@ POOLVR.setup = function () {
             var body = POOLVR.ballBodies[i];
             mesh.position.copy(body.interpolatedPosition);
 
+            // TODO: better method for projected shadows, less hacks
+            //mesh.quaternion.copy(body.interpolatedQuaternion);
             var stripeMesh = ballStripeMeshes[i];
             if (stripeMesh !== undefined) {
                 stripeMesh.quaternion.copy(body.interpolatedQuaternion);
@@ -159,9 +161,9 @@ POOLVR.setup = function () {
     floorMesh.body.addEventListener(CANNON.Body.COLLIDE_EVENT_NAME, function (evt) {
 
         var body = evt.body;
-        
+
         if (body.ballNum === 0) {
-        
+
             POOLVR.textGeomLogger.log("SCRATCH.");
             POOLVR.synthSpeaker.speak("Scratch.");
             body.position.copy(POOLVR.initialPositions[0]);
@@ -169,11 +171,11 @@ POOLVR.setup = function () {
             body.angularVelocity.set(0, 0, 0);
 
         } else {
-        
+
             body.bounces++;
             if (body.bounces === 1) {
                 // POOLVR.textGeomLogger.log(body.mesh.name + " HIT THE FLOOR!");
-                playPocketedSound();
+                POOLVR.playPocketedSound();
                 POOLVR.onTable[body.ballNum] = false;
                 POOLVR.nextBall = POOLVR.onTable.indexOf(true);
                 if (POOLVR.nextBall === -1) {
@@ -191,20 +193,26 @@ POOLVR.setup = function () {
 
     });
 
-    // scene.traverse(function (node) {
-    //     if (node instanceof THREE.Mesh && node.name.startsWith('ball ')) {
-    //         var body = node.body;
-    //         var mesh = node;
-    //         body.addEventListener(CANNON.Body.COLLIDE_EVENT_NAME, function(evt) {
-    //             var body = evt.body;
-    //             var contact = evt.contact;
-    //             // ball-ball collision:
-    //             if (contact.bi === body && contact.bi.material === contact.bj.material) {
-    //                 var impactVelocity = contact.getImpactVelocityAlongNormal();
-    //                 playCollisionSound(impactVelocity);
-    //             }
-    //         });
+    world.addEventListener('beginContact', function (evt) {
+        var bodyA = evt.bodyA;
+        var bodyB = evt.bodyB;
+        if (bodyA.material === bodyB.material) {
+            // ball-ball collision
+            var impactVelocity = 1; // TODO
+            POOLVR.playCollisionSound(impactVelocity);
+        }
+    });
+
+    //     var body = evt.body;
+    //     var contact = evt.contact;
+    //     if (contact.bi === body && contact.bi.material === contact.bj.material) {
+    //         var impactVelocity = contact.getImpactVelocityAlongNormal();
+    //         POOLVR.playCollisionSound(impactVelocity);
     //     }
-    // });
+    // }
+    // for (var i = 0; i < POOLVR.ballBodies.length; i++) {
+    //     var body = POOLVR.ballBodies[i];
+    //     body.addEventListener(CANNON.Body.COLLIDE_EVENT_NAME, ballCollideCallback);
+    // }
 
 };
