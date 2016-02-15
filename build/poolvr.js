@@ -1634,23 +1634,49 @@ POOLVR.animate = function () {
         moveToolRoot        = POOLVR.moveToolRoot,
         moveAvatar          = POOLVR.moveAvatar,
         updateBallsPostStep = POOLVR.updateBallsPostStep;
-    var rS = POOLVR.rS;
+
+    /* jshint ignore:start */
+    var glS = new glStats();
+    var tS = new threeStats( POOLVR.app.renderer );
+    var rS = new rStats({
+        CSSPath: "lib/rstats/",
+        values: {
+            frame: { caption: 'Total frame time (ms)' },
+            calls: { caption: 'Calls (three.js)' },
+            raf: { caption: 'Time since last rAF (ms)' },
+            // rstats: { caption: 'rStats update (ms)' }, // no worky?
+            updatetool: { caption: 'Leap frame update (ms)' },
+            updatevrcontrols: { caption: 'VRControls update (ms)' },
+            step: { caption: 'Cannon step (ms)' },
+            poststep: { caption: 'Cannon post-step (ms)' },
+            updatekeyboardgamepad: { caption: 'Move avatar / Leap (ms)' }
+        },
+        fractions: [
+            { base: 'frame', steps: [ 'updatetool', 'updatevrcontrols', 'render', 'step', 'poststep', 'updatekeyboardgamepad' ] }
+        ],
+        plugins: [tS, glS]
+    });
+    /* jshint ignore:end */
+
     var lt = 0;
 
     function animate(t) {
         rS('frame').start();
-        rS('raF').tick();
-        rS('FPS').frame();
+        glS.start();
+        rS('raf').tick();
+        rS('fps').frame();
 
         var dt = (t - lt) * 0.001;
 
-        rS('updateTool').start();
+        rS('updatetool').start();
         updateTool();
-        rS('updateTool').end();
+        rS('updatetool').end();
 
+        rS('updatevrcontrols').start();
         if (app.vrControls.enabled) {
             app.vrControls.update();
         }
+        rS('updatevrcontrols').end();
 
         rS('render').start();
         app.vrManager.render(app.scene, app.camera, t);
@@ -1664,14 +1690,18 @@ POOLVR.animate = function () {
         world.step(1/60, dt, 5);
         rS('step').end();
 
+        rS('poststep').start();
         updateToolPostStep();
         updateBallsPostStep();
+        rS('poststep').end();
 
+        rS('updatekeyboardgamepad').start();
         keyboard.update(dt);
         gamepad.update(dt);
 
         moveAvatar(keyboard, gamepad, dt);
         moveToolRoot(keyboard, gamepad, dt);
+        rS('updatekeyboardgamepad').end();
 
         lt = t;
 
@@ -1689,8 +1719,6 @@ function onLoad() {
 
     POOLVR.loadConfig();
     console.log("POOLVR.config =\n" + JSON.stringify(POOLVR.config, undefined, 2));
-
-    POOLVR.rS = new rStats({CSSPath: "lib/rstats/"}); // jshint ignore:line
 
     var avatar = POOLVR.avatar;
     avatar.position.fromArray(POOLVR.config.initialPosition);
