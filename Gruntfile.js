@@ -10,7 +10,6 @@ var srcFiles = [
       "src/WebVRSound.js",
       "src/SynthSpeaker.js",
       "src/config.js",
-      "src/sound.js",
       "src/setup.js",
       "src/app.js"
     ],
