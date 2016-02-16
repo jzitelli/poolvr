@@ -8,7 +8,7 @@ POOLVR.selectNextBall = function (inc) {
             break;
         }
     }
-    if (POOLVR.nextBall != next) {
+    if (POOLVR.nextBall !== next) {
         POOLVR.nextBall = next;
         POOLVR.textGeomLogger.log("BALL " + POOLVR.nextBall + " SELECTED");
     }
@@ -43,7 +43,10 @@ POOLVR.autoPosition = ( function () {
     var UP = new THREE.Vector3(0, 1, 0);
     var avatar = POOLVR.avatar;
     return function () {
-        POOLVR.textGeomLogger.log("YOU ARE BEING AUTO-POSITIONED.  NEXT BALL: " + POOLVR.nextBall);
+        // POOLVR.textGeomLogger.log("YOU ARE BEING AUTO-POSITIONED.  NEXT BALL: " + POOLVR.nextBall);
+        if (POOLVR.synthSpeaker.speaking === false) {
+            POOLVR.synthSpeaker.speak("You are being auto-positioned.");
+        }
 
         avatar.heading = Math.atan2(
             -(POOLVR.ballMeshes[POOLVR.nextBall].position.x - POOLVR.ballMeshes[0].position.x),

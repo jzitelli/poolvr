@@ -36,7 +36,7 @@ POOLVR.tipBallContactMaterial = new CANNON.ContactMaterial(POOLVR.tipMaterial, P
 POOLVR.ballMeshes = [];
 POOLVR.ballBodies = [];
 POOLVR.initialPositions = [];
-POOLVR.onTable = [false,
+POOLVR.onTable = [true,
                   true, true, true, true, true, true, true,
                   true,
                   true, true, true, true, true, true, true];
@@ -215,8 +215,8 @@ POOLVR.setup = function () {
                 // POOLVR.textGeomLogger.log(body.mesh.name + " HIT THE FLOOR!");
                 POOLVR.playPocketedSound();
                 POOLVR.onTable[body.ballNum] = false;
-                POOLVR.nextBall = POOLVR.onTable.indexOf(true);
-                if (POOLVR.nextBall === -1) {
+                POOLVR.nextBall = POOLVR.onTable.slice(1).indexOf(true) + 1;
+                if (POOLVR.nextBall === 0) {
                     POOLVR.synthSpeaker.speak("You cleared the table.  Well done.");
                     POOLVR.textGeomLogger.log("YOU CLEARED THE TABLE.  WELL DONE.");
                     POOLVR.resetTable();
