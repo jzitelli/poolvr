@@ -34,11 +34,15 @@ POOLVR.resetTable = function () {
 };
 
 
+POOLVR.avatar = new THREE.Object3D();
+
+
 POOLVR.autoPosition = ( function () {
     "use strict";
     var nextVector = new THREE.Vector3();
     var UP = new THREE.Vector3(0, 1, 0);
-    function autoPosition(avatar) {
+    var avatar = POOLVR.avatar;
+    return function () {
         POOLVR.textGeomLogger.log("YOU ARE BEING AUTO-POSITIONED.  NEXT BALL: " + POOLVR.nextBall);
 
         avatar.heading = Math.atan2(
@@ -53,12 +57,8 @@ POOLVR.autoPosition = ( function () {
         nextVector.sub(POOLVR.ballMeshes[0].position);
         nextVector.y = 0;
         avatar.position.sub(nextVector);
-    }
-    return autoPosition;
+    };
 } )();
-
-
-POOLVR.avatar = new THREE.Object3D();
 
 
 POOLVR.moveAvatar = ( function () {
@@ -132,28 +132,38 @@ POOLVR.animate = function () {
         moveAvatar          = POOLVR.moveAvatar,
         updateBallsPostStep = POOLVR.updateBallsPostStep;
 
-    /* jshint ignore:start */
-    var glS = new glStats();
-    var tS = new threeStats( POOLVR.app.renderer );
-    var rS = new rStats({
-        CSSPath: "lib/rstats/",
-        values: {
-            frame: { caption: 'Total frame time (ms)' },
-            calls: { caption: 'Calls (three.js)' },
-            raf: { caption: 'Time since last rAF (ms)' },
-            // rstats: { caption: 'rStats update (ms)' }, // no worky?
-            updatetool: { caption: 'Leap frame update (ms)' },
-            updatevrcontrols: { caption: 'VRControls update (ms)' },
-            step: { caption: 'Cannon step (ms)' },
-            poststep: { caption: 'Cannon post-step (ms)' },
-            updatekeyboardgamepad: { caption: 'Move avatar / Leap (ms)' }
-        },
-        fractions: [
-            { base: 'frame', steps: [ 'updatetool', 'updatevrcontrols', 'render', 'step', 'poststep', 'updatekeyboardgamepad' ] }
-        ],
-        plugins: [tS, glS]
-    });
-    /* jshint ignore:end */
+    var glS, rS;
+    if (URL_PARAMS.rstats) {
+        /* jshint ignore:start */
+        var tS = new threeStats( POOLVR.app.renderer );
+        glS = new glStats();
+        rS  = new rStats({
+            CSSPath: "lib/rstats/",
+            values: {
+                frame: { caption: 'Total frame time (ms)' },
+                calls: { caption: 'Calls (three.js)' },
+                raf: { caption: 'Time since last rAF (ms)' },
+                // rstats: { caption: 'rStats update (ms)' }, // no worky?
+                updatetool: { caption: 'Leap frame update (ms)' },
+                updatevrcontrols: { caption: 'VRControls update (ms)' },
+                step: { caption: 'Cannon step (ms)' },
+                poststep: { caption: 'Cannon post-step (ms)' },
+                updatekeyboardgamepad: { caption: 'Move avatar / Leap (ms)' }
+            },
+            fractions: [
+                { base: 'frame', steps: [ 'updatetool', 'updatevrcontrols', 'render', 'step', 'poststep', 'updatekeyboardgamepad' ] }
+            ],
+            plugins: [tS, glS]
+        });
+        /* jshint ignore:end */
+    } else {
+        glS = {start: function () {}};
+        rS  = function (id) { return {start:  function () {},
+                                      end:    function () {},
+                                      tick:   function () {},
+                                      frame:  function () {},
+                                      update: function () {}}; };
+    }
 
     var lt = 0;
 
