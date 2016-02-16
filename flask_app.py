@@ -1,4 +1,5 @@
-"""Flask application for serving poolvr.
+"""
+Flask application for serving poolvr.
 """
 import os
 import logging
@@ -64,15 +65,6 @@ POOLVR = {
 
 
 
-@app.context_processor
-def js_suffix():
-    if app.debug:
-        return {'js_suffix': '.js'}
-    else:
-        return {'js_suffix': '.min.js'}
-
-
-
 def get_poolvr_config():
     """
     Constructs poolvr config dict based on request url parameters.
@@ -111,8 +103,7 @@ var POOLVR = %s;
 var THREEPY_SCENE = %s;
 </script>""" % (json.dumps(WebVRConfig, indent=2),
                 json.dumps(POOLVR, indent=2),
-                json.dumps(pool_table.pool_hall(**config).export(),
-                           indent=(2 if app.debug else None)))))
+                json.dumps(pool_table.pool_hall(**config).export()))))
 
 
 
