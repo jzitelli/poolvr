@@ -1,6 +1,6 @@
 /* ############################################################################
 
-  poolvr v0.1.0 2016-02-15
+  poolvr v0.1.0 2016-02-16
 
   https://jzitelli.github.io/poolvr
   git+https://github.com/jzitelli/poolvr.git
@@ -1140,7 +1140,7 @@ POOLVR.commands = {
   toggleWireframe:  function () { POOLVR.app.toggleWireframe(); },
   resetVRSensor:    function () { POOLVR.app.resetVRSensor(); },
   resetTable:       function () { POOLVR.resetTable(); },
-  autoPosition:     function () { POOLVR.autoPosition(POOLVR.avatar); },
+  autoPosition:     function () { POOLVR.autoPosition(); },
   //toggleMenu:       function () { POOLVR.toggleMenu(); },
   selectNextBall:   function () { POOLVR.selectNextBall(); },
   selectPrevBall:   function () { POOLVR.selectNextBall(-1); },
@@ -1198,15 +1198,15 @@ POOLVR.gamepadCommands = {
     pitch:    {axes: [ Primrose.Input.Gamepad.LSY], deadzone: DEADZONE,
                integrate: true, max: 0.5 * Math.PI, min: -0.5 * Math.PI},
     toggleFloatMode: {buttons: [Primrose.Input.Gamepad.XBOX_BUTTONS.leftStick],
-                      commandDown: function () { POOLVR.avatar.floatMode=true; },
-                      commandUp: function () { POOLVR.avatar.floatMode=false; }},
+                      commandDown: function () { POOLVR.avatar.floatMode = true; },
+                      commandUp:   function () { POOLVR.avatar.floatMode = false; }},
 
     toolStrafe: {axes: [ Primrose.Input.Gamepad.RSX], deadzone: DEADZONE},
     toolDrive:  {axes: [ Primrose.Input.Gamepad.RSY], deadzone: DEADZONE},
     toolFloat:  {axes: [-Primrose.Input.Gamepad.RSY], deadzone: DEADZONE},
     toggleToolFloatMode: {buttons: [Primrose.Input.Gamepad.XBOX_BUTTONS.rightStick],
-                          commandDown: function () { POOLVR.avatar.toolMode=true; },
-                          commandUp: function () { POOLVR.avatar.toolMode=false; }},
+                          commandDown: function () { POOLVR.avatar.toolMode = true; },
+                          commandUp:   function () { POOLVR.avatar.toolMode = false; }},
 
     resetVRSensor: {buttons: [Primrose.Input.Gamepad.XBOX_BUTTONS.back],
                     commandDown: POOLVR.commands.resetVRSensor, dt: 0.25},
@@ -1243,24 +1243,23 @@ POOLVR.config.toolOptions.tipShape     = URL_PARAMS.tipShape     || POOLVR.confi
 POOLVR.config.toolOptions.host         = URL_PARAMS.host;
 POOLVR.config.toolOptions.port         = URL_PARAMS.port;
 
+POOLVR.config.useBasicMaterials = URL_PARAMS.useBasicMaterials !== undefined ? URL_PARAMS.useBasicMaterials : POOLVR.config.useBasicMaterials;
 
-POOLVR.config.useShadowMap = URL_PARAMS.useShadowMap || POOLVR.config.useShadowMap;
-
-if (POOLVR.config.useShadowMap) {
-
-    POOLVR.config.useBasicMaterials = false;
-
+if (POOLVR.config.useBasicMaterials) {
+    POOLVR.config.usePointLight = false;
+    POOLVR.config.useShadowMap  = false;
 } else {
-
-    POOLVR.config.useBasicMaterials = URL_PARAMS.useBasicMaterials || POOLVR.config.useBasicMaterials;
-
+    POOLVR.config.usePointLight = URL_PARAMS.usePointLight !== undefined ? URL_PARAMS.usePointLight : POOLVR.config.usePointLight;
+    POOLVR.config.useShadowMap  = URL_PARAMS.useShadowMap  !== undefined ? URL_PARAMS.useShadowMap  : POOLVR.config.useShadowMap;
 }
 
-POOLVR.config.synthSpeakerVolume = URL_PARAMS.synthSpeakerVolume || POOLVR.config.synthSpeakerVolume || 0.25;
+POOLVR.config.useTextGeomLogger = URL_PARAMS.useTextGeomLogger !== undefined ? URL_PARAMS.useTextGeomLogger : POOLVR.config.useTextGeomLogger;
 
-POOLVR.config.initialPosition = POOLVR.config.initialPosition || [0, 1, 1.86];
+POOLVR.config.synthSpeakerVolume = URL_PARAMS.synthSpeakerVolume || POOLVR.config.synthSpeakerVolume;
 
-POOLVR.profile = URL_PARAMS.profile || 'default';
+POOLVR.config.initialPosition = POOLVR.config.initialPosition;
+
+POOLVR.profile = URL_PARAMS.profile || POOLVR.profile || 'default';
 
 
 POOLVR.saveConfig = function () {
@@ -1572,11 +1571,15 @@ POOLVR.resetTable = function () {
 };
 
 
+POOLVR.avatar = new THREE.Object3D();
+
+
 POOLVR.autoPosition = ( function () {
     "use strict";
     var nextVector = new THREE.Vector3();
     var UP = new THREE.Vector3(0, 1, 0);
-    function autoPosition(avatar) {
+    var avatar = POOLVR.avatar;
+    return function () {
         POOLVR.textGeomLogger.log("YOU ARE BEING AUTO-POSITIONED.  NEXT BALL: " + POOLVR.nextBall);
 
         avatar.heading = Math.atan2(
@@ -1591,12 +1594,8 @@ POOLVR.autoPosition = ( function () {
         nextVector.sub(POOLVR.ballMeshes[0].position);
         nextVector.y = 0;
         avatar.position.sub(nextVector);
-    }
-    return autoPosition;
+    };
 } )();
-
-
-POOLVR.avatar = new THREE.Object3D();
 
 
 POOLVR.moveAvatar = ( function () {
@@ -1670,28 +1669,38 @@ POOLVR.animate = function () {
         moveAvatar          = POOLVR.moveAvatar,
         updateBallsPostStep = POOLVR.updateBallsPostStep;
 
-    /* jshint ignore:start */
-    var glS = new glStats();
-    var tS = new threeStats( POOLVR.app.renderer );
-    var rS = new rStats({
-        CSSPath: "lib/rstats/",
-        values: {
-            frame: { caption: 'Total frame time (ms)' },
-            calls: { caption: 'Calls (three.js)' },
-            raf: { caption: 'Time since last rAF (ms)' },
-            // rstats: { caption: 'rStats update (ms)' }, // no worky?
-            updatetool: { caption: 'Leap frame update (ms)' },
-            updatevrcontrols: { caption: 'VRControls update (ms)' },
-            step: { caption: 'Cannon step (ms)' },
-            poststep: { caption: 'Cannon post-step (ms)' },
-            updatekeyboardgamepad: { caption: 'Move avatar / Leap (ms)' }
-        },
-        fractions: [
-            { base: 'frame', steps: [ 'updatetool', 'updatevrcontrols', 'render', 'step', 'poststep', 'updatekeyboardgamepad' ] }
-        ],
-        plugins: [tS, glS]
-    });
-    /* jshint ignore:end */
+    var glS, rS;
+    if (URL_PARAMS.rstats) {
+        /* jshint ignore:start */
+        var tS = new threeStats( POOLVR.app.renderer );
+        glS = new glStats();
+        rS  = new rStats({
+            CSSPath: "lib/rstats/",
+            values: {
+                frame: { caption: 'Total frame time (ms)' },
+                calls: { caption: 'Calls (three.js)' },
+                raf: { caption: 'Time since last rAF (ms)' },
+                // rstats: { caption: 'rStats update (ms)' }, // no worky?
+                updatetool: { caption: 'Leap frame update (ms)' },
+                updatevrcontrols: { caption: 'VRControls update (ms)' },
+                step: { caption: 'Cannon step (ms)' },
+                poststep: { caption: 'Cannon post-step (ms)' },
+                updatekeyboardgamepad: { caption: 'Move avatar / Leap (ms)' }
+            },
+            fractions: [
+                { base: 'frame', steps: [ 'updatetool', 'updatevrcontrols', 'render', 'step', 'poststep', 'updatekeyboardgamepad' ] }
+            ],
+            plugins: [tS, glS]
+        });
+        /* jshint ignore:end */
+    } else {
+        glS = {start: function () {}};
+        rS  = function (id) { return {start:  function () {},
+                                      end:    function () {},
+                                      tick:   function () {},
+                                      frame:  function () {},
+                                      update: function () {}}; };
+    }
 
     var lt = 0;
 
