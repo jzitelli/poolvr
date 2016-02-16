@@ -1326,7 +1326,7 @@ POOLVR.tipBallContactMaterial = new CANNON.ContactMaterial(POOLVR.tipMaterial, P
 POOLVR.ballMeshes = [];
 POOLVR.ballBodies = [];
 POOLVR.initialPositions = [];
-POOLVR.onTable = [false,
+POOLVR.onTable = [true,
                   true, true, true, true, true, true, true,
                   true,
                   true, true, true, true, true, true, true];
@@ -1505,8 +1505,8 @@ POOLVR.setup = function () {
                 // POOLVR.textGeomLogger.log(body.mesh.name + " HIT THE FLOOR!");
                 POOLVR.playPocketedSound();
                 POOLVR.onTable[body.ballNum] = false;
-                POOLVR.nextBall = POOLVR.onTable.indexOf(true);
-                if (POOLVR.nextBall === -1) {
+                POOLVR.nextBall = POOLVR.onTable.slice(1).indexOf(true) + 1;
+                if (POOLVR.nextBall === 0) {
                     POOLVR.synthSpeaker.speak("You cleared the table.  Well done.");
                     POOLVR.textGeomLogger.log("YOU CLEARED THE TABLE.  WELL DONE.");
                     POOLVR.resetTable();
@@ -1545,7 +1545,7 @@ POOLVR.selectNextBall = function (inc) {
             break;
         }
     }
-    if (POOLVR.nextBall != next) {
+    if (POOLVR.nextBall !== next) {
         POOLVR.nextBall = next;
         POOLVR.textGeomLogger.log("BALL " + POOLVR.nextBall + " SELECTED");
     }
@@ -1580,7 +1580,10 @@ POOLVR.autoPosition = ( function () {
     var UP = new THREE.Vector3(0, 1, 0);
     var avatar = POOLVR.avatar;
     return function () {
-        POOLVR.textGeomLogger.log("YOU ARE BEING AUTO-POSITIONED.  NEXT BALL: " + POOLVR.nextBall);
+        // POOLVR.textGeomLogger.log("YOU ARE BEING AUTO-POSITIONED.  NEXT BALL: " + POOLVR.nextBall);
+        if (POOLVR.synthSpeaker.speaking === false) {
+            POOLVR.synthSpeaker.speak("You are being auto-positioned.");
+        }
 
         avatar.heading = Math.atan2(
             -(POOLVR.ballMeshes[POOLVR.nextBall].position.x - POOLVR.ballMeshes[0].position.x),
