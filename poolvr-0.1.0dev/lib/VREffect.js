@@ -175,32 +175,38 @@ THREE.VREffect = function ( renderer, onError ) {
 
 			}
 
-			var renderRectL = vrHMD.getEyeParameters( 'left' ).renderRect;
-			var renderRectR = vrHMD.getEyeParameters( 'right' ).renderRect;
+			// not relying on WebVR renderRect atm, I'm having issues w/ Rift DK2:
+
+			// var renderRectL = vrHMD.getEyeParameters( 'left' ).renderRect;
+			// var renderRectR = vrHMD.getEyeParameters( 'right' ).renderRect;
+
+			// if ( renderRectL === undefined ) {
+
+			// 	renderRectL = { x: 0, y: 0, width: width, height: height };
+
+			// }
+
+			// if ( renderRectR === undefined ) {
+
+			// 	renderRectR = { x: width, y: 0, width: width, height: height };
+
+			// }
 
 			// render left eye
 
-			if ( renderRectL === undefined ) {
-
-				renderRectL = { x: 0, y: 0, width: width, height: height };
-
-			}
+			var renderRectL = { x: 0, y: 0, width: width, height: height };
 
 			renderer.setViewport( renderRectL.x, renderRectL.y, renderRectL.width, renderRectL.height );
-			renderer.setScissor( renderRectL.x, renderRectL.y, renderRectL.width, renderRectL.height );
+			renderer.setScissor(  renderRectL.x, renderRectL.y, renderRectL.width, renderRectL.height );
 			cameraL.matrixWorld.multiplyMatrices( camera.matrixWorld, stereoTransformL );
 			renderer.render( scene, cameraL );
 
 			// render right eye
 
-			if ( renderRectR === undefined ) {
-
-				renderRectR = { x: width, y: 0, width: width, height: height };
-
-			}
+			var renderRectR = { x: width, y: 0, width: width, height: height };
 
 			renderer.setViewport( renderRectR.x, renderRectR.y, renderRectR.width, renderRectR.height );
-			renderer.setScissor( renderRectR.x, renderRectR.y, renderRectR.width, renderRectR.height );
+			renderer.setScissor(  renderRectR.x, renderRectR.y, renderRectR.width, renderRectR.height );
 			cameraR.matrixWorld.multiplyMatrices( camera.matrixWorld, stereoTransformR );
 			renderer.render( scene, cameraR );
 
