@@ -1338,7 +1338,7 @@ POOLVR.playCollisionSound = (function () {
     var ballBallBuffer;
     var request = new XMLHttpRequest();
     request.responseType = 'arraybuffer';
-    request.open('GET', '/sounds/ballBall.ogg');
+    request.open('GET', 'sounds/ballBall.ogg');
     request.onload = function() {
         WebVRSound.audioContext.decodeAudioData(this.response, function(buffer) {
             ballBallBuffer = buffer;
@@ -1357,7 +1357,7 @@ POOLVR.playPocketedSound = (function () {
     var ballPocketedBuffer;
     var request = new XMLHttpRequest();
     request.responseType = 'arraybuffer';
-    request.open('GET', '/sounds/ballPocketed.ogg');
+    request.open('GET', 'sounds/ballPocketed.ogg');
     request.onload = function() {
         WebVRSound.audioContext.decodeAudioData(this.response, function(buffer) {
             ballPocketedBuffer = buffer;
