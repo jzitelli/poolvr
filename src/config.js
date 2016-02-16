@@ -96,6 +96,13 @@ POOLVR.gamepad.addEventListener("gamepadconnected", function(id) {
 }.bind(POOLVR.gamepad), false);
 
 
+POOLVR.config.useTextGeomLogger = URL_PARAMS.useTextGeomLogger !== undefined ? URL_PARAMS.useTextGeomLogger : POOLVR.config.useTextGeomLogger;
+
+POOLVR.config.synthSpeakerVolume = URL_PARAMS.synthSpeakerVolume || POOLVR.config.synthSpeakerVolume;
+
+POOLVR.config.initialPosition = POOLVR.config.initialPosition;
+
+// Leap Motion config:
 POOLVR.config.toolOptions = POOLVR.config.toolOptions || {};
 POOLVR.config.toolOptions.toolLength   = URL_PARAMS.toolLength   || POOLVR.config.toolOptions.toolLength;
 POOLVR.config.toolOptions.toolRadius   = URL_PARAMS.toolRadius   || POOLVR.config.toolOptions.toolRadius;
@@ -106,6 +113,7 @@ POOLVR.config.toolOptions.tipShape     = URL_PARAMS.tipShape     || POOLVR.confi
 POOLVR.config.toolOptions.host         = URL_PARAMS.host;
 POOLVR.config.toolOptions.port         = URL_PARAMS.port;
 
+// application graphics config:
 POOLVR.config.useBasicMaterials = URL_PARAMS.useBasicMaterials !== undefined ? URL_PARAMS.useBasicMaterials : POOLVR.config.useBasicMaterials;
 
 if (POOLVR.config.useBasicMaterials) {
@@ -116,11 +124,11 @@ if (POOLVR.config.useBasicMaterials) {
     POOLVR.config.useShadowMap  = URL_PARAMS.useShadowMap  !== undefined ? URL_PARAMS.useShadowMap  : POOLVR.config.useShadowMap;
 }
 
-POOLVR.config.useTextGeomLogger = URL_PARAMS.useTextGeomLogger !== undefined ? URL_PARAMS.useTextGeomLogger : POOLVR.config.useTextGeomLogger;
+// THREE.WebGLRenderer config:
+POOLVR.config.rendererOptions = {
+    antialias: URL_PARAMS.antialias !== undefined ? URL_PARAMS.antialias : (isMobile() === false)
+};
 
-POOLVR.config.synthSpeakerVolume = URL_PARAMS.synthSpeakerVolume || POOLVR.config.synthSpeakerVolume;
-
-POOLVR.config.initialPosition = POOLVR.config.initialPosition;
 
 POOLVR.profile = URL_PARAMS.profile || POOLVR.profile || 'default';
 

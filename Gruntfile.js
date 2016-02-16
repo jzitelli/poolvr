@@ -6,7 +6,7 @@ var srcFiles = [
   "node_modules/three.py/js/CANNONize.js",
   "node_modules/three.py/js/WebVRApplication.js",
   "node_modules/three.py/js/TextGeomUtils.js",
-  "node_modules/three.py/js/utils.js",
+  "src/utils.js",
   "src/LeapInput.js",
   "src/WebVRSound.js",
   "src/SynthSpeaker.js",
