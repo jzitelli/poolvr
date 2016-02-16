@@ -15,8 +15,7 @@
     "fonts/",
     "images/",
     "sounds/",
-    "lib/Primrose/",
-    "lib/rstats/",
+    "lib/",
     "src/",
     "Gruntfile.js",
     "flask_app.py",
@@ -42,7 +41,7 @@
     "WebGL"
   ],
   "dependencies": {
-    "leapjs": "^0.6.4",
+    "leapjs": "0.6.4",
     "cannon": "git://github.com/jzitelli/cannon.js.git",
     "three": "git://github.com/jzitelli/three.js.git#dev",
     "three.py": "git://github.com/jzitelli/three.py.git#dev",
