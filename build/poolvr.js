@@ -1,10 +1,35 @@
-/*
+/* ############################################################################
+
   poolvr v0.1.0 2016-02-15
-  
-  Copyright (C) 2016 Jeffrey Zitelli (https://github.com/jzitelli)
+
   https://jzitelli.github.io/poolvr
   git+https://github.com/jzitelli/poolvr.git
-*/
+
+The MIT License (MIT)
+
+Copyright (c) 2015 Jeffrey Zitelli
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+############################################################################ */
+
+// #### node_modules/three.py/js/three.py.js
 THREE.py = ( function () {
     "use strict";
 
@@ -173,6 +198,7 @@ THREE.py = ( function () {
     };
 } )();
 ;
+// #### node_modules/three.py/js/CANNONize.js
 THREE.py.CANNONize = function (obj, world) {
     "use strict";
     obj.updateMatrixWorld();
@@ -319,6 +345,7 @@ THREE.py.CANNONize = function (obj, world) {
     }
 };
 ;
+// #### node_modules/three.py/js/WebVRApplication.js
 function WebVRApplication(scene, config) {
     "use strict";
     this.scene = scene;
@@ -410,6 +437,7 @@ function WebVRApplication(scene, config) {
 
 }
 ;
+// #### node_modules/three.py/js/TextGeomUtils.js
 var TextGeomUtils = ( function () {
     "use strict";
     var alphas  = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -510,6 +538,7 @@ var TextGeomUtils = ( function () {
 
 } )();
 ;
+// #### node_modules/three.py/js/utils.js
 var URL_PARAMS = (function () {
     "use strict";
     var params = {};
@@ -563,6 +592,7 @@ function makeObjectArray(obj, keyKey) {
     });
 }
 ;
+// #### src/LeapInput.js
 function addTool(parent, world, options) {
     /*************************************
 
@@ -990,6 +1020,7 @@ function addTool(parent, world, options) {
     };
 }
 ;
+// #### src/WebVRSound.js
 var WebVRSound = (function (numGainNodes) {
     "use strict";
     numGainNodes = numGainNodes || 4;
@@ -1028,6 +1059,7 @@ var WebVRSound = (function (numGainNodes) {
 
 })();
 ;
+// #### src/SynthSpeaker.js
 var SynthSpeaker = ( function() {
     "use strict";
     function SynthSpeaker(options) {
@@ -1102,6 +1134,7 @@ var SynthSpeaker = ( function() {
     }
 } )();
 ;
+// #### src/config.js
 POOLVR.commands = {
   toggleVRControls: function () { POOLVR.app.toggleVRControls(); },
   toggleWireframe:  function () { POOLVR.app.toggleWireframe(); },
@@ -1255,6 +1288,7 @@ POOLVR.loadConfig = function () {
     }
 };
 ;
+// #### src/setup.js
 // TODO: load from JSON config
 POOLVR.ballMaterial            = new CANNON.Material();
 POOLVR.ballBallContactMaterial = new CANNON.ContactMaterial(POOLVR.ballMaterial, POOLVR.ballMaterial, {
@@ -1501,6 +1535,7 @@ POOLVR.setup = function () {
 
 };
 ;
+// #### src/app.js
 POOLVR.selectNextBall = function (inc) {
     "use strict";
     inc = inc || 1;
@@ -1793,4 +1828,3 @@ function onLoad() {
     } );
 
 }
-// ################## poolvr VERSION = "v0.1.0";
