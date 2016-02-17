@@ -123,7 +123,7 @@ POOLVR.startTutorial = function () {
 };
 
 
-POOLVR.animate = function () {
+POOLVR.startAnimateLoop = function () {
     "use strict";
     var keyboard = POOLVR.keyboard,
         gamepad  = POOLVR.gamepad,
@@ -219,7 +219,7 @@ POOLVR.animate = function () {
         rS().update();
     }
 
-    return animate;
+    requestAnimationFrame(animate);
 
 };
 
@@ -296,7 +296,7 @@ function onLoad() {
 
         POOLVR.setup();
 
-        requestAnimationFrame( POOLVR.animate() );
+        POOLVR.startAnimateLoop();
 
         POOLVR.startTutorial();
 
