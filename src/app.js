@@ -226,8 +226,8 @@ POOLVR.startAnimateLoop = function () {
 
 function onLoad() {
     "use strict";
-
-    POOLVR.loadConfig();
+    POOLVR.config = POOLVR.loadConfig(POOLVR.profile) || POOLVR.config;
+    POOLVR.parseURIConfig();
     console.log("POOLVR.config =\n" + JSON.stringify(POOLVR.config, undefined, 2));
 
     var avatar = POOLVR.avatar;
