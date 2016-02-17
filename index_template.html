@@ -24,17 +24,14 @@
       }
     </style>
 
-<!-- three.js scene definition is embedded here -->
 {{ json_config }}
-<!-- end three.js scene definition -->
 
   </head>
 
-
   <body onload="onLoad()">
 
+{% if config['DEBUG'] %}
     <script src="node_modules/three/build/three.js"></script>
-
     <script src="node_modules/three/examples/js/effects/VREffect.js"></script>
     <script src="node_modules/three/examples/js/controls/VRControls.js"></script>
 
@@ -50,8 +47,6 @@
     <script src="lib/rstats/rStats.js"></script>
     <script src="lib/rstats/rStats.extras.js"></script>
 
-    <!-- <script src="node_modules/shader-particle-engine/build/SPE.js"></script> -->
-
     <script src="node_modules/three.py/js/three.py.js"></script>
     <script src="node_modules/three.py/js/CANNONize.js"></script>
     <script src="node_modules/three.py/js/WebVRApplication.js"></script>
@@ -66,6 +61,26 @@
     <script src="src/setup.js"></script>
 
     <script src="src/app.js"></script>
+{% else %}
+    <script src="lib/three.min.js"></script>
+    <script src="lib/VREffect.js"></script>
+    <script src="lib/VRControls.js"></script>
+
+    <script src="lib/webvr-polyfill.js"></script>
+    <script src="lib/webvr-manager.js"></script>
+
+    <script src="lib/cannon.min.js"></script>
+
+    <script src="lib/leap-0.6.4.min.js"></script>
+
+    <script src="lib/Primrose/Primrose.js"></script>
+
+    <script src="lib/rstats/rStats.js"></script>
+    <script src="lib/rstats/rStats.extras.js"></script>
+
+    <script src="build/poolvr.min.js"></script>
+{% endif %}
 
   </body>
+
 </html>
