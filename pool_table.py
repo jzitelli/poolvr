@@ -48,14 +48,15 @@ def pool_table(L_table=2.3368, W_table=None, H_table=0.74295,
 
     spotMaterial = MeshLambertMaterial(name="spotMaterial", color=0xaaaaaa)
     surfaceMaterial = MeshPhongMaterial(name="surfaceMaterial", color=0x00aa00, shininess=5, shading=FlatShading)
-    cushionMaterial = MeshPhongMaterial(name="cushionMaterial", color=0x07aa16, shininess=5, shading=FlatShading)
+    cushionMaterial = MeshPhongMaterial(name="cushionMaterial", color=0x028844, shininess=5, shading=FlatShading)
     railMaterial = MeshPhongMaterial(name="railMaterial", color=0xdda400, shininess=10, shading=FlatShading)
-    
-    playableSurfaceGeom = BoxGeometry(W_playable, H_table, L_playable)
+
+    thickness = IN2METER
+    playableSurfaceGeom = BoxGeometry(W_playable, thickness, L_playable)
     playableSurfaceMesh = Mesh(name='playableSurfaceMesh',
                                geometry=playableSurfaceGeom,
                                material=surfaceMaterial,
-                               position=[0, 0.5*H_table, 0],
+                               position=[0, H_table - 0.5*thickness, 0],
                                receiveShadow=True,
                                userData={'cannonData': {'mass': 0,
                                                         'shapes': ['Box']}})
@@ -249,8 +250,7 @@ def pool_hall(useSkybox=False,
                                       segments=16)
     shadowMaterial = MeshBasicMaterial(color=0x002200)
 
-    ball_materials = [MeshPhongMaterial(name="ball %d material" % i,
-                                        color=color,
+    ball_materials = [MeshPhongMaterial(color=color,
                                         shading=SmoothShading)
                       for i, color in enumerate(ball_colors)]
 
@@ -266,7 +266,7 @@ def pool_hall(useSkybox=False,
     # z_positions = [L_table / 4] + list(z_positions)
 
     # triangle racked:
-    d = 0.05*ball_radius # separation between racked balls
+    d = 0.045*ball_radius # separation between racked balls
     side_length = 4 * (ball_diameter + d)
     x_positions = np.concatenate([np.linspace(0,                        0.5 * side_length,                         5),
                                   np.linspace(-0.5*(ball_diameter + d), 0.5 * side_length - (ball_diameter + d),   4),
