@@ -258,6 +258,9 @@ function onLoad() {
 
     THREE.py.parse(THREEPY_SCENE).then( function (scene) {
 
+        // TODO:
+        //scene.autoUpdate = false;
+
         if (!POOLVR.config.useBasicMaterials) {
             var centerSpotLight = new THREE.SpotLight(0xffffee, 1, 8, Math.PI / 2);
             centerSpotLight.position.set(0, 3, 0);
@@ -278,13 +281,11 @@ function onLoad() {
         var appConfig = combineObjects(POOLVR.config, {
             onResetVRSensor: function (lastRotation, lastPosition) {
                 var camera = POOLVR.app.camera;
-                // app.camera.updateMatrix();
                 POOLVR.avatar.heading += lastRotation - camera.rotation.y;
                 POOLVR.toolRoot.rotation.y -= (lastRotation - camera.rotation.y);
                 POOLVR.toolRoot.position.sub(lastPosition);
                 POOLVR.toolRoot.position.applyAxisAngle(UP, -lastRotation + camera.rotation.y);
                 POOLVR.toolRoot.position.add(camera.position);
-                // POOLVR.toolRoot.updateMatrix();
                 POOLVR.avatar.updateMatrixWorld();
             }
         });
