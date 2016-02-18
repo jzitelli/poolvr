@@ -10,37 +10,42 @@ function addTool(parent, world, options) {
     "use strict";
     options = options || {};
 
+    var UP = new THREE.Object3D.DefaultUp;
+
+    // coordinate transformations are performed via three.js scene graph
+    var toolRoot = new THREE.Object3D();
+    var scalar = 0.001;
+    toolRoot.scale.set(scalar, scalar, scalar);
+    parent.add(toolRoot);
+
     // parse options:
+
+    toolRoot.quaternion.setFromAxisAngle(UP, options.toolRotation || 0);
+    toolRoot.position.fromArray(options.toolOffset || [0, -0.42, -0.42]);
 
     var toolLength = options.toolLength || 0.5;
     var toolRadius = options.toolRadius || 0.013;
     // should remove, don't think this matters for cannon.js kinematic body:
     var toolMass   = options.toolMass   || 0.04;
 
-    var tipShape = options.tipShape || 'Sphere';
+    var tipShape = options.tipShape || 'Cylinder';
     var tipRadius,
         tipMinorRadius;
     if (tipShape === 'Cylinder') {
         tipRadius = options.tipRadius || toolRadius;
     } else {
         tipRadius = options.tipRadius || 0.95 * toolRadius;
-        if (tipShape === 'Ellipsoid') {
-            tipMinorRadius = options.tipMinorRadius || 0.25 * tipRadius;
-        }
+        // if (tipShape === 'Ellipsoid') {
+        //     tipMinorRadius = options.tipMinorRadius || 0.25 * tipRadius;
+        // }
     }
-
-    var toolOffset = new THREE.Vector3(0, -0.4, -toolLength - 0.2);
-    if (options.toolOffset) {
-        toolOffset.fromArray(options.toolOffset);
-    }
-    var toolRotation = options.toolRotation || 0;
 
     var toolTimeA = options.toolTimeA || 0.25;
     var toolTimeB = options.toolTimeB || toolTimeA + 1.5;
 
     var minConfidence = options.minConfidence || 0.3;
 
-    var interactionPlaneOpacity = options.interactionPlaneOpacity || (options.useBasicMaterials === false ? 0.18 : 0.25);
+    var interactionPlaneOpacity = options.interactionPlaneOpacity || 0.23;
 
     var stickColor = options.stickColor || 0xeebb99;
     var tipColor   = options.tipColor   || 0x004488;
@@ -72,45 +77,41 @@ function addTool(parent, world, options) {
 
     leapController.connect();
 
-    // coordinate transformations are performed via three.js scene graph
-    var toolRoot = new THREE.Object3D();
-    toolRoot.position.copy(toolOffset);
-    var scalar = 0.001;
-    toolRoot.scale.set(scalar, scalar, scalar);
-    var UP = new THREE.Vector3(0, 1, 0);
-    toolRoot.quaternion.setFromAxisAngle(UP, toolRotation);
-    parent.add(toolRoot);
-
     // setup three.js tool graphics:
 
     // interaction box visual guide:
     var interactionBoxMesh = new THREE.Object3D();
     toolRoot.add(interactionBoxMesh);
     var interactionPlaneMaterial = new THREE.MeshBasicMaterial({color: 0x00dd44, transparent: true, opacity: interactionPlaneOpacity});
-    var interactionPlaneGeom = new THREE.PlaneBufferGeometry(1/scalar, 1/scalar);
+    var interactionPlaneGeom = new THREE.PlaneBufferGeometry(1000, 1000);
+
     var interactionPlaneMesh = new THREE.Mesh(interactionPlaneGeom, interactionPlaneMaterial);
     interactionBoxMesh.add(interactionPlaneMesh);
+
     interactionPlaneMesh = interactionPlaneMesh.clone();
-    interactionPlaneMesh.position.z = 1/2/scalar;
+    interactionPlaneMesh.position.z = 1000 * 0.5;
     interactionBoxMesh.add(interactionPlaneMesh);
+
     interactionPlaneMesh = interactionPlaneMesh.clone();
-    interactionPlaneMesh.position.z = -1/2/scalar;
+    interactionPlaneMesh.position.z = 1000 * (-0.5);
     interactionBoxMesh.add(interactionPlaneMesh);
+
     interactionBoxMesh.visible = false;
 
     // leap motion controller:
-    var boxGeom = new THREE.BoxGeometry(0.0254*3/scalar, 0.0254*0.5/scalar, 0.0254*1.2/scalar);
+    var IN2METER = 0.0254;
+    var boxGeom = new THREE.BoxGeometry(1000*IN2METER*3, 1000*IN2METER*0.5, 1000*IN2METER*1.2);
     var leapGeom = new THREE.BufferGeometry();
     leapGeom.fromGeometry(boxGeom);
     boxGeom.dispose();
     var leapMaterial = new THREE.MeshLambertMaterial({color: 0x777777});
     var leapMesh = new THREE.Mesh(leapGeom, leapMaterial);
-    leapMesh.position.y = 0.0254*0.25/scalar;
+    leapMesh.position.y = 1000*IN2METER*0.25;
     toolRoot.add(leapMesh);
 
     // the stick:
-    var stickGeom = new THREE.CylinderGeometry(toolRadius/scalar, toolRadius/scalar, toolLength/scalar, 10, 1, false);
-    stickGeom.translate(0, -toolLength/scalar / 2, 0);
+    var stickGeom = new THREE.CylinderGeometry(1000*toolRadius, 1000*toolRadius, 1000*toolLength, 10, 1, false);
+    stickGeom.translate(0, -0.5*1000*toolLength, 0);
     var bufferGeom = new THREE.BufferGeometry();
     bufferGeom.fromGeometry(stickGeom);
     stickGeom.dispose();
@@ -126,14 +127,15 @@ function addTool(parent, world, options) {
     tipBody.material = POOLVR.tipMaterial;
     var tipMesh = null;
     if (tipShape !== 'Cylinder') {
-        var tipGeom = new THREE.SphereBufferGeometry(tipRadius/scalar, 10);
-        if (tipShape === 'Ellipsoid') {
-            tipGeom.scale(1, tipMinorRadius / tipRadius, 1);
-            // TODO: fix. verify ellipsoid shape:
-            tipBody.addShape(new CANNON.Ellipsoid(tipRadius, tipMinorRadius, tipRadius));
-        } else {
-            tipBody.addShape(new CANNON.Sphere(tipRadius));
-        }
+        // TODO: implement cannon.js ellipsoid shape
+        var tipGeom = new THREE.SphereBufferGeometry(1000*tipRadius, 10);
+        // if (tipShape === 'Ellipsoid') {
+        //     tipGeom.scale(1, tipMinorRadius / tipRadius, 1);
+        //     tipBody.addShape(new CANNON.Ellipsoid(tipRadius, tipMinorRadius, tipRadius));
+        // } else {
+        //     tipBody.addShape(new CANNON.Sphere(tipRadius));
+        // }
+        tipBody.addShape(new CANNON.Sphere(tipRadius));
         var tipMaterial = new THREE.MeshLambertMaterial({color: tipColor, transparent: true});
         tipMesh = new THREE.Mesh(tipGeom, tipMaterial);
         tipMesh.castShadow = true;
@@ -147,25 +149,6 @@ function addTool(parent, world, options) {
     }
     world.addBody(tipBody);
 
-    // create shadow mesh from projection:
-    var stickShadow = new THREE.Object3D();
-    stickShadow.scale.set(1, 0.001, 1);
-    toolRoot.add(stickShadow);
-    stickShadow.visible = false;
-    //stickMesh.add(stickShadow);
-    var stickShadowMaterial = new THREE.MeshBasicMaterial({color: 0x002200});
-    var stickShadowGeom = stickMesh.geometry.clone();
-    var stickShadowMesh = new THREE.Mesh(stickShadowGeom, stickShadowMaterial);
-    stickShadow.add(stickShadowMesh);
-    if (tipShape === 'Ellipsoid') {
-        // TODO: new projection approach for ellipsoid tip
-    } else if (tipShape === 'Sphere') {
-        tipMesh.geometry.computeBoundingSphere();
-        var tipShadowGeom = new THREE.CircleBufferGeometry(tipMesh.geometry.boundingSphere.radius).rotateX(-Math.PI / 2);
-        var tipShadowMesh = new THREE.Mesh(tipShadowGeom, stickShadowMaterial);
-        stickShadow.add(tipShadowMesh);
-    }
-
     // setup three.js hands:
 
     // hands don't necessarily correspond the left / right labels, but doesn't matter to me because they look indistinguishable
@@ -178,8 +161,8 @@ function addTool(parent, world, options) {
     var handMaterial = new THREE.MeshBasicMaterial({color: handColor, transparent: true, opacity: 0});
 
     // arms:
-    var armRadius = 0.0216/scalar,
-        armLength = 0.22/scalar;
+    var armRadius = 1000*0.0216,
+        armLength = 1000*0.22;
     var armGeom = new THREE.CylinderGeometry(armRadius, armRadius, armLength);
     bufferGeom = new THREE.BufferGeometry();
     bufferGeom.fromGeometry(armGeom);
@@ -190,7 +173,7 @@ function addTool(parent, world, options) {
     leftRoot.add(arms[0]);
     rightRoot.add(arms[1]);
     // palms:
-    var radius = 0.025/scalar;
+    var radius = 1000*0.025;
     var palmGeom = new THREE.SphereBufferGeometry(radius).scale(1, 0.5, 1);
     var palmMesh = new THREE.Mesh(palmGeom, handMaterial);
     palmMesh.castShadow = true;
@@ -198,7 +181,7 @@ function addTool(parent, world, options) {
     leftRoot.add(palms[0]);
     rightRoot.add(palms[1]);
     // fingertips:
-    radius = 0.005/scalar;
+    radius = 1000*0.005;
     var fingerTipGeom = new THREE.SphereBufferGeometry(radius);
     var fingerTipMesh = new THREE.Mesh(fingerTipGeom, handMaterial);
     var fingerTips = [[fingerTipMesh, fingerTipMesh.clone(), fingerTipMesh.clone(), fingerTipMesh.clone(), fingerTipMesh.clone()],
@@ -238,20 +221,25 @@ function addTool(parent, world, options) {
         }
     });
 
+    var worldPosition = new THREE.Vector3();
+    var worldQuaternion = new THREE.Quaternion();
+    var worldScale = new THREE.Vector3();
 
-    var H_table = POOLVR.config.H_table;
+    // inverse of toolRoot.matrixWorld
+    toolRoot.matrixWorldInverse = new THREE.Matrix4();
+
+    toolRoot.updateMatrix();
+    toolRoot.updateMatrixWorld();
+    toolRoot.matrixWorldInverse.getInverse(toolRoot.matrixWorld);
 
     function updateToolPostStep() {
         stickMesh.position.copy(tipBody.interpolatedPosition);
-        toolRoot.worldToLocal(stickMesh.position);
-        stickShadow.position.set(
-            stickMesh.position.x,
-            (H_table + 0.001 - toolRoot.position.y - parent.position.y) / toolRoot.scale.y,
-            stickMesh.position.z
-        );
+        stickMesh.position.applyMatrix4(matrixWorldInverse);
+
+        stickMesh.updateMatrix();
+        stickMesh.updateMatrixWorld();
     }
 
-    var worldQuaternion = new THREE.Quaternion();
 
     function moveToolRoot(keyboard, gamepad, dt) {
         var toolDrive = 0;
@@ -277,8 +265,14 @@ function addTool(parent, world, options) {
             toolRoot.position.x +=  0.16 * dt * toolStrafe;
             toolRoot.position.z += -0.16 * dt * toolDrive;
             toolRoot.position.y +=  0.16 * dt * toolFloat;
-            toolRotation += 0.15 * dt * rotateToolCW;
-            toolRoot.quaternion.setFromAxisAngle(UP, toolRotation);
+            toolRoot.rotation.y -= 0.15 * dt * rotateToolCW;
+            //toolRoot.quaternion.setFromAxisAngle(UP, toolRotation);
+
+            toolRoot.updateMatrix();
+            toolRoot.updateMatrixWorld();
+            toolRoot.matrixWorldInverse.getInverse(toolRoot.matrixWorld);
+            toolRoot.matrixWorld.decompose(worldPosition, worldQuaternion, worldScale);
+
             if (interactionBoxMesh.visible === false) {
                 interactionBoxMesh.visible = true;
                 stickMesh.material.opacity = 1;
@@ -292,8 +286,7 @@ function addTool(parent, world, options) {
     var position = new THREE.Vector3();
     var velocity = new THREE.Vector3();
 
-    var cannonUP = new CANNON.Vec3(0, 1, 0);
-    var cannonVec = new CANNON.Vec3();
+    var quaternion = new THREE.Quaternion();
 
     var lastFrameID;
 
@@ -308,9 +301,9 @@ function addTool(parent, world, options) {
             if (interactionBox.valid) {
                 interactionBoxMesh.position.fromArray(interactionBox.center);
                 interactionBoxMesh.scale.set(interactionBox.width*scalar, interactionBox.height*scalar, interactionBox.depth*scalar);
+                interactionBoxMesh.updateMatrix();
+                interactionBoxMesh.updateMatrixWorld();
             }
-
-            toolRoot.getWorldQuaternion(worldQuaternion);
 
             if (frame.tools.length === 1) {
 
@@ -318,7 +311,6 @@ function addTool(parent, world, options) {
 
                 if (stickMesh.visible === false || stickMesh.material.opacity < 1) {
                     stickMesh.visible = true;
-                    stickShadow.visible = true;
                     interactionBoxMesh.visible = true;
                     stickMesh.material.opacity = 1;
                     if (tipMesh) tipMesh.material.opacity = 1;
@@ -327,25 +319,19 @@ function addTool(parent, world, options) {
 
                 //position.fromArray(tool.tipPosition);
                 position.fromArray(tool.stabilizedTipPosition);
-
-                stickMesh.position.copy(position);
-                stickShadow.position.set(
-                    stickMesh.position.x,
-                    (H_table + 0.001 - toolRoot.position.y - parent.position.y) / toolRoot.scale.y,
-                    stickMesh.position.z
-                );
-
-                toolRoot.localToWorld(position);
-                tipBody.position.copy(position);
-
                 direction.fromArray(tool.direction);
 
-                stickMesh.quaternion.setFromUnitVectors(UP, direction);
-                stickShadowMesh.quaternion.copy(stickMesh.quaternion);
+                stickMesh.position.copy(position);
+                position.applyMatrix4(toolRoot.matrixWorld);
+                tipBody.position.copy(position);
 
-                direction.applyQuaternion(worldQuaternion);
-                cannonVec.copy(direction);
-                tipBody.quaternion.setFromVectors(cannonUP, cannonVec);
+                stickMesh.quaternion.setFromUnitVectors(UP, direction);
+                // is order correct?
+                quaternion.multiplyQuaternions(stickMesh.quaternion, worldQuaternion);
+                tipBody.quaternion.copy(quaternion);
+
+                stickMesh.updateMatrix();
+                stickMesh.updateMatrixWorld();
 
                 velocity.fromArray(tool.tipVelocity);
                 velocity.applyQuaternion(worldQuaternion);
@@ -383,34 +369,33 @@ function addTool(parent, world, options) {
                 } else {
                     stickMesh.visible = false;
                     interactionBoxMesh.visible = false;
-                    stickShadow.visible = false;
                 }
             }
 
-            var hand, finger;
-            leftRoot.visible = rightRoot.visible = false;
-            for (var i = 0; i < frame.hands.length; i++) {
-                hand = frame.hands[i];
-                if (hand.confidence > minConfidence) {
-                    handRoots[i].visible = true;
-                    handMaterial.opacity = 0.5*handMaterial.opacity + 0.5*(hand.confidence - minConfidence) / (1 - minConfidence);
-                    direction.fromArray(hand.arm.basis[2]);
-                    arms[i].quaternion.setFromUnitVectors(UP, direction);
-                    var center = hand.arm.center();
-                    arms[i].position.fromArray(center);
+            // var hand, finger;
+            // leftRoot.visible = rightRoot.visible = false;
+            // for (var i = 0; i < frame.hands.length; i++) {
+            //     hand = frame.hands[i];
+            //     if (hand.confidence > minConfidence) {
+            //         handRoots[i].visible = true;
+            //         handMaterial.opacity = 0.5*handMaterial.opacity + 0.5*(hand.confidence - minConfidence) / (1 - minConfidence);
+            //         direction.fromArray(hand.arm.basis[2]);
+            //         arms[i].quaternion.setFromUnitVectors(UP, direction);
+            //         var center = hand.arm.center();
+            //         arms[i].position.fromArray(center);
 
-                    direction.fromArray(hand.palmNormal);
-                    palms[i].quaternion.setFromUnitVectors(UP, direction);
-                    palms[i].position.fromArray(hand.palmPosition);
+            //         direction.fromArray(hand.palmNormal);
+            //         palms[i].quaternion.setFromUnitVectors(UP, direction);
+            //         palms[i].position.fromArray(hand.palmPosition);
 
-                    for (var j = 0; j < hand.fingers.length; j++) {
-                        finger = hand.fingers[j];
-                        fingerTips[i][j].position.fromArray(finger.tipPosition);
-                        joints[i][j].position.fromArray(finger.bones[1].nextJoint);
-                        joint2s[i][j].position.fromArray(finger.bones[2].nextJoint);
-                    }
-                }
-            }
+            //         for (var j = 0; j < hand.fingers.length; j++) {
+            //             finger = hand.fingers[j];
+            //             fingerTips[i][j].position.fromArray(finger.tipPosition);
+            //             joints[i][j].position.fromArray(finger.bones[1].nextJoint);
+            //             joint2s[i][j].position.fromArray(finger.bones[2].nextJoint);
+            //         }
+            //     }
+            // }
 
         }
 

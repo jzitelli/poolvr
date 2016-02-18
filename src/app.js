@@ -34,7 +34,6 @@ POOLVR.resetTable = function () {
 };
 
 
-POOLVR.avatar = new THREE.Object3D();
 
 
 POOLVR.autoPosition = ( function () {
@@ -53,20 +52,23 @@ POOLVR.autoPosition = ( function () {
             -(POOLVR.ballMeshes[POOLVR.nextBall].position.z - POOLVR.ballMeshes[0].position.z)
         );
         avatar.quaternion.setFromAxisAngle(UP, avatar.heading);
-        avatar.updateMatrixWorld();
 
         nextVector.copy(POOLVR.toolRoot.position);
-        avatar.localToWorld(nextVector);
+        nextVector.applyQuaternion(avatar.quaternion);
+        nextVector.add(avatar.position);
         nextVector.sub(POOLVR.ballMeshes[0].position);
         nextVector.y = 0;
         avatar.position.sub(nextVector);
+
+        avatar.updateMatrix();
+        avatar.updateMatrixWorld();
     };
 } )();
 
 
 POOLVR.moveAvatar = ( function () {
     "use strict";
-    var UP = new THREE.Vector3(0, 1, 0),
+    var UP = THREE.Object3D.DefaultUp,
         walkSpeed = 0.333,
         floatSpeed = 0.1;
     var avatar = POOLVR.avatar;
@@ -100,6 +102,9 @@ POOLVR.moveAvatar = ( function () {
             avatar.position.x += dt * (strafe * cosHeading + drive * sinHeading);
             avatar.position.z += dt * (drive * cosHeading - strafe * sinHeading);
             avatar.position.y += dt * floatUp;
+
+            avatar.updateMatrix();
+            avatar.updateMatrixWorld();
         }
     };
 } )();
@@ -185,6 +190,7 @@ POOLVR.startAnimateLoop = function () {
         rS('updatevrcontrols').start();
         if (app.vrControls.enabled) {
             app.vrControls.update();
+            app.camera.updateMatrixWorld();
         }
         rS('updatevrcontrols').end();
 
@@ -230,8 +236,15 @@ function onLoad() {
     POOLVR.parseURIConfig();
     console.log("POOLVR.config =\n" + JSON.stringify(POOLVR.config, undefined, 2));
 
+    THREE.Object3D.DefaultMatrixAutoUpdate = false;
+
+    POOLVR.avatar = new THREE.Object3D();
     var avatar = POOLVR.avatar;
+
     avatar.position.fromArray(POOLVR.config.initialPosition);
+    avatar.updateMatrix();
+    avatar.updateMatrixWorld();
+
     avatar.heading = 0;
     avatar.floatMode = false;
     avatar.toolMode = false;
@@ -258,8 +271,7 @@ function onLoad() {
 
     THREE.py.parse(THREEPY_SCENE).then( function (scene) {
 
-        // TODO:
-        //scene.autoUpdate = false;
+        scene.autoUpdate = false;
 
         if (!POOLVR.config.useBasicMaterials) {
             var centerSpotLight = new THREE.SpotLight(0xffffee, 1, 8, Math.PI / 2);
@@ -269,28 +281,36 @@ function onLoad() {
             centerSpotLight.shadow.camera.far = 4;
             centerSpotLight.shadow.camera.fov = 90;
             scene.add(centerSpotLight);
+            centerSpotLight.updateMatrix();
+            centerSpotLight.updateMatrixWorld();
         }
 
         if (POOLVR.config.usePointLight) {
             var pointLight = new THREE.PointLight(0xaa8866, 0.8, 40);
             pointLight.position.set(4, 5, 2.5);
             scene.add(pointLight);
+            pointLight.updateMatrix();
+            pointLight.updateMatrixWorld();
         }
 
-        var UP = new THREE.Vector3(0, 1, 0);
         var appConfig = combineObjects(POOLVR.config, {
             onResetVRSensor: function (lastRotation, lastPosition) {
-                var camera = POOLVR.app.camera;
-                POOLVR.avatar.heading += lastRotation - camera.rotation.y;
-                POOLVR.toolRoot.rotation.y -= (lastRotation - camera.rotation.y);
-                POOLVR.toolRoot.position.sub(lastPosition);
-                POOLVR.toolRoot.position.applyAxisAngle(UP, -lastRotation + camera.rotation.y);
-                POOLVR.toolRoot.position.add(camera.position);
-                POOLVR.avatar.updateMatrixWorld();
+                // TODO
+                // var camera = POOLVR.app.camera;
+                // POOLVR.toolRoot.rotation.y -= (lastRotation - camera.rotation.y);
+                // POOLVR.toolRoot.position.sub(lastPosition);
+                // POOLVR.toolRoot.position.applyAxisAngle(THREE.Object3D.DefaultUp, -lastRotation + camera.rotation.y);
+                // POOLVR.toolRoot.position.add(camera.position);
+                // POOLVR.avatar.heading += lastRotation - camera.rotation.y;
+                // POOLVR.avatar.quaternion.setFromAxisAngle(UP, avatar.heading);
+                // POOLVR.avatar.updateMatrix();
+                // POOLVR.avatar.updateMatrixWorld();
             }
         });
 
         POOLVR.app = new WebVRApplication(scene, appConfig);
+
+        POOLVR.app.camera.matrixAutoUpdate = true;
 
         avatar.add(POOLVR.app.camera);
         scene.add(avatar);
