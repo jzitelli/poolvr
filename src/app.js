@@ -63,8 +63,9 @@ POOLVR.autoPosition = ( function () {
         avatar.updateMatrix();
         avatar.updateMatrixWorld();
 
-        POOLVR.toolRoot.matrixWorldInverse.getInverse(toolRoot.matrixWorld);
-        POOLVR.toolRoot.matrixWorld.decompose(toolRoot.worldPosition, toolRoot.worldQuaternion, toolRoot.worldScale);
+        var toolRoot = POOLVR.toolRoot;
+        toolRoot.matrixWorldInverse.getInverse(toolRoot.matrixWorld);
+        toolRoot.matrixWorld.decompose(toolRoot.worldPosition, toolRoot.worldQuaternion, toolRoot.worldScale);
     };
 } )();
 
