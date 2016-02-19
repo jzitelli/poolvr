@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+
+    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0, shrink-to-fit=no">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+    <link rel="shortcut icon" href="favicon.ico">
+
+    <title>poolvr</title>
+
+    <style>
+      body {
+        width: 100%;
+        height: 100%;
+        background-color: #000;
+        color: #fff;
+        margin: 0px;
+        padding: 0;
+        overflow: hidden;
+      }
+    </style>
+
+{{ json_config }}
+
+  </head>
+
+  <body onload="onLoad()">
+
+{% if config['DEBUG'] %}
+    <script src="node_modules/three/build/three.js"></script>
+    <script src="node_modules/three/examples/js/effects/VREffect.js"></script>
+    <script src="node_modules/three/examples/js/controls/VRControls.js"></script>
+
+    <script src="node_modules/webvr-polyfill/build/webvr-polyfill.js"></script>
+    <script src="node_modules/webvr-boilerplate/build/webvr-manager.js"></script>
+
+    <script src="node_modules/cannon/build/cannon.js"></script>
+
+    <script src="node_modules/leapjs/leap-0.6.4.js"></script>
+
+    <script src="lib/Primrose/Primrose.js"></script>
+
+    <script src="lib/rstats/rStats.js"></script>
+    <script src="lib/rstats/rStats.extras.js"></script>
+
+    <script src="node_modules/three.py/js/three.py.js"></script>
+    <script src="node_modules/three.py/js/CANNONize.js"></script>
+    <script src="node_modules/three.py/js/TextGeomUtils.js"></script>
+
+    <script src="src/WebVRApplication.js"></script>
+    <script src="src/utils.js"></script>
+    <script src="src/LeapInput.js"></script>
+    <script src="src/WebVRSound.js"></script>
+    <script src="src/SynthSpeaker.js"></script>
+
+    <script src="src/config.js"></script>
+    <script src="src/setup.js"></script>
+
+    <script src="src/app.js"></script>
+{% else %}
+    <script src="lib/three.min.js"></script>
+    <script src="lib/VREffect.js"></script>
+    <script src="lib/VRControls.js"></script>
+
+    <script src="lib/webvr-polyfill.js"></script>
+    <script src="lib/webvr-manager.js"></script>
+
+    <script src="lib/cannon.min.js"></script>
+
+    <script src="lib/leap-0.6.4.min.js"></script>
+
+    <script src="lib/Primrose/Primrose.js"></script>
+
+    <script src="lib/rstats/rStats.js"></script>
+    <script src="lib/rstats/rStats.extras.js"></script>
+
+    <script src="build/poolvr.min.js"></script>
+{% endif %}
+
+  </body>
+
+</html>

@@ -1,0 +1,58 @@
+{
+  "name": "poolvr",
+  "description": "Play pool / billiards in VR with your Leap Motion controller, in a web browser!",
+  "version": "0.1.0",
+  "author": "Jeffrey Zitelli (https://github.com/jzitelli)",
+  "license": "MIT",
+  "homepage": "https://jzitelli.github.io/poolvr",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jzitelli/poolvr.git"
+  },
+  "bugs": "https://github.com/jzitelli/poolvr/issues",
+  "files": [
+    "build/",
+    "fonts/",
+    "images/",
+    "sounds/",
+    "lib/",
+    "src/",
+    "Gruntfile.js",
+    "flask_app.py",
+    "pool_table.py",
+    "index.html",
+    "index_template.html",
+    "LICENSE",
+    "README.md",
+    "favicon.ico"
+  ],
+  "keywords": [
+    "pool",
+    "billiards",
+    "WebVR",
+    "Leap Motion",
+    "cannon.js",
+    "three.js",
+    "Primrose",
+    "VR",
+    "virtual reality",
+    "Google Cardboard",
+    "WebGL"
+  ],
+  "dependencies": {
+    "leapjs": "0.6.4",
+    "cannon": "git://github.com/jzitelli/cannon.js.git",
+    "three": "git://github.com/jzitelli/three.js.git#dev",
+    "three.py": "git://github.com/jzitelli/three.py.git#dev",
+    "webvr-boilerplate": "git://github.com/jzitelli/webvr-boilerplate.git#dev",
+    "webvr-polyfill": "git://github.com/jzitelli/webvr-polyfill.git"
+  },
+  "devDependencies": {
+    "grunt": "^0.4.5",
+    "grunt-contrib-clean": "^0.6.0",
+    "grunt-contrib-copy": "^0.7.0",
+    "grunt-contrib-concat": "^0.5.0",
+    "grunt-contrib-jshint": "^0.10.0",
+    "grunt-contrib-uglify": "^0.7.0"
+  }
+}
