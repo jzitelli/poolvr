@@ -132,8 +132,9 @@ function addTool(parent, world, options) {
     tipBody.material = POOLVR.tipMaterial;
     var tipMesh = null;
     if (tipShape !== 'Cylinder') {
-        // TODO: implement cannon.js ellipsoid shape
         var tipGeom = new THREE.SphereBufferGeometry(METERS2LEAP*tipRadius, 10);
+
+        // TODO: implement cannon.js ellipsoid shape
         // if (tipShape === 'Ellipsoid') {
         //     tipGeom.scale(1, tipMinorRadius / tipRadius, 1);
         //     tipBody.addShape(new CANNON.Ellipsoid(tipRadius, tipMinorRadius, tipRadius));
@@ -141,6 +142,7 @@ function addTool(parent, world, options) {
         //     tipBody.addShape(new CANNON.Sphere(tipRadius));
         // }
         tipBody.addShape(new CANNON.Sphere(tipRadius));
+
         var tipMaterial = new THREE.MeshLambertMaterial({color: tipColor, transparent: true});
         tipMesh = new THREE.Mesh(tipGeom, tipMaterial);
         tipMesh.castShadow = true;
@@ -308,7 +310,7 @@ function addTool(parent, world, options) {
             var interactionBox = frame.interactionBox;
             if (interactionBox.valid) {
                 interactionBoxRoot.position.fromArray(interactionBox.center);
-                interactionBoxRoot.scale.set(interactionBox.width*METERS2LEAP, interactionBox.height*METERS2LEAP, interactionBox.depth*METERS2LEAP);
+                interactionBoxRoot.scale.set(interactionBox.width*LEAP2METERS, interactionBox.height*LEAP2METERS, interactionBox.depth*LEAP2METERS);
                 interactionBoxRoot.updateMatrix();
                 interactionBoxRoot.updateMatrixWorld();
             }
@@ -335,8 +337,7 @@ function addTool(parent, world, options) {
 
                 stickMesh.quaternion.setFromUnitVectors(UP, direction);
 
-                // is order correct?
-                quaternion.multiplyQuaternions(stickMesh.quaternion, toolRoot.worldQuaternion);
+                quaternion.multiplyQuaternions(toolRoot.worldQuaternion, stickMesh.quaternion);
                 tipBody.quaternion.copy(quaternion);
 
                 stickMesh.updateMatrix();

@@ -39,14 +39,14 @@ POOLVR.resetTable = function () {
 POOLVR.autoPosition = ( function () {
     "use strict";
     var nextVector = new THREE.Vector3();
-    var UP = new THREE.Vector3(0, 1, 0);
-    var avatar = POOLVR.avatar;
+    var UP = THREE.Object3D.DefaultUp;
     return function () {
         // POOLVR.textGeomLogger.log("YOU ARE BEING AUTO-POSITIONED.  NEXT BALL: " + POOLVR.nextBall);
         if (POOLVR.synthSpeaker.speaking === false) {
             POOLVR.synthSpeaker.speak("You are being auto-positioned.");
         }
 
+        var avatar = POOLVR.avatar;
         avatar.heading = Math.atan2(
             -(POOLVR.ballMeshes[POOLVR.nextBall].position.x - POOLVR.ballMeshes[0].position.x),
             -(POOLVR.ballMeshes[POOLVR.nextBall].position.z - POOLVR.ballMeshes[0].position.z)
@@ -62,6 +62,9 @@ POOLVR.autoPosition = ( function () {
 
         avatar.updateMatrix();
         avatar.updateMatrixWorld();
+
+        POOLVR.toolRoot.matrixWorldInverse.getInverse(toolRoot.matrixWorld);
+        POOLVR.toolRoot.matrixWorld.decompose(toolRoot.worldPosition, toolRoot.worldQuaternion, toolRoot.worldScale);
     };
 } )();
 
@@ -71,9 +74,10 @@ POOLVR.moveAvatar = ( function () {
     var UP = THREE.Object3D.DefaultUp,
         walkSpeed = 0.333,
         floatSpeed = 0.1;
-    var avatar = POOLVR.avatar;
 
     return function (keyboard, gamepad, dt) {
+        var avatar = POOLVR.avatar;
+
         var floatUp = keyboard.getValue("floatUp") + keyboard.getValue("floatDown");
         var drive = keyboard.getValue("driveBack") + keyboard.getValue("driveForward");
         var strafe = keyboard.getValue("strafeRight") + keyboard.getValue("strafeLeft");
@@ -105,6 +109,10 @@ POOLVR.moveAvatar = ( function () {
 
             avatar.updateMatrix();
             avatar.updateMatrixWorld();
+
+            var toolRoot = POOLVR.toolRoot;
+            toolRoot.matrixWorldInverse.getInverse(toolRoot.matrixWorld);
+            toolRoot.matrixWorld.decompose(toolRoot.worldPosition, toolRoot.worldQuaternion, toolRoot.worldScale);
         }
     };
 } )();
@@ -242,8 +250,6 @@ function onLoad() {
     var avatar = POOLVR.avatar;
 
     avatar.position.fromArray(POOLVR.config.initialPosition);
-    avatar.updateMatrix();
-    avatar.updateMatrixWorld();
 
     avatar.heading = 0;
     avatar.floatMode = false;
@@ -315,7 +321,11 @@ function onLoad() {
         avatar.add(POOLVR.app.camera);
         scene.add(avatar);
 
+        avatar.updateMatrix();
+
         POOLVR.setup();
+
+        scene.updateMatrixWorld();
 
         POOLVR.startAnimateLoop();
 

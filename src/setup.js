@@ -178,19 +178,23 @@ POOLVR.setup = function () {
             var mesh = POOLVR.ballMeshes[i];
             var body = POOLVR.ballBodies[i];
             mesh.position.copy(body.interpolatedPosition);
+            mesh.updateMatrix();
 
             // TODO: better method for projected shadows, less hacks
             //mesh.quaternion.copy(body.interpolatedQuaternion);
             var stripeMesh = ballStripeMeshes[i];
             if (stripeMesh !== undefined) {
                 stripeMesh.quaternion.copy(body.interpolatedQuaternion);
+                stripeMesh.updateMatrix();
             }
 
             var shadowMesh = ballShadowMeshes[i];
             if (shadowMesh) {
                 shadowMesh.position.y = -(mesh.position.y - H_table) + 0.0004;
+                shadowMesh.updateMatrix();
             }
 
+            mesh.updateMatrixWorld();
         }
 
     };
