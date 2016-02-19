@@ -1,6 +1,6 @@
 /* ############################################################################
 
-  poolvr v0.1.0 2016-02-16
+  poolvr v0.1.0 2016-02-18
 
   https://jzitelli.github.io/poolvr
   git+https://github.com/jzitelli/poolvr.git
@@ -68,12 +68,14 @@ THREE.py = ( function () {
 
                 function _onLoad(obj) {
                     // the final callback, calls promise resolve
-                    loadHeightfields(obj);
                     obj.traverse( function (node) {
+
+                        node.updateMatrix();
+                        node.updateMatrixWorld();
+
                         if (node.userData) {
                             if (node.userData.layers) {
                                 node.userData.layers.forEach( function (channel) {
-                                    console.log('setting layer ' + channel);
                                     node.layers.set(channel);
                                 } );
                             }
@@ -86,10 +88,15 @@ THREE.py = ( function () {
                             }
                         }
                     } );
+
+                    loadHeightfields(obj);
+
                     if (onLoad) {
                         onLoad(obj);
                     }
+
                     resolve(obj);
+
                 }
 
                 images = objectLoader.parseImages(json.images, function () { _onLoad(object); });
@@ -345,98 +352,6 @@ THREE.py.CANNONize = function (obj, world) {
     }
 };
 ;
-// #### node_modules/three.py/js/WebVRApplication.js
-function WebVRApplication(scene, config) {
-    "use strict";
-    this.scene = scene;
-
-    config = config || {};
-    var rendererOptions     = config.rendererOptions;
-    var onResetVRSensor     = config.onResetVRSensor;
-
-    var camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-    this.camera = camera;
-
-    this.renderer = new THREE.WebGLRenderer(rendererOptions);
-    this.renderer.setPixelRatio(window.devicePixelRatio);
-
-    var domElement = this.renderer.domElement;
-    document.body.appendChild(domElement);
-    domElement.id = 'renderer';
-
-    this.vrEffect = new THREE.VREffect(this.renderer, function(errorMsg) { console.log('error creating VREffect: ' + errorMsg); });
-    this.vrEffect.setSize(window.innerWidth, window.innerHeight);
-
-    this.vrControls = new THREE.VRControls(this.camera, function(errorMsg) { console.log('error creating VRControls: ' + errorMsg); });
-    this.vrControls.enabled = true;
-
-    this.vrManager = new WebVRManager(this.renderer, this.vrEffect, {
-        hideButton: false
-    });
-
-
-    this.toggleVRControls = function () {
-        if (this.vrControls.enabled) {
-            this.vrControls.enabled = false;
-            this.camera.position.set(0, 0, 0);
-            this.camera.quaternion.set(0, 0, 0, 1);
-        } else {
-            this.vrControls.enabled = true;
-        }
-    }.bind(this);
-
-
-    var lastPosition = new THREE.Vector3();
-    this.resetVRSensor = function () {
-        lastPosition.copy(this.camera.position);
-        var lastRotation = this.camera.rotation.y;
-        this.vrControls.resetSensor();
-        this.vrControls.update();
-        if (onResetVRSensor) {
-            onResetVRSensor(lastRotation, lastPosition);
-        }
-    }.bind(this);
-
-
-    var wireframeMaterial = new THREE.MeshBasicMaterial({color: 0xeeddaa, wireframe: true});
-    this.toggleWireframe = function () {
-        if (this.scene.overrideMaterial) {
-            this.scene.overrideMaterial = null;
-        } else {
-            this.scene.overrideMaterial = wireframeMaterial;
-        }
-    }.bind(this);
-
-
-    // TODO
-
-    // renderer.domElement.requestPointerLock = renderer.domElement.requestPointerLock || renderer.domElement.mozRequestPointerLock || renderer.domElement.webkitRequestPointerLock;
-    // function requestPointerLock() {
-    //     if (renderer.domElement.requestPointerLock) {
-    //         renderer.domElement.requestPointerLock();
-    //     }
-    // }
-    // function releasePointerLock() {
-    //     document.exitPointerLock = document.exitPointerLock || document.mozExitPointerLock || document.webkitExitPointerLock;
-    //     if (document.exitPointerLock) {
-    //         document.exitPointerLock();
-    //     }
-    // }
-    // var fullscreenchange = this.renderer.domElement.mozRequestFullScreen ? 'mozfullscreenchange' : 'webkitfullscreenchange';
-    // document.addEventListener(fullscreenchange, function ( event ) {
-    //     if (this.vrManager.isVRMode()) {
-    //         this.vrControls.enabled = true;
-    //     }
-    //     var fullscreen = !(document.webkitFullscreenElement === null || document.mozFullScreenElement === null);
-    //     if (!fullscreen) {
-    //         releasePointerLock();
-    //     } else {
-    //         requestPointerLock();
-    //     }
-    // }.bind(this));
-
-}
-;
 // #### node_modules/three.py/js/TextGeomUtils.js
 var TextGeomUtils = ( function () {
     "use strict";
@@ -538,6 +453,98 @@ var TextGeomUtils = ( function () {
 
 } )();
 ;
+// #### src/WebVRApplication.js
+function WebVRApplication(scene, config) {
+    "use strict";
+    this.scene = scene;
+
+    config = config || {};
+    var rendererOptions = config.rendererOptions;
+    var onResetVRSensor = config.onResetVRSensor;
+
+    var camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    this.camera = camera;
+
+    this.renderer = new THREE.WebGLRenderer(rendererOptions);
+    this.renderer.setPixelRatio(window.devicePixelRatio);
+
+    var domElement = this.renderer.domElement;
+    document.body.appendChild(domElement);
+    domElement.id = 'renderer';
+
+    this.vrEffect = new THREE.VREffect(this.renderer, function(errorMsg) { console.log('error creating VREffect: ' + errorMsg); });
+    this.vrEffect.setSize(window.innerWidth, window.innerHeight);
+
+    this.vrControls = new THREE.VRControls(this.camera, function(errorMsg) { console.log('error creating VRControls: ' + errorMsg); });
+    this.vrControls.enabled = true;
+
+    this.vrManager = new WebVRManager(this.renderer, this.vrEffect, {
+        hideButton: false
+    });
+
+
+    this.toggleVRControls = function () {
+        if (this.vrControls.enabled) {
+            this.vrControls.enabled = false;
+            this.camera.position.set(0, 0, 0);
+            this.camera.quaternion.set(0, 0, 0, 1);
+        } else {
+            this.vrControls.enabled = true;
+        }
+    }.bind(this);
+
+
+    var lastPosition = new THREE.Vector3();
+    this.resetVRSensor = function () {
+        lastPosition.copy(this.camera.position);
+        var lastRotation = this.camera.rotation.y;
+        this.vrControls.resetSensor();
+        this.vrControls.update();
+        if (onResetVRSensor) {
+            onResetVRSensor(lastRotation, lastPosition);
+        }
+    }.bind(this);
+
+
+    var wireframeMaterial = new THREE.MeshBasicMaterial({color: 0xeeddaa, wireframe: true});
+    this.toggleWireframe = function () {
+        if (this.scene.overrideMaterial) {
+            this.scene.overrideMaterial = null;
+        } else {
+            this.scene.overrideMaterial = wireframeMaterial;
+        }
+    }.bind(this);
+
+
+    // TODO
+
+    // renderer.domElement.requestPointerLock = renderer.domElement.requestPointerLock || renderer.domElement.mozRequestPointerLock || renderer.domElement.webkitRequestPointerLock;
+    // function requestPointerLock() {
+    //     if (renderer.domElement.requestPointerLock) {
+    //         renderer.domElement.requestPointerLock();
+    //     }
+    // }
+    // function releasePointerLock() {
+    //     document.exitPointerLock = document.exitPointerLock || document.mozExitPointerLock || document.webkitExitPointerLock;
+    //     if (document.exitPointerLock) {
+    //         document.exitPointerLock();
+    //     }
+    // }
+    // var fullscreenchange = this.renderer.domElement.mozRequestFullScreen ? 'mozfullscreenchange' : 'webkitfullscreenchange';
+    // document.addEventListener(fullscreenchange, function ( event ) {
+    //     if (this.vrManager.isVRMode()) {
+    //         this.vrControls.enabled = true;
+    //     }
+    //     var fullscreen = !(document.webkitFullscreenElement === null || document.mozFullScreenElement === null);
+    //     if (!fullscreen) {
+    //         releasePointerLock();
+    //     } else {
+    //         requestPointerLock();
+    //     }
+    // }.bind(this));
+
+}
+;
 // #### src/utils.js
 var URL_PARAMS = (function () {
     "use strict";
@@ -612,37 +619,43 @@ function addTool(parent, world, options) {
     "use strict";
     options = options || {};
 
+    var UP = THREE.Object3D.DefaultUp;
+
+    // coordinate transformations are performed via three.js scene graph
+    var toolRoot = new THREE.Object3D();
+    var LEAP2METERS = 0.001;
+    var METERS2LEAP = 1000;
+    toolRoot.scale.set(LEAP2METERS, LEAP2METERS, LEAP2METERS);
+    parent.add(toolRoot);
+
     // parse options:
+
+    toolRoot.quaternion.setFromAxisAngle(UP, options.toolRotation || 0);
+    toolRoot.position.fromArray(options.toolOffset || [0, -0.42, -0.42]);
 
     var toolLength = options.toolLength || 0.5;
     var toolRadius = options.toolRadius || 0.013;
     // should remove, don't think this matters for cannon.js kinematic body:
     var toolMass   = options.toolMass   || 0.04;
 
-    var tipShape = options.tipShape || 'Sphere';
+    var tipShape = options.tipShape || 'Cylinder';
     var tipRadius,
         tipMinorRadius;
     if (tipShape === 'Cylinder') {
         tipRadius = options.tipRadius || toolRadius;
     } else {
         tipRadius = options.tipRadius || 0.95 * toolRadius;
-        if (tipShape === 'Ellipsoid') {
-            tipMinorRadius = options.tipMinorRadius || 0.25 * tipRadius;
-        }
+        // if (tipShape === 'Ellipsoid') {
+        //     tipMinorRadius = options.tipMinorRadius || 0.25 * tipRadius;
+        // }
     }
-
-    var toolOffset = new THREE.Vector3(0, -0.4, -toolLength - 0.2);
-    if (options.toolOffset) {
-        toolOffset.fromArray(options.toolOffset);
-    }
-    var toolRotation = options.toolRotation || 0;
 
     var toolTimeA = options.toolTimeA || 0.25;
     var toolTimeB = options.toolTimeB || toolTimeA + 1.5;
 
     var minConfidence = options.minConfidence || 0.3;
 
-    var interactionPlaneOpacity = options.interactionPlaneOpacity || (options.useBasicMaterials === false ? 0.18 : 0.25);
+    var interactionPlaneOpacity = options.interactionPlaneOpacity || 0.23;
 
     var stickColor = options.stickColor || 0xeebb99;
     var tipColor   = options.tipColor   || 0x004488;
@@ -674,45 +687,45 @@ function addTool(parent, world, options) {
 
     leapController.connect();
 
-    // coordinate transformations are performed via three.js scene graph
-    var toolRoot = new THREE.Object3D();
-    toolRoot.position.copy(toolOffset);
-    var scalar = 0.001;
-    toolRoot.scale.set(scalar, scalar, scalar);
-    var UP = new THREE.Vector3(0, 1, 0);
-    toolRoot.quaternion.setFromAxisAngle(UP, toolRotation);
-    parent.add(toolRoot);
-
     // setup three.js tool graphics:
 
     // interaction box visual guide:
-    var interactionBoxMesh = new THREE.Object3D();
-    toolRoot.add(interactionBoxMesh);
+    var interactionBoxRoot = new THREE.Object3D();
+    toolRoot.add(interactionBoxRoot);
+
     var interactionPlaneMaterial = new THREE.MeshBasicMaterial({color: 0x00dd44, transparent: true, opacity: interactionPlaneOpacity});
-    var interactionPlaneGeom = new THREE.PlaneBufferGeometry(1/scalar, 1/scalar);
+    var interactionPlaneGeom = new THREE.PlaneBufferGeometry(METERS2LEAP, METERS2LEAP);
+
     var interactionPlaneMesh = new THREE.Mesh(interactionPlaneGeom, interactionPlaneMaterial);
-    interactionBoxMesh.add(interactionPlaneMesh);
+    interactionBoxRoot.add(interactionPlaneMesh);
+
     interactionPlaneMesh = interactionPlaneMesh.clone();
-    interactionPlaneMesh.position.z = 1/2/scalar;
-    interactionBoxMesh.add(interactionPlaneMesh);
+    interactionPlaneMesh.position.z = METERS2LEAP * 0.5;
+    interactionPlaneMesh.updateMatrix();
+    interactionBoxRoot.add(interactionPlaneMesh);
+
     interactionPlaneMesh = interactionPlaneMesh.clone();
-    interactionPlaneMesh.position.z = -1/2/scalar;
-    interactionBoxMesh.add(interactionPlaneMesh);
-    interactionBoxMesh.visible = false;
+    interactionPlaneMesh.position.z = METERS2LEAP * (-0.5);
+    interactionPlaneMesh.updateMatrix();
+    interactionBoxRoot.add(interactionPlaneMesh);
+
+    interactionBoxRoot.visible = false;
 
     // leap motion controller:
-    var boxGeom = new THREE.BoxGeometry(0.0254*3/scalar, 0.0254*0.5/scalar, 0.0254*1.2/scalar);
+    var IN2METER = 0.0254;
+    var boxGeom = new THREE.BoxGeometry(METERS2LEAP*IN2METER*3, METERS2LEAP*IN2METER*0.5, METERS2LEAP*IN2METER*1.2);
     var leapGeom = new THREE.BufferGeometry();
     leapGeom.fromGeometry(boxGeom);
     boxGeom.dispose();
     var leapMaterial = new THREE.MeshLambertMaterial({color: 0x777777});
     var leapMesh = new THREE.Mesh(leapGeom, leapMaterial);
-    leapMesh.position.y = 0.0254*0.25/scalar;
+    leapMesh.position.y = METERS2LEAP*IN2METER*0.25;
+    leapMesh.updateMatrix();
     toolRoot.add(leapMesh);
 
     // the stick:
-    var stickGeom = new THREE.CylinderGeometry(toolRadius/scalar, toolRadius/scalar, toolLength/scalar, 10, 1, false);
-    stickGeom.translate(0, -toolLength/scalar / 2, 0);
+    var stickGeom = new THREE.CylinderGeometry(METERS2LEAP*toolRadius, METERS2LEAP*toolRadius, METERS2LEAP*toolLength, 10, 1, false);
+    stickGeom.translate(0, -0.5*METERS2LEAP*toolLength, 0);
     var bufferGeom = new THREE.BufferGeometry();
     bufferGeom.fromGeometry(stickGeom);
     stickGeom.dispose();
@@ -728,14 +741,17 @@ function addTool(parent, world, options) {
     tipBody.material = POOLVR.tipMaterial;
     var tipMesh = null;
     if (tipShape !== 'Cylinder') {
-        var tipGeom = new THREE.SphereBufferGeometry(tipRadius/scalar, 10);
-        if (tipShape === 'Ellipsoid') {
-            tipGeom.scale(1, tipMinorRadius / tipRadius, 1);
-            // TODO: fix. verify ellipsoid shape:
-            tipBody.addShape(new CANNON.Ellipsoid(tipRadius, tipMinorRadius, tipRadius));
-        } else {
-            tipBody.addShape(new CANNON.Sphere(tipRadius));
-        }
+        var tipGeom = new THREE.SphereBufferGeometry(METERS2LEAP*tipRadius, 10);
+
+        // TODO: implement cannon.js ellipsoid shape
+        // if (tipShape === 'Ellipsoid') {
+        //     tipGeom.scale(1, tipMinorRadius / tipRadius, 1);
+        //     tipBody.addShape(new CANNON.Ellipsoid(tipRadius, tipMinorRadius, tipRadius));
+        // } else {
+        //     tipBody.addShape(new CANNON.Sphere(tipRadius));
+        // }
+        tipBody.addShape(new CANNON.Sphere(tipRadius));
+
         var tipMaterial = new THREE.MeshLambertMaterial({color: tipColor, transparent: true});
         tipMesh = new THREE.Mesh(tipGeom, tipMaterial);
         tipMesh.castShadow = true;
@@ -749,25 +765,6 @@ function addTool(parent, world, options) {
     }
     world.addBody(tipBody);
 
-    // create shadow mesh from projection:
-    var stickShadow = new THREE.Object3D();
-    stickShadow.scale.set(1, 0.001, 1);
-    toolRoot.add(stickShadow);
-    stickShadow.visible = false;
-    //stickMesh.add(stickShadow);
-    var stickShadowMaterial = new THREE.MeshBasicMaterial({color: 0x002200});
-    var stickShadowGeom = stickMesh.geometry.clone();
-    var stickShadowMesh = new THREE.Mesh(stickShadowGeom, stickShadowMaterial);
-    stickShadow.add(stickShadowMesh);
-    if (tipShape === 'Ellipsoid') {
-        // TODO: new projection approach for ellipsoid tip
-    } else if (tipShape === 'Sphere') {
-        tipMesh.geometry.computeBoundingSphere();
-        var tipShadowGeom = new THREE.CircleBufferGeometry(tipMesh.geometry.boundingSphere.radius).rotateX(-Math.PI / 2);
-        var tipShadowMesh = new THREE.Mesh(tipShadowGeom, stickShadowMaterial);
-        stickShadow.add(tipShadowMesh);
-    }
-
     // setup three.js hands:
 
     // hands don't necessarily correspond the left / right labels, but doesn't matter to me because they look indistinguishable
@@ -780,8 +777,8 @@ function addTool(parent, world, options) {
     var handMaterial = new THREE.MeshBasicMaterial({color: handColor, transparent: true, opacity: 0});
 
     // arms:
-    var armRadius = 0.0216/scalar,
-        armLength = 0.22/scalar;
+    var armRadius = METERS2LEAP*0.0216,
+        armLength = METERS2LEAP*0.22;
     var armGeom = new THREE.CylinderGeometry(armRadius, armRadius, armLength);
     bufferGeom = new THREE.BufferGeometry();
     bufferGeom.fromGeometry(armGeom);
@@ -792,7 +789,7 @@ function addTool(parent, world, options) {
     leftRoot.add(arms[0]);
     rightRoot.add(arms[1]);
     // palms:
-    var radius = 0.025/scalar;
+    var radius = METERS2LEAP*0.025;
     var palmGeom = new THREE.SphereBufferGeometry(radius).scale(1, 0.5, 1);
     var palmMesh = new THREE.Mesh(palmGeom, handMaterial);
     palmMesh.castShadow = true;
@@ -800,7 +797,7 @@ function addTool(parent, world, options) {
     leftRoot.add(palms[0]);
     rightRoot.add(palms[1]);
     // fingertips:
-    radius = 0.005/scalar;
+    radius = METERS2LEAP*0.005;
     var fingerTipGeom = new THREE.SphereBufferGeometry(radius);
     var fingerTipMesh = new THREE.Mesh(fingerTipGeom, handMaterial);
     var fingerTips = [[fingerTipMesh, fingerTipMesh.clone(), fingerTipMesh.clone(), fingerTipMesh.clone(), fingerTipMesh.clone()],
@@ -822,6 +819,21 @@ function addTool(parent, world, options) {
                   [joint2Mesh.clone(), joint2Mesh.clone(), joint2Mesh.clone(), joint2Mesh.clone(), joint2Mesh.clone()]];
     leftRoot.add(joint2s[0][0], joint2s[0][1], joint2s[0][2], joint2s[0][3], joint2s[0][4]);
     rightRoot.add(joint2s[1][0], joint2s[1][1], joint2s[1][2], joint2s[1][3], joint2s[1][4]);
+    leftRoot.visible  = false;
+    rightRoot.visible = false;
+
+
+    // initialize matrices now:
+    toolRoot.updateMatrix();
+    toolRoot.updateMatrixWorld();
+    // to store decomposed toolRoot world matrix:
+    toolRoot.worldPosition = new THREE.Vector3();
+    toolRoot.worldQuaternion = new THREE.Quaternion();
+    toolRoot.worldScale = new THREE.Vector3();
+    toolRoot.matrixWorld.decompose(toolRoot.worldPosition, toolRoot.worldQuaternion, toolRoot.worldScale);
+    // inverse of toolRoot.matrixWorld:
+    toolRoot.matrixWorldInverse = new THREE.Matrix4();
+    toolRoot.matrixWorldInverse.getInverse(toolRoot.matrixWorld);
 
 
     var tipCollisionCounter = 0;
@@ -841,19 +853,13 @@ function addTool(parent, world, options) {
     });
 
 
-    var H_table = POOLVR.config.H_table;
-
     function updateToolPostStep() {
         stickMesh.position.copy(tipBody.interpolatedPosition);
-        toolRoot.worldToLocal(stickMesh.position);
-        stickShadow.position.set(
-            stickMesh.position.x,
-            (H_table + 0.001 - toolRoot.position.y - parent.position.y) / toolRoot.scale.y,
-            stickMesh.position.z
-        );
+        stickMesh.position.applyMatrix4(toolRoot.matrixWorldInverse);
+        stickMesh.updateMatrix();
+        stickMesh.updateMatrixWorld();
     }
 
-    var worldQuaternion = new THREE.Quaternion();
 
     function moveToolRoot(keyboard, gamepad, dt) {
         var toolDrive = 0;
@@ -879,10 +885,16 @@ function addTool(parent, world, options) {
             toolRoot.position.x +=  0.16 * dt * toolStrafe;
             toolRoot.position.z += -0.16 * dt * toolDrive;
             toolRoot.position.y +=  0.16 * dt * toolFloat;
-            toolRotation += 0.15 * dt * rotateToolCW;
-            toolRoot.quaternion.setFromAxisAngle(UP, toolRotation);
-            if (interactionBoxMesh.visible === false) {
-                interactionBoxMesh.visible = true;
+            toolRoot.rotation.y -= 0.15 * dt * rotateToolCW;
+            //toolRoot.quaternion.setFromAxisAngle(UP, toolRotation);
+
+            toolRoot.updateMatrix();
+            toolRoot.updateMatrixWorld();
+            toolRoot.matrixWorldInverse.getInverse(toolRoot.matrixWorld);
+            toolRoot.matrixWorld.decompose(toolRoot.worldPosition, toolRoot.worldQuaternion, toolRoot.worldScale);
+
+            if (interactionBoxRoot.visible === false) {
+                interactionBoxRoot.visible = true;
                 stickMesh.material.opacity = 1;
                 if (tipMesh) tipMesh.material.opacity = 1;
                 interactionPlaneMaterial.opacity = interactionPlaneOpacity;
@@ -890,13 +902,11 @@ function addTool(parent, world, options) {
         }
     }
 
+
     var direction = new THREE.Vector3();
     var position = new THREE.Vector3();
     var velocity = new THREE.Vector3();
-
-    var cannonUP = new CANNON.Vec3(0, 1, 0);
-    var cannonVec = new CANNON.Vec3();
-
+    var quaternion = new THREE.Quaternion();
     var lastFrameID;
 
     function updateTool() {
@@ -908,11 +918,11 @@ function addTool(parent, world, options) {
 
             var interactionBox = frame.interactionBox;
             if (interactionBox.valid) {
-                interactionBoxMesh.position.fromArray(interactionBox.center);
-                interactionBoxMesh.scale.set(interactionBox.width*scalar, interactionBox.height*scalar, interactionBox.depth*scalar);
+                interactionBoxRoot.position.fromArray(interactionBox.center);
+                interactionBoxRoot.scale.set(interactionBox.width*LEAP2METERS, interactionBox.height*LEAP2METERS, interactionBox.depth*LEAP2METERS);
+                interactionBoxRoot.updateMatrix();
+                interactionBoxRoot.updateMatrixWorld();
             }
-
-            toolRoot.getWorldQuaternion(worldQuaternion);
 
             if (frame.tools.length === 1) {
 
@@ -920,8 +930,7 @@ function addTool(parent, world, options) {
 
                 if (stickMesh.visible === false || stickMesh.material.opacity < 1) {
                     stickMesh.visible = true;
-                    stickShadow.visible = true;
-                    interactionBoxMesh.visible = true;
+                    interactionBoxRoot.visible = true;
                     stickMesh.material.opacity = 1;
                     if (tipMesh) tipMesh.material.opacity = 1;
                     interactionPlaneMaterial.opacity = interactionPlaneOpacity;
@@ -929,29 +938,23 @@ function addTool(parent, world, options) {
 
                 //position.fromArray(tool.tipPosition);
                 position.fromArray(tool.stabilizedTipPosition);
-
-                stickMesh.position.copy(position);
-                stickShadow.position.set(
-                    stickMesh.position.x,
-                    (H_table + 0.001 - toolRoot.position.y - parent.position.y) / toolRoot.scale.y,
-                    stickMesh.position.z
-                );
-
-                toolRoot.localToWorld(position);
-                tipBody.position.copy(position);
-
                 direction.fromArray(tool.direction);
 
-                stickMesh.quaternion.setFromUnitVectors(UP, direction);
-                stickShadowMesh.quaternion.copy(stickMesh.quaternion);
+                stickMesh.position.copy(position);
+                position.applyMatrix4(toolRoot.matrixWorld);
+                tipBody.position.copy(position);
 
-                direction.applyQuaternion(worldQuaternion);
-                cannonVec.copy(direction);
-                tipBody.quaternion.setFromVectors(cannonUP, cannonVec);
+                stickMesh.quaternion.setFromUnitVectors(UP, direction);
+
+                quaternion.multiplyQuaternions(toolRoot.worldQuaternion, stickMesh.quaternion);
+                tipBody.quaternion.copy(quaternion);
+
+                stickMesh.updateMatrix();
+                stickMesh.updateMatrixWorld();
 
                 velocity.fromArray(tool.tipVelocity);
-                velocity.applyQuaternion(worldQuaternion);
-                velocity.multiplyScalar(0.001);
+                velocity.applyQuaternion(toolRoot.worldQuaternion);
+                velocity.multiplyScalar(LEAP2METERS);
                 tipBody.velocity.copy(velocity);
 
                 if (tool.timeVisible > toolTimeA) {
@@ -984,35 +987,34 @@ function addTool(parent, world, options) {
                     if (tipMesh) tipMesh.material.opacity = stickMesh.material.opacity;
                 } else {
                     stickMesh.visible = false;
-                    interactionBoxMesh.visible = false;
-                    stickShadow.visible = false;
+                    interactionBoxRoot.visible = false;
                 }
             }
 
-            var hand, finger;
-            leftRoot.visible = rightRoot.visible = false;
-            for (var i = 0; i < frame.hands.length; i++) {
-                hand = frame.hands[i];
-                if (hand.confidence > minConfidence) {
-                    handRoots[i].visible = true;
-                    handMaterial.opacity = 0.5*handMaterial.opacity + 0.5*(hand.confidence - minConfidence) / (1 - minConfidence);
-                    direction.fromArray(hand.arm.basis[2]);
-                    arms[i].quaternion.setFromUnitVectors(UP, direction);
-                    var center = hand.arm.center();
-                    arms[i].position.fromArray(center);
+            // var hand, finger;
+            // leftRoot.visible = rightRoot.visible = false;
+            // for (var i = 0; i < frame.hands.length; i++) {
+            //     hand = frame.hands[i];
+            //     if (hand.confidence > minConfidence) {
+            //         handRoots[i].visible = true;
+            //         handMaterial.opacity = 0.5*handMaterial.opacity + 0.5*(hand.confidence - minConfidence) / (1 - minConfidence);
+            //         direction.fromArray(hand.arm.basis[2]);
+            //         arms[i].quaternion.setFromUnitVectors(UP, direction);
+            //         var center = hand.arm.center();
+            //         arms[i].position.fromArray(center);
 
-                    direction.fromArray(hand.palmNormal);
-                    palms[i].quaternion.setFromUnitVectors(UP, direction);
-                    palms[i].position.fromArray(hand.palmPosition);
+            //         direction.fromArray(hand.palmNormal);
+            //         palms[i].quaternion.setFromUnitVectors(UP, direction);
+            //         palms[i].position.fromArray(hand.palmPosition);
 
-                    for (var j = 0; j < hand.fingers.length; j++) {
-                        finger = hand.fingers[j];
-                        fingerTips[i][j].position.fromArray(finger.tipPosition);
-                        joints[i][j].position.fromArray(finger.bones[1].nextJoint);
-                        joint2s[i][j].position.fromArray(finger.bones[2].nextJoint);
-                    }
-                }
-            }
+            //         for (var j = 0; j < hand.fingers.length; j++) {
+            //             finger = hand.fingers[j];
+            //             fingerTips[i][j].position.fromArray(finger.tipPosition);
+            //             joints[i][j].position.fromArray(finger.bones[1].nextJoint);
+            //             joint2s[i][j].position.fromArray(finger.bones[2].nextJoint);
+            //         }
+            //     }
+            // }
 
         }
 
@@ -1151,7 +1153,7 @@ POOLVR.commands = {
   //toggleMenu:       function () { POOLVR.toggleMenu(); },
   selectNextBall:   function () { POOLVR.selectNextBall(); },
   selectPrevBall:   function () { POOLVR.selectNextBall(-1); },
-  saveConfig:       function () { POOLVR.saveConfig(); }
+  saveConfig:       function () { POOLVR.saveConfig(POOLVR.profile); }
 };
 
 POOLVR.keyboardCommands = {
@@ -1240,66 +1242,65 @@ POOLVR.gamepad.addEventListener("gamepadconnected", function(id) {
 }.bind(POOLVR.gamepad), false);
 
 
-POOLVR.config.useTextGeomLogger = URL_PARAMS.useTextGeomLogger !== undefined ? URL_PARAMS.useTextGeomLogger : POOLVR.config.useTextGeomLogger;
-
-POOLVR.config.synthSpeakerVolume = URL_PARAMS.synthSpeakerVolume || POOLVR.config.synthSpeakerVolume;
-
-POOLVR.config.initialPosition = POOLVR.config.initialPosition;
-
-// Leap Motion config:
-POOLVR.config.toolOptions = POOLVR.config.toolOptions || {};
-POOLVR.config.toolOptions.toolLength   = URL_PARAMS.toolLength   || POOLVR.config.toolOptions.toolLength;
-POOLVR.config.toolOptions.toolRadius   = URL_PARAMS.toolRadius   || POOLVR.config.toolOptions.toolRadius;
-POOLVR.config.toolOptions.toolMass     = URL_PARAMS.toolMass     || POOLVR.config.toolOptions.toolMass;
-POOLVR.config.toolOptions.toolOffset   = URL_PARAMS.toolOffset   || POOLVR.config.toolOptions.toolOffset;
-POOLVR.config.toolOptions.toolRotation = URL_PARAMS.toolRotation || POOLVR.config.toolOptions.toolRotation;
-POOLVR.config.toolOptions.tipShape     = URL_PARAMS.tipShape     || POOLVR.config.toolOptions.tipShape;
-POOLVR.config.toolOptions.host         = URL_PARAMS.host;
-POOLVR.config.toolOptions.port         = URL_PARAMS.port;
-
-// application graphics config:
-POOLVR.config.useBasicMaterials = URL_PARAMS.useBasicMaterials !== undefined ? URL_PARAMS.useBasicMaterials : POOLVR.config.useBasicMaterials;
-
-if (POOLVR.config.useBasicMaterials) {
-    POOLVR.config.usePointLight = false;
-    POOLVR.config.useShadowMap  = false;
-} else {
-    POOLVR.config.usePointLight = URL_PARAMS.usePointLight !== undefined ? URL_PARAMS.usePointLight : POOLVR.config.usePointLight;
-    POOLVR.config.useShadowMap  = URL_PARAMS.useShadowMap  !== undefined ? URL_PARAMS.useShadowMap  : POOLVR.config.useShadowMap;
-}
-
-// THREE.WebGLRenderer config:
-POOLVR.config.rendererOptions = {
-    antialias: URL_PARAMS.antialias !== undefined ? URL_PARAMS.antialias : (isMobile() === false)
+POOLVR.parseURIConfig = function () {
+    "use strict";
+    POOLVR.config.useTextGeomLogger = URL_PARAMS.useTextGeomLogger !== undefined ? URL_PARAMS.useTextGeomLogger : POOLVR.config.useTextGeomLogger;
+    POOLVR.config.synthSpeakerVolume = URL_PARAMS.synthSpeakerVolume || POOLVR.config.synthSpeakerVolume;
+    POOLVR.config.initialPosition = POOLVR.config.initialPosition;
+    // Leap Motion config:
+    POOLVR.config.toolOptions = POOLVR.config.toolOptions || {};
+    POOLVR.config.toolOptions.toolLength   = URL_PARAMS.toolLength   || POOLVR.config.toolOptions.toolLength;
+    POOLVR.config.toolOptions.toolRadius   = URL_PARAMS.toolRadius   || POOLVR.config.toolOptions.toolRadius;
+    POOLVR.config.toolOptions.toolMass     = URL_PARAMS.toolMass     || POOLVR.config.toolOptions.toolMass;
+    POOLVR.config.toolOptions.toolOffset   = URL_PARAMS.toolOffset   || POOLVR.config.toolOptions.toolOffset;
+    POOLVR.config.toolOptions.toolRotation = URL_PARAMS.toolRotation || POOLVR.config.toolOptions.toolRotation;
+    POOLVR.config.toolOptions.tipShape     = URL_PARAMS.tipShape     || POOLVR.config.toolOptions.tipShape;
+    POOLVR.config.toolOptions.host         = URL_PARAMS.host;
+    POOLVR.config.toolOptions.port         = URL_PARAMS.port;
+    // application graphics config:
+    POOLVR.config.useBasicMaterials = URL_PARAMS.useBasicMaterials !== undefined ? URL_PARAMS.useBasicMaterials : POOLVR.config.useBasicMaterials;
+    if (POOLVR.config.useBasicMaterials) {
+        POOLVR.config.usePointLight = false;
+        POOLVR.config.useShadowMap  = false;
+    } else {
+        POOLVR.config.usePointLight = URL_PARAMS.usePointLight !== undefined ? URL_PARAMS.usePointLight : POOLVR.config.usePointLight;
+        POOLVR.config.useShadowMap  = URL_PARAMS.useShadowMap  !== undefined ? URL_PARAMS.useShadowMap  : POOLVR.config.useShadowMap;
+    }
+    // THREE.WebGLRenderer config:
+    POOLVR.config.rendererOptions = {
+        antialias: URL_PARAMS.antialias !== undefined ? URL_PARAMS.antialias : (isMobile() === false)
+    };
 };
 
 
 POOLVR.profile = URL_PARAMS.profile || POOLVR.profile || 'default';
 
 
-POOLVR.saveConfig = function () {
+POOLVR.saveConfig = function (profileName) {
     "use strict";
     POOLVR.config.toolOptions.toolOffset = [POOLVR.toolRoot.position.x, POOLVR.toolRoot.position.y, POOLVR.toolRoot.position.z];
     POOLVR.config.toolOptions.toolRotation = POOLVR.toolRoot.rotation.y;
-    localStorage.setItem(POOLVR.profile, JSON.stringify(POOLVR.config));
-    console.log("saved configuration for profile '" + POOLVR.profile + "':");
+    localStorage.setItem(profileName, JSON.stringify(POOLVR.config));
+    console.log("saved configuration for profile '" + profileName + "':");
     console.log(JSON.stringify(POOLVR.config, undefined, 2));
 };
 
 
-POOLVR.loadConfig = function () {
+POOLVR.loadConfig = function (profileName) {
     "use strict";
-    var localStorageConfig = localStorage.getItem(POOLVR.profile);
+    var localStorageConfig = localStorage.getItem(profileName);
+    var config;
     if (localStorageConfig) {
+        config = {};
         localStorageConfig = JSON.parse(localStorageConfig);
         for (var k in localStorageConfig) {
             if (POOLVR.config.hasOwnProperty(k)) {
-                POOLVR.config[k] = localStorageConfig[k];
+                config[k] = localStorageConfig[k];
             }
         }
-        console.log("loaded configuration for profile '" + POOLVR.profile + "':");
-        console.log(JSON.stringify(POOLVR.config, undefined, 2));
+        console.log("loaded configuration for profile '" + profileName + "'");
     }
+    return config;
 };
 ;
 // #### src/setup.js
@@ -1483,19 +1484,23 @@ POOLVR.setup = function () {
             var mesh = POOLVR.ballMeshes[i];
             var body = POOLVR.ballBodies[i];
             mesh.position.copy(body.interpolatedPosition);
+            mesh.updateMatrix();
 
             // TODO: better method for projected shadows, less hacks
             //mesh.quaternion.copy(body.interpolatedQuaternion);
             var stripeMesh = ballStripeMeshes[i];
             if (stripeMesh !== undefined) {
                 stripeMesh.quaternion.copy(body.interpolatedQuaternion);
+                stripeMesh.updateMatrix();
             }
 
             var shadowMesh = ballShadowMeshes[i];
             if (shadowMesh) {
                 shadowMesh.position.y = -(mesh.position.y - H_table) + 0.0004;
+                shadowMesh.updateMatrix();
             }
 
+            mesh.updateMatrixWorld();
         }
 
     };
@@ -1586,44 +1591,51 @@ POOLVR.resetTable = function () {
 };
 
 
-POOLVR.avatar = new THREE.Object3D();
 
 
 POOLVR.autoPosition = ( function () {
     "use strict";
     var nextVector = new THREE.Vector3();
-    var UP = new THREE.Vector3(0, 1, 0);
-    var avatar = POOLVR.avatar;
+    var UP = THREE.Object3D.DefaultUp;
     return function () {
         // POOLVR.textGeomLogger.log("YOU ARE BEING AUTO-POSITIONED.  NEXT BALL: " + POOLVR.nextBall);
         if (POOLVR.synthSpeaker.speaking === false) {
             POOLVR.synthSpeaker.speak("You are being auto-positioned.");
         }
 
+        var avatar = POOLVR.avatar;
         avatar.heading = Math.atan2(
             -(POOLVR.ballMeshes[POOLVR.nextBall].position.x - POOLVR.ballMeshes[0].position.x),
             -(POOLVR.ballMeshes[POOLVR.nextBall].position.z - POOLVR.ballMeshes[0].position.z)
         );
         avatar.quaternion.setFromAxisAngle(UP, avatar.heading);
-        avatar.updateMatrixWorld();
 
         nextVector.copy(POOLVR.toolRoot.position);
-        avatar.localToWorld(nextVector);
+        nextVector.applyQuaternion(avatar.quaternion);
+        nextVector.add(avatar.position);
         nextVector.sub(POOLVR.ballMeshes[0].position);
         nextVector.y = 0;
         avatar.position.sub(nextVector);
+
+        avatar.updateMatrix();
+        avatar.updateMatrixWorld();
+
+        var toolRoot = POOLVR.toolRoot;
+        toolRoot.matrixWorldInverse.getInverse(toolRoot.matrixWorld);
+        toolRoot.matrixWorld.decompose(toolRoot.worldPosition, toolRoot.worldQuaternion, toolRoot.worldScale);
     };
 } )();
 
 
 POOLVR.moveAvatar = ( function () {
     "use strict";
-    var UP = new THREE.Vector3(0, 1, 0),
+    var UP = THREE.Object3D.DefaultUp,
         walkSpeed = 0.333,
         floatSpeed = 0.1;
-    var avatar = POOLVR.avatar;
 
     return function (keyboard, gamepad, dt) {
+        var avatar = POOLVR.avatar;
+
         var floatUp = keyboard.getValue("floatUp") + keyboard.getValue("floatDown");
         var drive = keyboard.getValue("driveBack") + keyboard.getValue("driveForward");
         var strafe = keyboard.getValue("strafeRight") + keyboard.getValue("strafeLeft");
@@ -1652,6 +1664,13 @@ POOLVR.moveAvatar = ( function () {
             avatar.position.x += dt * (strafe * cosHeading + drive * sinHeading);
             avatar.position.z += dt * (drive * cosHeading - strafe * sinHeading);
             avatar.position.y += dt * floatUp;
+
+            avatar.updateMatrix();
+            avatar.updateMatrixWorld();
+
+            var toolRoot = POOLVR.toolRoot;
+            toolRoot.matrixWorldInverse.getInverse(toolRoot.matrixWorld);
+            toolRoot.matrixWorld.decompose(toolRoot.worldPosition, toolRoot.worldQuaternion, toolRoot.worldScale);
         }
     };
 } )();
@@ -1675,7 +1694,7 @@ POOLVR.startTutorial = function () {
 };
 
 
-POOLVR.animate = function () {
+POOLVR.startAnimateLoop = function () {
     "use strict";
     var keyboard = POOLVR.keyboard,
         gamepad  = POOLVR.gamepad,
@@ -1737,6 +1756,7 @@ POOLVR.animate = function () {
         rS('updatevrcontrols').start();
         if (app.vrControls.enabled) {
             app.vrControls.update();
+            app.camera.updateMatrixWorld();
         }
         rS('updatevrcontrols').end();
 
@@ -1771,19 +1791,24 @@ POOLVR.animate = function () {
         rS().update();
     }
 
-    return animate;
+    requestAnimationFrame(animate);
 
 };
 
 
 function onLoad() {
     "use strict";
-
-    POOLVR.loadConfig();
+    POOLVR.config = POOLVR.loadConfig(POOLVR.profile) || POOLVR.config;
+    POOLVR.parseURIConfig();
     console.log("POOLVR.config =\n" + JSON.stringify(POOLVR.config, undefined, 2));
 
+    THREE.Object3D.DefaultMatrixAutoUpdate = false;
+
+    POOLVR.avatar = new THREE.Object3D();
     var avatar = POOLVR.avatar;
+
     avatar.position.fromArray(POOLVR.config.initialPosition);
+
     avatar.heading = 0;
     avatar.floatMode = false;
     avatar.toolMode = false;
@@ -1810,6 +1835,8 @@ function onLoad() {
 
     THREE.py.parse(THREEPY_SCENE).then( function (scene) {
 
+        scene.autoUpdate = false;
+
         if (!POOLVR.config.useBasicMaterials) {
             var centerSpotLight = new THREE.SpotLight(0xffffee, 1, 8, Math.PI / 2);
             centerSpotLight.position.set(0, 3, 0);
@@ -1818,37 +1845,47 @@ function onLoad() {
             centerSpotLight.shadow.camera.far = 4;
             centerSpotLight.shadow.camera.fov = 90;
             scene.add(centerSpotLight);
+            centerSpotLight.updateMatrix();
+            centerSpotLight.updateMatrixWorld();
         }
 
         if (POOLVR.config.usePointLight) {
             var pointLight = new THREE.PointLight(0xaa8866, 0.8, 40);
             pointLight.position.set(4, 5, 2.5);
             scene.add(pointLight);
+            pointLight.updateMatrix();
+            pointLight.updateMatrixWorld();
         }
 
-        var UP = new THREE.Vector3(0, 1, 0);
         var appConfig = combineObjects(POOLVR.config, {
             onResetVRSensor: function (lastRotation, lastPosition) {
-                var camera = POOLVR.app.camera;
-                // app.camera.updateMatrix();
-                POOLVR.avatar.heading += lastRotation - camera.rotation.y;
-                POOLVR.toolRoot.rotation.y -= (lastRotation - camera.rotation.y);
-                POOLVR.toolRoot.position.sub(lastPosition);
-                POOLVR.toolRoot.position.applyAxisAngle(UP, -lastRotation + camera.rotation.y);
-                POOLVR.toolRoot.position.add(camera.position);
-                // POOLVR.toolRoot.updateMatrix();
-                POOLVR.avatar.updateMatrixWorld();
+                // TODO
+                // var camera = POOLVR.app.camera;
+                // POOLVR.toolRoot.rotation.y -= (lastRotation - camera.rotation.y);
+                // POOLVR.toolRoot.position.sub(lastPosition);
+                // POOLVR.toolRoot.position.applyAxisAngle(THREE.Object3D.DefaultUp, -lastRotation + camera.rotation.y);
+                // POOLVR.toolRoot.position.add(camera.position);
+                // POOLVR.avatar.heading += lastRotation - camera.rotation.y;
+                // POOLVR.avatar.quaternion.setFromAxisAngle(UP, avatar.heading);
+                // POOLVR.avatar.updateMatrix();
+                // POOLVR.avatar.updateMatrixWorld();
             }
         });
 
         POOLVR.app = new WebVRApplication(scene, appConfig);
 
+        POOLVR.app.camera.matrixAutoUpdate = true;
+
         avatar.add(POOLVR.app.camera);
         scene.add(avatar);
 
+        avatar.updateMatrix();
+
         POOLVR.setup();
 
-        requestAnimationFrame( POOLVR.animate() );
+        scene.updateMatrixWorld();
+
+        POOLVR.startAnimateLoop();
 
         POOLVR.startTutorial();
 
