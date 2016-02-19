@@ -14,21 +14,90 @@
 
     <style>
       body {
+        position: absolute;
         width: 100%;
         height: 100%;
         background-color: #000;
-        color: #fff;
-        margin: 0px;
+        margin: 0;
         padding: 0;
         overflow: hidden;
+        font-family: Monaco, "Bitstream Vera Sans Mono", "Lucida Console", Terminal, monospace;
+      }
+      #overlay {
+        position: absolute;
+        left: 4vw;
+        top: 4vh;
+        margin: 0;
+        padding: 0.25em;
+        color: #ffffff;
+      }
+      h1 {
+        position: relative;
+        font-size: 9vh;
+        color: #b5e853;
+      }
+      #instructions {
+        margin-left: 1em;
+      }
+      h2 {
+        position: relative;
+        font-size: 5vh;
+        color: #b5e853;
+      }
+      #menu {
+        position: relative;
+        margin: 1em;
+      }
+      #start {
+        font-size: 5vh;
+        text-align: center;
+        padding: 0.25em;
+        color: #b5e853;
+        background-color: rgba(111, 20, 20, 0.6);
+        box-sizing: border-box;      
+      }
+      #glcanvas {
+        position: fixed;
+        width: 100%;
+        top: 0;
+        left: 0;
+        padding: 0;
+        margin: 0;
+        border: 0;
       }
     </style>
 
+
 {{ json_config }}
+
 
   </head>
 
   <body onload="onLoad()">
+
+    <canvas id="glcanvas"></canvas>
+
+    <div id="overlay">
+
+      <h1>poolvr</h1>
+
+      <div id="instructions">
+        <section>
+        <h2>How to play:</h2>
+        <h3>Keyboard controls:</h3>
+        <p>move around: WSAD (xz-plane), EC (up/down)</p>
+        <p>P: auto-position for next ball</p>
+        <h3>Gamepad controls:</h3>
+        <p>ASDF</p>
+        </section>
+      </div>
+
+      <div id="menu">
+        <a id="start">Start!</a>
+      </div>
+
+    </div>
+
 
 {% if config['DEBUG'] %}
     <script src="node_modules/three/build/three.js"></script>

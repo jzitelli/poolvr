@@ -6,15 +6,23 @@ function WebVRApplication(scene, config) {
     var rendererOptions = config.rendererOptions;
     var onResetVRSensor = config.onResetVRSensor;
 
-    var camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-    this.camera = camera;
+    var domElement;
+    if (config.canvasId) {
+        domElement = document.getElementById(config.canvasId);
+        rendererOptions = combineObjects(rendererOptions, {canvas: domElement});
+        console.log(rendererOptions);
+        this.renderer = new THREE.WebGLRenderer(rendererOptions);
+    } else {
+        this.renderer = new THREE.WebGLRenderer(rendererOptions);
+        domElement = this.renderer.domElement;
+        document.body.appendChild(domElement);
+        domElement.id = 'glcanvas';
+    }
 
-    this.renderer = new THREE.WebGLRenderer(rendererOptions);
     this.renderer.setPixelRatio(window.devicePixelRatio);
 
-    var domElement = this.renderer.domElement;
-    document.body.appendChild(domElement);
-    domElement.id = 'renderer';
+    var camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    this.camera = camera;
 
     this.vrEffect = new THREE.VREffect(this.renderer, function(errorMsg) { console.log('error creating VREffect: ' + errorMsg); });
     this.vrEffect.setSize(window.innerWidth, window.innerHeight);

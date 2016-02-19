@@ -312,7 +312,8 @@ function onLoad() {
                 // POOLVR.avatar.quaternion.setFromAxisAngle(UP, avatar.heading);
                 // POOLVR.avatar.updateMatrix();
                 // POOLVR.avatar.updateMatrixWorld();
-            }
+            },
+            canvasId: 'glcanvas'
         });
 
         POOLVR.app = new WebVRApplication(scene, appConfig);
@@ -330,7 +331,7 @@ function onLoad() {
 
         POOLVR.startAnimateLoop();
 
-        POOLVR.startTutorial();
+        //POOLVR.startTutorial();
 
     } );
 
