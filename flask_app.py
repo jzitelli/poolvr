@@ -42,18 +42,18 @@ WebVRConfig = {
 POOLVR = {
     'config': {
         'gravity'            : 9.8,
-        'useBasicMaterials'  : False,
+        'useBasicMaterials'  : True,
         'useShadowMap'       : False,
         'usePointLight'      : False,
-        'useSkybox'          : True,
-        'useTextGeomLogger'  : True,
+        'useSkybox'          : False,
+        'useTextGeomLogger'  : False,
         'L_table'            : 2.3368,
         'H_table'            : 0.74295,
         'ball_diameter'      : 2.25 * pool_table.IN2METER,
         'initialPosition'    : [0, 0.98295, 1.0042],
         'synthSpeakerVolume' : 0.25,
         'toolOptions': {
-            'toolOffset'  : [0, -0.42, -0.4],
+            'toolOffset'  : [0, -0.42, -0.42],
             'toolRotation': 0,
             'tipShape'    : 'Cylinder'
         }
