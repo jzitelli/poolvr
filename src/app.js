@@ -34,8 +34,6 @@ POOLVR.resetTable = function () {
 };
 
 
-
-
 POOLVR.autoPosition = ( function () {
     "use strict";
     var nextVector = new THREE.Vector3();
@@ -301,6 +299,7 @@ function onLoad() {
         }
 
         var appConfig = combineObjects(POOLVR.config, {
+            canvasId: 'glcanvas',
             onResetVRSensor: function (lastRotation, lastPosition) {
                 // TODO
                 // var camera = POOLVR.app.camera;
@@ -312,8 +311,7 @@ function onLoad() {
                 // POOLVR.avatar.quaternion.setFromAxisAngle(UP, avatar.heading);
                 // POOLVR.avatar.updateMatrix();
                 // POOLVR.avatar.updateMatrixWorld();
-            },
-            canvasId: 'glcanvas'
+            }
         });
 
         POOLVR.app = new WebVRApplication(scene, appConfig);
@@ -335,6 +333,8 @@ function onLoad() {
         var startButton = document.getElementById('start');
         startButton.onclick = function () {
             overlay.style.display = 'none';
+            POOLVR.app.vrManager.onFSClick_();
+            //POOLVR.app.vrManager.onVRClick_();
             POOLVR.startTutorial();
         };
         startButton.disabled = false;

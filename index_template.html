@@ -54,7 +54,7 @@
         position: relative;
         margin: 1em;
       }
-      #leapHost {
+      #leapAddress, #profileName {
         font-size: 2.5vh;
         margin: 2vh;
       }
@@ -112,7 +112,11 @@
       </div>
 
       <div id="menu">
-        Leap websocket address:<input class="textBox" id="leapHost" type="text" maxlength="15" value="localhost" required></input>
+        Leap websocket address:
+        <input id="leapAddress" type="text" maxlength="20" value="localhost" required/>
+        <br>
+        Profile name:
+        <input id="profileName" type="text" maxlength="30" value="default" required/>
         <br>
         <button id="start" disabled>Start!</button>
       </div>
