@@ -25,11 +25,12 @@
       }
       #overlay {
         position: absolute;
-        left: 4vw;
-        top: 4vh;
+        left: 2vw;
+        top: 2vh;
         margin: 0;
-        padding: 0.25em;
+        padding: 2vh;
         color: #ffffff;
+        background-color: rgba(20, 20, 20, 0.7);
       }
       h1 {
         position: relative;
@@ -37,24 +38,34 @@
         color: #b5e853;
       }
       #instructions {
-        margin-left: 1em;
+        position: relative;
       }
       h2 {
-        position: relative;
         font-size: 5vh;
         color: #b5e853;
+      }
+      h3 {
+        margin-left: 1vw;
+      }
+      p {
+        margin-left: 2vw;
       }
       #menu {
         position: relative;
         margin: 1em;
       }
+      #leapHost {
+        font-size: 2.5vh;
+        margin: 2vh;
+      }
       #start {
         font-size: 5vh;
         text-align: center;
+        margin-top: 1vh;
         padding: 0.25em;
         color: #b5e853;
         background-color: rgba(111, 20, 20, 0.6);
-        box-sizing: border-box;      
+        box-sizing: border-box;
       }
       #glcanvas {
         position: fixed;
@@ -83,17 +94,27 @@
 
       <div id="instructions">
         <section>
+
         <h2>How to play:</h2>
+
         <h3>Keyboard controls:</h3>
-        <p>move around: WSAD (xz-plane), EC (up/down)</p>
-        <p>P: auto-position for next ball</p>
-        <h3>Gamepad controls:</h3>
-        <p>ASDF</p>
+
+        <p>W/S/A/D: move around (xz-plane), E/C: move up/down</p>
+        <p>I/K/J/L: move Leap controller (xz-plane), O/.: move Leap controller up/down</p>
+        <p>P: auto-position for next ball, +/-: cycle ball selection, R: reset table</p>
+        <p>Z: reset VR sensor</p>
+
+        <!-- <h3>Gamepad controls:</h3> -->
+        <!-- <p>left stick: move around (push in for up/down movement)</p> -->
+        <!-- <p>right stick: move Leap controller (push in to move up/down/left/right)</p> -->
+
         </section>
       </div>
 
       <div id="menu">
-        <a id="start">Start!</a>
+        Leap websocket address:<input class="textBox" id="leapHost" type="text" maxlength="15" value="localhost" required></input>
+        <br>
+        <button id="start" disabled>Start!</button>
       </div>
 
     </div>

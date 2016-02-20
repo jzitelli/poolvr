@@ -331,7 +331,13 @@ function onLoad() {
 
         POOLVR.startAnimateLoop();
 
-        //POOLVR.startTutorial();
+        var overlay = document.getElementById('overlay');
+        var startButton = document.getElementById('start');
+        startButton.onclick = function () {
+            overlay.style.display = 'none';
+            POOLVR.startTutorial();
+        };
+        startButton.disabled = false;
 
     } );
 
