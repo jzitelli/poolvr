@@ -127,6 +127,11 @@ function addTool(parent, world, options) {
     stickMesh.visible = false;
     toolRoot.add(stickMesh);
 
+    var stickShadowMesh = new THREE.ShadowMesh(stickMesh);
+    POOLVR.app.scene.add(stickShadowMesh);
+    var shadowPlane = new THREE.Plane(UP, (POOLVR.config.H_table + 0.001));
+    var shadowLightPosition = new THREE.Vector4(0, 5, 0, 0.01);
+
     var tipBody = new CANNON.Body({mass: toolMass, type: CANNON.Body.KINEMATIC});
     // TODO: rename, avoid confusion b/t cannon and three materials
     tipBody.material = POOLVR.tipMaterial;
@@ -217,6 +222,10 @@ function addTool(parent, world, options) {
     // initialize matrices now:
     toolRoot.updateMatrix();
     toolRoot.updateMatrixWorld();
+
+    stickShadowMesh.update(shadowPlane, shadowLightPosition);
+    stickShadowMesh.updateMatrixWorld(true);
+
     // to store decomposed toolRoot world matrix:
     toolRoot.worldPosition = new THREE.Vector3();
     toolRoot.worldQuaternion = new THREE.Quaternion();
@@ -249,6 +258,9 @@ function addTool(parent, world, options) {
         stickMesh.position.applyMatrix4(toolRoot.matrixWorldInverse);
         stickMesh.updateMatrix();
         stickMesh.updateMatrixWorld();
+
+        stickShadowMesh.update(shadowPlane, shadowLightPosition);
+        stickShadowMesh.updateMatrixWorld(true);
     }
 
 
@@ -283,6 +295,9 @@ function addTool(parent, world, options) {
             toolRoot.updateMatrixWorld();
             toolRoot.matrixWorldInverse.getInverse(toolRoot.matrixWorld);
             toolRoot.matrixWorld.decompose(toolRoot.worldPosition, toolRoot.worldQuaternion, toolRoot.worldScale);
+
+            stickShadowMesh.update(shadowPlane, shadowLightPosition);
+            stickShadowMesh.updateMatrixWorld(true);
 
             if (interactionBoxRoot.visible === false) {
                 interactionBoxRoot.visible = true;
@@ -342,6 +357,9 @@ function addTool(parent, world, options) {
 
                 stickMesh.updateMatrix();
                 stickMesh.updateMatrixWorld();
+
+                stickShadowMesh.update(shadowPlane, shadowLightPosition);
+                stickShadowMesh.updateMatrixWorld(true);
 
                 velocity.fromArray(tool.tipVelocity);
                 velocity.applyQuaternion(toolRoot.worldQuaternion);
