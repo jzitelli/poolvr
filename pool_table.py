@@ -243,10 +243,6 @@ def pool_hall(useSkybox=False,
                                       heightSegments=8,
                                       thetaStart=np.pi/3,
                                       thetaLength=np.pi/3)
-    shadowGeom = CircleBufferGeometry(name='shadowGeom',
-                                      radius=ball_radius,
-                                      segments=16)
-    shadowMaterial = MeshBasicMaterial(color=0x002200)
 
     ball_materials = [MeshPhongMaterial(color=color,
                                         shading=SmoothShading)
@@ -284,20 +280,12 @@ def pool_hall(useSkybox=False,
     z_positions = [L_table / 4] + list(z_positions)
 
     for i, material in enumerate(ball_materials[:9] + 7*[ball_materials[0]]):
-        rotation = [0, 0, 0]
-        ballMesh = Mesh(name="ball %d" % i,
+        ballMesh = Mesh(name="ballMesh %d" % i,
                         geometry=sphere,
                         position=[x_positions[i], y_position, z_positions[i]],
-                        rotation=rotation,
                         material=material,
                         userData=ballData,
                         castShadow=True)
-        ballShadowMesh = Mesh(name="ballShadowMesh %d" % i,
-                              geometry=shadowGeom,
-                              material=shadowMaterial,
-                              position=[0, -ball_radius + 0.001, 0],
-                              rotation=[-0.5*np.pi - rotation[0], -rotation[1], -rotation[2]])
-        ballMesh.add(ballShadowMesh)
         scene.add(ballMesh)
         if i > 8:
             stripeMesh = Mesh(name="ballStripeMesh %d" % i,

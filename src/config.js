@@ -1,13 +1,12 @@
 POOLVR.commands = {
-  toggleVRControls: function () { POOLVR.app.toggleVRControls(); },
-  toggleWireframe:  function () { POOLVR.app.toggleWireframe(); },
-  resetVRSensor:    function () { POOLVR.app.resetVRSensor(); },
-  resetTable:       function () { POOLVR.resetTable(); },
-  autoPosition:     function () { POOLVR.autoPosition(); },
-  //toggleMenu:       function () { POOLVR.toggleMenu(); },
-  selectNextBall:   function () { POOLVR.selectNextBall(); },
-  selectPrevBall:   function () { POOLVR.selectNextBall(-1); },
-  saveConfig:       function () { POOLVR.saveConfig(POOLVR.profile); }
+    toggleVRControls: function () { POOLVR.app.toggleVRControls(); },
+    toggleWireframe:  function () { POOLVR.app.toggleWireframe(); },
+    resetVRSensor:    function () { POOLVR.app.resetVRSensor(); },
+    resetTable:       function () { POOLVR.resetTable(); },
+    autoPosition:     function () { POOLVR.autoPosition(); },
+    selectNextBall:   function () { POOLVR.selectNextBall(); },
+    selectPrevBall:   function () { POOLVR.selectNextBall(-1); },
+    stroke:           function () { POOLVR.stroke(); }
 };
 
 POOLVR.keyboardCommands = {
@@ -39,14 +38,13 @@ POOLVR.keyboardCommands = {
                  commandDown: POOLVR.commands.resetTable, dt: 0.5},
     autoPosition: {buttons: [Primrose.Input.Keyboard.P],
                    commandDown: POOLVR.commands.autoPosition, dt: 0.5},
-    // toggleMenu: {buttons: [Primrose.Input.Keyboard.SPACEBAR],
-    //              commandDown: POOLVR.commands.toggleMenu, dt: 0.25},
     selectNextBall: {buttons: [Primrose.Input.Keyboard.ADD],
                      commandDown: POOLVR.commands.selectNextBall, dt: 0.5},
     selectPrevBall: {buttons: [Primrose.Input.Keyboard.SUBTRACT],
                      commandDown: POOLVR.commands.selectPrevBall, dt: 0.5},
-    saveConfig: {buttons: [Primrose.Input.Keyboard.NUMBER1],
-                 commandDown: POOLVR.commands.saveConfig, dt: 0.5}
+    stroke: {buttons: [Primrose.Input.Keyboard.SPACEBAR],
+             commandDown: POOLVR.commands.stroke, dt: 0.25}
+
 };
 
 POOLVR.keyboardCommands = makeObjectArray(POOLVR.keyboardCommands, 'name');
@@ -78,11 +76,7 @@ POOLVR.gamepadCommands = {
     selectPrevBall: {buttons: [Primrose.Input.Gamepad.XBOX_BUTTONS.leftBumper],
                      commandDown: POOLVR.commands.selectPrevBall, dt: 0.25},
     autoPosition: {buttons: [Primrose.Input.Gamepad.XBOX_BUTTONS.Y],
-                   commandDown: POOLVR.commands.autoPosition, dt: 0.25},
-    // toggleMenu: {buttons: [Primrose.Input.Gamepad.XBOX_BUTTONS.start],
-    //              commandDown: function(){POOLVR.toggleMenu();}, dt: 0.25},
-    saveConfig: {buttons: [Primrose.Input.Gamepad.XBOX_BUTTONS.right],
-                 commandDown: POOLVR.commands.saveConfig, dt: 0.5}
+                   commandDown: POOLVR.commands.autoPosition, dt: 0.25}
 };
 
 

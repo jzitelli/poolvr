@@ -117,6 +117,13 @@ POOLVR.moveAvatar = ( function () {
 } )();
 
 
+POOLVR.stroke = function () {
+    "use strict";
+    var body = POOLVR.ballBodies[0];
+    body.velocity.z = -3.5;
+};
+
+
 POOLVR.startTutorial = function () {
     "use strict";
     POOLVR.synthSpeaker.speak("Hello.  Welcome. To. Pool-ver.", function () {
@@ -330,6 +337,7 @@ function onLoad() {
         POOLVR.startAnimateLoop();
 
         var overlay = document.getElementById('overlay');
+
         var startButton = document.getElementById('start');
         startButton.onclick = function () {
             overlay.style.display = 'none';
@@ -338,6 +346,13 @@ function onLoad() {
             POOLVR.startTutorial();
         };
         startButton.disabled = false;
+
+        var leapAddressInput = document.getElementById('leapAddress');
+        leapAddressInput.addEventListener('change', function (evt) {
+            console.log('change to leapAddress!');
+        });
+
+        var profileNameInput = document.getElementById('profileName');
 
     } );
 

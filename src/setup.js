@@ -114,13 +114,12 @@ POOLVR.setup = function () {
 
     var leapTool = addTool(POOLVR.avatar, world, POOLVR.config.toolOptions);
 
+    POOLVR.leapController = leapTool.leapController;
     POOLVR.toolRoot = leapTool.toolRoot;
     POOLVR.updateTool = leapTool.updateTool;
     POOLVR.updateToolPostStep = leapTool.updateToolPostStep;
     POOLVR.moveToolRoot = leapTool.moveToolRoot;
 
-    var ballStripeMeshes = [],
-        ballShadowMeshes = [];
     var floorMesh;
 
     scene.traverse(function (node) {
@@ -134,7 +133,7 @@ POOLVR.setup = function () {
             }
 
             var ballNum;
-            if (node.name.startsWith('ball ')) {
+            if (node.name.startsWith('ballMesh')) {
                 ballNum = Number(node.name.split(' ')[1]);
                 POOLVR.ballMeshes[ballNum] = node;
                 POOLVR.ballBodies[ballNum] = node.body;
@@ -142,14 +141,6 @@ POOLVR.setup = function () {
                 node.body.bounces = 0;
                 node.body.ballNum = ballNum;
                 node.body.material = POOLVR.ballMaterial;
-            }
-            else if (node.name.startsWith('ballStripeMesh')) {
-                ballNum = Number(node.name.split(' ')[1]);
-                ballStripeMeshes[ballNum] = node;
-            }
-            else if (node.name.startsWith('ballShadowMesh')) {
-                ballNum = Number(node.name.split(' ')[1]);
-                ballShadowMeshes[ballNum] = node;
             }
             else if (node.name === 'playableSurfaceMesh') {
                 node.body.material = POOLVR.playableSurfaceMaterial;
@@ -171,6 +162,25 @@ POOLVR.setup = function () {
 
     var H_table = POOLVR.config.H_table;
 
+    var useShadowMesh = POOLVR.config.useShadowMesh;
+
+    if (!useShadowMesh) {
+
+        var ballShadowMeshes = [];
+        var ballShadowGeom = new THREE.CircleBufferGeometry(0.5*POOLVR.config.ball_diameter, 16);
+        ballShadowGeom.rotateX(-0.5*Math.PI);
+        var ballShadowMaterial = new THREE.MeshBasicMaterial({color: 0x002200});
+
+        POOLVR.ballMeshes.forEach( function (mesh, ballNum) {
+            var ballShadowMesh = new THREE.Mesh(ballShadowGeom, ballShadowMaterial);
+            ballShadowMesh.position.copy(mesh.position);
+            ballShadowMesh.position.y = H_table + 0.0004;
+            ballShadowMeshes[ballNum] = ballShadowMesh;
+            scene.add(ballShadowMesh);
+        } );
+
+    }
+
     POOLVR.updateBallsPostStep = function () {
 
         for (var i = 0; i < POOLVR.ballMeshes.length; i++) {
@@ -178,23 +188,18 @@ POOLVR.setup = function () {
             var mesh = POOLVR.ballMeshes[i];
             var body = POOLVR.ballBodies[i];
             mesh.position.copy(body.interpolatedPosition);
+            mesh.quaternion.copy(body.interpolatedQuaternion);
             mesh.updateMatrix();
-
-            // TODO: better method for projected shadows, less hacks
-            //mesh.quaternion.copy(body.interpolatedQuaternion);
-            var stripeMesh = ballStripeMeshes[i];
-            if (stripeMesh !== undefined) {
-                stripeMesh.quaternion.copy(body.interpolatedQuaternion);
-                stripeMesh.updateMatrix();
-            }
-
-            var shadowMesh = ballShadowMeshes[i];
-            if (shadowMesh) {
-                shadowMesh.position.y = -(mesh.position.y - H_table) + 0.0004;
-                shadowMesh.updateMatrix();
-            }
-
             mesh.updateMatrixWorld();
+
+            if (!useShadowMesh) {
+                var shadowMesh = ballShadowMeshes[i];
+                shadowMesh.position.x = mesh.position.x;
+                shadowMesh.position.z = mesh.position.z;
+                shadowMesh.updateMatrix();
+                shadowMesh.updateMatrixWorld();
+            }
+
         }
 
     };
@@ -228,7 +233,6 @@ POOLVR.setup = function () {
             } else if (body.bounces === 7) {
                 body.sleep();
                 body.mesh.visible = false;
-                // autoPosition(avatar, 5);
             }
 
         }
