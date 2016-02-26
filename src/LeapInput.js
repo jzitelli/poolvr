@@ -66,6 +66,11 @@ function addTool(parent, world, options) {
     };
     leapController.on('connect', onConnect);
 
+    var onDisconnect = options.onDisconnect || function () {
+        console.log('Leap Motion WebSocket disconnected');
+    };
+    leapController.on('disconnect', onDisconnect);
+
     var onStreamingStarted = options.onStreamingStarted || function () {
         console.log('Leap Motion streaming started');
     };
@@ -100,8 +105,6 @@ function addTool(parent, world, options) {
     interactionPlaneMesh.updateMatrix();
     interactionBoxRoot.add(interactionPlaneMesh);
 
-    interactionBoxRoot.visible = false;
-
     // leap motion controller:
     var IN2METER = 0.0254;
     var boxGeom = new THREE.BoxGeometry(METERS2LEAP*IN2METER*3, METERS2LEAP*IN2METER*0.5, METERS2LEAP*IN2METER*1.2);
@@ -124,7 +127,6 @@ function addTool(parent, world, options) {
     var stickMaterial = new THREE.MeshLambertMaterial({color: stickColor, side: THREE.DoubleSide, transparent: true});
     var stickMesh = new THREE.Mesh(stickGeom, stickMaterial);
     stickMesh.castShadow = true;
-    stickMesh.visible = false;
     toolRoot.add(stickMesh);
 
     var stickShadowMesh = new THREE.ShadowMesh(stickMesh);
@@ -216,8 +218,6 @@ function addTool(parent, world, options) {
                   [joint2Mesh.clone(), joint2Mesh.clone(), joint2Mesh.clone(), joint2Mesh.clone(), joint2Mesh.clone()]];
     leftRoot.add(joint2s[0][0], joint2s[0][1], joint2s[0][2], joint2s[0][3], joint2s[0][4]);
     rightRoot.add(joint2s[1][0], joint2s[1][1], joint2s[1][2], joint2s[1][3], joint2s[1][4]);
-    leftRoot.visible  = false;
-    rightRoot.visible = false;
 
 
     // initialize matrices now:
@@ -235,6 +235,13 @@ function addTool(parent, world, options) {
     // inverse of toolRoot.matrixWorld:
     toolRoot.matrixWorldInverse = new THREE.Matrix4();
     toolRoot.matrixWorldInverse.getInverse(toolRoot.matrixWorld);
+
+
+    interactionBoxRoot.visible = false;
+    stickMesh.visible = false;
+    stickShadowMesh.visible = false;
+    leftRoot.visible  = false;
+    rightRoot.visible = false;
 
 
     var tipCollisionCounter = 0;
@@ -302,8 +309,6 @@ function addTool(parent, world, options) {
 
             if (interactionBoxRoot.visible === false) {
                 interactionBoxRoot.visible = true;
-                stickMesh.material.opacity = 1;
-                if (tipMesh) tipMesh.material.opacity = 1;
                 interactionPlaneMaterial.opacity = interactionPlaneOpacity;
             }
         }
@@ -337,9 +342,10 @@ function addTool(parent, world, options) {
 
                 if (stickMesh.visible === false || stickMesh.material.opacity < 1) {
                     stickMesh.visible = true;
-                    interactionBoxRoot.visible = true;
+                    stickShadowMesh.visible = true;
                     stickMesh.material.opacity = 1;
                     if (tipMesh) tipMesh.material.opacity = 1;
+                    interactionBoxRoot.visible = true;
                     interactionPlaneMaterial.opacity = interactionPlaneOpacity;
                 }
 
@@ -397,6 +403,7 @@ function addTool(parent, world, options) {
                     if (tipMesh) tipMesh.material.opacity = stickMesh.material.opacity;
                 } else {
                     stickMesh.visible = false;
+                    stickShadowMesh.visible = false;
                     interactionBoxRoot.visible = false;
                 }
             }

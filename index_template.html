@@ -25,23 +25,22 @@
       }
       #overlay {
         position: absolute;
-        left: 2vw;
-        top: 2vh;
+        left: 1.5vw;
+        top: 1.5vw;
         margin: 0;
         padding: 0.5vh;
         color: #ffffff;
         background-color: rgba(20, 20, 50, 0.7);
       }
       h1 {
-        position: relative;
-        font-size: 8vh;
+        font-size: 7vh;
         color: #b5e853;
       }
       #instructions {
         position: relative;
       }
       h2 {
-        font-size: 4vh;
+        font-size: 3vh;
         color: #b5e853;
       }
       h4 {
@@ -58,8 +57,17 @@
         font-size: 2.5vh;
         margin: 2vh;
       }
+      #leapIndicator {
+        font-size: 3vh;
+        text-align: center;
+        margin-top: 1vh;
+        padding: 0.25em;
+        color: #b5e853;
+        background-color: rgba(60, 20, 0, 0.6);
+        box-sizing: border-box;
+      }
       #start {
-        font-size: 5vh;
+        font-size: 3vh;
         text-align: center;
         margin-top: 1vh;
         padding: 0.25em;
@@ -92,29 +100,24 @@
 
       <h1>poolvr</h1>
 
-      <div id="instructions">
-        <section>
+      <h2>How to play:</h2>
 
-        <h2>How to play:</h2>
+      <h3>Keyboard controls:</h3>
 
-        <h3>Keyboard controls:</h3>
+      <h4>Move around:</h4>
+      <p>W/S/A/D (xz-plane), E/C (up/down)</p>
 
-        <h4>Move around:</h4>
-        <p>W/S/A/D (xz-plane), E/C (up/down)</p>
+      <h4>Move virtual Leap controller:</h4>
+      <p>I/K/J/L (xz-plane), O/. (up/down)</p>
 
-        <h4>Move virtual Leap controller:</h4>
-        <p>I/K/J/L (xz-plane), O/. (up/down)</p>
-
-        <h4>Actions:</h4>
-        <p>P: auto-position for next ball, +/-: cycle ball selection</p>
-        <p>R: reset table, Z: reset VR sensor</p>
-
-        </section>
-      </div>
+      <h4>Actions:</h4>
+      <p>P: auto-position for next ball, +/-: cycle ball selection</p>
+      <p>R: reset table, Z: reset VR sensor</p>
 
       <div id="menu">
-        Leap websocket address:
+        Leap Motion Websocket address:
         <input id="leapAddress" type="text" maxlength="20" value="localhost" required/>
+        <button id="leapIndicator">disconnected</button>
         <br>
         Profile name:
         <input id="profileName" type="text" maxlength="30" value="default" required/>

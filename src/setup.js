@@ -112,14 +112,6 @@ POOLVR.setup = function () {
     world.addContactMaterial(POOLVR.tipBallContactMaterial);
     world.addContactMaterial(POOLVR.railBallContactMaterial);
 
-    var leapTool = addTool(POOLVR.avatar, world, POOLVR.config.toolOptions);
-
-    POOLVR.leapController = leapTool.leapController;
-    POOLVR.toolRoot = leapTool.toolRoot;
-    POOLVR.updateTool = leapTool.updateTool;
-    POOLVR.updateToolPostStep = leapTool.updateToolPostStep;
-    POOLVR.moveToolRoot = leapTool.moveToolRoot;
-
     var floorMesh;
 
     scene.traverse(function (node) {

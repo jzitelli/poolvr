@@ -332,12 +332,32 @@ function onLoad() {
 
         POOLVR.setup();
 
-        scene.updateMatrixWorld();
+        var leapIndicator = document.getElementById('leapIndicator');
 
-        POOLVR.startAnimateLoop();
+        var leapOptions = combineObjects(POOLVR.config.toolOptions, {
+            onConnect: function () {
+                leapIndicator.innerHTML = 'connected';
+            },
+            onDisconnect: function () {
+                leapIndicator.innerHTML = 'disconnected';
+            }
+        });
+
+        var leapTool = addTool(avatar, POOLVR.world, leapOptions);
+        POOLVR.leapController = leapTool.leapController;
+        POOLVR.toolRoot = leapTool.toolRoot;
+        POOLVR.updateTool = leapTool.updateTool;
+        POOLVR.updateToolPostStep = leapTool.updateToolPostStep;
+        POOLVR.moveToolRoot = leapTool.moveToolRoot;
+
+        var leapAddressInput = document.getElementById('leapAddress');
+        leapAddressInput.addEventListener('change', function (evt) {
+            POOLVR.leapController.connection.host = leapAddressInput.value;
+            POOLVR.leapController.connection.disconnect(true);
+            POOLVR.leapController.connect();
+        });
 
         var overlay = document.getElementById('overlay');
-
         var startButton = document.getElementById('start');
         startButton.onclick = function () {
             overlay.style.display = 'none';
@@ -347,12 +367,11 @@ function onLoad() {
         };
         startButton.disabled = false;
 
-        var leapAddressInput = document.getElementById('leapAddress');
-        leapAddressInput.addEventListener('change', function (evt) {
-            console.log('change to leapAddress!');
-        });
-
         var profileNameInput = document.getElementById('profileName');
+
+        scene.updateMatrixWorld();
+
+        POOLVR.startAnimateLoop();
 
     } );
 
