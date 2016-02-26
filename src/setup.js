@@ -112,7 +112,21 @@ POOLVR.setup = function () {
     world.addContactMaterial(POOLVR.tipBallContactMaterial);
     world.addContactMaterial(POOLVR.railBallContactMaterial);
 
-    var floorMesh;
+    var leapTool = addTool(POOLVR.avatar, POOLVR.world, combineObjects(POOLVR.config.toolOptions, {
+        onConnect: function () {
+            POOLVR.leapIndicator.innerHTML = 'connected';
+        },
+        onDisconnect: function () {
+            POOLVR.leapIndicator.innerHTML = 'disconnected';
+        }
+    }));
+    POOLVR.leapController = leapTool.leapController;
+    POOLVR.toolRoot = leapTool.toolRoot;
+    POOLVR.updateTool = leapTool.updateTool;
+    POOLVR.updateToolPostStep = leapTool.updateToolPostStep;
+    POOLVR.moveToolRoot = leapTool.moveToolRoot;
+
+    var floorBody;
 
     scene.traverse(function (node) {
 
@@ -141,8 +155,8 @@ POOLVR.setup = function () {
                 node.body.material = POOLVR.cushionMaterial;
             }
             else if (node.name === 'floorMesh') {
-                node.body.material = POOLVR.floorMaterial;
-                floorMesh = node;
+                floorBody = node.body;
+                floorBody.material = POOLVR.floorMaterial;
             }
             else if (node.name.endsWith('RailMesh')) {
                 node.body.material = POOLVR.railMaterial;
@@ -197,7 +211,7 @@ POOLVR.setup = function () {
     };
 
     // ball-floor collision
-    floorMesh.body.addEventListener(CANNON.Body.COLLIDE_EVENT_NAME, function (evt) {
+    floorBody.addEventListener(CANNON.Body.COLLIDE_EVENT_NAME, function (evt) {
 
         var body = evt.body;
 

@@ -33,17 +33,18 @@
         background-color: rgba(20, 20, 50, 0.7);
       }
       h1 {
-        font-size: 7vh;
+        font-size: 6vh;
         color: #b5e853;
-      }
-      #instructions {
-        position: relative;
       }
       h2 {
         font-size: 3vh;
         color: #b5e853;
       }
+      h3 {
+        font-size: 2vh;
+      }
       h4 {
+        font-size: 1.5vh;
         margin-left: 1vw;
       }
       p {
@@ -54,7 +55,6 @@
         margin: 1em;
       }
       #leapAddress, #profileName {
-        font-size: 2.5vh;
         margin: 2vh;
       }
       #leapIndicator {
@@ -99,31 +99,26 @@
     <div id="overlay">
 
       <h1>poolvr</h1>
+      <button id="start" disabled>Start!</button>
 
       <h2>How to play:</h2>
-
       <h3>Keyboard controls:</h3>
-
       <h4>Move around:</h4>
       <p>W/S/A/D (xz-plane), E/C (up/down)</p>
-
       <h4>Move virtual Leap controller:</h4>
       <p>I/K/J/L (xz-plane), O/. (up/down)</p>
-
       <h4>Actions:</h4>
       <p>P: auto-position for next ball, +/-: cycle ball selection</p>
       <p>R: reset table, Z: reset VR sensor</p>
 
-      <div id="menu">
-        Leap Motion Websocket address:
-        <input id="leapAddress" type="text" maxlength="20" value="localhost" required/>
-        <button id="leapIndicator">disconnected</button>
-        <br>
-        Profile name:
-        <input id="profileName" type="text" maxlength="30" value="default" required/>
-        <br>
-        <button id="start" disabled>Start!</button>
-      </div>
+      <hr>
+      <h2>Configuration:</h2>
+      Leap Motion Websocket address:
+      <input id="leapAddress" type="text" maxlength="20" value="localhost" required/>
+      <button id="leapIndicator">disconnected</button>
+      <br>
+      Profile name:
+      <input id="profileName" type="text" maxlength="30" value="default" required/>
 
     </div>
 

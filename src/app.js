@@ -332,23 +332,7 @@ function onLoad() {
 
         POOLVR.setup();
 
-        var leapIndicator = document.getElementById('leapIndicator');
-
-        var leapOptions = combineObjects(POOLVR.config.toolOptions, {
-            onConnect: function () {
-                leapIndicator.innerHTML = 'connected';
-            },
-            onDisconnect: function () {
-                leapIndicator.innerHTML = 'disconnected';
-            }
-        });
-
-        var leapTool = addTool(avatar, POOLVR.world, leapOptions);
-        POOLVR.leapController = leapTool.leapController;
-        POOLVR.toolRoot = leapTool.toolRoot;
-        POOLVR.updateTool = leapTool.updateTool;
-        POOLVR.updateToolPostStep = leapTool.updateToolPostStep;
-        POOLVR.moveToolRoot = leapTool.moveToolRoot;
+        POOLVR.leapIndicator = document.getElementById('leapIndicator');
 
         var leapAddressInput = document.getElementById('leapAddress');
         leapAddressInput.addEventListener('change', function (evt) {

@@ -9,6 +9,7 @@ POOLVR.commands = {
     stroke:           function () { POOLVR.stroke(); }
 };
 
+
 POOLVR.keyboardCommands = {
     turnLeft:     {buttons: [-Primrose.Input.Keyboard.LEFTARROW]},
     turnRight:    {buttons: [ Primrose.Input.Keyboard.RIGHTARROW]},
@@ -48,7 +49,7 @@ POOLVR.keyboardCommands = {
 };
 
 POOLVR.keyboardCommands = makeObjectArray(POOLVR.keyboardCommands, 'name');
-POOLVR.keyboard = new Primrose.Input.Keyboard("keyboard", window, POOLVR.keyboardCommands);
+POOLVR.keyboard = new Primrose.Input.Keyboard('keyboard', document.getElementById('glcanvas'), POOLVR.keyboardCommands);
 
 var DEADZONE = 0.2;
 POOLVR.gamepadCommands = {
