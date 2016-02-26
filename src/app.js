@@ -339,6 +339,19 @@ function onLoad() {
             POOLVR.leapController.connection.host = leapAddressInput.value;
             POOLVR.leapController.connection.disconnect(true);
             POOLVR.leapController.connect();
+            POOLVR.keyboard.enabled = true;
+        });
+        leapAddressInput.addEventListener('focus', function (evt) {
+            POOLVR.keyboard.enabled = false;
+        });
+
+        var profileNameInput = document.getElementById('profileName');
+        profileNameInput.addEventListener('change', function (evt) {
+            POOLVR.profile = profileNameInput.value;
+            POOLVR.keyboard.enabled = true;
+        });
+        profileNameInput.addEventListener('focus', function (evt) {
+            POOLVR.keyboard.enabled = false;
         });
 
         var overlay = document.getElementById('overlay');
@@ -351,10 +364,11 @@ function onLoad() {
         };
         startButton.disabled = false;
 
-        var profileNameInput = document.getElementById('profileName');
 
         scene.updateMatrixWorld();
 
+        //POOLVR.keyboard = new Primrose.Input.Keyboard('keyboard', POOLVR.app.renderer.domElement, POOLVR.keyboardCommands);
+        POOLVR.keyboard = new Primrose.Input.Keyboard('keyboard', document, POOLVR.keyboardCommands);
         POOLVR.startAnimateLoop();
 
     } );

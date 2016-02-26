@@ -49,7 +49,6 @@ POOLVR.keyboardCommands = {
 };
 
 POOLVR.keyboardCommands = makeObjectArray(POOLVR.keyboardCommands, 'name');
-POOLVR.keyboard = new Primrose.Input.Keyboard('keyboard', document.getElementById('glcanvas'), POOLVR.keyboardCommands);
 
 var DEADZONE = 0.2;
 POOLVR.gamepadCommands = {
