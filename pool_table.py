@@ -238,7 +238,7 @@ def pool_hall(useSkybox=False,
     sphere = SphereBufferGeometry(radius=ball_radius,
                                   widthSegments=16,
                                   heightSegments=12)
-    stripeGeom = SphereBufferGeometry(radius=1.02*ball_radius,
+    stripeGeom = SphereBufferGeometry(radius=1.012*ball_radius,
                                       widthSegments=16,
                                       heightSegments=8,
                                       thetaStart=np.pi/3,
@@ -260,7 +260,7 @@ def pool_hall(useSkybox=False,
     # z_positions = [L_table / 4] + list(z_positions)
 
     # triangle racked:
-    d = 0.045*ball_radius # separation between racked balls
+    d = 0.04*ball_radius # separation between racked balls
     side_length = 4 * (ball_diameter + d)
     x_positions = np.concatenate([np.linspace(0,                        0.5 * side_length,                         5),
                                   np.linspace(-0.5*(ball_diameter + d), 0.5 * side_length - (ball_diameter + d),   4),
