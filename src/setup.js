@@ -81,9 +81,27 @@ POOLVR.playPocketedSound = (function () {
 })();
 
 
+POOLVR.basicMaterials = {};
+POOLVR.nonbasicMaterials = {};
+
+
+POOLVR.switchMaterials = function (useBasicMaterials) {
+    "use strict";
+    var materials = useBasicMaterials ? POOLVR.basicMaterials : POOLVR.nonbasicMaterials;
+    POOLVR.app.scene.traverse( function (node) {
+        if (node instanceof THREE.Mesh) {
+            var material = node.material;
+            var name = material.name;
+            if (materials[name]) {
+                node.material = materials[name];
+            }
+        }
+    } );
+};
+
+
 POOLVR.setup = function () {
     "use strict";
-
     var world = new CANNON.World();
     world.gravity.set( 0, -POOLVR.config.gravity, 0 );
     //world.broadphase = new CANNON.SAPBroadphase( world );
@@ -132,10 +150,12 @@ POOLVR.setup = function () {
 
         if (node instanceof THREE.Mesh) {
 
-            if (POOLVR.config.useBasicMaterials && (node.material instanceof THREE.MeshLambertMaterial || node.material instanceof THREE.MeshPhongMaterial)) {
-                var material = node.material;
-                node.material = new THREE.MeshBasicMaterial({color: material.color.getHex(), transparent: material.transparent, side: material.side});
-                material.dispose();
+            if ( node.material.name && (POOLVR.nonbasicMaterials[node.material.name] === undefined) &&
+                (node.material instanceof THREE.MeshLambertMaterial || node.material instanceof THREE.MeshPhongMaterial) ) {
+                POOLVR.nonbasicMaterials[node.material.name] = node.material;
+                var basicMaterial = new THREE.MeshBasicMaterial({color: node.material.color.getHex(), transparent: node.material.transparent, side: node.material.side});
+                basicMaterial.name = node.material.name;
+                POOLVR.basicMaterials[node.material.name] = basicMaterial;
             }
 
             var ballNum;

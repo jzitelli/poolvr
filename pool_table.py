@@ -54,7 +54,7 @@ def pool_table(L_table=2.3368, W_table=None, H_table=0.74295,
     railMaterial = MeshPhongMaterial(name="railMaterial", color=0xdda400, shininess=10, shading=FlatShading)
 
     thickness = IN2METER
-    playableSurfaceGeom = BoxGeometry(W_playable, thickness, L_playable)
+    playableSurfaceGeom = BoxBufferGeometry(W_playable, thickness, L_playable)
     playableSurfaceMesh = Mesh(name='playableSurfaceMesh',
                                geometry=playableSurfaceGeom,
                                material=surfaceMaterial,
@@ -65,7 +65,7 @@ def pool_table(L_table=2.3368, W_table=None, H_table=0.74295,
     poolTable.add(playableSurfaceMesh)
 
     ball_radius = ball_diameter / 2
-    spotGeom = CircleBufferGeometry(name='spotGeom', radius=ball_radius, segments=5)
+    spotGeom = CircleBufferGeometry(name='spotGeom', radius=0.7*ball_radius, segments=5)
     headSpotMesh = Mesh(geometry=spotGeom,
                         material=headSpotMaterial,
                         position=[0, H_table + 0.0002, 0.25*L_table],
@@ -73,7 +73,7 @@ def pool_table(L_table=2.3368, W_table=None, H_table=0.74295,
                         receiveShadow=True)
     poolTable.add(headSpotMesh)
 
-    H_nose = 0.4 * H_cushion
+    H_nose = 0.8 * H_cushion
     W_nose = 0.05 * W_cushion
     headCushionGeom = HexaBufferGeometry(vertices=[# bottom quad:
                                                    [-0.5*W_playable,                        0,                   0.5*W_cushion],
@@ -136,7 +136,7 @@ def pool_table(L_table=2.3368, W_table=None, H_table=0.74295,
                                 userData=cushionData)
     poolTable.add(rightFootCushionMesh)
 
-    headRailGeom = BoxGeometry(W_playable, H_rail, W_rail)
+    headRailGeom = BoxBufferGeometry(W_playable, H_rail, W_rail)
     railData = {'cannonData': {'mass': 0, 'shapes': ['Box']}}
     headRailMesh = Mesh(name='headRailMesh',
                         geometry=headRailGeom,
@@ -244,7 +244,8 @@ def pool_hall(useSkybox=False,
                                       thetaStart=np.pi/3,
                                       thetaLength=np.pi/3)
 
-    ball_materials = [MeshPhongMaterial(color=color,
+    ball_materials = [MeshPhongMaterial(name='ballMaterial %d' % i,
+                                        color=color,
                                         shading=SmoothShading)
                       for i, color in enumerate(ball_colors)]
 

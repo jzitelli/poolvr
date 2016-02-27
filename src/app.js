@@ -285,7 +285,7 @@ function onLoad() {
 
         scene.autoUpdate = false;
 
-        if (!POOLVR.config.useBasicMaterials) {
+        //if (!POOLVR.config.useBasicMaterials) {
             var centerSpotLight = new THREE.SpotLight(0xffffee, 1, 8, Math.PI / 2);
             centerSpotLight.position.set(0, 3, 0);
             centerSpotLight.castShadow = true;
@@ -295,7 +295,7 @@ function onLoad() {
             scene.add(centerSpotLight);
             centerSpotLight.updateMatrix();
             centerSpotLight.updateMatrixWorld();
-        }
+        //}
 
         if (POOLVR.config.usePointLight) {
             var pointLight = new THREE.PointLight(0xaa8866, 0.8, 40);
@@ -332,6 +332,14 @@ function onLoad() {
 
         POOLVR.setup();
 
+        POOLVR.switchMaterials(POOLVR.config.useBasicMaterials);
+
+        var useBasicMaterialsInput = document.getElementById('useBasicMaterials');
+        useBasicMaterialsInput.addEventListener('change', function (evt) {
+            POOLVR.config.useBasicMaterials = useBasicMaterialsInput.checked;
+            POOLVR.switchMaterials(POOLVR.config.useBasicMaterials);
+        });
+
         POOLVR.leapIndicator = document.getElementById('leapIndicator');
 
         var leapAddressInput = document.getElementById('leapAddress');
@@ -364,11 +372,10 @@ function onLoad() {
         };
         startButton.disabled = false;
 
-
         scene.updateMatrixWorld();
 
-        //POOLVR.keyboard = new Primrose.Input.Keyboard('keyboard', POOLVR.app.renderer.domElement, POOLVR.keyboardCommands);
         POOLVR.keyboard = new Primrose.Input.Keyboard('keyboard', document, POOLVR.keyboardCommands);
+
         POOLVR.startAnimateLoop();
 
     } );

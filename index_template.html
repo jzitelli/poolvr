@@ -108,13 +108,28 @@
       <p>R: reset table, Z: reset VR sensor</p>
 
       <hr>
+
       <h2>Configuration:</h2>
-      Leap Motion Websocket address:
-      <input id="leapAddress" type="text" maxlength="20" value="localhost" required/>
+
+      <label>
+        <input type="checkbox" id="useBasicMaterials"/>
+        EGA mode (max performance)
+      </label>
+      <label>
+        <input type="checkbox" id="useShadowMap"/>
+        Shadow maps
+      </label>
+      <br>
+      <label>
+        Leap Motion Websocket address:
+        <input id="leapAddress" type="text" maxlength="20" value="localhost" required/>
+      </label>
       <button id="leapIndicator">disconnected</button>
       <br>
-      Profile name:
-      <input id="profileName" type="text" maxlength="30" value="default" required/>
+      <label>
+        Profile name:
+        <input id="profileName" type="text" maxlength="30" value="default" required/>
+      </label>
 
     </div>
 
