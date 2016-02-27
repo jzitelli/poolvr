@@ -1,5 +1,5 @@
 POOLVR.commands = {
-    toggleVRControls: function () { POOLVR.app.toggleVRControls(); },
+    toggleVRControls: function () { POOLVR.app.toggleVRControls(); POOLVR.app.camera.updateMatrix(); },
     toggleWireframe:  function () { POOLVR.app.toggleWireframe(); },
     resetVRSensor:    function () { POOLVR.app.resetVRSensor(); },
     resetTable:       function () { POOLVR.resetTable(); },

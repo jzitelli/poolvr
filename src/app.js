@@ -337,6 +337,7 @@ function onLoad() {
         POOLVR.switchMaterials(POOLVR.config.useBasicMaterials);
 
         var useBasicMaterialsInput = document.getElementById('useBasicMaterials');
+        useBasicMaterialsInput.checked = POOLVR.config.useBasicMaterials;
         useBasicMaterialsInput.addEventListener('focus', function (evt) {
             POOLVR.keyboard.enabled = false;
         });
@@ -345,15 +346,34 @@ function onLoad() {
         });
         useBasicMaterialsInput.addEventListener('change', function (evt) {
             POOLVR.config.useBasicMaterials = useBasicMaterialsInput.checked;
+            POOLVR.saveConfig(POOLVR.profile);
             POOLVR.switchMaterials(POOLVR.config.useBasicMaterials);
         });
-        useBasicMaterialsInput.checked = POOLVR.config.useBasicMaterials;
 
+        var useShadowMapInput = document.getElementById('useShadowMap');
+        useShadowMapInput.checked = POOLVR.config.useShadowMap;
+        useShadowMapInput.addEventListener('focus', function (evt) {
+            POOLVR.keyboard.enabled = false;
+        });
+        useShadowMapInput.addEventListener('blur', function (evt) {
+            POOLVR.keyboard.enabled = true;
+        });
+        useShadowMapInput.addEventListener('change', function (evt) {
+            POOLVR.config.useShadowMap = useShadowMapInput.checked;
+            POOLVR.saveConfig(POOLVR.profile);
+            if (window.confirm('toggling shadow maps requires page reload to take effect, reload now?')) {
+                document.location.reload();
+            }
+        });
+
+        // TODO: regular expression format check
         var leapAddressInput = document.getElementById('leapAddress');
+        leapAddressInput.value = 'localhost';
         leapAddressInput.addEventListener('change', function (evt) {
             POOLVR.leapController.connection.host = leapAddressInput.value;
             POOLVR.leapController.connection.disconnect(true);
             POOLVR.leapController.connect();
+            //POOLVR.saveConfig(POOLVR.profile);
             POOLVR.keyboard.enabled = true;
         });
         leapAddressInput.addEventListener('focus', function (evt) {
@@ -361,12 +381,14 @@ function onLoad() {
         });
 
         var profileNameInput = document.getElementById('profileName');
-        profileNameInput.addEventListener('change', function (evt) {
-            POOLVR.profile = profileNameInput.value;
-            POOLVR.keyboard.enabled = true;
-        });
+        profileNameInput.value = POOLVR.profile;
         profileNameInput.addEventListener('focus', function (evt) {
             POOLVR.keyboard.enabled = false;
+        });
+        profileNameInput.addEventListener('change', function (evt) {
+            POOLVR.profile = profileNameInput.value;
+            POOLVR.saveConfig(POOLVR.profile);
+            POOLVR.keyboard.enabled = true;
         });
 
         var overlay = document.getElementById('overlay');
