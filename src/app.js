@@ -330,17 +330,24 @@ function onLoad() {
 
         avatar.updateMatrix();
 
+        POOLVR.leapIndicator = document.getElementById('leapIndicator');
+
         POOLVR.setup();
 
         POOLVR.switchMaterials(POOLVR.config.useBasicMaterials);
 
         var useBasicMaterialsInput = document.getElementById('useBasicMaterials');
+        useBasicMaterialsInput.addEventListener('focus', function (evt) {
+            POOLVR.keyboard.enabled = false;
+        });
+        useBasicMaterialsInput.addEventListener('blur', function (evt) {
+            POOLVR.keyboard.enabled = true;
+        });
         useBasicMaterialsInput.addEventListener('change', function (evt) {
             POOLVR.config.useBasicMaterials = useBasicMaterialsInput.checked;
             POOLVR.switchMaterials(POOLVR.config.useBasicMaterials);
         });
-
-        POOLVR.leapIndicator = document.getElementById('leapIndicator');
+        useBasicMaterialsInput.checked = POOLVR.config.useBasicMaterials;
 
         var leapAddressInput = document.getElementById('leapAddress');
         leapAddressInput.addEventListener('change', function (evt) {
