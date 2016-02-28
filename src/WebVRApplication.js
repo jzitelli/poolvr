@@ -20,12 +20,12 @@ function WebVRApplication(scene, config) {
     }
 
     this.renderer.setPixelRatio(window.devicePixelRatio);
+    this.renderer.setSize(window.innerWidth, window.innerHeight);
 
     var camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
     this.camera = camera;
 
     this.vrEffect = new THREE.VREffect(this.renderer, function(errorMsg) { console.log('error creating VREffect: ' + errorMsg); });
-    this.vrEffect.setSize(window.innerWidth, window.innerHeight);
 
     this.vrControls = new THREE.VRControls(this.camera, function(errorMsg) { console.log('error creating VRControls: ' + errorMsg); });
     this.vrControls.enabled = true;

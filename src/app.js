@@ -247,13 +247,15 @@ POOLVR.startAnimateLoop = function () {
 POOLVR.setupMenu = function () {
     "use strict";
     var inputs = document.querySelectorAll('input');
+    function onFocus(evt) {
+        POOLVR.keyboard.enabled = false;
+    }
+    function onBlur(evt) {
+        POOLVR.keyboard.enabled = true;
+    }
     for (var i = 0; i < inputs.length; i++) {
-        inputs[i].addEventListener('focus', function (evt) {
-            POOLVR.keyboard.enabled = false;
-        });
-        inputs[i].addEventListener('blur', function (evt) {
-            POOLVR.keyboard.enabled = true;
-        });
+        inputs[i].addEventListener('focus', onFocus);
+        inputs[i].addEventListener('blur', onBlur);
     }
 
     var useBasicMaterialsInput = document.getElementById('useBasicMaterials');
