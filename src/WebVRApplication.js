@@ -32,7 +32,7 @@ function WebVRApplication(scene, config) {
 
     this.vrEffect = new THREE.VREffect(this.renderer, function(error) { console.error('error creating VREffect: ' + error); });
 
-    this.vrControls = new THREE.VRControls(this.camera, function(errorMsg) { console.error('error creating VRControls: ' + error); });
+    this.vrControls = new THREE.VRControls(this.camera, function(error) { console.error('error creating VRControls: ' + error); });
     this.vrControlsEnabled = true;
 
     this.render = function () {
@@ -106,7 +106,7 @@ function WebVRApplication(scene, config) {
             this.vrEffect.exitPresent().then( function () {
                 isPresenting = false;
                 vrButton.innerHTML = 'ENTER VR';
-                this.renderer.setSize( window.innerWidth, window.innerHeight )
+                this.renderer.setSize(window.innerWidth, window.innerHeight);
             }.bind(this) );
         }
     }.bind(this));

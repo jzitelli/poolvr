@@ -12,7 +12,8 @@ var srcFiles = [
   "src/SynthSpeaker.js",
   "src/config.js",
   "src/setup.js",
-  "src/app.js"
+  "src/menu.js",
+  "src/main.js"
 ];
 
 var libFiles = [
