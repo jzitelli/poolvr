@@ -22,8 +22,7 @@ var libFiles = [
   "node_modules/three/examples/js/objects/ShadowMesh.js",
   "node_modules/cannon/build/cannon.min.js",
   "node_modules/leapjs/leap-0.6.4.min.js",
-  "node_modules/webvr-polyfill/build/webvr-polyfill.js",
-  "node_modules/webvr-boilerplate/build/webvr-manager.js"
+  "node_modules/webvr-polyfill/build/webvr-polyfill.js"
 ];
 
 var copyFiles = libFiles.map( function ( s ) {

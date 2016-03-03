@@ -209,7 +209,7 @@ POOLVR.startAnimateLoop = function () {
         rS('updatevrcontrols').end();
 
         rS('render').start();
-        app.vrManager.render(app.scene, app.camera, t);
+        app.vrEffect.render(app.scene, app.camera);
         rS('render').end();
 
         requestAnimationFrame(animate);
@@ -297,12 +297,10 @@ POOLVR.setupMenu = function () {
 
     var overlay = document.getElementById('overlay');
     var startButton = document.getElementById('start');
-    startButton.onclick = function () {
+    startButton.addEventListener('click', function () {
         overlay.style.display = 'none';
-        POOLVR.app.vrManager.onFSClick_();
-        //POOLVR.app.vrManager.onVRClick_();
         POOLVR.startTutorial();
-    };
+    });
     startButton.disabled = false;
 };
 
