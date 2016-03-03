@@ -185,9 +185,9 @@ POOLVR.setup = function () {
 
     var H_table = POOLVR.config.H_table;
 
-    var useShadowMesh = POOLVR.config.useShadowMesh;
+    var useShadowMap = POOLVR.config.useShadowMap;
 
-    if (!useShadowMesh) {
+    if (!useShadowMap) {
 
         var ballShadowMeshes = [];
         var ballShadowGeom = new THREE.CircleBufferGeometry(0.5*POOLVR.config.ball_diameter, 16);
@@ -215,7 +215,7 @@ POOLVR.setup = function () {
             mesh.updateMatrix();
             mesh.updateMatrixWorld();
 
-            if (!useShadowMesh) {
+            if (!useShadowMap) {
                 var shadowMesh = ballShadowMeshes[i];
                 shadowMesh.position.x = mesh.position.x;
                 shadowMesh.position.z = mesh.position.z;

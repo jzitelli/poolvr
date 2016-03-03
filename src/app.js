@@ -202,7 +202,7 @@ POOLVR.startAnimateLoop = function () {
         rS('updatetool').end();
 
         rS('updatevrcontrols').start();
-        if (app.vrControls.enabled) {
+        if (app.vrControlsEnabled) {
             app.vrControls.update();
             app.camera.updateMatrixWorld();
         }
@@ -217,7 +217,7 @@ POOLVR.startAnimateLoop = function () {
         rS('step').start();
         //world.step(dt);
         //world.step(1/75, dt, 5);
-        world.step(1/60, dt, 5);
+        world.step(Math.min(1/60, dt), dt, 10);
         rS('step').end();
 
         rS('poststep').start();
@@ -271,10 +271,12 @@ POOLVR.setupMenu = function () {
     useShadowMapInput.addEventListener('change', function (evt) {
         POOLVR.config.useShadowMap = useShadowMapInput.checked;
         POOLVR.saveConfig(POOLVR.profile);
-        if (window.confirm('toggling shadow maps requires page reload to take effect, reload now?')) {
+        if (window.confirm('This change requires a page reload to take effect - reload now?')) {
             document.location.reload();
         }
     });
+
+    POOLVR.leapIndicator = document.getElementById('leapIndicator');
 
     // TODO: regular expression format check
     var leapAddressInput = document.getElementById('leapAddress');
@@ -346,17 +348,18 @@ function onLoad() {
 
         scene.autoUpdate = false;
 
-        //if (!POOLVR.config.useBasicMaterials) {
-            var centerSpotLight = new THREE.SpotLight(0xffffee, 1, 8, Math.PI / 2);
-            centerSpotLight.position.set(0, 3, 0);
-            centerSpotLight.castShadow = true;
-            centerSpotLight.shadow.camera.near = 0.01;
-            centerSpotLight.shadow.camera.far = 4;
-            centerSpotLight.shadow.camera.fov = 90;
-            scene.add(centerSpotLight);
-            centerSpotLight.updateMatrix();
-            centerSpotLight.updateMatrixWorld();
-        //}
+        var centerSpotLight = new THREE.SpotLight(0xffffee, 1, 8, Math.PI / 2);
+        centerSpotLight.position.set(0, 3, 0);
+        centerSpotLight.castShadow = true;
+        centerSpotLight.shadow.camera.matrixAutoUpdate = true;
+        centerSpotLight.shadow.camera.near = 1;
+        centerSpotLight.shadow.camera.far = 3;
+        centerSpotLight.shadow.camera.fov = 80;
+        //centerSpotLight.shadow.radius = 0.5;
+        scene.add(centerSpotLight);
+        centerSpotLight.updateMatrix();
+        centerSpotLight.updateMatrixWorld();
+        POOLVR.centerSpotLight = centerSpotLight;
 
         if (POOLVR.config.usePointLight) {
             var pointLight = new THREE.PointLight(0xaa8866, 0.8, 40);
@@ -367,41 +370,36 @@ function onLoad() {
         }
 
         var appConfig = combineObjects(POOLVR.config, {
-            canvasId: 'glcanvas',
+            canvasId: 'webgl-canvas',
             onResetVRSensor: function (lastRotation, lastPosition) {
-                // TODO
-                // var camera = POOLVR.app.camera;
-                // POOLVR.toolRoot.rotation.y -= (lastRotation - camera.rotation.y);
-                // POOLVR.toolRoot.position.sub(lastPosition);
-                // POOLVR.toolRoot.position.applyAxisAngle(THREE.Object3D.DefaultUp, -lastRotation + camera.rotation.y);
-                // POOLVR.toolRoot.position.add(camera.position);
-                // POOLVR.avatar.heading += lastRotation - camera.rotation.y;
-                // POOLVR.avatar.quaternion.setFromAxisAngle(UP, avatar.heading);
-                // POOLVR.avatar.updateMatrix();
-                // POOLVR.avatar.updateMatrixWorld();
+                var camera = POOLVR.app.camera;
+                POOLVR.toolRoot.rotation.y -= (lastRotation - camera.rotation.y);
+                POOLVR.toolRoot.position.sub(lastPosition);
+                POOLVR.toolRoot.position.applyAxisAngle(THREE.Object3D.DefaultUp, -lastRotation + camera.rotation.y);
+                POOLVR.toolRoot.position.add(camera.position);
+                POOLVR.avatar.heading += lastRotation - camera.rotation.y;
+                POOLVR.avatar.quaternion.setFromAxisAngle(UP, avatar.heading);
+                POOLVR.avatar.updateMatrix();
+                POOLVR.avatar.updateMatrixWorld();
             }
         });
 
         POOLVR.app = new WebVRApplication(scene, appConfig);
 
-        POOLVR.app.camera.matrixAutoUpdate = true;
-
         avatar.add(POOLVR.app.camera);
         scene.add(avatar);
 
-        avatar.updateMatrix();
+        POOLVR.setupMenu();
 
-        POOLVR.leapIndicator = document.getElementById('leapIndicator');
+        POOLVR.keyboard = new Primrose.Input.Keyboard('keyboard', document, POOLVR.keyboardCommands);
+
+        avatar.updateMatrix();
 
         POOLVR.setup();
 
         POOLVR.switchMaterials(POOLVR.config.useBasicMaterials);
 
         scene.updateMatrixWorld();
-
-        POOLVR.keyboard = new Primrose.Input.Keyboard('keyboard', document, POOLVR.keyboardCommands);
-
-        POOLVR.setupMenu();
 
         POOLVR.startAnimateLoop();
 

@@ -129,11 +129,15 @@ function addTool(parent, world, options) {
     stickMesh.castShadow = true;
     toolRoot.add(stickMesh);
 
-    var stickShadowMesh = new THREE.ShadowMesh(stickMesh);
-    POOLVR.app.scene.add(stickShadowMesh);
-    var shadowPlane = new THREE.Plane(UP, (POOLVR.config.H_table + 0.001));
-    var shadowLightPosition = new THREE.Vector4(0, 5, 0, 0.01);
-    stickShadowMesh.updateShadowMatrix(shadowPlane, shadowLightPosition);
+    var useShadowMap = POOLVR.config.useShadowMap;
+    var stickShadowMesh;
+    if (!useShadowMap) {
+        stickShadowMesh = new THREE.ShadowMesh(stickMesh);
+        POOLVR.app.scene.add(stickShadowMesh);
+        var shadowPlane = new THREE.Plane(UP, (POOLVR.config.H_table + 0.001));
+        var shadowLightPosition = new THREE.Vector4(0, 5, 0, 0.01);
+        stickShadowMesh.updateShadowMatrix(shadowPlane, shadowLightPosition);
+    }
 
     var tipBody = new CANNON.Body({mass: toolMass, type: CANNON.Body.KINEMATIC});
     // TODO: rename, avoid confusion b/t cannon and three materials
@@ -224,8 +228,11 @@ function addTool(parent, world, options) {
     toolRoot.updateMatrix();
     toolRoot.updateMatrixWorld();
 
-    stickShadowMesh.updateMatrix();
-    stickShadowMesh.updateMatrixWorld();
+    if (!useShadowMap) {
+        stickShadowMesh.updateMatrix();
+        stickShadowMesh.updateMatrixWorld();
+        stickShadowMesh.visible = false;
+    }
 
     // to store decomposed toolRoot world matrix:
     toolRoot.worldPosition = new THREE.Vector3();
@@ -236,10 +243,10 @@ function addTool(parent, world, options) {
     toolRoot.matrixWorldInverse = new THREE.Matrix4();
     toolRoot.matrixWorldInverse.getInverse(toolRoot.matrixWorld);
 
-
     interactionBoxRoot.visible = false;
+
     stickMesh.visible = false;
-    stickShadowMesh.visible = false;
+
     leftRoot.visible  = false;
     rightRoot.visible = false;
 
@@ -267,8 +274,10 @@ function addTool(parent, world, options) {
         stickMesh.updateMatrix();
         stickMesh.updateMatrixWorld();
 
-        stickShadowMesh.updateMatrix();
-        stickShadowMesh.updateMatrixWorld();
+        if (!useShadowMap) {
+            stickShadowMesh.updateMatrix();
+            stickShadowMesh.updateMatrixWorld();
+        }
     }
 
 
@@ -304,8 +313,10 @@ function addTool(parent, world, options) {
             toolRoot.matrixWorldInverse.getInverse(toolRoot.matrixWorld);
             toolRoot.matrixWorld.decompose(toolRoot.worldPosition, toolRoot.worldQuaternion, toolRoot.worldScale);
 
-            stickShadowMesh.updateMatrix();
-            stickShadowMesh.updateMatrixWorld();
+            if (!useShadowMap) {
+                stickShadowMesh.updateMatrix();
+                stickShadowMesh.updateMatrixWorld();
+            }
 
             if (interactionBoxRoot.visible === false) {
                 interactionBoxRoot.visible = true;
@@ -342,7 +353,9 @@ function addTool(parent, world, options) {
 
                 if (stickMesh.visible === false || stickMesh.material.opacity < 1) {
                     stickMesh.visible = true;
-                    stickShadowMesh.visible = true;
+
+                    if (!useShadowMap) stickShadowMesh.visible = true;
+
                     stickMesh.material.opacity = 1;
                     if (tipMesh) tipMesh.material.opacity = 1;
                     interactionBoxRoot.visible = true;
@@ -365,8 +378,10 @@ function addTool(parent, world, options) {
                 stickMesh.updateMatrix();
                 stickMesh.updateMatrixWorld();
 
-                stickShadowMesh.updateMatrix();
-                stickShadowMesh.updateMatrixWorld();
+                if (!useShadowMap) {
+                    stickShadowMesh.updateMatrix();
+                    stickShadowMesh.updateMatrixWorld();
+                }
 
                 velocity.fromArray(tool.tipVelocity);
                 velocity.applyQuaternion(toolRoot.worldQuaternion);
@@ -403,8 +418,8 @@ function addTool(parent, world, options) {
                     if (tipMesh) tipMesh.material.opacity = stickMesh.material.opacity;
                 } else {
                     stickMesh.visible = false;
-                    stickShadowMesh.visible = false;
                     interactionBoxRoot.visible = false;
+                    if (!useShadowMap) stickShadowMesh.visible = false;
                 }
             }
 

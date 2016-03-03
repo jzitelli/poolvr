@@ -85,7 +85,7 @@ def get_poolvr_config():
 
 
 
-@app.route('/poolvr')
+@app.route('/')
 def poolvr():
     """
     Serves the poolvr app HTML.

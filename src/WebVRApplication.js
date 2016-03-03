@@ -4,6 +4,7 @@ function WebVRApplication(scene, config) {
 
     config = config || {};
     var rendererOptions = config.rendererOptions;
+    var useShadowMap    = config.useShadowMap;
     var onResetVRSensor = config.onResetVRSensor;
 
     var domElement;
@@ -16,44 +17,58 @@ function WebVRApplication(scene, config) {
         this.renderer = new THREE.WebGLRenderer(rendererOptions);
         domElement = this.renderer.domElement;
         document.body.appendChild(domElement);
-        domElement.id = 'glcanvas';
+        domElement.id = 'webgl-canvas';
     }
 
     this.renderer.setPixelRatio(window.devicePixelRatio);
     this.renderer.setSize(window.innerWidth, window.innerHeight);
 
-    var camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-    this.camera = camera;
+    if (useShadowMap) {
+        this.renderer.shadowMap.enabled = true;
+        this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    }
 
-    this.vrEffect = new THREE.VREffect(this.renderer, function(errorMsg) { console.log('error creating VREffect: ' + errorMsg); });
+    this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    this.camera.matrixAutoUpdate = true;
 
-    this.vrControls = new THREE.VRControls(this.camera, function(errorMsg) { console.log('error creating VRControls: ' + errorMsg); });
-    this.vrControls.enabled = true;
+    this.vrEffect = new THREE.VREffect(this.renderer, function(error) { console.error('error creating VREffect: ' + error); });
+
+    this.vrControls = new THREE.VRControls(this.camera, function(errorMsg) { console.error('error creating VRControls: ' + error); });
+    this.vrControlsEnabled = true;
 
     this.vrManager = new WebVRManager(this.renderer, this.vrEffect, {
         hideButton: false
     });
 
 
+    this.render = function (t) {
+        if (this.vrControlsEnabled) this.vrControls.update();
+        this.vrManager.render(this.scene, this.camera, t);
+    }.bind(this);
+
+
     this.toggleVRControls = function () {
-        if (this.vrControls.enabled) {
-            this.vrControls.enabled = false;
+        if (this.vrControlsEnabled) {
+            this.vrControlsEnabled = false;
             this.camera.position.set(0, 0, 0);
             this.camera.quaternion.set(0, 0, 0, 1);
+            this.camera.updateMatrixWorld();
         } else {
-            this.vrControls.enabled = true;
+            this.vrControlsEnabled = true;
         }
     }.bind(this);
 
 
     var lastPosition = new THREE.Vector3();
     this.resetVRSensor = function () {
-        lastPosition.copy(this.camera.position);
-        var lastRotation = this.camera.rotation.y;
-        this.vrControls.resetSensor();
-        this.vrControls.update();
-        if (onResetVRSensor) {
-            onResetVRSensor(lastRotation, lastPosition);
+        if (this.vrControlsEnabled) {
+            lastPosition.copy(this.camera.position);
+            var lastRotation = this.camera.rotation.y;
+            this.vrControls.resetSensor();
+            this.vrControls.update();
+            if (onResetVRSensor) {
+                onResetVRSensor(lastRotation, lastPosition);
+            }
         }
     }.bind(this);
 
