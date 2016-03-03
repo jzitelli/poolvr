@@ -1,6 +1,6 @@
 /* ############################################################################
 
-  poolvr v0.1.0 2016-02-26
+  poolvr v0.1.0 2016-03-03
 
   https://jzitelli.github.io/poolvr
   git+https://github.com/jzitelli/poolvr.git
@@ -48,70 +48,14 @@ THREE.py = ( function () {
 
         var promise = new Promise( function (resolve, reject) {
 
-            // filter out geometries that ObjectLoader doesn't handle, parse the rest:
+            // parse geometries, filtering out geometries that ObjectLoader doesn't handle:
             var geometries = objectLoader.parseGeometries(json.geometries.filter( function (geom) {
                 return geom.type !== "TextGeometry";
             } ));
 
-            manager.onLoad = onPartsLoad;
-            function onPartsLoad() {
-                // construct TextGeometries now that fonts are loaded:
-                json.geometries.forEach( function (geom) {
-                    if (geom.type === "TextGeometry") {
-                        geom.parameters.font = fonts[geom.font_url];
-                        var textGeometry = new THREE.TextGeometry(geom.text, geom.parameters);
-                        textGeometry.uuid = geom.uuid;
-                        if (geom.name !== undefined) textGeometry.name = geom.name;
-                        geometries[geom.uuid] = textGeometry;
-                    }
-                } );
+            manager.onLoad = onLoadA;
 
-                function _onLoad(obj) {
-                    // the final callback, calls promise resolve
-                    obj.traverse( function (node) {
-
-                        node.updateMatrix();
-                        node.updateMatrixWorld();
-
-                        if (node.userData) {
-                            if (node.userData.layers) {
-                                node.userData.layers.forEach( function (channel) {
-                                    node.layers.set(channel);
-                                } );
-                            }
-                        }
-                        if (node instanceof THREE.Mesh) {
-                            node.geometry.computeBoundingSphere();
-                            node.geometry.computeBoundingBox();
-                            if (node.material.shading === THREE.FlatShading) {
-                                node.geometry.computeFaceNormals();
-                            }
-                        }
-                    } );
-
-                    loadHeightfields(obj);
-
-                    if (onLoad) {
-                        onLoad(obj);
-                    }
-
-                    resolve(obj);
-
-                }
-
-                images = objectLoader.parseImages(json.images, function () { _onLoad(object); });
-                var textures = objectLoader.parseTextures(json.textures, images);
-                var materials = objectLoader.parseMaterials(json.materials, textures);
-
-                var object = objectLoader.parseObject(json.object, geometries, materials);
-
-                if (json.images === undefined || json.images.length === 0) {
-                    _onLoad(object);
-                }
-
-            }
-
-            var needsLoading = false;
+            var waitForLoad = false;
 
             // set texture values for shader material uniforms:
             if (json.materials) {
@@ -124,11 +68,11 @@ THREE.py = ( function () {
                                 if (Array.isArray(uniform.value) && uniform.value.length === 6) {
                                     // texture cube specified by urls
                                     uniform.value = cubeTextureLoader.load(uniform.value);
-                                    needsLoading = true;
+                                    waitForLoad = true;
                                 } else if (typeof uniform.value === 'string') {
                                     // single texture specified by url
                                     uniform.value = textureLoader.load(uniform.value);
-                                    needsLoading = true;
+                                    waitForLoad = true;
                                 }
                             }
                         }
@@ -136,18 +80,78 @@ THREE.py = ( function () {
                 } );
             }
 
-            // load fonts:
+            // load fonts... each unique font URI is loaded once and stored in publically available object `fonts`:
             json.geometries.forEach( function (geom) {
                 if (geom.type === "TextGeometry" && fonts[geom.font_url] === undefined) {
                     fonts[geom.font_url] = null;
                     fontLoader.load(geom.font_url, function (font) {
                         fonts[geom.font_url] = font;
                     });
-                    needsLoading = true;
+                    waitForLoad = true;
                 }
             } );
 
-            if (needsLoading === false) onPartsLoad();
+            if (waitForLoad === false) onLoadA();
+
+            function onLoadA() {
+
+                // construct TextGeometries now that fonts are loaded:
+                json.geometries.forEach( function (geom) {
+                    if (geom.type === "TextGeometry") {
+                        geom.parameters.font = fonts[geom.font_url];
+                        var textGeometry = new THREE.TextGeometry(geom.text, geom.parameters);
+                        textGeometry.uuid = geom.uuid;
+                        if (geom.name !== undefined) textGeometry.name = geom.name;
+                        geometries[geom.uuid] = textGeometry;
+                    }
+                } );
+
+                images = objectLoader.parseImages(json.images, function () { onLoadB(object); });
+                var textures = objectLoader.parseTextures(json.textures, images);
+                var materials = objectLoader.parseMaterials(json.materials, textures);
+
+                var object = objectLoader.parseObject(json.object, geometries, materials);
+
+                if (json.images === undefined || json.images.length === 0) {
+                    onLoadB(object);
+                }
+
+                // the final callback, resolves promise:
+                function onLoadB(obj) {
+                    obj.traverse( function (node) {
+
+                        node.updateMatrix();
+
+                        if (node.userData) {
+                            if (node.userData.layers) {
+                                node.userData.layers.forEach( function (channel) {
+                                    node.layers.set(channel);
+                                } );
+                            }
+                        }
+
+                        if (node instanceof THREE.Mesh) {
+                            node.geometry.computeBoundingSphere();
+                            node.geometry.computeBoundingBox();
+                            if (node.material.shading === THREE.FlatShading) {
+                                node.geometry.computeFaceNormals();
+                            }
+                        }
+
+                    } );
+
+                    obj.updateMatrixWorld(true);
+
+                    loadHeightfields(obj);
+
+                    if (onLoad) {
+                        onLoad(obj);
+                    }
+
+                    resolve(obj);
+                }
+
+            }
 
         } );
 
@@ -192,7 +196,7 @@ THREE.py = ( function () {
                         node.geometry.computeBoundingBox();
                     }
                 }
-            });
+            } );
         }
 
         return promise;
@@ -460,6 +464,7 @@ function WebVRApplication(scene, config) {
 
     config = config || {};
     var rendererOptions = config.rendererOptions;
+    var useShadowMap    = config.useShadowMap;
     var onResetVRSensor = config.onResetVRSensor;
 
     var domElement;
@@ -472,44 +477,58 @@ function WebVRApplication(scene, config) {
         this.renderer = new THREE.WebGLRenderer(rendererOptions);
         domElement = this.renderer.domElement;
         document.body.appendChild(domElement);
-        domElement.id = 'glcanvas';
+        domElement.id = 'webgl-canvas';
     }
 
     this.renderer.setPixelRatio(window.devicePixelRatio);
+    this.renderer.setSize(window.innerWidth, window.innerHeight);
 
-    var camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-    this.camera = camera;
+    if (useShadowMap) {
+        this.renderer.shadowMap.enabled = true;
+        this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    }
 
-    this.vrEffect = new THREE.VREffect(this.renderer, function(errorMsg) { console.log('error creating VREffect: ' + errorMsg); });
-    this.vrEffect.setSize(window.innerWidth, window.innerHeight);
+    this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    this.camera.matrixAutoUpdate = true;
 
-    this.vrControls = new THREE.VRControls(this.camera, function(errorMsg) { console.log('error creating VRControls: ' + errorMsg); });
-    this.vrControls.enabled = true;
+    this.vrEffect = new THREE.VREffect(this.renderer, function(error) { console.error('error creating VREffect: ' + error); });
+
+    this.vrControls = new THREE.VRControls(this.camera, function(errorMsg) { console.error('error creating VRControls: ' + error); });
+    this.vrControlsEnabled = true;
 
     this.vrManager = new WebVRManager(this.renderer, this.vrEffect, {
         hideButton: false
     });
 
 
+    this.render = function (t) {
+        if (this.vrControlsEnabled) this.vrControls.update();
+        this.vrManager.render(this.scene, this.camera, t);
+    }.bind(this);
+
+
     this.toggleVRControls = function () {
-        if (this.vrControls.enabled) {
-            this.vrControls.enabled = false;
+        if (this.vrControlsEnabled) {
+            this.vrControlsEnabled = false;
             this.camera.position.set(0, 0, 0);
             this.camera.quaternion.set(0, 0, 0, 1);
+            this.camera.updateMatrixWorld();
         } else {
-            this.vrControls.enabled = true;
+            this.vrControlsEnabled = true;
         }
     }.bind(this);
 
 
     var lastPosition = new THREE.Vector3();
     this.resetVRSensor = function () {
-        lastPosition.copy(this.camera.position);
-        var lastRotation = this.camera.rotation.y;
-        this.vrControls.resetSensor();
-        this.vrControls.update();
-        if (onResetVRSensor) {
-            onResetVRSensor(lastRotation, lastPosition);
+        if (this.vrControlsEnabled) {
+            lastPosition.copy(this.camera.position);
+            var lastRotation = this.camera.rotation.y;
+            this.vrControls.resetSensor();
+            this.vrControls.update();
+            if (onResetVRSensor) {
+                onResetVRSensor(lastRotation, lastPosition);
+            }
         }
     }.bind(this);
 
@@ -746,11 +765,15 @@ function addTool(parent, world, options) {
     stickMesh.castShadow = true;
     toolRoot.add(stickMesh);
 
-    var stickShadowMesh = new THREE.ShadowMesh(stickMesh);
-    POOLVR.app.scene.add(stickShadowMesh);
-    var shadowPlane = new THREE.Plane(UP, (POOLVR.config.H_table + 0.001));
-    var shadowLightPosition = new THREE.Vector4(0, 5, 0, 0.01);
-    stickShadowMesh.updateShadowMatrix(shadowPlane, shadowLightPosition);
+    var useShadowMap = POOLVR.config.useShadowMap;
+    var stickShadowMesh;
+    if (!useShadowMap) {
+        stickShadowMesh = new THREE.ShadowMesh(stickMesh);
+        POOLVR.app.scene.add(stickShadowMesh);
+        var shadowPlane = new THREE.Plane(UP, (POOLVR.config.H_table + 0.001));
+        var shadowLightPosition = new THREE.Vector4(0, 5, 0, 0.01);
+        stickShadowMesh.updateShadowMatrix(shadowPlane, shadowLightPosition);
+    }
 
     var tipBody = new CANNON.Body({mass: toolMass, type: CANNON.Body.KINEMATIC});
     // TODO: rename, avoid confusion b/t cannon and three materials
@@ -841,8 +864,11 @@ function addTool(parent, world, options) {
     toolRoot.updateMatrix();
     toolRoot.updateMatrixWorld();
 
-    stickShadowMesh.updateMatrix();
-    stickShadowMesh.updateMatrixWorld();
+    if (!useShadowMap) {
+        stickShadowMesh.updateMatrix();
+        stickShadowMesh.updateMatrixWorld();
+        stickShadowMesh.visible = false;
+    }
 
     // to store decomposed toolRoot world matrix:
     toolRoot.worldPosition = new THREE.Vector3();
@@ -853,10 +879,10 @@ function addTool(parent, world, options) {
     toolRoot.matrixWorldInverse = new THREE.Matrix4();
     toolRoot.matrixWorldInverse.getInverse(toolRoot.matrixWorld);
 
-
     interactionBoxRoot.visible = false;
+
     stickMesh.visible = false;
-    stickShadowMesh.visible = false;
+
     leftRoot.visible  = false;
     rightRoot.visible = false;
 
@@ -884,8 +910,10 @@ function addTool(parent, world, options) {
         stickMesh.updateMatrix();
         stickMesh.updateMatrixWorld();
 
-        stickShadowMesh.updateMatrix();
-        stickShadowMesh.updateMatrixWorld();
+        if (!useShadowMap) {
+            stickShadowMesh.updateMatrix();
+            stickShadowMesh.updateMatrixWorld();
+        }
     }
 
 
@@ -921,8 +949,10 @@ function addTool(parent, world, options) {
             toolRoot.matrixWorldInverse.getInverse(toolRoot.matrixWorld);
             toolRoot.matrixWorld.decompose(toolRoot.worldPosition, toolRoot.worldQuaternion, toolRoot.worldScale);
 
-            stickShadowMesh.updateMatrix();
-            stickShadowMesh.updateMatrixWorld();
+            if (!useShadowMap) {
+                stickShadowMesh.updateMatrix();
+                stickShadowMesh.updateMatrixWorld();
+            }
 
             if (interactionBoxRoot.visible === false) {
                 interactionBoxRoot.visible = true;
@@ -959,7 +989,9 @@ function addTool(parent, world, options) {
 
                 if (stickMesh.visible === false || stickMesh.material.opacity < 1) {
                     stickMesh.visible = true;
-                    stickShadowMesh.visible = true;
+
+                    if (!useShadowMap) stickShadowMesh.visible = true;
+
                     stickMesh.material.opacity = 1;
                     if (tipMesh) tipMesh.material.opacity = 1;
                     interactionBoxRoot.visible = true;
@@ -982,8 +1014,10 @@ function addTool(parent, world, options) {
                 stickMesh.updateMatrix();
                 stickMesh.updateMatrixWorld();
 
-                stickShadowMesh.updateMatrix();
-                stickShadowMesh.updateMatrixWorld();
+                if (!useShadowMap) {
+                    stickShadowMesh.updateMatrix();
+                    stickShadowMesh.updateMatrixWorld();
+                }
 
                 velocity.fromArray(tool.tipVelocity);
                 velocity.applyQuaternion(toolRoot.worldQuaternion);
@@ -1020,8 +1054,8 @@ function addTool(parent, world, options) {
                     if (tipMesh) tipMesh.material.opacity = stickMesh.material.opacity;
                 } else {
                     stickMesh.visible = false;
-                    stickShadowMesh.visible = false;
                     interactionBoxRoot.visible = false;
+                    if (!useShadowMap) stickShadowMesh.visible = false;
                 }
             }
 
@@ -1179,7 +1213,7 @@ var SynthSpeaker = ( function() {
 ;
 // #### src/config.js
 POOLVR.commands = {
-    toggleVRControls: function () { POOLVR.app.toggleVRControls(); },
+    toggleVRControls: function () { POOLVR.app.toggleVRControls(); POOLVR.app.camera.updateMatrix(); },
     toggleWireframe:  function () { POOLVR.app.toggleWireframe(); },
     resetVRSensor:    function () { POOLVR.app.resetVRSensor(); },
     resetTable:       function () { POOLVR.resetTable(); },
@@ -1415,25 +1449,6 @@ POOLVR.playPocketedSound = (function () {
 })();
 
 
-POOLVR.basicMaterials = {};
-POOLVR.nonbasicMaterials = {};
-
-
-POOLVR.switchMaterials = function (useBasicMaterials) {
-    "use strict";
-    var materials = useBasicMaterials ? POOLVR.basicMaterials : POOLVR.nonbasicMaterials;
-    POOLVR.app.scene.traverse( function (node) {
-        if (node instanceof THREE.Mesh) {
-            var material = node.material;
-            var name = material.name;
-            if (materials[name]) {
-                node.material = materials[name];
-            }
-        }
-    } );
-};
-
-
 POOLVR.setup = function () {
     "use strict";
     var world = new CANNON.World();
@@ -1478,18 +1493,34 @@ POOLVR.setup = function () {
     POOLVR.updateToolPostStep = leapTool.updateToolPostStep;
     POOLVR.moveToolRoot = leapTool.moveToolRoot;
 
+    var basicMaterials = {};
+    var nonbasicMaterials = {};
+
+    POOLVR.switchMaterials = function (useBasicMaterials) {
+        var materials = useBasicMaterials ? basicMaterials : nonbasicMaterials;
+        POOLVR.app.scene.traverse( function (node) {
+            if (node instanceof THREE.Mesh) {
+                var material = node.material;
+                var name = material.name;
+                if (materials[name]) {
+                    node.material = materials[name];
+                }
+            }
+        } );
+    };
+
     var floorBody;
 
     scene.traverse(function (node) {
 
         if (node instanceof THREE.Mesh) {
 
-            if ( node.material.name && (POOLVR.nonbasicMaterials[node.material.name] === undefined) &&
+            if ( node.material.name && (nonbasicMaterials[node.material.name] === undefined) &&
                 (node.material instanceof THREE.MeshLambertMaterial || node.material instanceof THREE.MeshPhongMaterial) ) {
-                POOLVR.nonbasicMaterials[node.material.name] = node.material;
+                nonbasicMaterials[node.material.name] = node.material;
                 var basicMaterial = new THREE.MeshBasicMaterial({color: node.material.color.getHex(), transparent: node.material.transparent, side: node.material.side});
                 basicMaterial.name = node.material.name;
-                POOLVR.basicMaterials[node.material.name] = basicMaterial;
+                basicMaterials[node.material.name] = basicMaterial;
             }
 
             var ballNum;
@@ -1522,9 +1553,9 @@ POOLVR.setup = function () {
 
     var H_table = POOLVR.config.H_table;
 
-    var useShadowMesh = POOLVR.config.useShadowMesh;
+    var useShadowMap = POOLVR.config.useShadowMap;
 
-    if (!useShadowMesh) {
+    if (!useShadowMap) {
 
         var ballShadowMeshes = [];
         var ballShadowGeom = new THREE.CircleBufferGeometry(0.5*POOLVR.config.ball_diameter, 16);
@@ -1552,7 +1583,7 @@ POOLVR.setup = function () {
             mesh.updateMatrix();
             mesh.updateMatrixWorld();
 
-            if (!useShadowMesh) {
+            if (!useShadowMap) {
                 var shadowMesh = ballShadowMeshes[i];
                 shadowMesh.position.x = mesh.position.x;
                 shadowMesh.position.z = mesh.position.z;
@@ -1817,7 +1848,7 @@ POOLVR.startAnimateLoop = function () {
         rS('updatetool').end();
 
         rS('updatevrcontrols').start();
-        if (app.vrControls.enabled) {
+        if (app.vrControlsEnabled) {
             app.vrControls.update();
             app.camera.updateMatrixWorld();
         }
@@ -1832,7 +1863,7 @@ POOLVR.startAnimateLoop = function () {
         rS('step').start();
         //world.step(dt);
         //world.step(1/75, dt, 5);
-        world.step(1/60, dt, 5);
+        world.step(Math.min(1/60, dt), dt, 10);
         rS('step').end();
 
         rS('poststep').start();
@@ -1856,6 +1887,69 @@ POOLVR.startAnimateLoop = function () {
 
     requestAnimationFrame(animate);
 
+};
+
+
+POOLVR.setupMenu = function () {
+    "use strict";
+    var inputs = document.querySelectorAll('input');
+    function onFocus(evt) {
+        POOLVR.keyboard.enabled = false;
+    }
+    function onBlur(evt) {
+        POOLVR.keyboard.enabled = true;
+    }
+    for (var i = 0; i < inputs.length; i++) {
+        inputs[i].addEventListener('focus', onFocus);
+        inputs[i].addEventListener('blur', onBlur);
+    }
+
+    var useBasicMaterialsInput = document.getElementById('useBasicMaterials');
+    useBasicMaterialsInput.checked = POOLVR.config.useBasicMaterials;
+    useBasicMaterialsInput.addEventListener('change', function (evt) {
+        POOLVR.config.useBasicMaterials = useBasicMaterialsInput.checked;
+        POOLVR.saveConfig(POOLVR.profile);
+        POOLVR.switchMaterials(POOLVR.config.useBasicMaterials);
+    });
+
+    var useShadowMapInput = document.getElementById('useShadowMap');
+    useShadowMapInput.checked = POOLVR.config.useShadowMap;
+    useShadowMapInput.addEventListener('change', function (evt) {
+        POOLVR.config.useShadowMap = useShadowMapInput.checked;
+        POOLVR.saveConfig(POOLVR.profile);
+        if (window.confirm('This change requires a page reload to take effect - reload now?')) {
+            document.location.reload();
+        }
+    });
+
+    POOLVR.leapIndicator = document.getElementById('leapIndicator');
+
+    // TODO: regular expression format check
+    var leapAddressInput = document.getElementById('leapAddress');
+    leapAddressInput.value = 'localhost';
+    leapAddressInput.addEventListener('change', function (evt) {
+        POOLVR.leapController.connection.host = leapAddressInput.value;
+        POOLVR.leapController.connection.disconnect(true);
+        POOLVR.leapController.connect();
+        //POOLVR.saveConfig(POOLVR.profile);
+    });
+
+    var profileNameInput = document.getElementById('profileName');
+    profileNameInput.value = POOLVR.profile;
+    profileNameInput.addEventListener('change', function (evt) {
+        POOLVR.profile = profileNameInput.value;
+        POOLVR.saveConfig(POOLVR.profile);
+    });
+
+    var overlay = document.getElementById('overlay');
+    var startButton = document.getElementById('start');
+    startButton.onclick = function () {
+        overlay.style.display = 'none';
+        POOLVR.app.vrManager.onFSClick_();
+        //POOLVR.app.vrManager.onVRClick_();
+        POOLVR.startTutorial();
+    };
+    startButton.disabled = false;
 };
 
 
@@ -1900,17 +1994,18 @@ function onLoad() {
 
         scene.autoUpdate = false;
 
-        //if (!POOLVR.config.useBasicMaterials) {
-            var centerSpotLight = new THREE.SpotLight(0xffffee, 1, 8, Math.PI / 2);
-            centerSpotLight.position.set(0, 3, 0);
-            centerSpotLight.castShadow = true;
-            centerSpotLight.shadow.camera.near = 0.01;
-            centerSpotLight.shadow.camera.far = 4;
-            centerSpotLight.shadow.camera.fov = 90;
-            scene.add(centerSpotLight);
-            centerSpotLight.updateMatrix();
-            centerSpotLight.updateMatrixWorld();
-        //}
+        var centerSpotLight = new THREE.SpotLight(0xffffee, 1, 8, Math.PI / 2);
+        centerSpotLight.position.set(0, 3, 0);
+        centerSpotLight.castShadow = true;
+        centerSpotLight.shadow.camera.matrixAutoUpdate = true;
+        centerSpotLight.shadow.camera.near = 1;
+        centerSpotLight.shadow.camera.far = 3;
+        centerSpotLight.shadow.camera.fov = 80;
+        //centerSpotLight.shadow.radius = 0.5;
+        scene.add(centerSpotLight);
+        centerSpotLight.updateMatrix();
+        centerSpotLight.updateMatrixWorld();
+        POOLVR.centerSpotLight = centerSpotLight;
 
         if (POOLVR.config.usePointLight) {
             var pointLight = new THREE.PointLight(0xaa8866, 0.8, 40);
@@ -1921,82 +2016,36 @@ function onLoad() {
         }
 
         var appConfig = combineObjects(POOLVR.config, {
-            canvasId: 'glcanvas',
+            canvasId: 'webgl-canvas',
             onResetVRSensor: function (lastRotation, lastPosition) {
-                // TODO
-                // var camera = POOLVR.app.camera;
-                // POOLVR.toolRoot.rotation.y -= (lastRotation - camera.rotation.y);
-                // POOLVR.toolRoot.position.sub(lastPosition);
-                // POOLVR.toolRoot.position.applyAxisAngle(THREE.Object3D.DefaultUp, -lastRotation + camera.rotation.y);
-                // POOLVR.toolRoot.position.add(camera.position);
-                // POOLVR.avatar.heading += lastRotation - camera.rotation.y;
-                // POOLVR.avatar.quaternion.setFromAxisAngle(UP, avatar.heading);
-                // POOLVR.avatar.updateMatrix();
-                // POOLVR.avatar.updateMatrixWorld();
+                var camera = POOLVR.app.camera;
+                POOLVR.toolRoot.rotation.y -= (lastRotation - camera.rotation.y);
+                POOLVR.toolRoot.position.sub(lastPosition);
+                POOLVR.toolRoot.position.applyAxisAngle(THREE.Object3D.DefaultUp, -lastRotation + camera.rotation.y);
+                POOLVR.toolRoot.position.add(camera.position);
+                POOLVR.avatar.heading += lastRotation - camera.rotation.y;
+                POOLVR.avatar.quaternion.setFromAxisAngle(UP, avatar.heading);
+                POOLVR.avatar.updateMatrix();
+                POOLVR.avatar.updateMatrixWorld();
             }
         });
 
         POOLVR.app = new WebVRApplication(scene, appConfig);
 
-        POOLVR.app.camera.matrixAutoUpdate = true;
-
         avatar.add(POOLVR.app.camera);
         scene.add(avatar);
 
-        avatar.updateMatrix();
+        POOLVR.setupMenu();
 
-        POOLVR.leapIndicator = document.getElementById('leapIndicator');
+        POOLVR.keyboard = new Primrose.Input.Keyboard('keyboard', document, POOLVR.keyboardCommands);
+
+        avatar.updateMatrix();
 
         POOLVR.setup();
 
         POOLVR.switchMaterials(POOLVR.config.useBasicMaterials);
 
-        var useBasicMaterialsInput = document.getElementById('useBasicMaterials');
-        useBasicMaterialsInput.addEventListener('focus', function (evt) {
-            POOLVR.keyboard.enabled = false;
-        });
-        useBasicMaterialsInput.addEventListener('blur', function (evt) {
-            POOLVR.keyboard.enabled = true;
-        });
-        useBasicMaterialsInput.addEventListener('change', function (evt) {
-            POOLVR.config.useBasicMaterials = useBasicMaterialsInput.checked;
-            POOLVR.switchMaterials(POOLVR.config.useBasicMaterials);
-        });
-        useBasicMaterialsInput.checked = POOLVR.config.useBasicMaterials;
-
-        var leapAddressInput = document.getElementById('leapAddress');
-        leapAddressInput.addEventListener('change', function (evt) {
-            POOLVR.leapController.connection.host = leapAddressInput.value;
-            POOLVR.leapController.connection.disconnect(true);
-            POOLVR.leapController.connect();
-            POOLVR.keyboard.enabled = true;
-        });
-        leapAddressInput.addEventListener('focus', function (evt) {
-            POOLVR.keyboard.enabled = false;
-        });
-
-        var profileNameInput = document.getElementById('profileName');
-        profileNameInput.addEventListener('change', function (evt) {
-            POOLVR.profile = profileNameInput.value;
-            POOLVR.keyboard.enabled = true;
-        });
-        profileNameInput.addEventListener('focus', function (evt) {
-            POOLVR.keyboard.enabled = false;
-        });
-
-        var overlay = document.getElementById('overlay');
-        var startButton = document.getElementById('start');
-        startButton.onclick = function () {
-            overlay.style.display = 'none';
-            POOLVR.app.vrManager.onFSClick_();
-            //POOLVR.app.vrManager.onVRClick_();
-            POOLVR.startTutorial();
-        };
-        startButton.disabled = false;
-
         scene.updateMatrixWorld();
-
-        POOLVR.keyboard = new Primrose.Input.Keyboard('keyboard', document, POOLVR.keyboardCommands);
 
         POOLVR.startAnimateLoop();
 
