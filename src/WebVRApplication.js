@@ -28,20 +28,23 @@ function WebVRApplication(scene, config) {
     this.vrEffect = new THREE.VREffect(this.renderer, function(errorMsg) { console.log('error creating VREffect: ' + errorMsg); });
 
     this.vrControls = new THREE.VRControls(this.camera, function(errorMsg) { console.log('error creating VRControls: ' + errorMsg); });
-    this.vrControls.enabled = true;
+    var vrControlsEnabled = true;
 
-    this.vrManager = new WebVRManager(this.renderer, this.vrEffect, {
-        hideButton: false
-    });
+
+    this.render = function () {
+        if (vrControlsEnabled) this.vrControls.update();
+        this.vrEffect.render(this.scene, this.camera);
+    }.bind(this);
 
 
     this.toggleVRControls = function () {
         if (this.vrControls.enabled) {
-            this.vrControls.enabled = false;
+            vrControlsEnabled = false;
             this.camera.position.set(0, 0, 0);
             this.camera.quaternion.set(0, 0, 0, 1);
+            this.camera.updateMatrixWorld(true);
         } else {
-            this.vrControls.enabled = true;
+            vrControlsEnabled = true;
         }
     }.bind(this);
 
