@@ -471,7 +471,6 @@ function WebVRApplication(scene, config) {
     if (config.canvasId) {
         domElement = document.getElementById(config.canvasId);
         rendererOptions = combineObjects(rendererOptions, {canvas: domElement});
-        console.log(rendererOptions);
         this.renderer = new THREE.WebGLRenderer(rendererOptions);
     } else {
         this.renderer = new THREE.WebGLRenderer(rendererOptions);
@@ -493,17 +492,12 @@ function WebVRApplication(scene, config) {
 
     this.vrEffect = new THREE.VREffect(this.renderer, function(error) { console.error('error creating VREffect: ' + error); });
 
-    this.vrControls = new THREE.VRControls(this.camera, function(errorMsg) { console.error('error creating VRControls: ' + error); });
+    this.vrControls = new THREE.VRControls(this.camera, function(error) { console.error('error creating VRControls: ' + error); });
     this.vrControlsEnabled = true;
 
-    this.vrManager = new WebVRManager(this.renderer, this.vrEffect, {
-        hideButton: false
-    });
-
-
-    this.render = function (t) {
+    this.render = function () {
         if (this.vrControlsEnabled) this.vrControls.update();
-        this.vrManager.render(this.scene, this.camera, t);
+        this.vrEffect.render(this.scene, this.camera);
     }.bind(this);
 
 
@@ -543,8 +537,43 @@ function WebVRApplication(scene, config) {
     }.bind(this);
 
 
-    // TODO
+    var isPresenting = false;
 
+    window.addEventListener('resize', function () {
+        if (!isPresenting) {
+            this.camera.aspect = window.innerWidth / window.innerHeight;
+            this.camera.updateProjectionMatrix();
+            this.renderer.setSize( window.innerWidth, window.innerHeight );
+        }
+    }.bind(this), false );
+
+    var vrButton = document.createElement('button');
+    vrButton.innerHTML = 'ENTER VR';
+    vrButton.style.position = 'absolute';
+    vrButton.style.right = 0;
+    vrButton.style.bottom = 0;
+    vrButton.style.margin = '10px';
+    vrButton.style.padding = '10px';
+    vrButton.style.background = 0x222222;
+    vrButton.style['text-color'] = 0xffffff;
+    vrButton.addEventListener('click', function () {
+        if (!isPresenting) {
+            this.vrEffect.requestPresent().then( function () {
+                isPresenting = true;
+                vrButton.innerHTML = 'EXIT VR';
+            } );
+        } else {
+            this.vrEffect.exitPresent().then( function () {
+                isPresenting = false;
+                vrButton.innerHTML = 'ENTER VR';
+                this.renderer.setSize(window.innerWidth, window.innerHeight);
+            }.bind(this) );
+        }
+    }.bind(this));
+    document.body.appendChild(vrButton);
+
+
+    // TODO
     // renderer.domElement.requestPointerLock = renderer.domElement.requestPointerLock || renderer.domElement.mozRequestPointerLock || renderer.domElement.webkitRequestPointerLock;
     // function requestPointerLock() {
     //     if (renderer.domElement.requestPointerLock) {
@@ -1643,7 +1672,68 @@ POOLVR.setup = function () {
 
 };
 ;
-// #### src/app.js
+// #### src/menu.js
+POOLVR.setupMenu = function () {
+    "use strict";
+    var inputs = document.querySelectorAll('input');
+    function onFocus(evt) {
+        POOLVR.keyboard.enabled = false;
+    }
+    function onBlur(evt) {
+        POOLVR.keyboard.enabled = true;
+    }
+    for (var i = 0; i < inputs.length; i++) {
+        inputs[i].addEventListener('focus', onFocus);
+        inputs[i].addEventListener('blur', onBlur);
+    }
+
+    var useBasicMaterialsInput = document.getElementById('useBasicMaterials');
+    useBasicMaterialsInput.checked = POOLVR.config.useBasicMaterials;
+    useBasicMaterialsInput.addEventListener('change', function (evt) {
+        POOLVR.config.useBasicMaterials = useBasicMaterialsInput.checked;
+        POOLVR.saveConfig(POOLVR.profile);
+        POOLVR.switchMaterials(POOLVR.config.useBasicMaterials);
+    });
+
+    var useShadowMapInput = document.getElementById('useShadowMap');
+    useShadowMapInput.checked = POOLVR.config.useShadowMap;
+    useShadowMapInput.addEventListener('change', function (evt) {
+        POOLVR.config.useShadowMap = useShadowMapInput.checked;
+        POOLVR.saveConfig(POOLVR.profile);
+        if (window.confirm('This change requires a page reload to take effect - reload now?')) {
+            document.location.reload();
+        }
+    });
+
+    POOLVR.leapIndicator = document.getElementById('leapIndicator');
+
+    // TODO: regular expression format check
+    var leapAddressInput = document.getElementById('leapAddress');
+    leapAddressInput.value = 'localhost';
+    leapAddressInput.addEventListener('change', function (evt) {
+        POOLVR.leapController.connection.host = leapAddressInput.value;
+        POOLVR.leapController.connection.disconnect(true);
+        POOLVR.leapController.connect();
+        //POOLVR.saveConfig(POOLVR.profile);
+    });
+
+    var profileNameInput = document.getElementById('profileName');
+    profileNameInput.value = POOLVR.profile;
+    profileNameInput.addEventListener('change', function (evt) {
+        POOLVR.profile = profileNameInput.value;
+        POOLVR.saveConfig(POOLVR.profile);
+    });
+
+    var overlay = document.getElementById('overlay');
+    var startButton = document.getElementById('start');
+    startButton.addEventListener('click', function () {
+        overlay.style.display = 'none';
+        POOLVR.startTutorial();
+    });
+    startButton.disabled = false;
+};
+;
+// #### src/main.js
 POOLVR.selectNextBall = function (inc) {
     "use strict";
     inc = inc || 1;
@@ -1855,14 +1945,10 @@ POOLVR.startAnimateLoop = function () {
         rS('updatevrcontrols').end();
 
         rS('render').start();
-        app.vrManager.render(app.scene, app.camera, t);
+        app.vrEffect.render(app.scene, app.camera);
         rS('render').end();
 
-        requestAnimationFrame(animate);
-
         rS('step').start();
-        //world.step(dt);
-        //world.step(1/75, dt, 5);
         world.step(Math.min(1/60, dt), dt, 10);
         rS('step').end();
 
@@ -1881,75 +1967,14 @@ POOLVR.startAnimateLoop = function () {
 
         lt = t;
 
+        requestAnimationFrame(animate);
+
         rS('frame').end();
         rS().update();
     }
 
     requestAnimationFrame(animate);
 
-};
-
-
-POOLVR.setupMenu = function () {
-    "use strict";
-    var inputs = document.querySelectorAll('input');
-    function onFocus(evt) {
-        POOLVR.keyboard.enabled = false;
-    }
-    function onBlur(evt) {
-        POOLVR.keyboard.enabled = true;
-    }
-    for (var i = 0; i < inputs.length; i++) {
-        inputs[i].addEventListener('focus', onFocus);
-        inputs[i].addEventListener('blur', onBlur);
-    }
-
-    var useBasicMaterialsInput = document.getElementById('useBasicMaterials');
-    useBasicMaterialsInput.checked = POOLVR.config.useBasicMaterials;
-    useBasicMaterialsInput.addEventListener('change', function (evt) {
-        POOLVR.config.useBasicMaterials = useBasicMaterialsInput.checked;
-        POOLVR.saveConfig(POOLVR.profile);
-        POOLVR.switchMaterials(POOLVR.config.useBasicMaterials);
-    });
-
-    var useShadowMapInput = document.getElementById('useShadowMap');
-    useShadowMapInput.checked = POOLVR.config.useShadowMap;
-    useShadowMapInput.addEventListener('change', function (evt) {
-        POOLVR.config.useShadowMap = useShadowMapInput.checked;
-        POOLVR.saveConfig(POOLVR.profile);
-        if (window.confirm('This change requires a page reload to take effect - reload now?')) {
-            document.location.reload();
-        }
-    });
-
-    POOLVR.leapIndicator = document.getElementById('leapIndicator');
-
-    // TODO: regular expression format check
-    var leapAddressInput = document.getElementById('leapAddress');
-    leapAddressInput.value = 'localhost';
-    leapAddressInput.addEventListener('change', function (evt) {
-        POOLVR.leapController.connection.host = leapAddressInput.value;
-        POOLVR.leapController.connection.disconnect(true);
-        POOLVR.leapController.connect();
-        //POOLVR.saveConfig(POOLVR.profile);
-    });
-
-    var profileNameInput = document.getElementById('profileName');
-    profileNameInput.value = POOLVR.profile;
-    profileNameInput.addEventListener('change', function (evt) {
-        POOLVR.profile = profileNameInput.value;
-        POOLVR.saveConfig(POOLVR.profile);
-    });
-
-    var overlay = document.getElementById('overlay');
-    var startButton = document.getElementById('start');
-    startButton.onclick = function () {
-        overlay.style.display = 'none';
-        POOLVR.app.vrManager.onFSClick_();
-        //POOLVR.app.vrManager.onVRClick_();
-        POOLVR.startTutorial();
-    };
-    startButton.disabled = false;
 };
 
 
@@ -2018,6 +2043,7 @@ function onLoad() {
         var appConfig = combineObjects(POOLVR.config, {
             canvasId: 'webgl-canvas',
             onResetVRSensor: function (lastRotation, lastPosition) {
+                // maintain correspondence between virtual / physical leap motion controller:
                 var camera = POOLVR.app.camera;
                 POOLVR.toolRoot.rotation.y -= (lastRotation - camera.rotation.y);
                 POOLVR.toolRoot.position.sub(lastPosition);
