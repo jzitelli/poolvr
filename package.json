@@ -42,9 +42,9 @@
   "dependencies": {
     "leapjs": "0.6.4",
     "cannon": "git://github.com/jzitelli/cannon.js.git",
-    "three": "git://github.com/jzitelli/three.js.git#webvr_v1",
+    "three": "git://github.com/jzitelli/three.js.git#dev",
     "three.py": "git://github.com/jzitelli/three.py.git#dev",
-    "webvr-boilerplate": "git://github.com/jzitelli/webvr-boilerplate.git#webvr_v1",
+    "webvr-boilerplate": "git://github.com/jzitelli/webvr-boilerplate.git#dev",
     "webvr-polyfill": "git://github.com/jzitelli/webvr-polyfill.git"
   },
   "devDependencies": {
