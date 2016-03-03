@@ -14,8 +14,6 @@ from three import *
 IN2METER = 0.0254
 FT2METER = IN2METER / 12
 
-square = QuadBufferGeometry(vertices=[[-0.5, 0, -0.5], [-0.5, 0, 0.5], [0.5, 0, 0.5], [0.5, 0, -0.5]],
-                            uvs=[(0,1), (0,0), (1,0), (1,1)])
 
 
 def pool_table(L_table=2.3368, W_table=None, H_table=0.74295,
@@ -73,7 +71,7 @@ def pool_table(L_table=2.3368, W_table=None, H_table=0.74295,
                         receiveShadow=True)
     poolTable.add(headSpotMesh)
 
-    H_nose = 0.8 * H_cushion
+    H_nose = 0.5 * H_cushion
     W_nose = 0.05 * W_cushion
     headCushionGeom = HexaBufferGeometry(vertices=[# bottom quad:
                                                    [-0.5*W_playable,                        0,                   0.5*W_cushion],
