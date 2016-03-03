@@ -35,7 +35,6 @@ function WebVRApplication(scene, config) {
     this.vrControls = new THREE.VRControls(this.camera, function(errorMsg) { console.error('error creating VRControls: ' + error); });
     this.vrControlsEnabled = true;
 
-
     this.render = function () {
         if (this.vrControlsEnabled) this.vrControls.update();
         this.vrEffect.render(this.scene, this.camera);
