@@ -143,11 +143,12 @@ POOLVR.startTutorial = function () {
         POOLVR.textGeomLogger.log("TO MAKE CONTACT WITH A BALL...");
     });
 
-    POOLVR.synthSpeaker.speak("If you are playing in VR, you will probably want use the. I. J. K. And L. Keys to move the. Virtual. Leap Motion Controller.  So that the virtual. And physical positions. Coincide.", function () {
-        POOLVR.textGeomLogger.log("IF YOU ARE PLAYING IN VR, YOU WILL PROBABLY WANT TO USE THE");
-        POOLVR.textGeomLogger.log("I/J/K/L/O/./Y/U KEYS");
+    POOLVR.synthSpeaker.speak("If you are playing in VR, try using the I, J, K, and L keys.  To move the virtual. Leap Motion Controller.  So that it coincides with the controller in your physical environment.", function () {
+        POOLVR.textGeomLogger.log("IF YOU ARE PLAYING IN VR, TRY USING THE");
+        POOLVR.textGeomLogger.log("I / J / K / L / O / . / Y / U KEYS");
         POOLVR.textGeomLogger.log("TO MOVE THE VIRTUAL LEAP MOTION CONTROLLER");
-        POOLVR.textGeomLogger.log("SO THAT THE VIRTUAL AND PHYSICAL POSITIONS COINCIDE.");
+        POOLVR.textGeomLogger.log("SO THAT IT COINCIDES WITH THE CONTROLLER");
+        POOLVR.textGeomLogger.log("IN YOUR PHYSICAL ENVIRONMENT.");
     });
 
 };
@@ -281,10 +282,10 @@ function onLoad() {
     if (POOLVR.config.useTextGeomLogger) {
         var fontLoader = new THREE.FontLoader();
         fontLoader.load('fonts/Anonymous Pro_Regular.js', function (font) {
-            var textGeomCacher = new TextGeomUtils.TextGeomCacher(font, {size: 0.14});
+            var textGeomCacher = new TextGeomUtils.TextGeomCacher(font, {size: 0.12});
             var textGeomLoggerMaterial = new THREE.MeshBasicMaterial({color: 0xff3210});
             POOLVR.textGeomLogger = new TextGeomUtils.TextGeomLogger(textGeomCacher,
-                {material: textGeomLoggerMaterial, nrows: 7, lineHeight: 1.8 * 0.14});
+                {material: textGeomLoggerMaterial, nrows: 8, lineHeight: 1.8 * 0.12});
             avatar.add(POOLVR.textGeomLogger.root);
             POOLVR.textGeomLogger.root.position.set(-2.7, 0.88, -3.3);
             POOLVR.textGeomLogger.root.updateMatrix();

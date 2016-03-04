@@ -79,19 +79,43 @@ function WebVRApplication(scene, config) {
         }
     }.bind(this);
 
-    // full screen / VR presenting stuff:
-
-    var isFullscreen = false;
-
-    var isRequestingPresent = false;
-
-    var isPresenting = false;
+    // resize / fullscreen / VR presenting stuff:
 
     window.addEventListener('resize', function () {
         this.camera.aspect = window.innerWidth / window.innerHeight;
         this.camera.updateProjectionMatrix();
         this.renderer.setSize(window.innerWidth, window.innerHeight);
     }.bind(this), false );
+
+    var isFullscreen = false;
+
+    this.toggleFullscreen = function () {
+        if (!isFullscreen) {
+            if (domElement.requestFullscreen) {
+                domElement.requestFullscreen();
+            } else if (domElement.msRequestFullscreen) {
+                domElement.msRequestFullscreen();
+            } else if (domElement.mozRequestFullScreen) {
+                domElement.mozRequestFullScreen();
+            } else if (domElement.webkitRequestFullscreen) {
+                domElement.webkitRequestFullscreen();
+            } else {
+                throw 'Fullscreen API is not supported';
+            }
+        } else {
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+            } else if (document.mozCancelFullScreen) {
+                document.mozCancelFullScreen();
+            } else if (document.webkitExitFullscreen) {
+                document.webkitExitFullscreen();
+            }
+        }
+    };
+
+    var isRequestingPresent = false;
+
+    var isPresenting = false;
 
     var fullscreenchange = domElement.mozRequestFullScreen ? 'mozfullscreenchange' : 'webkitfullscreenchange';
 
@@ -135,16 +159,10 @@ function WebVRApplication(scene, config) {
         var onClick = function () {
             if (!isPresenting) {
                 isRequestingPresent = true;
-                if (domElement.requestFullscreen) {
-                    domElement.requestFullscreen();
-                } else if (domElement.msRequestFullscreen) {
-                    domElement.msRequestFullscreen();
-                } else if (domElement.mozRequestFullScreen) {
-                    domElement.mozRequestFullScreen();
-                } else if (domElement.webkitRequestFullscreen) {
-                    domElement.webkitRequestFullscreen();
-                } else {
-                    console.error('fullscreen not supported');
+                try {
+                    this.toggleFullscreen();
+                } catch (error) {
+                    console.error(error);
                     isRequestingPresent = false;
                 }
             } else {

@@ -70,7 +70,7 @@ var TextGeomUtils = ( function () {
             }
             // remove rows exceeding max display
             for (i = this.root.children.length - 1; i >= nrows; i--) {
-                this.root.remove(this.root.children[i]);
+                this.root.remove(this.root.children[0]);
             }
             // scroll lines:
             for (i = 0; i < this.root.children.length; i++) {
@@ -83,7 +83,7 @@ var TextGeomUtils = ( function () {
 
         this.clear = function () {
             for (var i = this.root.children.length - 1; i >= 0; i--) {
-                this.root.remove(this.root.children[i]);
+                this.root.remove(this.root.children[this.root.children.length - 1]);
             }
         }.bind(this);
     }

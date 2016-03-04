@@ -52,6 +52,9 @@ POOLVR.setupMenu = function () {
 
     startButton.addEventListener('click', function () {
         overlay.style.display = 'none';
+        POOLVR.app.toggleFullscreen();
         POOLVR.startTutorial();
     });
+
+    startButton.disabled = false;
 };

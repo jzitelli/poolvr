@@ -48,6 +48,9 @@
         font-size: 1.4vh;
         margin-left: 1.5vw;
       }
+      .coordinate {
+        width: 2em;
+      }
       #leapAddress, #profileName {
         margin: 2vh;
       }
@@ -118,6 +121,10 @@
         <input type="checkbox" id="useShadowMap"/>
         Shadow maps
       </label>
+      <label>
+        <input type="checkbox" id="useTextGeomLogger"/>
+        Text display
+      </label>
 
       <br>
 
@@ -131,7 +138,9 @@
 
       <label>
         Leap Motion offset:
-        <input id='leapX' type="number" value=0 required/>
+        <input class='coordinate' id='leapX' type="number" value=0 required/>
+        <input class='coordinate' id='leapY' type="number" value=0 required/>
+        <input class='coordinate' id='leapZ' type="number" value=0 required/>
       </label>
 
       <br>
