@@ -4,7 +4,7 @@ var fs = require('fs')
 var srcFiles = [
   "node_modules/three.py/js/three.py.js",
   "node_modules/three.py/js/CANNONize.js",
-  "node_modules/three.py/js/TextGeomUtils.js",
+  "src/TextGeomUtils.js",
   "src/WebVRApplication.js",
   "src/utils.js",
   "src/LeapInput.js",

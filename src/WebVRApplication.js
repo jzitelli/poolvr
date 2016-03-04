@@ -3,23 +3,26 @@ function WebVRApplication(scene, config) {
     this.scene = scene;
 
     config = config || {};
-    var rendererOptions = config.rendererOptions;
-    var useShadowMap    = config.useShadowMap;
-    var onResetVRSensor = config.onResetVRSensor;
+    var rendererOptions  = config.rendererOptions;
+    var useShadowMap     = config.useShadowMap;
+    var onResetVRSensor  = config.onResetVRSensor;
+    var devicePixelRatio = config.devicePixelRatio || window.devicePixelRatio;
 
     var domElement;
     if (config.canvasId) {
+        // canvas already exists in document
         domElement = document.getElementById(config.canvasId);
         rendererOptions = combineObjects(rendererOptions, {canvas: domElement});
         this.renderer = new THREE.WebGLRenderer(rendererOptions);
     } else {
+        // create the canvas
         this.renderer = new THREE.WebGLRenderer(rendererOptions);
         domElement = this.renderer.domElement;
         document.body.appendChild(domElement);
         domElement.id = 'webgl-canvas';
     }
 
-    this.renderer.setPixelRatio(window.devicePixelRatio);
+    this.renderer.setPixelRatio(devicePixelRatio);
     this.renderer.setSize(window.innerWidth, window.innerHeight);
 
     if (useShadowMap) {
@@ -87,30 +90,40 @@ function WebVRApplication(scene, config) {
         }
     }.bind(this), false );
 
-    var vrButton = document.createElement('button');
-    vrButton.innerHTML = 'ENTER VR';
-    vrButton.style.position = 'absolute';
-    vrButton.style.right = 0;
-    vrButton.style.bottom = 0;
-    vrButton.style.margin = '10px';
-    vrButton.style.padding = '10px';
-    vrButton.style.background = 0x222222;
-    vrButton.style['text-color'] = 0xffffff;
-    vrButton.addEventListener('click', function () {
-        if (!isPresenting) {
-            this.vrEffect.requestPresent().then( function () {
-                isPresenting = true;
-                vrButton.innerHTML = 'EXIT VR';
-            } );
-        } else {
-            this.vrEffect.exitPresent().then( function () {
-                isPresenting = false;
-                vrButton.innerHTML = 'ENTER VR';
-                this.renderer.setSize(window.innerWidth, window.innerHeight);
-            }.bind(this) );
-        }
-    }.bind(this));
-    document.body.appendChild(vrButton);
+    if (window.VRDisplay || window.HMDVRDevice) {
+        var vrButton = document.createElement('button');
+        vrButton.innerHTML = 'ENTER VR';
+        vrButton.style.position = 'absolute';
+        vrButton.style.right = 0;
+        vrButton.style.bottom = 0;
+        vrButton.style.margin = '10px';
+        vrButton.style.padding = '10px';
+        vrButton.style.background = 0x222222;
+        vrButton.style['text-color'] = 0xffffff;
+        var onClick = function () {
+            if (!isPresenting) {
+                this.vrEffect.requestPresent().then( function () {
+                    isPresenting = true;
+                    vrButton.innerHTML = 'EXIT VR';
+                } ).catch( function (error) {
+                    console.error(error);
+                    vrButton.innerHTML = 'VR ERROR!';
+                    vrButton.style.background = 0x992222;
+                    vrButton.removeEventListener('click', onClick);
+                } );
+            } else {
+                this.vrEffect.exitPresent().then( function () {
+                    isPresenting = false;
+                    vrButton.innerHTML = 'ENTER VR';
+                    this.renderer.setSize(window.innerWidth, window.innerHeight);
+                }.bind(this) );
+            }
+        }.bind(this);
+        vrButton.addEventListener('click', onClick, false);
+        document.body.appendChild(vrButton);
+    } else {
+        console.warn('WebVR is not supported on your browser / platform');
+    }
 
 
     // TODO

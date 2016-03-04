@@ -9,6 +9,9 @@ POOLVR.commands = {
     stroke:           function () { POOLVR.stroke(); }
 };
 
+// TODO: remove Primrose dependency for keyboard / gamepad input, it seems overkill for just this functionality + my Primrose version is very outdated.
+
+// TODO: control customization menu
 
 POOLVR.keyboardCommands = {
     turnLeft:     {buttons: [-Primrose.Input.Keyboard.LEFTARROW]},
@@ -45,10 +48,12 @@ POOLVR.keyboardCommands = {
                      commandDown: POOLVR.commands.selectPrevBall, dt: 0.5},
     stroke: {buttons: [Primrose.Input.Keyboard.SPACEBAR],
              commandDown: POOLVR.commands.stroke, dt: 0.25}
-
 };
 
 POOLVR.keyboardCommands = makeObjectArray(POOLVR.keyboardCommands, 'name');
+
+POOLVR.keyboard = new Primrose.Input.Keyboard('keyboard', document, POOLVR.keyboardCommands);
+
 
 var DEADZONE = 0.2;
 POOLVR.gamepadCommands = {
