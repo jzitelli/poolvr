@@ -39,7 +39,7 @@ POOLVR.setupMenu = function () {
         POOLVR.leapController.connection.host = leapAddressInput.value;
         POOLVR.leapController.connection.disconnect(true);
         POOLVR.leapController.connect();
-        //POOLVR.saveConfig(POOLVR.profile);
+        POOLVR.saveConfig(POOLVR.profile);
     });
 
     var profileNameInput = document.getElementById('profileName');
@@ -51,11 +51,9 @@ POOLVR.setupMenu = function () {
 
     var overlay = document.getElementById('overlay');
     var startButton = document.getElementById('start');
-    startButton.onclick = function () {
+
+    startButton.addEventListener('click', function () {
         overlay.style.display = 'none';
-        POOLVR.app.vrManager.onFSClick_();
-        //POOLVR.app.vrManager.onVRClick_();
         POOLVR.startTutorial();
-    };
-    startButton.disabled = false;
+    });
 };

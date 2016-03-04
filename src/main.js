@@ -209,14 +209,10 @@ POOLVR.startAnimateLoop = function () {
         rS('updatevrcontrols').end();
 
         rS('render').start();
-        app.vrManager.render(app.scene, app.camera, t);
+        app.vrEffect.render(app.scene, app.camera);
         rS('render').end();
 
-        requestAnimationFrame(animate);
-
         rS('step').start();
-        //world.step(dt);
-        //world.step(1/75, dt, 5);
         world.step(Math.min(1/60, dt), dt, 10);
         rS('step').end();
 
@@ -235,6 +231,8 @@ POOLVR.startAnimateLoop = function () {
 
         lt = t;
 
+        requestAnimationFrame(animate);
+
         rS('frame').end();
         rS().update();
     }
@@ -248,6 +246,7 @@ function onLoad() {
     "use strict";
     POOLVR.config = POOLVR.loadConfig(POOLVR.profile) || POOLVR.config;
     POOLVR.parseURIConfig();
+
     console.log("POOLVR.config =\n" + JSON.stringify(POOLVR.config, undefined, 2));
 
     THREE.Object3D.DefaultMatrixAutoUpdate = false;
@@ -266,12 +265,13 @@ function onLoad() {
     if (POOLVR.config.useTextGeomLogger) {
         var fontLoader = new THREE.FontLoader();
         fontLoader.load('fonts/Anonymous Pro_Regular.js', function (font) {
-            var textGeomCacher = new TextGeomUtils.TextGeomCacher(font, {size: 0.12});
+            var textGeomCacher = new TextGeomUtils.TextGeomCacher(font, {size: 0.14});
             var textGeomLoggerMaterial = new THREE.MeshBasicMaterial({color: 0xff3210});
             POOLVR.textGeomLogger = new TextGeomUtils.TextGeomLogger(textGeomCacher,
-                {material: textGeomLoggerMaterial, nrows: 7, lineHeight: 1.8 * 0.12});
+                {material: textGeomLoggerMaterial, nrows: 7, lineHeight: 1.8 * 0.14});
             avatar.add(POOLVR.textGeomLogger.root);
-            POOLVR.textGeomLogger.root.position.set(-2.5, 1.0, -3.5);
+            POOLVR.textGeomLogger.root.position.set(-2.7, 0.88, -3.3);
+            POOLVR.textGeomLogger.root.updateMatrix();
         });
     } else {
         POOLVR.textGeomLogger = {
@@ -296,6 +296,7 @@ function onLoad() {
         scene.add(centerSpotLight);
         centerSpotLight.updateMatrix();
         centerSpotLight.updateMatrixWorld();
+
         POOLVR.centerSpotLight = centerSpotLight;
 
         if (POOLVR.config.usePointLight) {
@@ -309,13 +310,14 @@ function onLoad() {
         var appConfig = combineObjects(POOLVR.config, {
             canvasId: 'webgl-canvas',
             onResetVRSensor: function (lastRotation, lastPosition) {
+                // maintain correspondence between virtual / physical leap motion controller:
                 var camera = POOLVR.app.camera;
                 POOLVR.toolRoot.rotation.y -= (lastRotation - camera.rotation.y);
                 POOLVR.toolRoot.position.sub(lastPosition);
                 POOLVR.toolRoot.position.applyAxisAngle(THREE.Object3D.DefaultUp, -lastRotation + camera.rotation.y);
                 POOLVR.toolRoot.position.add(camera.position);
                 POOLVR.avatar.heading += lastRotation - camera.rotation.y;
-                POOLVR.avatar.quaternion.setFromAxisAngle(UP, avatar.heading);
+                POOLVR.avatar.quaternion.setFromAxisAngle(THREE.Object3D.DefaultUp, avatar.heading);
                 POOLVR.avatar.updateMatrix();
                 POOLVR.avatar.updateMatrixWorld();
             }
@@ -324,19 +326,19 @@ function onLoad() {
         POOLVR.app = new WebVRApplication(scene, appConfig);
 
         avatar.add(POOLVR.app.camera);
+
         scene.add(avatar);
 
-        POOLVR.setupMenu();
-
-        POOLVR.keyboard = new Primrose.Input.Keyboard('keyboard', document, POOLVR.keyboardCommands);
-
         avatar.updateMatrix();
+        avatar.updateMatrixWorld();
+
+        POOLVR.setupMenu();
 
         POOLVR.setup();
 
         POOLVR.switchMaterials(POOLVR.config.useBasicMaterials);
 
-        scene.updateMatrixWorld();
+        scene.updateMatrixWorld(true);
 
         POOLVR.startAnimateLoop();
 

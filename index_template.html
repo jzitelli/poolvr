@@ -14,9 +14,6 @@
 
     <style>
       body {
-        position: absolute;
-        width: 100%;
-        height: 100%;
         background-color: #000;
         margin: 0;
         padding: 0;
@@ -25,29 +22,30 @@
       }
       #overlay {
         position: absolute;
-        left: 1.5vw;
-        top: 1.5vw;
+        left: 15px;
+        top: 15px;
         margin: 0;
         padding: 0.5vh;
         color: #ffffff;
         background-color: rgba(20, 20, 50, 0.7);
       }
       h1 {
-        font-size: 6vh;
+        font-size: 5.5vh;
         color: #b5e853;
       }
       h2 {
-        font-size: 3vh;
+        font-size: 3.4vh;
         color: #b5e853;
       }
       h3 {
-        font-size: 2vh;
+        font-size: 2.2vh;
       }
       h4 {
-        font-size: 1.5vh;
+        font-size: 1.75vh;
         margin-left: 1vw;
       }
       p {
+        font-size: 1.4vh;
         margin-left: 1.5vw;
       }
       #leapAddress, #profileName {
@@ -74,6 +72,7 @@
       #webgl-canvas {
         position: fixed;
         width: 100%;
+        height: 100%;
         top: 0;
         left: 0;
         padding: 0;
@@ -119,13 +118,24 @@
         <input type="checkbox" id="useShadowMap"/>
         Shadow maps
       </label>
+
       <br>
+
       <label>
         Leap Motion Websocket address:
         <input id="leapAddress" type="text" maxlength="20" value="localhost" required/>
       </label>
       <button id="leapIndicator">disconnected</button>
+
       <br>
+
+      <label>
+        Leap Motion offset:
+        <input id='leapX' type="number" value=0 required/>
+      </label>
+
+      <br>
+
       <label>
         Profile name:
         <input id="profileName" type="text" maxlength="30" required/>
@@ -135,13 +145,13 @@
 
 
 {% if config['DEBUG'] %}
+
     <script src="node_modules/three/build/three.js"></script>
     <script src="node_modules/three/examples/js/effects/VREffect.js"></script>
     <script src="node_modules/three/examples/js/controls/VRControls.js"></script>
     <script src="node_modules/three/examples/js/objects/ShadowMesh.js"></script>
 
     <script src="node_modules/webvr-polyfill/build/webvr-polyfill.js"></script>
-    <script src="node_modules/webvr-boilerplate/build/webvr-manager.js"></script>
 
     <script src="node_modules/cannon/build/cannon.js"></script>
 
@@ -154,8 +164,8 @@
 
     <script src="node_modules/three.py/js/three.py.js"></script>
     <script src="node_modules/three.py/js/CANNONize.js"></script>
-    <script src="node_modules/three.py/js/TextGeomUtils.js"></script>
 
+    <script src="src/TextGeomUtils.js"></script>
     <script src="src/WebVRApplication.js"></script>
     <script src="src/utils.js"></script>
     <script src="src/LeapInput.js"></script>
@@ -167,14 +177,15 @@
     <script src="src/menu.js"></script>
 
     <script src="src/main.js"></script>
+
 {% else %}
+
     <script src="lib/three.min.js"></script>
     <script src="lib/VREffect.js"></script>
     <script src="lib/VRControls.js"></script>
     <script src="lib/ShadowMesh.js"></script>
 
     <script src="lib/webvr-polyfill.js"></script>
-    <script src="lib/webvr-manager.js"></script>
 
     <script src="lib/cannon.min.js"></script>
 
@@ -186,6 +197,7 @@
     <script src="lib/rstats/rStats.extras.js"></script>
 
     <script src="build/poolvr.min.js"></script>
+
 {% endif %}
 
   </body>
