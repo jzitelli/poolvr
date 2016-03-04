@@ -6,13 +6,10 @@ import logging
 _logger = logging.getLogger(__name__)
 import json
 from copy import deepcopy
-import sys
 
 from flask import Flask, render_template, request, Markup
 
 import pool_table
-
-import site_settings
 
 STATIC_FOLDER   = os.path.abspath(os.path.split(__file__)[0])
 TEMPLATE_FOLDER = STATIC_FOLDER
@@ -22,7 +19,7 @@ app = Flask(__name__,
             static_url_path='',
             template_folder=TEMPLATE_FOLDER)
 
-app.config.from_object(site_settings)
+app.debug = True
 
 
 WebVRConfig = {
@@ -45,18 +42,18 @@ WebVRConfig = {
 POOLVR = {
     'config': {
         'gravity'            : 9.8,
-        'useBasicMaterials'  : False,
+        'useBasicMaterials'  : True,
         'useShadowMap'       : False,
         'usePointLight'      : False,
-        'useSkybox'          : True,
+        'useSkybox'          : False,
         'useTextGeomLogger'  : True,
         'L_table'            : 2.3368,
         'H_table'            : 0.74295,
         'ball_diameter'      : 2.25 * pool_table.IN2METER,
         'initialPosition'    : [0, 0.98295, 1.0042],
-        'synthSpeakerVolume' : 0.25,
+        'synthSpeakerVolume' : 0.4,
         'toolOptions': {
-            'toolOffset'  : [0, -0.42, -0.4],
+            'toolOffset'  : [0, -0.42, -0.48],
             'toolRotation': 0,
             'tipShape'    : 'Cylinder'
         }
@@ -88,12 +85,12 @@ def get_poolvr_config():
 
 
 
-@app.route('/poolvr')
+@app.route('/')
 def poolvr():
     """
     Serves the poolvr app HTML.
     """
-    config = get_poolvr_config()
+    poolvr_config = get_poolvr_config()
     return render_template("index_template.html",
                            json_config=Markup(r"""<script>
 var WebVRConfig = %s;
@@ -102,8 +99,8 @@ var POOLVR = %s;
 
 var THREEPY_SCENE = %s;
 </script>""" % (json.dumps(WebVRConfig, indent=2),
-                json.dumps(POOLVR, indent=2),
-                json.dumps(pool_table.pool_hall(**config).export()))))
+                json.dumps({'config': poolvr_config}, indent=2),
+                json.dumps(pool_table.pool_hall(**poolvr_config).export()))))
 
 
 
@@ -122,7 +119,7 @@ STARTING FLASK APP!!!!!!!!!!!!!
           p o o l v r
           ***********
 """)
-    app.run(host='0.0.0.0', port=app.config['PORT'])
+    app.run(host='0.0.0.0', port=5000)
 
 
 
