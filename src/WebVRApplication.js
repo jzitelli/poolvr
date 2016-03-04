@@ -88,11 +88,9 @@ function WebVRApplication(scene, config) {
     var isPresenting = false;
 
     window.addEventListener('resize', function () {
-        if (!isPresenting) {
-            this.camera.aspect = window.innerWidth / window.innerHeight;
-            this.camera.updateProjectionMatrix();
-            this.renderer.setSize( window.innerWidth, window.innerHeight );
-        }
+        this.camera.aspect = window.innerWidth / window.innerHeight;
+        this.camera.updateProjectionMatrix();
+        this.renderer.setSize(window.innerWidth, window.innerHeight);
     }.bind(this), false );
 
     var fullscreenchange = domElement.mozRequestFullScreen ? 'mozfullscreenchange' : 'webkitfullscreenchange';

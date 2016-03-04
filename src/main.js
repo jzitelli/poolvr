@@ -38,10 +38,17 @@ POOLVR.autoPosition = ( function () {
     "use strict";
     var nextVector = new THREE.Vector3();
     var UP = THREE.Object3D.DefaultUp;
+    var speakCount = 0;
     return function () {
-        // POOLVR.textGeomLogger.log("YOU ARE BEING AUTO-POSITIONED.  NEXT BALL: " + POOLVR.nextBall);
+
         if (POOLVR.synthSpeaker.speaking === false) {
-            POOLVR.synthSpeaker.speak("You are being auto-positioned.");
+            if (speakCount <= 7) {
+                POOLVR.synthSpeaker.speak("You are being auto-positioned.");
+                if (speakCount === 7) {
+                    POOLVR.synthSpeaker.speak("I will stop saying that now.");
+                }
+                speakCount++;
+            }
         }
 
         var avatar = POOLVR.avatar;
@@ -51,9 +58,11 @@ POOLVR.autoPosition = ( function () {
         );
         avatar.quaternion.setFromAxisAngle(UP, avatar.heading);
 
+        // nextVector.copy(POOLVR.toolRoot.worldPosition);
         nextVector.copy(POOLVR.toolRoot.position);
         nextVector.applyQuaternion(avatar.quaternion);
         nextVector.add(avatar.position);
+
         nextVector.sub(POOLVR.ballMeshes[0].position);
         nextVector.y = 0;
         avatar.position.sub(nextVector);
@@ -61,9 +70,8 @@ POOLVR.autoPosition = ( function () {
         avatar.updateMatrix();
         avatar.updateMatrixWorld();
 
-        var toolRoot = POOLVR.toolRoot;
-        toolRoot.matrixWorldInverse.getInverse(toolRoot.matrixWorld);
-        toolRoot.matrixWorld.decompose(toolRoot.worldPosition, toolRoot.worldQuaternion, toolRoot.worldScale);
+        POOLVR.updateToolMapping();
+
     };
 } )();
 
@@ -107,11 +115,6 @@ POOLVR.moveAvatar = ( function () {
             avatar.position.y += dt * floatUp;
 
             avatar.updateMatrix();
-            avatar.updateMatrixWorld();
-
-            var toolRoot = POOLVR.toolRoot;
-            toolRoot.matrixWorldInverse.getInverse(toolRoot.matrixWorld);
-            toolRoot.matrixWorld.decompose(toolRoot.worldPosition, toolRoot.worldQuaternion, toolRoot.worldScale);
         }
     };
 } )();
@@ -139,6 +142,14 @@ POOLVR.startTutorial = function () {
         POOLVR.textGeomLogger.log("KEEP THE STICK WITHIN THE INTERACTION BOX WHEN YOU WANT");
         POOLVR.textGeomLogger.log("TO MAKE CONTACT WITH A BALL...");
     });
+
+    POOLVR.synthSpeaker.speak("If you are playing in VR, you will probably want use the. I. J. K. And L. Keys to move the. Virtual. Leap Motion Controller.  So that the virtual. And physical positions. Coincide.", function () {
+        POOLVR.textGeomLogger.log("IF YOU ARE PLAYING IN VR, YOU WILL PROBABLY WANT TO USE THE");
+        POOLVR.textGeomLogger.log("I/J/K/L/O/./Y/U KEYS");
+        POOLVR.textGeomLogger.log("TO MOVE THE VIRTUAL LEAP MOTION CONTROLLER");
+        POOLVR.textGeomLogger.log("SO THAT THE VIRTUAL AND PHYSICAL POSITIONS COINCIDE.");
+    });
+
 };
 
 
@@ -148,11 +159,13 @@ POOLVR.startAnimateLoop = function () {
         gamepad  = POOLVR.gamepad,
         app      = POOLVR.app,
         world    = POOLVR.world,
+        avatar   = POOLVR.avatar,
         updateTool          = POOLVR.updateTool,
         updateToolPostStep  = POOLVR.updateToolPostStep,
         moveToolRoot        = POOLVR.moveToolRoot,
         moveAvatar          = POOLVR.moveAvatar,
-        updateBallsPostStep = POOLVR.updateBallsPostStep;
+        updateBallsPostStep = POOLVR.updateBallsPostStep,
+        updateToolMapping   = POOLVR.updateToolMapping;
 
     var glS, rS;
     if (URL_PARAMS.rstats) {
@@ -198,7 +211,7 @@ POOLVR.startAnimateLoop = function () {
         var dt = (t - lt) * 0.001;
 
         rS('updatetool').start();
-        updateTool();
+        updateTool(dt);
         rS('updatetool').end();
 
         rS('updatevrcontrols').start();
@@ -227,6 +240,9 @@ POOLVR.startAnimateLoop = function () {
 
         moveAvatar(keyboard, gamepad, dt);
         moveToolRoot(keyboard, gamepad, dt);
+
+        avatar.updateMatrixWorld();
+        updateToolMapping();
         rS('updatekeyboardgamepad').end();
 
         lt = t;
@@ -316,6 +332,8 @@ function onLoad() {
                 POOLVR.toolRoot.position.sub(lastPosition);
                 POOLVR.toolRoot.position.applyAxisAngle(THREE.Object3D.DefaultUp, -lastRotation + camera.rotation.y);
                 POOLVR.toolRoot.position.add(camera.position);
+                POOLVR.toolRoot.updateMatrix();
+                POOLVR.toolRoot.updateMatrixWorld();
                 POOLVR.avatar.heading += lastRotation - camera.rotation.y;
                 POOLVR.avatar.quaternion.setFromAxisAngle(THREE.Object3D.DefaultUp, avatar.heading);
                 POOLVR.avatar.updateMatrix();
@@ -336,9 +354,9 @@ function onLoad() {
 
         POOLVR.setup();
 
-        POOLVR.switchMaterials(POOLVR.config.useBasicMaterials);
-
         scene.updateMatrixWorld(true);
+
+        POOLVR.switchMaterials(POOLVR.config.useBasicMaterials);
 
         POOLVR.startAnimateLoop();
 

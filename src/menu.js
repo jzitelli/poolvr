@@ -30,8 +30,6 @@ POOLVR.setupMenu = function () {
         }
     });
 
-    POOLVR.leapIndicator = document.getElementById('leapIndicator');
-
     // TODO: regular expression format check
     var leapAddressInput = document.getElementById('leapAddress');
     leapAddressInput.value = 'localhost';

@@ -1,4 +1,5 @@
-function addTool(parent, world, options) {
+// TODO: refactor, more generic
+function makeTool(parent, world, options) {
     /*************************************
 
     parent: THREE.Object3D
@@ -124,7 +125,7 @@ function addTool(parent, world, options) {
     bufferGeom.fromGeometry(stickGeom);
     stickGeom.dispose();
     stickGeom = bufferGeom;
-    var stickMaterial = new THREE.MeshLambertMaterial({color: stickColor, side: THREE.DoubleSide, transparent: true});
+    var stickMaterial = new THREE.MeshLambertMaterial({color: stickColor, transparent: true});
     var stickMesh = new THREE.Mesh(stickGeom, stickMaterial);
     stickMesh.castShadow = true;
     toolRoot.add(stickMesh);
@@ -132,7 +133,7 @@ function addTool(parent, world, options) {
     var useShadowMap = POOLVR.config.useShadowMap;
     var stickShadowMesh;
     if (!useShadowMap) {
-        stickShadowMesh = new THREE.ShadowMesh(stickMesh);
+        stickShadowMesh = new THREE.ShadowMesh(stickMesh, POOLVR.shadowMaterial);
         POOLVR.app.scene.add(stickShadowMesh);
         var shadowPlane = new THREE.Plane(UP, (POOLVR.config.H_table + 0.001));
         var shadowLightPosition = new THREE.Vector4(0, 5, 0, 0.01);
@@ -223,32 +224,36 @@ function addTool(parent, world, options) {
     leftRoot.add(joint2s[0][0], joint2s[0][1], joint2s[0][2], joint2s[0][3], joint2s[0][4]);
     rightRoot.add(joint2s[1][0], joint2s[1][1], joint2s[1][2], joint2s[1][3], joint2s[1][4]);
 
-
-    // initialize matrices now:
-    toolRoot.updateMatrix();
-    toolRoot.updateMatrixWorld();
-
-    if (!useShadowMap) {
-        stickShadowMesh.updateMatrix();
-        stickShadowMesh.updateMatrixWorld();
-        stickShadowMesh.visible = false;
-    }
-
-    // to store decomposed toolRoot world matrix:
-    toolRoot.worldPosition = new THREE.Vector3();
-    toolRoot.worldQuaternion = new THREE.Quaternion();
-    toolRoot.worldScale = new THREE.Vector3();
-    toolRoot.matrixWorld.decompose(toolRoot.worldPosition, toolRoot.worldQuaternion, toolRoot.worldScale);
-    // inverse of toolRoot.matrixWorld:
-    toolRoot.matrixWorldInverse = new THREE.Matrix4();
-    toolRoot.matrixWorldInverse.getInverse(toolRoot.matrixWorld);
-
     interactionBoxRoot.visible = false;
 
     stickMesh.visible = false;
 
     leftRoot.visible  = false;
     rightRoot.visible = false;
+
+    // to store decomposed toolRoot world matrix, used to convert three.js local coords to cannon.js world coords:
+    toolRoot.worldPosition = new THREE.Vector3();
+    toolRoot.worldQuaternion = new THREE.Quaternion();
+    toolRoot.worldScale = new THREE.Vector3();
+    // inverse of toolRoot.matrixWorld, used for converting cannon.js world coords to three.js local coords:
+    toolRoot.matrixWorldInverse = new THREE.Matrix4();
+
+    function updateToolMapping() {
+        toolRoot.matrixWorld.decompose(toolRoot.worldPosition, toolRoot.worldQuaternion, toolRoot.worldScale);
+        toolRoot.matrixWorldInverse.getInverse(toolRoot.matrixWorld);
+    }
+
+    // initialize matrices now:
+    toolRoot.updateMatrix();
+    toolRoot.updateMatrixWorld();
+
+    updateToolMapping();
+
+    if (!useShadowMap) {
+        stickShadowMesh.updateMatrix();
+        stickShadowMesh.updateMatrixWorld();
+        stickShadowMesh.visible = false;
+    }
 
 
     var tipCollisionCounter = 0;
@@ -281,6 +286,8 @@ function addTool(parent, world, options) {
     }
 
 
+    var deadtime = 0;
+
     function moveToolRoot(keyboard, gamepad, dt) {
         var toolDrive = 0;
         var toolFloat = 0;
@@ -309,22 +316,16 @@ function addTool(parent, world, options) {
             //toolRoot.quaternion.setFromAxisAngle(UP, toolRotation);
 
             toolRoot.updateMatrix();
-            toolRoot.updateMatrixWorld();
-            toolRoot.matrixWorldInverse.getInverse(toolRoot.matrixWorld);
-            toolRoot.matrixWorld.decompose(toolRoot.worldPosition, toolRoot.worldQuaternion, toolRoot.worldScale);
-
-            if (!useShadowMap) {
-                stickShadowMesh.updateMatrix();
-                stickShadowMesh.updateMatrixWorld();
-            }
 
             if (interactionBoxRoot.visible === false) {
                 interactionBoxRoot.visible = true;
                 interactionPlaneMaterial.opacity = interactionPlaneOpacity;
             }
+
+            deadtime = 0;
+
         }
     }
-
 
     var direction = new THREE.Vector3();
     var position = new THREE.Vector3();
@@ -332,7 +333,9 @@ function addTool(parent, world, options) {
     var quaternion = new THREE.Quaternion();
     var lastFrameID;
 
-    function updateTool() {
+    function updateTool(dt) {
+
+        deadtime += dt;
 
         var frame = leapController.frame();
         if (frame.valid && frame.id != lastFrameID) {
@@ -348,6 +351,8 @@ function addTool(parent, world, options) {
             }
 
             if (frame.tools.length === 1) {
+
+                deadtime = 0;
 
                 var tool = frame.tools[0];
 
@@ -389,9 +394,8 @@ function addTool(parent, world, options) {
                 tipBody.velocity.copy(velocity);
 
                 if (tool.timeVisible > toolTimeA) {
-
+                    // stick becomes collidable once it has been detected for duration `toolTimeA`
                     if (tipBody.sleepState === CANNON.Body.SLEEPING) {
-                        // cue becomes collidable
                         tipBody.wakeUp();
                         // TODO: indicator (particle effect)
                         if (tipMesh) tipMesh.material.color.setHex(0xff0000);
@@ -399,7 +403,7 @@ function addTool(parent, world, options) {
 
                     if (tool.timeVisible > toolTimeB && interactionPlaneMaterial.opacity > 0.1) {
                         // dim the interaction box:
-                        interactionPlaneMaterial.opacity *= 0.93;
+                        interactionPlaneMaterial.opacity *= 0.94;
                     }
 
                 }
@@ -414,42 +418,61 @@ function addTool(parent, world, options) {
                 if (stickMesh.visible && stickMesh.material.opacity > 0.1) {
                     // fade out tool
                     stickMesh.material.opacity *= 0.8;
-                    interactionPlaneMaterial.opacity *= 0.8;
                     if (tipMesh) tipMesh.material.opacity = stickMesh.material.opacity;
                 } else {
                     stickMesh.visible = false;
-                    interactionBoxRoot.visible = false;
                     if (!useShadowMap) stickShadowMesh.visible = false;
                 }
             }
 
-            // var hand, finger;
-            // leftRoot.visible = rightRoot.visible = false;
-            // for (var i = 0; i < frame.hands.length; i++) {
-            //     hand = frame.hands[i];
-            //     if (hand.confidence > minConfidence) {
-            //         handRoots[i].visible = true;
-            //         handMaterial.opacity = 0.5*handMaterial.opacity + 0.5*(hand.confidence - minConfidence) / (1 - minConfidence);
-            //         direction.fromArray(hand.arm.basis[2]);
-            //         arms[i].quaternion.setFromUnitVectors(UP, direction);
-            //         var center = hand.arm.center();
-            //         arms[i].position.fromArray(center);
-
-            //         direction.fromArray(hand.palmNormal);
-            //         palms[i].quaternion.setFromUnitVectors(UP, direction);
-            //         palms[i].position.fromArray(hand.palmPosition);
-
-            //         for (var j = 0; j < hand.fingers.length; j++) {
-            //             finger = hand.fingers[j];
-            //             fingerTips[i][j].position.fromArray(finger.tipPosition);
-            //             joints[i][j].position.fromArray(finger.bones[1].nextJoint);
-            //             joint2s[i][j].position.fromArray(finger.bones[2].nextJoint);
-            //         }
-            //     }
-            // }
+            updateHands(frame);
 
         }
 
+        if ( deadtime > 1.5 && interactionBoxRoot.visible ) {
+            interactionPlaneMaterial.opacity *= 0.93;
+            if (interactionPlaneMaterial.opacity < 0.02) interactionBoxRoot.visible = false;
+        }
+
+    }
+
+    function updateHands(frame) {
+        leftRoot.visible = rightRoot.visible = false;
+        for (var i = 0; i < frame.hands.length; i++) {
+            var hand = frame.hands[i];
+            if (hand.confidence > minConfidence) {
+
+                handRoots[i].visible = true;
+                handMaterial.opacity = 0.7*handMaterial.opacity + 0.3*(hand.confidence - minConfidence) / (1 - minConfidence);
+
+                var arm = arms[i];
+                direction.fromArray(hand.arm.basis[2]);
+                arm.quaternion.setFromUnitVectors(UP, direction);
+                arm.position.fromArray(hand.arm.center());
+                arm.updateMatrix();
+
+                var palm = palms[i];
+                direction.fromArray(hand.palmNormal);
+                palm.quaternion.setFromUnitVectors(UP, direction);
+                palm.position.fromArray(hand.palmPosition);
+                palm.updateMatrix();
+
+                var handFingerTips = fingerTips[i];
+                var handJoints = joints[i];
+                var handJoint2s = joint2s[i];
+                for (var j = 0; j < hand.fingers.length; j++) {
+                    var finger = hand.fingers[j];
+                    handFingerTips[j].position.fromArray(finger.tipPosition);
+                    handFingerTips[j].updateMatrix();
+                    handJoints[j].position.fromArray(finger.bones[1].nextJoint);
+                    handJoints[j].updateMatrix();
+                    handJoint2s[j].position.fromArray(finger.bones[2].nextJoint);
+                    handJoint2s[j].updateMatrix();
+                }
+
+                handRoots[i].updateMatrixWorld(true);
+            }
+        }
     }
 
     return {
@@ -457,6 +480,8 @@ function addTool(parent, world, options) {
         leapController:     leapController,
         updateTool:         updateTool,
         updateToolPostStep: updateToolPostStep,
-        moveToolRoot:       moveToolRoot
+        moveToolRoot:       moveToolRoot,
+        updateToolMapping:  updateToolMapping,
+        updateHands:        updateHands
     };
 }

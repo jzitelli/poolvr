@@ -86,9 +86,9 @@ POOLVR.setup = function () {
     var world = new CANNON.World();
     world.gravity.set( 0, -POOLVR.config.gravity, 0 );
     //world.broadphase = new CANNON.SAPBroadphase( world );
-    world.defaultContactMaterial.contactEquationStiffness   = 1e6;
-    world.defaultContactMaterial.frictionEquationStiffness  = 1e6;
-    world.defaultContactMaterial.contactEquationRelaxation  = 3;
+    world.defaultContactMaterial.contactEquationStiffness   = 1e7;
+    world.defaultContactMaterial.frictionEquationStiffness  = 2e6;
+    world.defaultContactMaterial.contactEquationRelaxation  = 2;
     world.defaultContactMaterial.frictionEquationRelaxation = 3;
     world.solver.iterations = 9;
 
@@ -111,7 +111,15 @@ POOLVR.setup = function () {
     world.addContactMaterial(POOLVR.tipBallContactMaterial);
     world.addContactMaterial(POOLVR.railBallContactMaterial);
 
-    var leapTool = addTool(POOLVR.avatar, POOLVR.world, combineObjects(POOLVR.config.toolOptions, {
+    var useShadowMap = POOLVR.config.useShadowMap;
+
+    if (!useShadowMap) {
+        POOLVR.shadowMaterial = new THREE.MeshBasicMaterial({color: 0x002200});
+    }
+
+    POOLVR.leapIndicator = document.getElementById('leapIndicator');
+
+    var leapTool = makeTool( POOLVR.avatar, POOLVR.world, combineObjects(POOLVR.config.toolOptions, {
         onConnect: function () {
             POOLVR.leapIndicator.innerHTML = 'connected';
         },
@@ -119,11 +127,13 @@ POOLVR.setup = function () {
             POOLVR.leapIndicator.innerHTML = 'disconnected';
         }
     }));
-    POOLVR.leapController = leapTool.leapController;
-    POOLVR.toolRoot = leapTool.toolRoot;
-    POOLVR.updateTool = leapTool.updateTool;
+
+    POOLVR.leapController     = leapTool.leapController;
+    POOLVR.toolRoot           = leapTool.toolRoot;
+    POOLVR.updateTool         = leapTool.updateTool;
     POOLVR.updateToolPostStep = leapTool.updateToolPostStep;
-    POOLVR.moveToolRoot = leapTool.moveToolRoot;
+    POOLVR.moveToolRoot       = leapTool.moveToolRoot;
+    POOLVR.updateToolMapping  = leapTool.updateToolMapping;
 
     var basicMaterials = {};
     var nonbasicMaterials = {};
@@ -185,17 +195,14 @@ POOLVR.setup = function () {
 
     var H_table = POOLVR.config.H_table;
 
-    var useShadowMap = POOLVR.config.useShadowMap;
-
     if (!useShadowMap) {
 
         var ballShadowMeshes = [];
         var ballShadowGeom = new THREE.CircleBufferGeometry(0.5*POOLVR.config.ball_diameter, 16);
         ballShadowGeom.rotateX(-0.5*Math.PI);
-        var ballShadowMaterial = new THREE.MeshBasicMaterial({color: 0x002200});
 
         POOLVR.ballMeshes.forEach( function (mesh, ballNum) {
-            var ballShadowMesh = new THREE.Mesh(ballShadowGeom, ballShadowMaterial);
+            var ballShadowMesh = new THREE.Mesh(ballShadowGeom, POOLVR.shadowMaterial);
             ballShadowMesh.position.copy(mesh.position);
             ballShadowMesh.position.y = H_table + 0.0004;
             ballShadowMeshes[ballNum] = ballShadowMesh;
