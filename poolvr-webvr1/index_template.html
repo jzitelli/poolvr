@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+
+    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0, shrink-to-fit=no">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+    <link rel="shortcut icon" href="favicon.ico">
+
+    <title>poolvr</title>
+
+    <style>
+      body {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        background-color: #000;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        font-family: Monaco, "Bitstream Vera Sans Mono", "Lucida Console", Terminal, monospace;
+      }
+      #overlay {
+        position: absolute;
+        left: 1.5vw;
+        top: 1.5vw;
+        margin: 0;
+        padding: 0.5vh;
+        color: #ffffff;
+        background-color: rgba(20, 20, 50, 0.7);
+      }
+      h1 {
+        font-size: 5.5vh;
+        color: #b5e853;
+      }
+      h2 {
+        font-size: 3.4vh;
+        color: #b5e853;
+      }
+      h3 {
+        font-size: 2.2vh;
+      }
+      h4 {
+        font-size: 1.75vh;
+        margin-left: 1vw;
+      }
+      p {
+        font-size: 1.4vh;
+        margin-left: 1.5vw;
+      }
+      #leapAddress, #profileName {
+        margin: 2vh;
+      }
+      #leapIndicator {
+        font-size: 3vh;
+        text-align: center;
+        margin-top: 1vh;
+        padding: 0.25em;
+        color: #b5e853;
+        background-color: rgba(60, 20, 0, 0.6);
+        box-sizing: border-box;
+      }
+      #start {
+        font-size: 3vh;
+        text-align: center;
+        margin-top: 1vh;
+        padding: 0.25em;
+        color: #b5e853;
+        background-color: rgba(111, 20, 20, 0.6);
+        box-sizing: border-box;
+      }
+      #webgl-canvas {
+        position: fixed;
+        width: 100%;
+        top: 0;
+        left: 0;
+        padding: 0;
+        margin: 0;
+        border: 0;
+      }
+    </style>
+
+
+{{ json_config }}
+
+
+  </head>
+
+  <body onload="onLoad()">
+
+    <canvas id="webgl-canvas"></canvas>
+
+    <div id="overlay">
+
+      <h1>poolvr</h1>
+      <button id="start" disabled>Start!</button>
+
+      <h2>How to play:</h2>
+      <h3>Keyboard controls:</h3>
+      <h4>Move around:</h4>
+      <p>W/S/A/D (xz-plane), E/C (up/down)</p>
+      <h4>Move virtual Leap controller:</h4>
+      <p>I/K/J/L (xz-plane), O/. (up/down)</p>
+      <h4>Actions:</h4>
+      <p>P: auto-position for next ball, +/-: cycle ball selection</p>
+      <p>R: reset table, Z: reset VR sensor</p>
+
+      <hr>
+
+      <h2>Configuration:</h2>
+
+      <label>
+        <input type="checkbox" id="useBasicMaterials"/>
+        EGA mode (max performance)
+      </label>
+      <label>
+        <input type="checkbox" id="useShadowMap"/>
+        Shadow maps
+      </label>
+      <br>
+      <label>
+        Leap Motion Websocket address:
+        <input id="leapAddress" type="text" maxlength="20" value="localhost" required/>
+      </label>
+      <button id="leapIndicator">disconnected</button>
+      <br>
+      <label>
+        Profile name:
+        <input id="profileName" type="text" maxlength="30" required/>
+      </label>
+
+    </div>
+
+
+{% if config['DEBUG'] %}
+
+    <script src="node_modules/three/build/three.js"></script>
+    <script src="node_modules/three/examples/js/effects/VREffect.js"></script>
+    <script src="node_modules/three/examples/js/controls/VRControls.js"></script>
+    <script src="node_modules/three/examples/js/objects/ShadowMesh.js"></script>
+
+    <script src="node_modules/webvr-polyfill/build/webvr-polyfill.js"></script>
+
+    <script src="node_modules/cannon/build/cannon.js"></script>
+
+    <script src="node_modules/leapjs/leap-0.6.4.js"></script>
+
+    <script src="lib/Primrose/Primrose.js"></script>
+
+    <script src="lib/rstats/rStats.js"></script>
+    <script src="lib/rstats/rStats.extras.js"></script>
+
+    <script src="node_modules/three.py/js/three.py.js"></script>
+    <script src="node_modules/three.py/js/CANNONize.js"></script>
+
+    <script src="src/TextGeomUtils.js"></script>
+    <script src="src/WebVRApplication.js"></script>
+    <script src="src/utils.js"></script>
+    <script src="src/LeapInput.js"></script>
+    <script src="src/WebVRSound.js"></script>
+    <script src="src/SynthSpeaker.js"></script>
+
+    <script src="src/config.js"></script>
+    <script src="src/setup.js"></script>
+    <script src="src/menu.js"></script>
+
+    <script src="src/main.js"></script>
+
+{% else %}
+
+    <script src="lib/three.min.js"></script>
+    <script src="lib/VREffect.js"></script>
+    <script src="lib/VRControls.js"></script>
+    <script src="lib/ShadowMesh.js"></script>
+
+    <script src="lib/webvr-polyfill.js"></script>
+
+    <script src="lib/cannon.min.js"></script>
+
+    <script src="lib/leap-0.6.4.min.js"></script>
+
+    <script src="lib/Primrose/Primrose.js"></script>
+
+    <script src="lib/rstats/rStats.js"></script>
+    <script src="lib/rstats/rStats.extras.js"></script>
+
+    <script src="build/poolvr.min.js"></script>
+
+{% endif %}
+
+  </body>
+
+</html>
