@@ -545,11 +545,9 @@ function WebVRApplication(scene, config) {
     var isPresenting = false;
 
     window.addEventListener('resize', function () {
-        if (!isPresenting) {
-            this.camera.aspect = window.innerWidth / window.innerHeight;
-            this.camera.updateProjectionMatrix();
-            this.renderer.setSize( window.innerWidth, window.innerHeight );
-        }
+        this.camera.aspect = window.innerWidth / window.innerHeight;
+        this.camera.updateProjectionMatrix();
+        this.renderer.setSize(window.innerWidth, window.innerHeight);
     }.bind(this), false );
 
     var fullscreenchange = domElement.mozRequestFullScreen ? 'mozfullscreenchange' : 'webkitfullscreenchange';
@@ -610,7 +608,7 @@ function WebVRApplication(scene, config) {
                 this.vrEffect.exitPresent().then( function () {
                     isPresenting = false;
                     vrButton.innerHTML = 'ENTER VR';
-                    // this.renderer.setSize(window.innerWidth, window.innerHeight);
+                    this.renderer.setSize(window.innerWidth, window.innerHeight);
                 }.bind(this) );
             }
         }.bind(this);
@@ -724,7 +722,8 @@ function isMobile() {
 }
 ;
 // #### src/LeapInput.js
-function addTool(parent, world, options) {
+// TODO: refactor, more generic
+function makeTool(parent, world, options) {
     /*************************************
 
     parent: THREE.Object3D
@@ -850,7 +849,7 @@ function addTool(parent, world, options) {
     bufferGeom.fromGeometry(stickGeom);
     stickGeom.dispose();
     stickGeom = bufferGeom;
-    var stickMaterial = new THREE.MeshLambertMaterial({color: stickColor, side: THREE.DoubleSide, transparent: true});
+    var stickMaterial = new THREE.MeshLambertMaterial({color: stickColor, transparent: true});
     var stickMesh = new THREE.Mesh(stickGeom, stickMaterial);
     stickMesh.castShadow = true;
     toolRoot.add(stickMesh);
@@ -858,7 +857,7 @@ function addTool(parent, world, options) {
     var useShadowMap = POOLVR.config.useShadowMap;
     var stickShadowMesh;
     if (!useShadowMap) {
-        stickShadowMesh = new THREE.ShadowMesh(stickMesh);
+        stickShadowMesh = new THREE.ShadowMesh(stickMesh, POOLVR.shadowMaterial);
         POOLVR.app.scene.add(stickShadowMesh);
         var shadowPlane = new THREE.Plane(UP, (POOLVR.config.H_table + 0.001));
         var shadowLightPosition = new THREE.Vector4(0, 5, 0, 0.01);
@@ -949,32 +948,36 @@ function addTool(parent, world, options) {
     leftRoot.add(joint2s[0][0], joint2s[0][1], joint2s[0][2], joint2s[0][3], joint2s[0][4]);
     rightRoot.add(joint2s[1][0], joint2s[1][1], joint2s[1][2], joint2s[1][3], joint2s[1][4]);
 
-
-    // initialize matrices now:
-    toolRoot.updateMatrix();
-    toolRoot.updateMatrixWorld();
-
-    if (!useShadowMap) {
-        stickShadowMesh.updateMatrix();
-        stickShadowMesh.updateMatrixWorld();
-        stickShadowMesh.visible = false;
-    }
-
-    // to store decomposed toolRoot world matrix:
-    toolRoot.worldPosition = new THREE.Vector3();
-    toolRoot.worldQuaternion = new THREE.Quaternion();
-    toolRoot.worldScale = new THREE.Vector3();
-    toolRoot.matrixWorld.decompose(toolRoot.worldPosition, toolRoot.worldQuaternion, toolRoot.worldScale);
-    // inverse of toolRoot.matrixWorld:
-    toolRoot.matrixWorldInverse = new THREE.Matrix4();
-    toolRoot.matrixWorldInverse.getInverse(toolRoot.matrixWorld);
-
     interactionBoxRoot.visible = false;
 
     stickMesh.visible = false;
 
     leftRoot.visible  = false;
     rightRoot.visible = false;
+
+    // to store decomposed toolRoot world matrix, used to convert three.js local coords to cannon.js world coords:
+    toolRoot.worldPosition = new THREE.Vector3();
+    toolRoot.worldQuaternion = new THREE.Quaternion();
+    toolRoot.worldScale = new THREE.Vector3();
+    // inverse of toolRoot.matrixWorld, used for converting cannon.js world coords to three.js local coords:
+    toolRoot.matrixWorldInverse = new THREE.Matrix4();
+
+    function updateToolMapping() {
+        toolRoot.matrixWorld.decompose(toolRoot.worldPosition, toolRoot.worldQuaternion, toolRoot.worldScale);
+        toolRoot.matrixWorldInverse.getInverse(toolRoot.matrixWorld);
+    }
+
+    // initialize matrices now:
+    toolRoot.updateMatrix();
+    toolRoot.updateMatrixWorld();
+
+    updateToolMapping();
+
+    if (!useShadowMap) {
+        stickShadowMesh.updateMatrix();
+        stickShadowMesh.updateMatrixWorld();
+        stickShadowMesh.visible = false;
+    }
 
 
     var tipCollisionCounter = 0;
@@ -1007,6 +1010,8 @@ function addTool(parent, world, options) {
     }
 
 
+    var deadtime = 0;
+
     function moveToolRoot(keyboard, gamepad, dt) {
         var toolDrive = 0;
         var toolFloat = 0;
@@ -1035,22 +1040,16 @@ function addTool(parent, world, options) {
             //toolRoot.quaternion.setFromAxisAngle(UP, toolRotation);
 
             toolRoot.updateMatrix();
-            toolRoot.updateMatrixWorld();
-            toolRoot.matrixWorldInverse.getInverse(toolRoot.matrixWorld);
-            toolRoot.matrixWorld.decompose(toolRoot.worldPosition, toolRoot.worldQuaternion, toolRoot.worldScale);
-
-            if (!useShadowMap) {
-                stickShadowMesh.updateMatrix();
-                stickShadowMesh.updateMatrixWorld();
-            }
 
             if (interactionBoxRoot.visible === false) {
                 interactionBoxRoot.visible = true;
                 interactionPlaneMaterial.opacity = interactionPlaneOpacity;
             }
+
+            deadtime = 0;
+
         }
     }
-
 
     var direction = new THREE.Vector3();
     var position = new THREE.Vector3();
@@ -1058,7 +1057,9 @@ function addTool(parent, world, options) {
     var quaternion = new THREE.Quaternion();
     var lastFrameID;
 
-    function updateTool() {
+    function updateTool(dt) {
+
+        deadtime += dt;
 
         var frame = leapController.frame();
         if (frame.valid && frame.id != lastFrameID) {
@@ -1074,6 +1075,8 @@ function addTool(parent, world, options) {
             }
 
             if (frame.tools.length === 1) {
+
+                deadtime = 0;
 
                 var tool = frame.tools[0];
 
@@ -1115,9 +1118,8 @@ function addTool(parent, world, options) {
                 tipBody.velocity.copy(velocity);
 
                 if (tool.timeVisible > toolTimeA) {
-
+                    // stick becomes collidable once it has been detected for duration `toolTimeA`
                     if (tipBody.sleepState === CANNON.Body.SLEEPING) {
-                        // cue becomes collidable
                         tipBody.wakeUp();
                         // TODO: indicator (particle effect)
                         if (tipMesh) tipMesh.material.color.setHex(0xff0000);
@@ -1125,7 +1127,7 @@ function addTool(parent, world, options) {
 
                     if (tool.timeVisible > toolTimeB && interactionPlaneMaterial.opacity > 0.1) {
                         // dim the interaction box:
-                        interactionPlaneMaterial.opacity *= 0.93;
+                        interactionPlaneMaterial.opacity *= 0.94;
                     }
 
                 }
@@ -1140,42 +1142,61 @@ function addTool(parent, world, options) {
                 if (stickMesh.visible && stickMesh.material.opacity > 0.1) {
                     // fade out tool
                     stickMesh.material.opacity *= 0.8;
-                    interactionPlaneMaterial.opacity *= 0.8;
                     if (tipMesh) tipMesh.material.opacity = stickMesh.material.opacity;
                 } else {
                     stickMesh.visible = false;
-                    interactionBoxRoot.visible = false;
                     if (!useShadowMap) stickShadowMesh.visible = false;
                 }
             }
 
-            // var hand, finger;
-            // leftRoot.visible = rightRoot.visible = false;
-            // for (var i = 0; i < frame.hands.length; i++) {
-            //     hand = frame.hands[i];
-            //     if (hand.confidence > minConfidence) {
-            //         handRoots[i].visible = true;
-            //         handMaterial.opacity = 0.5*handMaterial.opacity + 0.5*(hand.confidence - minConfidence) / (1 - minConfidence);
-            //         direction.fromArray(hand.arm.basis[2]);
-            //         arms[i].quaternion.setFromUnitVectors(UP, direction);
-            //         var center = hand.arm.center();
-            //         arms[i].position.fromArray(center);
-
-            //         direction.fromArray(hand.palmNormal);
-            //         palms[i].quaternion.setFromUnitVectors(UP, direction);
-            //         palms[i].position.fromArray(hand.palmPosition);
-
-            //         for (var j = 0; j < hand.fingers.length; j++) {
-            //             finger = hand.fingers[j];
-            //             fingerTips[i][j].position.fromArray(finger.tipPosition);
-            //             joints[i][j].position.fromArray(finger.bones[1].nextJoint);
-            //             joint2s[i][j].position.fromArray(finger.bones[2].nextJoint);
-            //         }
-            //     }
-            // }
+            updateHands(frame);
 
         }
 
+        if ( deadtime > 1.5 && interactionBoxRoot.visible ) {
+            interactionPlaneMaterial.opacity *= 0.93;
+            if (interactionPlaneMaterial.opacity < 0.02) interactionBoxRoot.visible = false;
+        }
+
+    }
+
+    function updateHands(frame) {
+        leftRoot.visible = rightRoot.visible = false;
+        for (var i = 0; i < frame.hands.length; i++) {
+            var hand = frame.hands[i];
+            if (hand.confidence > minConfidence) {
+
+                handRoots[i].visible = true;
+                handMaterial.opacity = 0.7*handMaterial.opacity + 0.3*(hand.confidence - minConfidence) / (1 - minConfidence);
+
+                var arm = arms[i];
+                direction.fromArray(hand.arm.basis[2]);
+                arm.quaternion.setFromUnitVectors(UP, direction);
+                arm.position.fromArray(hand.arm.center());
+                arm.updateMatrix();
+
+                var palm = palms[i];
+                direction.fromArray(hand.palmNormal);
+                palm.quaternion.setFromUnitVectors(UP, direction);
+                palm.position.fromArray(hand.palmPosition);
+                palm.updateMatrix();
+
+                var handFingerTips = fingerTips[i];
+                var handJoints = joints[i];
+                var handJoint2s = joint2s[i];
+                for (var j = 0; j < hand.fingers.length; j++) {
+                    var finger = hand.fingers[j];
+                    handFingerTips[j].position.fromArray(finger.tipPosition);
+                    handFingerTips[j].updateMatrix();
+                    handJoints[j].position.fromArray(finger.bones[1].nextJoint);
+                    handJoints[j].updateMatrix();
+                    handJoint2s[j].position.fromArray(finger.bones[2].nextJoint);
+                    handJoint2s[j].updateMatrix();
+                }
+
+                handRoots[i].updateMatrixWorld(true);
+            }
+        }
     }
 
     return {
@@ -1183,7 +1204,9 @@ function addTool(parent, world, options) {
         leapController:     leapController,
         updateTool:         updateTool,
         updateToolPostStep: updateToolPostStep,
-        moveToolRoot:       moveToolRoot
+        moveToolRoot:       moveToolRoot,
+        updateToolMapping:  updateToolMapping,
+        updateHands:        updateHands
     };
 }
 ;
@@ -1549,9 +1572,9 @@ POOLVR.setup = function () {
     var world = new CANNON.World();
     world.gravity.set( 0, -POOLVR.config.gravity, 0 );
     //world.broadphase = new CANNON.SAPBroadphase( world );
-    world.defaultContactMaterial.contactEquationStiffness   = 1e6;
-    world.defaultContactMaterial.frictionEquationStiffness  = 1e6;
-    world.defaultContactMaterial.contactEquationRelaxation  = 3;
+    world.defaultContactMaterial.contactEquationStiffness   = 1e7;
+    world.defaultContactMaterial.frictionEquationStiffness  = 2e6;
+    world.defaultContactMaterial.contactEquationRelaxation  = 2;
     world.defaultContactMaterial.frictionEquationRelaxation = 3;
     world.solver.iterations = 9;
 
@@ -1574,7 +1597,15 @@ POOLVR.setup = function () {
     world.addContactMaterial(POOLVR.tipBallContactMaterial);
     world.addContactMaterial(POOLVR.railBallContactMaterial);
 
-    var leapTool = addTool(POOLVR.avatar, POOLVR.world, combineObjects(POOLVR.config.toolOptions, {
+    var useShadowMap = POOLVR.config.useShadowMap;
+
+    if (!useShadowMap) {
+        POOLVR.shadowMaterial = new THREE.MeshBasicMaterial({color: 0x002200});
+    }
+
+    POOLVR.leapIndicator = document.getElementById('leapIndicator');
+
+    var leapTool = makeTool( POOLVR.avatar, POOLVR.world, combineObjects(POOLVR.config.toolOptions, {
         onConnect: function () {
             POOLVR.leapIndicator.innerHTML = 'connected';
         },
@@ -1582,11 +1613,13 @@ POOLVR.setup = function () {
             POOLVR.leapIndicator.innerHTML = 'disconnected';
         }
     }));
-    POOLVR.leapController = leapTool.leapController;
-    POOLVR.toolRoot = leapTool.toolRoot;
-    POOLVR.updateTool = leapTool.updateTool;
+
+    POOLVR.leapController     = leapTool.leapController;
+    POOLVR.toolRoot           = leapTool.toolRoot;
+    POOLVR.updateTool         = leapTool.updateTool;
     POOLVR.updateToolPostStep = leapTool.updateToolPostStep;
-    POOLVR.moveToolRoot = leapTool.moveToolRoot;
+    POOLVR.moveToolRoot       = leapTool.moveToolRoot;
+    POOLVR.updateToolMapping  = leapTool.updateToolMapping;
 
     var basicMaterials = {};
     var nonbasicMaterials = {};
@@ -1648,17 +1681,14 @@ POOLVR.setup = function () {
 
     var H_table = POOLVR.config.H_table;
 
-    var useShadowMap = POOLVR.config.useShadowMap;
-
     if (!useShadowMap) {
 
         var ballShadowMeshes = [];
         var ballShadowGeom = new THREE.CircleBufferGeometry(0.5*POOLVR.config.ball_diameter, 16);
         ballShadowGeom.rotateX(-0.5*Math.PI);
-        var ballShadowMaterial = new THREE.MeshBasicMaterial({color: 0x002200});
 
         POOLVR.ballMeshes.forEach( function (mesh, ballNum) {
-            var ballShadowMesh = new THREE.Mesh(ballShadowGeom, ballShadowMaterial);
+            var ballShadowMesh = new THREE.Mesh(ballShadowGeom, POOLVR.shadowMaterial);
             ballShadowMesh.position.copy(mesh.position);
             ballShadowMesh.position.y = H_table + 0.0004;
             ballShadowMeshes[ballNum] = ballShadowMesh;
@@ -1771,8 +1801,6 @@ POOLVR.setupMenu = function () {
         }
     });
 
-    POOLVR.leapIndicator = document.getElementById('leapIndicator');
-
     // TODO: regular expression format check
     var leapAddressInput = document.getElementById('leapAddress');
     leapAddressInput.value = 'localhost';
@@ -1780,7 +1808,7 @@ POOLVR.setupMenu = function () {
         POOLVR.leapController.connection.host = leapAddressInput.value;
         POOLVR.leapController.connection.disconnect(true);
         POOLVR.leapController.connect();
-        //POOLVR.saveConfig(POOLVR.profile);
+        POOLVR.saveConfig(POOLVR.profile);
     });
 
     var profileNameInput = document.getElementById('profileName');
@@ -1792,11 +1820,11 @@ POOLVR.setupMenu = function () {
 
     var overlay = document.getElementById('overlay');
     var startButton = document.getElementById('start');
+
     startButton.addEventListener('click', function () {
         overlay.style.display = 'none';
         POOLVR.startTutorial();
     });
-    startButton.disabled = false;
 };
 ;
 // #### src/main.js
@@ -1840,10 +1868,17 @@ POOLVR.autoPosition = ( function () {
     "use strict";
     var nextVector = new THREE.Vector3();
     var UP = THREE.Object3D.DefaultUp;
+    var speakCount = 0;
     return function () {
-        // POOLVR.textGeomLogger.log("YOU ARE BEING AUTO-POSITIONED.  NEXT BALL: " + POOLVR.nextBall);
+
         if (POOLVR.synthSpeaker.speaking === false) {
-            POOLVR.synthSpeaker.speak("You are being auto-positioned.");
+            if (speakCount <= 7) {
+                POOLVR.synthSpeaker.speak("You are being auto-positioned.");
+                if (speakCount === 7) {
+                    POOLVR.synthSpeaker.speak("I will stop saying that now.");
+                }
+                speakCount++;
+            }
         }
 
         var avatar = POOLVR.avatar;
@@ -1853,9 +1888,11 @@ POOLVR.autoPosition = ( function () {
         );
         avatar.quaternion.setFromAxisAngle(UP, avatar.heading);
 
+        // nextVector.copy(POOLVR.toolRoot.worldPosition);
         nextVector.copy(POOLVR.toolRoot.position);
         nextVector.applyQuaternion(avatar.quaternion);
         nextVector.add(avatar.position);
+
         nextVector.sub(POOLVR.ballMeshes[0].position);
         nextVector.y = 0;
         avatar.position.sub(nextVector);
@@ -1863,9 +1900,8 @@ POOLVR.autoPosition = ( function () {
         avatar.updateMatrix();
         avatar.updateMatrixWorld();
 
-        var toolRoot = POOLVR.toolRoot;
-        toolRoot.matrixWorldInverse.getInverse(toolRoot.matrixWorld);
-        toolRoot.matrixWorld.decompose(toolRoot.worldPosition, toolRoot.worldQuaternion, toolRoot.worldScale);
+        POOLVR.updateToolMapping();
+
     };
 } )();
 
@@ -1909,11 +1945,6 @@ POOLVR.moveAvatar = ( function () {
             avatar.position.y += dt * floatUp;
 
             avatar.updateMatrix();
-            avatar.updateMatrixWorld();
-
-            var toolRoot = POOLVR.toolRoot;
-            toolRoot.matrixWorldInverse.getInverse(toolRoot.matrixWorld);
-            toolRoot.matrixWorld.decompose(toolRoot.worldPosition, toolRoot.worldQuaternion, toolRoot.worldScale);
         }
     };
 } )();
@@ -1941,6 +1972,14 @@ POOLVR.startTutorial = function () {
         POOLVR.textGeomLogger.log("KEEP THE STICK WITHIN THE INTERACTION BOX WHEN YOU WANT");
         POOLVR.textGeomLogger.log("TO MAKE CONTACT WITH A BALL...");
     });
+
+    POOLVR.synthSpeaker.speak("If you are playing in VR, you will probably want use the. I. J. K. And L. Keys to move the. Virtual. Leap Motion Controller.  So that the virtual. And physical positions. Coincide.", function () {
+        POOLVR.textGeomLogger.log("IF YOU ARE PLAYING IN VR, YOU WILL PROBABLY WANT TO USE THE");
+        POOLVR.textGeomLogger.log("I/J/K/L/O/./Y/U KEYS");
+        POOLVR.textGeomLogger.log("TO MOVE THE VIRTUAL LEAP MOTION CONTROLLER");
+        POOLVR.textGeomLogger.log("SO THAT THE VIRTUAL AND PHYSICAL POSITIONS COINCIDE.");
+    });
+
 };
 
 
@@ -1950,11 +1989,13 @@ POOLVR.startAnimateLoop = function () {
         gamepad  = POOLVR.gamepad,
         app      = POOLVR.app,
         world    = POOLVR.world,
+        avatar   = POOLVR.avatar,
         updateTool          = POOLVR.updateTool,
         updateToolPostStep  = POOLVR.updateToolPostStep,
         moveToolRoot        = POOLVR.moveToolRoot,
         moveAvatar          = POOLVR.moveAvatar,
-        updateBallsPostStep = POOLVR.updateBallsPostStep;
+        updateBallsPostStep = POOLVR.updateBallsPostStep,
+        updateToolMapping   = POOLVR.updateToolMapping;
 
     var glS, rS;
     if (URL_PARAMS.rstats) {
@@ -2000,7 +2041,7 @@ POOLVR.startAnimateLoop = function () {
         var dt = (t - lt) * 0.001;
 
         rS('updatetool').start();
-        updateTool();
+        updateTool(dt);
         rS('updatetool').end();
 
         rS('updatevrcontrols').start();
@@ -2029,6 +2070,9 @@ POOLVR.startAnimateLoop = function () {
 
         moveAvatar(keyboard, gamepad, dt);
         moveToolRoot(keyboard, gamepad, dt);
+
+        avatar.updateMatrixWorld();
+        updateToolMapping();
         rS('updatekeyboardgamepad').end();
 
         lt = t;
@@ -2118,6 +2162,8 @@ function onLoad() {
                 POOLVR.toolRoot.position.sub(lastPosition);
                 POOLVR.toolRoot.position.applyAxisAngle(THREE.Object3D.DefaultUp, -lastRotation + camera.rotation.y);
                 POOLVR.toolRoot.position.add(camera.position);
+                POOLVR.toolRoot.updateMatrix();
+                POOLVR.toolRoot.updateMatrixWorld();
                 POOLVR.avatar.heading += lastRotation - camera.rotation.y;
                 POOLVR.avatar.quaternion.setFromAxisAngle(THREE.Object3D.DefaultUp, avatar.heading);
                 POOLVR.avatar.updateMatrix();
@@ -2138,9 +2184,9 @@ function onLoad() {
 
         POOLVR.setup();
 
-        POOLVR.switchMaterials(POOLVR.config.useBasicMaterials);
-
         scene.updateMatrixWorld(true);
+
+        POOLVR.switchMaterials(POOLVR.config.useBasicMaterials);
 
         POOLVR.startAnimateLoop();
 
