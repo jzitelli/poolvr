@@ -1,6 +1,6 @@
 /* ############################################################################
 
-  poolvr v0.1.0 2016-03-03
+  poolvr v0.1.0 2016-03-04
 
   https://jzitelli.github.io/poolvr
   git+https://github.com/jzitelli/poolvr.git
@@ -356,7 +356,7 @@ THREE.py.CANNONize = function (obj, world) {
     }
 };
 ;
-// #### node_modules/three.py/js/TextGeomUtils.js
+// #### src/TextGeomUtils.js
 var TextGeomUtils = ( function () {
     "use strict";
     var alphas  = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -385,11 +385,14 @@ var TextGeomUtils = ( function () {
 
         this.makeObject = function (text, material) {
             var object = new THREE.Object3D();
+            object.matrixAutoUpdate = false;
             for (var j = 0; j < text.length; j++) {
                 var c = text[j];
                 if (c !== ' ') {
                     var mesh = new THREE.Mesh(this.geometries[c], material);
+                    mesh.matrixAutoUpdate = false;
                     mesh.position.x = 0.8*textGeomParams.size * j;
+                    mesh.updateMatrix();
                     object.add(mesh);
                 }
             }
@@ -407,6 +410,7 @@ var TextGeomUtils = ( function () {
         var lineObjects = {};
 
         this.root = new THREE.Object3D();
+        this.root.matrixAutoUpdate = false;
 
         this.log = function (msg) {
             var lines = msg.split(/\n/);
@@ -416,7 +420,6 @@ var TextGeomUtils = ( function () {
                 var lineObject = lineObjects[line];
                 if (lineObject) {
                     var clone = lineObject.clone();
-                    clone.position.y = 0;
                     this.root.add(clone);
                 } else {
                     lineObject = textGeomCacher.makeObject(line, material);
@@ -425,27 +428,21 @@ var TextGeomUtils = ( function () {
                 }
             }
             // remove rows exceeding max display
-            var toRemove = [];
-            for (i = lines.length - 1; i < this.root.children.length - nrows; i++) {
-                toRemove.push(this.root.children[i]);
-            }
-            for (i = 0; i < toRemove.length; i++) {
-                this.root.remove(toRemove[i]);
+            for (i = this.root.children.length - 1; i >= nrows; i--) {
+                this.root.remove(this.root.children[i]);
             }
             // scroll lines:
             for (i = 0; i < this.root.children.length; i++) {
                 var child = this.root.children[i];
                 child.position.y = (this.root.children.length - i) * lineHeight;
+                child.updateMatrix();
             }
+            this.root.updateMatrixWorld(true);
         }.bind(this);
 
         this.clear = function () {
-            var toRemove = [];
-            for (var i = 0; i < this.root.children.length; i++) {
-                toRemove.push(this.root.children[i]);
-            }
-            for (i = 0; i < toRemove.length; i++) {
-                this.root.remove(toRemove[i]);
+            for (var i = this.root.children.length - 1; i >= 0; i--) {
+                this.root.remove(this.root.children[i]);
             }
         }.bind(this);
     }
@@ -463,23 +460,26 @@ function WebVRApplication(scene, config) {
     this.scene = scene;
 
     config = config || {};
-    var rendererOptions = config.rendererOptions;
-    var useShadowMap    = config.useShadowMap;
-    var onResetVRSensor = config.onResetVRSensor;
+    var rendererOptions  = config.rendererOptions;
+    var useShadowMap     = config.useShadowMap;
+    var onResetVRSensor  = config.onResetVRSensor;
+    var devicePixelRatio = config.devicePixelRatio || window.devicePixelRatio;
 
     var domElement;
     if (config.canvasId) {
+        // canvas already exists in document
         domElement = document.getElementById(config.canvasId);
         rendererOptions = combineObjects(rendererOptions, {canvas: domElement});
         this.renderer = new THREE.WebGLRenderer(rendererOptions);
     } else {
+        // create the canvas
         this.renderer = new THREE.WebGLRenderer(rendererOptions);
         domElement = this.renderer.domElement;
         document.body.appendChild(domElement);
         domElement.id = 'webgl-canvas';
     }
 
-    this.renderer.setPixelRatio(window.devicePixelRatio);
+    this.renderer.setPixelRatio(devicePixelRatio);
     this.renderer.setSize(window.innerWidth, window.innerHeight);
 
     if (useShadowMap) {
@@ -547,30 +547,40 @@ function WebVRApplication(scene, config) {
         }
     }.bind(this), false );
 
-    var vrButton = document.createElement('button');
-    vrButton.innerHTML = 'ENTER VR';
-    vrButton.style.position = 'absolute';
-    vrButton.style.right = 0;
-    vrButton.style.bottom = 0;
-    vrButton.style.margin = '10px';
-    vrButton.style.padding = '10px';
-    vrButton.style.background = 0x222222;
-    vrButton.style['text-color'] = 0xffffff;
-    vrButton.addEventListener('click', function () {
-        if (!isPresenting) {
-            this.vrEffect.requestPresent().then( function () {
-                isPresenting = true;
-                vrButton.innerHTML = 'EXIT VR';
-            } );
-        } else {
-            this.vrEffect.exitPresent().then( function () {
-                isPresenting = false;
-                vrButton.innerHTML = 'ENTER VR';
-                this.renderer.setSize(window.innerWidth, window.innerHeight);
-            }.bind(this) );
-        }
-    }.bind(this));
-    document.body.appendChild(vrButton);
+    if (window.VRDisplay || window.HMDVRDevice) {
+        var vrButton = document.createElement('button');
+        vrButton.innerHTML = 'ENTER VR';
+        vrButton.style.position = 'absolute';
+        vrButton.style.right = 0;
+        vrButton.style.bottom = 0;
+        vrButton.style.margin = '10px';
+        vrButton.style.padding = '10px';
+        vrButton.style.background = 0x222222;
+        vrButton.style['text-color'] = 0xffffff;
+        var onClick = function () {
+            if (!isPresenting) {
+                this.vrEffect.requestPresent().then( function () {
+                    isPresenting = true;
+                    vrButton.innerHTML = 'EXIT VR';
+                } ).catch( function (error) {
+                    console.error(error);
+                    vrButton.innerHTML = 'VR ERROR!';
+                    vrButton.style.background = 0x992222;
+                    vrButton.removeEventListener('click', onClick);
+                } );
+            } else {
+                this.vrEffect.exitPresent().then( function () {
+                    isPresenting = false;
+                    vrButton.innerHTML = 'ENTER VR';
+                    this.renderer.setSize(window.innerWidth, window.innerHeight);
+                }.bind(this) );
+            }
+        }.bind(this);
+        vrButton.addEventListener('click', onClick, false);
+        document.body.appendChild(vrButton);
+    } else {
+        console.warn('WebVR is not supported on your browser / platform');
+    }
 
 
     // TODO
@@ -1252,6 +1262,9 @@ POOLVR.commands = {
     stroke:           function () { POOLVR.stroke(); }
 };
 
+// TODO: remove Primrose dependency for keyboard / gamepad input, it seems overkill for just this functionality + my Primrose version is very outdated.
+
+// TODO: control customization menu
 
 POOLVR.keyboardCommands = {
     turnLeft:     {buttons: [-Primrose.Input.Keyboard.LEFTARROW]},
@@ -1288,10 +1301,12 @@ POOLVR.keyboardCommands = {
                      commandDown: POOLVR.commands.selectPrevBall, dt: 0.5},
     stroke: {buttons: [Primrose.Input.Keyboard.SPACEBAR],
              commandDown: POOLVR.commands.stroke, dt: 0.25}
-
 };
 
 POOLVR.keyboardCommands = makeObjectArray(POOLVR.keyboardCommands, 'name');
+
+POOLVR.keyboard = new Primrose.Input.Keyboard('keyboard', document, POOLVR.keyboardCommands);
+
 
 var DEADZONE = 0.2;
 POOLVR.gamepadCommands = {
@@ -1982,6 +1997,7 @@ function onLoad() {
     "use strict";
     POOLVR.config = POOLVR.loadConfig(POOLVR.profile) || POOLVR.config;
     POOLVR.parseURIConfig();
+
     console.log("POOLVR.config =\n" + JSON.stringify(POOLVR.config, undefined, 2));
 
     THREE.Object3D.DefaultMatrixAutoUpdate = false;
@@ -2000,12 +2016,13 @@ function onLoad() {
     if (POOLVR.config.useTextGeomLogger) {
         var fontLoader = new THREE.FontLoader();
         fontLoader.load('fonts/Anonymous Pro_Regular.js', function (font) {
-            var textGeomCacher = new TextGeomUtils.TextGeomCacher(font, {size: 0.12});
+            var textGeomCacher = new TextGeomUtils.TextGeomCacher(font, {size: 0.14});
             var textGeomLoggerMaterial = new THREE.MeshBasicMaterial({color: 0xff3210});
             POOLVR.textGeomLogger = new TextGeomUtils.TextGeomLogger(textGeomCacher,
-                {material: textGeomLoggerMaterial, nrows: 7, lineHeight: 1.8 * 0.12});
+                {material: textGeomLoggerMaterial, nrows: 7, lineHeight: 1.8 * 0.14});
             avatar.add(POOLVR.textGeomLogger.root);
-            POOLVR.textGeomLogger.root.position.set(-2.5, 1.0, -3.5);
+            POOLVR.textGeomLogger.root.position.set(-2.7, 0.88, -3.3);
+            POOLVR.textGeomLogger.root.updateMatrix();
         });
     } else {
         POOLVR.textGeomLogger = {
@@ -2030,6 +2047,7 @@ function onLoad() {
         scene.add(centerSpotLight);
         centerSpotLight.updateMatrix();
         centerSpotLight.updateMatrixWorld();
+
         POOLVR.centerSpotLight = centerSpotLight;
 
         if (POOLVR.config.usePointLight) {
@@ -2050,7 +2068,7 @@ function onLoad() {
                 POOLVR.toolRoot.position.applyAxisAngle(THREE.Object3D.DefaultUp, -lastRotation + camera.rotation.y);
                 POOLVR.toolRoot.position.add(camera.position);
                 POOLVR.avatar.heading += lastRotation - camera.rotation.y;
-                POOLVR.avatar.quaternion.setFromAxisAngle(UP, avatar.heading);
+                POOLVR.avatar.quaternion.setFromAxisAngle(THREE.Object3D.DefaultUp, avatar.heading);
                 POOLVR.avatar.updateMatrix();
                 POOLVR.avatar.updateMatrixWorld();
             }
@@ -2059,19 +2077,19 @@ function onLoad() {
         POOLVR.app = new WebVRApplication(scene, appConfig);
 
         avatar.add(POOLVR.app.camera);
+
         scene.add(avatar);
 
-        POOLVR.setupMenu();
-
-        POOLVR.keyboard = new Primrose.Input.Keyboard('keyboard', document, POOLVR.keyboardCommands);
-
         avatar.updateMatrix();
+        avatar.updateMatrixWorld();
+
+        POOLVR.setupMenu();
 
         POOLVR.setup();
 
         POOLVR.switchMaterials(POOLVR.config.useBasicMaterials);
 
-        scene.updateMatrixWorld();
+        scene.updateMatrixWorld(true);
 
         POOLVR.startAnimateLoop();
 
