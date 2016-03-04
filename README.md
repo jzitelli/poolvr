@@ -15,7 +15,7 @@ This project began as an experimental example that I introduced into my fork of 
 It's been improved since the 3D Jam ended!
 Some amazing features are planned!
 
-You can [try a live version of **poolvr**](https://jzitelli.github.io/poolvr/poolvr-webvr1/index.html) which is hosted on [the project's GitHub pages](https://jzitelli.github.io/poolvr).
+You can [try a live version of **poolvr**](http://jzitelli.github.io/poolvr/poolvr-webvr1/index.html) which is hosted on [the project's GitHub pages](https://jzitelli.github.io/poolvr).
 
 
 ## Acknowledgements:
