@@ -12,6 +12,7 @@ function makeTool(parent, world, options) {
     options = options || {};
 
     var UP = THREE.Object3D.DefaultUp;
+    var FORWARD = new THREE.Vector3(0, 0, -1);
 
     // coordinate transformations are performed via three.js scene graph
     var toolRoot = new THREE.Object3D();
@@ -121,6 +122,7 @@ function makeTool(parent, world, options) {
     // the stick:
     var stickGeom = new THREE.CylinderGeometry(METERS2LEAP*toolRadius, METERS2LEAP*toolRadius, METERS2LEAP*toolLength, 10, 1, false);
     stickGeom.translate(0, -0.5*METERS2LEAP*toolLength, 0);
+    stickGeom.rotateX(-0.5 * Math.PI);
     var bufferGeom = new THREE.BufferGeometry();
     bufferGeom.fromGeometry(stickGeom);
     stickGeom.dispose();
@@ -162,10 +164,12 @@ function makeTool(parent, world, options) {
         stickMesh.add(tipMesh);
     } else {
         // whole stick
-        var shapeQuaternion = new CANNON.Quaternion();
-        shapeQuaternion.setFromEuler(-Math.PI / 2, 0, 0, 'XYZ');
-        var shapePosition = new CANNON.Vec3(0, -tipRadius, 0);
-        tipBody.addShape(new CANNON.Cylinder(tipRadius, tipRadius, 2*tipRadius, 8), shapePosition, shapeQuaternion);
+        //var shapeQuaternion = new CANNON.Quaternion();
+        //shapeQuaternion.setFromEuler(-Math.PI / 2, 0, 0, 'XYZ');
+        //var shapePosition = new CANNON.Vec3(0, -tipRadius, 0);
+        var shapePosition = new CANNON.Vec3(0, 0, tipRadius);
+        //tipBody.addShape(new CANNON.Cylinder(tipRadius, tipRadius, 2*tipRadius, 8), shapePosition, shapeQuaternion);
+        tipBody.addShape(new CANNON.Cylinder(tipRadius, tipRadius, 2*tipRadius, 8), shapePosition);
     }
     world.addBody(tipBody);
 
@@ -375,7 +379,7 @@ function makeTool(parent, world, options) {
                 position.applyMatrix4(toolRoot.matrixWorld);
                 tipBody.position.copy(position);
 
-                stickMesh.quaternion.setFromUnitVectors(UP, direction);
+                stickMesh.quaternion.setFromUnitVectors(FORWARD, direction);
 
                 quaternion.multiplyQuaternions(toolRoot.worldQuaternion, stickMesh.quaternion);
                 tipBody.quaternion.copy(quaternion);
