@@ -1,6 +1,7 @@
 POOLVR.setupMenu = function () {
     "use strict";
     var inputs = document.querySelectorAll('input');
+
     function onFocus(evt) {
         POOLVR.keyboard.enabled = false;
     }
@@ -60,12 +61,17 @@ POOLVR.setupMenu = function () {
     }, false);
 
     var overlay = document.getElementById('overlay');
+
     var startButton = document.getElementById('start');
 
     startButton.addEventListener('click', function () {
         overlay.style.display = 'none';
         // POOLVR.app.toggleFullscreen();
         POOLVR.startTutorial();
+    }, false);
+
+    window.addEventListener("beforeunload", function (e) {
+        POOLVR.saveConfig(POOLVR.profile);
     }, false);
 
     startButton.disabled = false;
