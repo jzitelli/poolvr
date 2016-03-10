@@ -372,8 +372,8 @@ function makeTool(parent, world, options) {
                     interactionPlaneMaterial.opacity = interactionPlaneOpacity;
                 }
 
-                //position.fromArray(tool.tipPosition);
-                position.fromArray(tool.stabilizedTipPosition);
+                position.fromArray(tool.tipPosition);
+                //position.fromArray(tool.stabilizedTipPosition);
                 direction.fromArray(tool.direction);
 
                 stickMesh.position.copy(position);
