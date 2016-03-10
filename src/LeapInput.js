@@ -282,11 +282,11 @@ function makeTool(parent, world, options) {
         stickMesh.position.copy(tipBody.interpolatedPosition);
         stickMesh.position.applyMatrix4(toolRoot.matrixWorldInverse);
         stickMesh.updateMatrix();
-        stickMesh.updateMatrixWorld();
+        //stickMesh.updateMatrixWorld();
 
         if (!useShadowMap) {
             stickShadowMesh.updateMatrix();
-            stickShadowMesh.updateMatrixWorld();
+            //stickShadowMesh.updateMatrixWorld();
         }
     }
 
@@ -474,8 +474,6 @@ function makeTool(parent, world, options) {
                     handJoint2s[j].position.fromArray(finger.bones[2].nextJoint);
                     handJoint2s[j].updateMatrix();
                 }
-
-                handRoots[i].updateMatrixWorld(true);
             }
         }
     }

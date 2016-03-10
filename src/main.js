@@ -340,7 +340,7 @@ function onLoad() {
                 toolRoot.updateMatrix();
 
                 avatar.heading += lastRotation;
-                avatar.quaternion.setFromAxisAngle(UP, avatar.heading);
+                avatar.quaternion.setFromAxisAngle(THREE.Object3D.DefaultUp, avatar.heading);
                 avatar.updateMatrix();
                 avatar.updateMatrixWorld();
                 POOLVR.updateToolMapping();
