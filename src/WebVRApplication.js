@@ -59,11 +59,11 @@ function WebVRApplication(scene, config) {
     var lastPosition = new THREE.Vector3();
     this.resetVRSensor = function () {
         if (this.vrControlsEnabled) {
-            this.vrControls.update();
+            this.vrControls.update(true);
             lastPosition.copy(this.camera.position);
             var lastRotation = this.camera.rotation.y;
             this.vrControls.resetSensor();
-            this.vrControls.update();
+            this.vrControls.update(true);
             if (onResetVRSensor) {
                 onResetVRSensor(lastRotation, lastPosition);
             }
