@@ -89,14 +89,14 @@ function WebVRApplication(scene, config) {
 
     var isFullscreen = false;
 
-    this.toggleFullscreen = function () {
+    this.toggleFullscreen = function (options) {
         if (!isFullscreen) {
             if (domElement.requestFullscreen) {
-                domElement.requestFullscreen();
+                domElement.requestFullscreen(options);
             } else if (domElement.msRequestFullscreen) {
                 domElement.msRequestFullscreen();
             } else if (domElement.mozRequestFullScreen) {
-                domElement.mozRequestFullScreen();
+                domElement.mozRequestFullScreen(options);
             } else if (domElement.webkitRequestFullscreen) {
                 domElement.webkitRequestFullscreen();
             } else {
@@ -157,20 +157,35 @@ function WebVRApplication(scene, config) {
     if (window.VRDisplay || window.HMDVRDevice) {
 
         var onClick = function () {
-            if (!isPresenting) {
-                isRequestingPresent = true;
-                try {
-                    this.toggleFullscreen();
-                } catch (error) {
-                    console.error(error);
-                    isRequestingPresent = false;
+            if (window.VRDisplay) {
+                if (!isPresenting) {
+                    isRequestingPresent = true;
+                    try {
+                        this.toggleFullscreen();
+                    } catch (error) {
+                        console.error(error);
+                        isRequestingPresent = false;
+                    }
+                } else {
+                    this.vrEffect.exitPresent().then( function () {
+                        isPresenting = false;
+                        vrButton.innerHTML = 'ENTER VR';
+                        this.renderer.setSize(window.innerWidth, window.innerHeight);
+                    }.bind(this) );
                 }
             } else {
-                this.vrEffect.exitPresent().then( function () {
-                    isPresenting = false;
-                    vrButton.innerHTML = 'ENTER VR';
-                    this.renderer.setSize(window.innerWidth, window.innerHeight);
-                }.bind(this) );
+                // deprecated WebVR
+                if (!isPresenting) {
+                    this.vrEffect.setFullScreen(true).then( function () {
+                        isFullscreen = true;
+                        isPresenting = true;
+                    } );
+                } else {
+                    this.vrEffect.setFullScreen(false).then( function () {
+                        isFullscreen = false;
+                        isPresenting = false;
+                    } );
+                }
             }
         }.bind(this);
 
