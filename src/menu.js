@@ -70,9 +70,5 @@ POOLVR.setupMenu = function () {
         POOLVR.startTutorial();
     }, false);
 
-    // window.addEventListener("beforeunload", function (e) {
-    //     POOLVR.saveConfig(POOLVR.profile);
-    // }, false);
-
     startButton.disabled = false;
 };
