@@ -2,11 +2,11 @@ POOLVR.commands = {
     toggleVRControls: function () { POOLVR.app.toggleVRControls(); POOLVR.app.camera.updateMatrix(); },
     toggleWireframe:  function () { POOLVR.app.toggleWireframe(); },
     resetVRSensor:    function () { POOLVR.app.resetVRSensor(); },
-    resetTable:       function () { POOLVR.resetTable(); },
-    autoPosition:     function () { POOLVR.autoPosition(); },
+    resetTable:       POOLVR.resetTable,
+    autoPosition:     POOLVR.autoPosition,
     selectNextBall:   function () { POOLVR.selectNextBall(); },
     selectPrevBall:   function () { POOLVR.selectNextBall(-1); },
-    stroke:           function () { POOLVR.stroke(); }
+    stroke:           POOLVR.stroke
 };
 
 // TODO: remove Primrose dependency for keyboard / gamepad input, it seems overkill for just this functionality + my Primrose version is very outdated.

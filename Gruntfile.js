@@ -10,6 +10,7 @@ var srcFiles = [
   "src/LeapInput.js",
   "src/WebVRSound.js",
   "src/SynthSpeaker.js",
+  "src/actions.js",
   "src/config.js",
   "src/setup.js",
   "src/menu.js",
