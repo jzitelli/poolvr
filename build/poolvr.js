@@ -1,6 +1,6 @@
 /* ############################################################################
 
-  poolvr v0.1.0 2016-03-04
+  poolvr v0.1.0 2016-03-10
 
   https://jzitelli.github.io/poolvr
   git+https://github.com/jzitelli/poolvr.git
@@ -429,7 +429,7 @@ var TextGeomUtils = ( function () {
             }
             // remove rows exceeding max display
             for (i = this.root.children.length - 1; i >= nrows; i--) {
-                this.root.remove(this.root.children[i]);
+                this.root.remove(this.root.children[0]);
             }
             // scroll lines:
             for (i = 0; i < this.root.children.length; i++) {
@@ -442,7 +442,7 @@ var TextGeomUtils = ( function () {
 
         this.clear = function () {
             for (var i = this.root.children.length - 1; i >= 0; i--) {
-                this.root.remove(this.root.children[i]);
+                this.root.remove(this.root.children[this.root.children.length - 1]);
             }
         }.bind(this);
     }
@@ -516,11 +516,11 @@ function WebVRApplication(scene, config) {
     var lastPosition = new THREE.Vector3();
     this.resetVRSensor = function () {
         if (this.vrControlsEnabled) {
-            this.vrControls.update();
+            this.vrControls.update(true);
             lastPosition.copy(this.camera.position);
             var lastRotation = this.camera.rotation.y;
             this.vrControls.resetSensor();
-            this.vrControls.update();
+            this.vrControls.update(true);
             if (onResetVRSensor) {
                 onResetVRSensor(lastRotation, lastPosition);
             }
@@ -536,19 +536,43 @@ function WebVRApplication(scene, config) {
         }
     }.bind(this);
 
-    // full screen / VR presenting stuff:
-
-    var isFullscreen = false;
-
-    var isRequestingPresent = false;
-
-    var isPresenting = false;
+    // resize / fullscreen / VR presenting stuff:
 
     window.addEventListener('resize', function () {
         this.camera.aspect = window.innerWidth / window.innerHeight;
         this.camera.updateProjectionMatrix();
         this.renderer.setSize(window.innerWidth, window.innerHeight);
     }.bind(this), false );
+
+    var isFullscreen = false;
+
+    this.toggleFullscreen = function (options) {
+        if (!isFullscreen) {
+            if (domElement.requestFullscreen) {
+                domElement.requestFullscreen(options);
+            } else if (domElement.msRequestFullscreen) {
+                domElement.msRequestFullscreen();
+            } else if (domElement.mozRequestFullScreen) {
+                domElement.mozRequestFullScreen(options);
+            } else if (domElement.webkitRequestFullscreen) {
+                domElement.webkitRequestFullscreen();
+            } else {
+                throw 'Fullscreen API is not supported';
+            }
+        } else {
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+            } else if (document.mozCancelFullScreen) {
+                document.mozCancelFullScreen();
+            } else if (document.webkitExitFullscreen) {
+                document.webkitExitFullscreen();
+            }
+        }
+    };
+
+    var isRequestingPresent = false;
+
+    var isPresenting = false;
 
     var fullscreenchange = domElement.mozRequestFullScreen ? 'mozfullscreenchange' : 'webkitfullscreenchange';
 
@@ -590,26 +614,35 @@ function WebVRApplication(scene, config) {
     if (window.VRDisplay || window.HMDVRDevice) {
 
         var onClick = function () {
-            if (!isPresenting) {
-                isRequestingPresent = true;
-                if (domElement.requestFullscreen) {
-                    domElement.requestFullscreen();
-                } else if (domElement.msRequestFullscreen) {
-                    domElement.msRequestFullscreen();
-                } else if (domElement.mozRequestFullScreen) {
-                    domElement.mozRequestFullScreen();
-                } else if (domElement.webkitRequestFullscreen) {
-                    domElement.webkitRequestFullscreen();
+            if (window.VRDisplay) {
+                if (!isPresenting) {
+                    isRequestingPresent = true;
+                    try {
+                        this.toggleFullscreen();
+                    } catch (error) {
+                        console.error(error);
+                        isRequestingPresent = false;
+                    }
                 } else {
-                    console.error('fullscreen not supported');
-                    isRequestingPresent = false;
+                    this.vrEffect.exitPresent().then( function () {
+                        isPresenting = false;
+                        vrButton.innerHTML = 'ENTER VR';
+                        this.renderer.setSize(window.innerWidth, window.innerHeight);
+                    }.bind(this) );
                 }
             } else {
-                this.vrEffect.exitPresent().then( function () {
-                    isPresenting = false;
-                    vrButton.innerHTML = 'ENTER VR';
-                    this.renderer.setSize(window.innerWidth, window.innerHeight);
-                }.bind(this) );
+                // deprecated WebVR
+                if (!isPresenting) {
+                    this.vrEffect.setFullScreen(true).then( function () {
+                        isFullscreen = true;
+                        isPresenting = true;
+                    } );
+                } else {
+                    this.vrEffect.setFullScreen(false).then( function () {
+                        isFullscreen = false;
+                        isPresenting = false;
+                    } );
+                }
             }
         }.bind(this);
 
@@ -717,8 +750,9 @@ function makeObjectArray(obj, keyKey) {
 
 // adapted from detectmobilebrowsers.com
 function isMobile() {
-	var a = navigator.userAgent || navigator.vendor || window.opera;
-	return (/(android|bb\d+|meego).+mobile|avantgo|bada\/|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|iris|kindle|lge |maemo|midp|mmp|mobile.+firefox|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows ce|xda|xiino/i.test(a)||/1207|6310|6590|3gso|4thp|50[1-6]i|770s|802s|a wa|abac|ac(er|oo|s\-)|ai(ko|rn)|al(av|ca|co)|amoi|an(ex|ny|yw)|aptu|ar(ch|go)|as(te|us)|attw|au(di|\-m|r |s )|avan|be(ck|ll|nq)|bi(lb|rd)|bl(ac|az)|br(e|v)w|bumb|bw\-(n|u)|c55\/|capi|ccwa|cdm\-|cell|chtm|cldc|cmd\-|co(mp|nd)|craw|da(it|ll|ng)|dbte|dc\-s|devi|dica|dmob|do(c|p)o|ds(12|\-d)|el(49|ai)|em(l2|ul)|er(ic|k0)|esl8|ez([4-7]0|os|wa|ze)|fetc|fly(\-|_)|g1 u|g560|gene|gf\-5|g\-mo|go(\.w|od)|gr(ad|un)|haie|hcit|hd\-(m|p|t)|hei\-|hi(pt|ta)|hp( i|ip)|hs\-c|ht(c(\-| |_|a|g|p|s|t)|tp)|hu(aw|tc)|i\-(20|go|ma)|i230|iac( |\-|\/)|ibro|idea|ig01|ikom|im1k|inno|ipaq|iris|ja(t|v)a|jbro|jemu|jigs|kddi|keji|kgt( |\/)|klon|kpt |kwc\-|kyo(c|k)|le(no|xi)|lg( g|\/(k|l|u)|50|54|\-[a-w])|libw|lynx|m1\-w|m3ga|m50\/|ma(te|ui|xo)|mc(01|21|ca)|m\-cr|me(rc|ri)|mi(o8|oa|ts)|mmef|mo(01|02|bi|de|do|t(\-| |o|v)|zz)|mt(50|p1|v )|mwbp|mywa|n10[0-2]|n20[2-3]|n30(0|2)|n50(0|2|5)|n7(0(0|1)|10)|ne((c|m)\-|on|tf|wf|wg|wt)|nok(6|i)|nzph|o2im|op(ti|wv)|oran|owg1|p800|pan(a|d|t)|pdxg|pg(13|\-([1-8]|c))|phil|pire|pl(ay|uc)|pn\-2|po(ck|rt|se)|prox|psio|pt\-g|qa\-a|qc(07|12|21|32|60|\-[2-7]|i\-)|qtek|r380|r600|raks|rim9|ro(ve|zo)|s55\/|sa(ge|ma|mm|ms|ny|va)|sc(01|h\-|oo|p\-)|sdk\/|se(c(\-|0|1)|47|mc|nd|ri)|sgh\-|shar|sie(\-|m)|sk\-0|sl(45|id)|sm(al|ar|b3|it|t5)|so(ft|ny)|sp(01|h\-|v\-|v )|sy(01|mb)|t2(18|50)|t6(00|10|18)|ta(gt|lk)|tcl\-|tdg\-|tel(i|m)|tim\-|t\-mo|to(pl|sh)|ts(70|m\-|m3|m5)|tx\-9|up(\.b|g1|si)|utst|v400|v750|veri|vi(rg|te)|vk(40|5[0-3]|\-v)|vm40|voda|vulc|vx(52|53|60|61|70|80|81|83|85|98)|w3c(\-| )|webc|whit|wi(g |nc|nw)|wmlb|wonu|x700|yas\-|your|zeto|zte\-/i.test(a.substr(0,4)));
+    "use strict";
+    var a = navigator.userAgent || navigator.vendor || window.opera;
+    return (/(android|bb\d+|meego).+mobile|avantgo|bada\/|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|iris|kindle|lge |maemo|midp|mmp|mobile.+firefox|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows ce|xda|xiino/i.test(a)||/1207|6310|6590|3gso|4thp|50[1-6]i|770s|802s|a wa|abac|ac(er|oo|s\-)|ai(ko|rn)|al(av|ca|co)|amoi|an(ex|ny|yw)|aptu|ar(ch|go)|as(te|us)|attw|au(di|\-m|r |s )|avan|be(ck|ll|nq)|bi(lb|rd)|bl(ac|az)|br(e|v)w|bumb|bw\-(n|u)|c55\/|capi|ccwa|cdm\-|cell|chtm|cldc|cmd\-|co(mp|nd)|craw|da(it|ll|ng)|dbte|dc\-s|devi|dica|dmob|do(c|p)o|ds(12|\-d)|el(49|ai)|em(l2|ul)|er(ic|k0)|esl8|ez([4-7]0|os|wa|ze)|fetc|fly(\-|_)|g1 u|g560|gene|gf\-5|g\-mo|go(\.w|od)|gr(ad|un)|haie|hcit|hd\-(m|p|t)|hei\-|hi(pt|ta)|hp( i|ip)|hs\-c|ht(c(\-| |_|a|g|p|s|t)|tp)|hu(aw|tc)|i\-(20|go|ma)|i230|iac( |\-|\/)|ibro|idea|ig01|ikom|im1k|inno|ipaq|iris|ja(t|v)a|jbro|jemu|jigs|kddi|keji|kgt( |\/)|klon|kpt |kwc\-|kyo(c|k)|le(no|xi)|lg( g|\/(k|l|u)|50|54|\-[a-w])|libw|lynx|m1\-w|m3ga|m50\/|ma(te|ui|xo)|mc(01|21|ca)|m\-cr|me(rc|ri)|mi(o8|oa|ts)|mmef|mo(01|02|bi|de|do|t(\-| |o|v)|zz)|mt(50|p1|v )|mwbp|mywa|n10[0-2]|n20[2-3]|n30(0|2)|n50(0|2|5)|n7(0(0|1)|10)|ne((c|m)\-|on|tf|wf|wg|wt)|nok(6|i)|nzph|o2im|op(ti|wv)|oran|owg1|p800|pan(a|d|t)|pdxg|pg(13|\-([1-8]|c))|phil|pire|pl(ay|uc)|pn\-2|po(ck|rt|se)|prox|psio|pt\-g|qa\-a|qc(07|12|21|32|60|\-[2-7]|i\-)|qtek|r380|r600|raks|rim9|ro(ve|zo)|s55\/|sa(ge|ma|mm|ms|ny|va)|sc(01|h\-|oo|p\-)|sdk\/|se(c(\-|0|1)|47|mc|nd|ri)|sgh\-|shar|sie(\-|m)|sk\-0|sl(45|id)|sm(al|ar|b3|it|t5)|so(ft|ny)|sp(01|h\-|v\-|v )|sy(01|mb)|t2(18|50)|t6(00|10|18)|ta(gt|lk)|tcl\-|tdg\-|tel(i|m)|tim\-|t\-mo|to(pl|sh)|ts(70|m\-|m3|m5)|tx\-9|up(\.b|g1|si)|utst|v400|v750|veri|vi(rg|te)|vk(40|5[0-3]|\-v)|vm40|voda|vulc|vx(52|53|60|61|70|80|81|83|85|98)|w3c(\-| )|webc|whit|wi(g |nc|nw)|wmlb|wonu|x700|yas\-|your|zeto|zte\-/i.test(a.substr(0,4)));
 }
 ;
 // #### src/LeapInput.js
@@ -736,6 +770,7 @@ function makeTool(parent, world, options) {
     options = options || {};
 
     var UP = THREE.Object3D.DefaultUp;
+    var FORWARD = new THREE.Vector3(0, 0, -1);
 
     // coordinate transformations are performed via three.js scene graph
     var toolRoot = new THREE.Object3D();
@@ -746,7 +781,8 @@ function makeTool(parent, world, options) {
 
     // parse options:
 
-    toolRoot.quaternion.setFromAxisAngle(UP, options.toolRotation || 0);
+    toolRoot.heading = options.toolRotation || 0;
+    toolRoot.quaternion.setFromAxisAngle(UP, toolRoot.heading);
     toolRoot.position.fromArray(options.toolOffset || [0, -0.42, -0.42]);
 
     var toolLength = options.toolLength || 0.5;
@@ -845,6 +881,7 @@ function makeTool(parent, world, options) {
     // the stick:
     var stickGeom = new THREE.CylinderGeometry(METERS2LEAP*toolRadius, METERS2LEAP*toolRadius, METERS2LEAP*toolLength, 10, 1, false);
     stickGeom.translate(0, -0.5*METERS2LEAP*toolLength, 0);
+    stickGeom.rotateX(-0.5 * Math.PI);
     var bufferGeom = new THREE.BufferGeometry();
     bufferGeom.fromGeometry(stickGeom);
     stickGeom.dispose();
@@ -886,10 +923,12 @@ function makeTool(parent, world, options) {
         stickMesh.add(tipMesh);
     } else {
         // whole stick
-        var shapeQuaternion = new CANNON.Quaternion();
-        shapeQuaternion.setFromEuler(-Math.PI / 2, 0, 0, 'XYZ');
-        var shapePosition = new CANNON.Vec3(0, -tipRadius, 0);
-        tipBody.addShape(new CANNON.Cylinder(tipRadius, tipRadius, 2*tipRadius, 8), shapePosition, shapeQuaternion);
+        //var shapeQuaternion = new CANNON.Quaternion();
+        //shapeQuaternion.setFromEuler(-Math.PI / 2, 0, 0, 'XYZ');
+        //var shapePosition = new CANNON.Vec3(0, -tipRadius, 0);
+        var shapePosition = new CANNON.Vec3(0, 0, tipRadius);
+        //tipBody.addShape(new CANNON.Cylinder(tipRadius, tipRadius, 2*tipRadius, 8), shapePosition, shapeQuaternion);
+        tipBody.addShape(new CANNON.Cylinder(tipRadius, tipRadius, 2*tipRadius, 8), shapePosition);
     }
     world.addBody(tipBody);
 
@@ -1001,11 +1040,11 @@ function makeTool(parent, world, options) {
         stickMesh.position.copy(tipBody.interpolatedPosition);
         stickMesh.position.applyMatrix4(toolRoot.matrixWorldInverse);
         stickMesh.updateMatrix();
-        stickMesh.updateMatrixWorld();
+        //stickMesh.updateMatrixWorld();
 
         if (!useShadowMap) {
             stickShadowMesh.updateMatrix();
-            stickShadowMesh.updateMatrixWorld();
+            //stickShadowMesh.updateMatrixWorld();
         }
     }
 
@@ -1036,8 +1075,8 @@ function makeTool(parent, world, options) {
             toolRoot.position.x +=  0.16 * dt * toolStrafe;
             toolRoot.position.z += -0.16 * dt * toolDrive;
             toolRoot.position.y +=  0.16 * dt * toolFloat;
-            toolRoot.rotation.y -= 0.15 * dt * rotateToolCW;
-            //toolRoot.quaternion.setFromAxisAngle(UP, toolRotation);
+            toolRoot.heading -= 0.15 * dt * rotateToolCW;
+            toolRoot.quaternion.setFromAxisAngle(UP, toolRoot.heading);
 
             toolRoot.updateMatrix();
 
@@ -1091,15 +1130,15 @@ function makeTool(parent, world, options) {
                     interactionPlaneMaterial.opacity = interactionPlaneOpacity;
                 }
 
-                //position.fromArray(tool.tipPosition);
-                position.fromArray(tool.stabilizedTipPosition);
+                position.fromArray(tool.tipPosition);
+                //position.fromArray(tool.stabilizedTipPosition);
                 direction.fromArray(tool.direction);
 
                 stickMesh.position.copy(position);
                 position.applyMatrix4(toolRoot.matrixWorld);
                 tipBody.position.copy(position);
 
-                stickMesh.quaternion.setFromUnitVectors(UP, direction);
+                stickMesh.quaternion.setFromUnitVectors(FORWARD, direction);
 
                 quaternion.multiplyQuaternions(toolRoot.worldQuaternion, stickMesh.quaternion);
                 tipBody.quaternion.copy(quaternion);
@@ -1193,8 +1232,6 @@ function makeTool(parent, world, options) {
                     handJoint2s[j].position.fromArray(finger.bones[2].nextJoint);
                     handJoint2s[j].updateMatrix();
                 }
-
-                handRoots[i].updateMatrixWorld(true);
             }
         }
     }
@@ -1324,16 +1361,106 @@ var SynthSpeaker = ( function() {
     }
 } )();
 ;
+// #### src/actions.js
+POOLVR.selectNextBall = function (inc) {
+    "use strict";
+    inc = inc || 1;
+    var next = Math.max(1, Math.min(15, POOLVR.nextBall + inc));
+    while (!POOLVR.onTable[next]) {
+        next = Math.max(1, Math.min(15, next + inc));
+        if (next === POOLVR.nextBall) {
+            break;
+        }
+    }
+    if (POOLVR.nextBall !== next) {
+        POOLVR.nextBall = next;
+        POOLVR.textGeomLogger.log("BALL " + POOLVR.nextBall + " SELECTED");
+    }
+};
+
+
+POOLVR.resetTable = function () {
+    "use strict";
+    POOLVR.ballBodies.forEach(function (body, ballNum) {
+        body.wakeUp();
+        body.position.copy(POOLVR.initialPositions[ballNum]);
+        body.velocity.set(0, 0, 0);
+        body.angularVelocity.set(0, 0, 0);
+        body.bounces = 0;
+        POOLVR.onTable[ballNum] = true;
+        body.mesh.visible = true;
+    });
+    if (POOLVR.synthSpeaker.speaking === false) {
+        POOLVR.synthSpeaker.speak("Table reset.");
+    }
+    POOLVR.nextBall = 1;
+    POOLVR.textGeomLogger.log("TABLE RESET.");
+};
+
+
+POOLVR.autoPosition = ( function () {
+    "use strict";
+    var nextVector = new THREE.Vector3();
+    var UP = THREE.Object3D.DefaultUp;
+    var speakCount = 0;
+    return function () {
+
+        if (POOLVR.synthSpeaker.speaking === false) {
+            if (speakCount <= 7) {
+                POOLVR.synthSpeaker.speak("You are being auto-positioned.");
+                if (speakCount === 7) {
+                    POOLVR.synthSpeaker.speak("I will stop saying that now.");
+                }
+                speakCount++;
+            }
+        }
+
+        var avatar = POOLVR.avatar;
+        avatar.heading = Math.atan2(
+            -(POOLVR.ballMeshes[POOLVR.nextBall].position.x - POOLVR.ballMeshes[0].position.x),
+            -(POOLVR.ballMeshes[POOLVR.nextBall].position.z - POOLVR.ballMeshes[0].position.z)
+        );
+        avatar.quaternion.setFromAxisAngle(UP, avatar.heading);
+
+        // nextVector.copy(POOLVR.toolRoot.worldPosition);
+        nextVector.copy(POOLVR.toolRoot.position);
+        nextVector.applyQuaternion(avatar.quaternion);
+        nextVector.add(avatar.position);
+
+        nextVector.sub(POOLVR.ballMeshes[0].position);
+        nextVector.y = 0;
+        avatar.position.sub(nextVector);
+
+        avatar.updateMatrix();
+        avatar.updateMatrixWorld();
+
+        POOLVR.updateToolMapping();
+
+    };
+} )();
+
+
+POOLVR.stroke = ( function () {
+    "use strict";
+    var velocity = new THREE.Vector3();
+    return function () {
+        velocity.set(0, 0, -3.5);
+        velocity.applyQuaternion(POOLVR.toolRoot.worldQuaternion);
+        var body = POOLVR.ballBodies[0];
+        body.velocity.copy(velocity);
+    };
+} )();
+;
 // #### src/config.js
 POOLVR.commands = {
     toggleVRControls: function () { POOLVR.app.toggleVRControls(); POOLVR.app.camera.updateMatrix(); },
     toggleWireframe:  function () { POOLVR.app.toggleWireframe(); },
     resetVRSensor:    function () { POOLVR.app.resetVRSensor(); },
-    resetTable:       function () { POOLVR.resetTable(); },
-    autoPosition:     function () { POOLVR.autoPosition(); },
+    resetTable:       POOLVR.resetTable,
+    autoPosition:     POOLVR.autoPosition,
     selectNextBall:   function () { POOLVR.selectNextBall(); },
     selectPrevBall:   function () { POOLVR.selectNextBall(-1); },
-    stroke:           function () { POOLVR.stroke(); }
+    stroke:           POOLVR.stroke
 };
 
 // TODO: remove Primrose dependency for keyboard / gamepad input, it seems overkill for just this functionality + my Primrose version is very outdated.
@@ -1424,7 +1551,7 @@ POOLVR.gamepad.addEventListener("gamepadconnected", function(id) {
 
 POOLVR.parseURIConfig = function () {
     "use strict";
-    POOLVR.config.useTextGeomLogger = URL_PARAMS.useTextGeomLogger !== undefined ? URL_PARAMS.useTextGeomLogger : POOLVR.config.useTextGeomLogger;
+    POOLVR.config.useTextGeomLogger = false; //URL_PARAMS.useTextGeomLogger !== undefined ? URL_PARAMS.useTextGeomLogger : POOLVR.config.useTextGeomLogger;
     POOLVR.config.synthSpeakerVolume = URL_PARAMS.synthSpeakerVolume || POOLVR.config.synthSpeakerVolume;
     POOLVR.config.initialPosition = POOLVR.config.initialPosition;
     // Leap Motion config:
@@ -1435,8 +1562,8 @@ POOLVR.parseURIConfig = function () {
     POOLVR.config.toolOptions.toolOffset   = URL_PARAMS.toolOffset   || POOLVR.config.toolOptions.toolOffset;
     POOLVR.config.toolOptions.toolRotation = URL_PARAMS.toolRotation || POOLVR.config.toolOptions.toolRotation;
     POOLVR.config.toolOptions.tipShape     = URL_PARAMS.tipShape     || POOLVR.config.toolOptions.tipShape;
-    POOLVR.config.toolOptions.host         = URL_PARAMS.host;
-    POOLVR.config.toolOptions.port         = URL_PARAMS.port;
+    POOLVR.config.toolOptions.host         = URL_PARAMS.host         || POOLVR.config.toolOptions.host;
+    POOLVR.config.toolOptions.port         = URL_PARAMS.port         || POOLVR.config.toolOptions.port;
     // application graphics config:
     POOLVR.config.useBasicMaterials = URL_PARAMS.useBasicMaterials !== undefined ? URL_PARAMS.useBasicMaterials : POOLVR.config.useBasicMaterials;
     if (POOLVR.config.useBasicMaterials) {
@@ -1459,7 +1586,7 @@ POOLVR.profile = URL_PARAMS.profile || POOLVR.profile || 'default';
 POOLVR.saveConfig = function (profileName) {
     "use strict";
     POOLVR.config.toolOptions.toolOffset = [POOLVR.toolRoot.position.x, POOLVR.toolRoot.position.y, POOLVR.toolRoot.position.z];
-    POOLVR.config.toolOptions.toolRotation = POOLVR.toolRoot.rotation.y;
+    POOLVR.config.toolOptions.toolRotation = POOLVR.toolRoot.heading;
     localStorage.setItem(profileName, JSON.stringify(POOLVR.config));
     console.log("saved configuration for profile '" + profileName + "':");
     console.log(JSON.stringify(POOLVR.config, undefined, 2));
@@ -1514,8 +1641,8 @@ POOLVR.tipMaterial            = new CANNON.Material();
 POOLVR.tipBallContactMaterial = new CANNON.ContactMaterial(POOLVR.tipMaterial, POOLVR.ballMaterial, {
     restitution: 0.01,
     friction: 0.15,
-    contactEquationRelaxation: 3,
-    frictionEquationRelaxation: 3
+    contactEquationRelaxation: 2,
+    frictionEquationRelaxation: 2
 });
 
 
@@ -1772,6 +1899,7 @@ POOLVR.setup = function () {
 POOLVR.setupMenu = function () {
     "use strict";
     var inputs = document.querySelectorAll('input');
+
     function onFocus(evt) {
         POOLVR.keyboard.enabled = false;
     }
@@ -1779,8 +1907,8 @@ POOLVR.setupMenu = function () {
         POOLVR.keyboard.enabled = true;
     }
     for (var i = 0; i < inputs.length; i++) {
-        inputs[i].addEventListener('focus', onFocus);
-        inputs[i].addEventListener('blur', onBlur);
+        inputs[i].addEventListener('focus', onFocus, false);
+        inputs[i].addEventListener('blur', onBlur, false);
     }
 
     var useBasicMaterialsInput = document.getElementById('useBasicMaterials');
@@ -1789,7 +1917,7 @@ POOLVR.setupMenu = function () {
         POOLVR.config.useBasicMaterials = useBasicMaterialsInput.checked;
         POOLVR.saveConfig(POOLVR.profile);
         POOLVR.switchMaterials(POOLVR.config.useBasicMaterials);
-    });
+    }, false);
 
     var useShadowMapInput = document.getElementById('useShadowMap');
     useShadowMapInput.checked = POOLVR.config.useShadowMap;
@@ -1799,113 +1927,51 @@ POOLVR.setupMenu = function () {
         if (window.confirm('This change requires a page reload to take effect - reload now?')) {
             document.location.reload();
         }
-    });
+    }, false);
+
+    var usePointLightInput = document.getElementById('usePointLight');
+    usePointLightInput.checked = POOLVR.config.usePointLight;
+    usePointLightInput.addEventListener('change', function (evt) {
+        POOLVR.config.usePointLight = usePointLightInput.checked;
+        POOLVR.saveConfig(POOLVR.profile);
+        if (window.confirm('This change requires a page reload to take effect - reload now?')) {
+            document.location.reload();
+        }
+    }, false);
 
     // TODO: regular expression format check
     var leapAddressInput = document.getElementById('leapAddress');
     leapAddressInput.value = 'localhost';
     leapAddressInput.addEventListener('change', function (evt) {
-        POOLVR.leapController.connection.host = leapAddressInput.value;
+        var host = leapAddressInput.value;
+        POOLVR.config.toolOptions.host = host;
+        POOLVR.saveConfig(POOLVR.profile);
+        POOLVR.leapController.connection.host = host;
         POOLVR.leapController.connection.disconnect(true);
         POOLVR.leapController.connect();
-        POOLVR.saveConfig(POOLVR.profile);
-    });
+    }, false);
 
     var profileNameInput = document.getElementById('profileName');
     profileNameInput.value = POOLVR.profile;
     profileNameInput.addEventListener('change', function (evt) {
         POOLVR.profile = profileNameInput.value;
         POOLVR.saveConfig(POOLVR.profile);
-    });
+    }, false);
 
     var overlay = document.getElementById('overlay');
+
     var startButton = document.getElementById('start');
 
     startButton.addEventListener('click', function () {
         overlay.style.display = 'none';
+        // POOLVR.app.toggleFullscreen();
         POOLVR.startTutorial();
-    });
+    }, false);
+
+    startButton.disabled = false;
 };
 ;
 // #### src/main.js
-POOLVR.selectNextBall = function (inc) {
-    "use strict";
-    inc = inc || 1;
-    var next = Math.max(1, Math.min(15, POOLVR.nextBall + inc));
-    while (!POOLVR.onTable[next]) {
-        next = Math.max(1, Math.min(15, next + inc));
-        if (next === POOLVR.nextBall) {
-            break;
-        }
-    }
-    if (POOLVR.nextBall !== next) {
-        POOLVR.nextBall = next;
-        POOLVR.textGeomLogger.log("BALL " + POOLVR.nextBall + " SELECTED");
-    }
-};
-
-
-POOLVR.resetTable = function () {
-    "use strict";
-    POOLVR.ballBodies.forEach(function (body, ballNum) {
-        body.wakeUp();
-        body.position.copy(POOLVR.initialPositions[ballNum]);
-        body.velocity.set(0, 0, 0);
-        body.angularVelocity.set(0, 0, 0);
-        body.bounces = 0;
-        POOLVR.onTable[ballNum] = true;
-        body.mesh.visible = true;
-    });
-    if (POOLVR.synthSpeaker.speaking === false) {
-        POOLVR.synthSpeaker.speak("Table reset.");
-    }
-    POOLVR.nextBall = 1;
-    POOLVR.textGeomLogger.log("TABLE RESET.");
-};
-
-
-POOLVR.autoPosition = ( function () {
-    "use strict";
-    var nextVector = new THREE.Vector3();
-    var UP = THREE.Object3D.DefaultUp;
-    var speakCount = 0;
-    return function () {
-
-        if (POOLVR.synthSpeaker.speaking === false) {
-            if (speakCount <= 7) {
-                POOLVR.synthSpeaker.speak("You are being auto-positioned.");
-                if (speakCount === 7) {
-                    POOLVR.synthSpeaker.speak("I will stop saying that now.");
-                }
-                speakCount++;
-            }
-        }
-
-        var avatar = POOLVR.avatar;
-        avatar.heading = Math.atan2(
-            -(POOLVR.ballMeshes[POOLVR.nextBall].position.x - POOLVR.ballMeshes[0].position.x),
-            -(POOLVR.ballMeshes[POOLVR.nextBall].position.z - POOLVR.ballMeshes[0].position.z)
-        );
-        avatar.quaternion.setFromAxisAngle(UP, avatar.heading);
-
-        // nextVector.copy(POOLVR.toolRoot.worldPosition);
-        nextVector.copy(POOLVR.toolRoot.position);
-        nextVector.applyQuaternion(avatar.quaternion);
-        nextVector.add(avatar.position);
-
-        nextVector.sub(POOLVR.ballMeshes[0].position);
-        nextVector.y = 0;
-        avatar.position.sub(nextVector);
-
-        avatar.updateMatrix();
-        avatar.updateMatrixWorld();
-
-        POOLVR.updateToolMapping();
-
-    };
-} )();
-
-
 POOLVR.moveAvatar = ( function () {
     "use strict";
     var UP = THREE.Object3D.DefaultUp,
@@ -1950,13 +2016,6 @@ POOLVR.moveAvatar = ( function () {
 } )();
 
 
-POOLVR.stroke = function () {
-    "use strict";
-    var body = POOLVR.ballBodies[0];
-    body.velocity.z = -3.5;
-};
-
-
 POOLVR.startTutorial = function () {
     "use strict";
     POOLVR.synthSpeaker.speak("Hello.  Welcome. To. Pool-ver.", function () {
@@ -1973,11 +2032,12 @@ POOLVR.startTutorial = function () {
         POOLVR.textGeomLogger.log("TO MAKE CONTACT WITH A BALL...");
     });
 
-    POOLVR.synthSpeaker.speak("If you are playing in VR, you will probably want use the. I. J. K. And L. Keys to move the. Virtual. Leap Motion Controller.  So that the virtual. And physical positions. Coincide.", function () {
-        POOLVR.textGeomLogger.log("IF YOU ARE PLAYING IN VR, YOU WILL PROBABLY WANT TO USE THE");
-        POOLVR.textGeomLogger.log("I/J/K/L/O/./Y/U KEYS");
+    POOLVR.synthSpeaker.speak("If you are playing in VR, try using the I, J, K, and L keys.  To move the virtual. Leap Motion Controller.  So that it coincides with the controller in your physical environment.", function () {
+        POOLVR.textGeomLogger.log("IF YOU ARE PLAYING IN VR, TRY USING THE");
+        POOLVR.textGeomLogger.log("I / J / K / L / O / . / Y / U KEYS");
         POOLVR.textGeomLogger.log("TO MOVE THE VIRTUAL LEAP MOTION CONTROLLER");
-        POOLVR.textGeomLogger.log("SO THAT THE VIRTUAL AND PHYSICAL POSITIONS COINCIDE.");
+        POOLVR.textGeomLogger.log("SO THAT IT COINCIDES WITH THE CONTROLLER");
+        POOLVR.textGeomLogger.log("IN YOUR PHYSICAL ENVIRONMENT.");
     });
 
 };
@@ -2111,10 +2171,10 @@ function onLoad() {
     if (POOLVR.config.useTextGeomLogger) {
         var fontLoader = new THREE.FontLoader();
         fontLoader.load('fonts/Anonymous Pro_Regular.js', function (font) {
-            var textGeomCacher = new TextGeomUtils.TextGeomCacher(font, {size: 0.14});
+            var textGeomCacher = new TextGeomUtils.TextGeomCacher(font, {size: 0.12});
             var textGeomLoggerMaterial = new THREE.MeshBasicMaterial({color: 0xff3210});
             POOLVR.textGeomLogger = new TextGeomUtils.TextGeomLogger(textGeomCacher,
-                {material: textGeomLoggerMaterial, nrows: 7, lineHeight: 1.8 * 0.14});
+                {material: textGeomLoggerMaterial, nrows: 8, lineHeight: 1.8 * 0.12});
             avatar.add(POOLVR.textGeomLogger.root);
             POOLVR.textGeomLogger.root.position.set(-2.7, 0.88, -3.3);
             POOLVR.textGeomLogger.root.updateMatrix();
@@ -2158,16 +2218,21 @@ function onLoad() {
             onResetVRSensor: function (lastRotation, lastPosition) {
                 // maintain correspondence between virtual / physical leap motion controller:
                 var camera = POOLVR.app.camera;
-                POOLVR.toolRoot.rotation.y -= (lastRotation - camera.rotation.y);
-                POOLVR.toolRoot.position.sub(lastPosition);
-                POOLVR.toolRoot.position.applyAxisAngle(THREE.Object3D.DefaultUp, -lastRotation + camera.rotation.y);
-                POOLVR.toolRoot.position.add(camera.position);
-                POOLVR.toolRoot.updateMatrix();
-                POOLVR.toolRoot.updateMatrixWorld();
-                POOLVR.avatar.heading += lastRotation - camera.rotation.y;
-                POOLVR.avatar.quaternion.setFromAxisAngle(THREE.Object3D.DefaultUp, avatar.heading);
-                POOLVR.avatar.updateMatrix();
-                POOLVR.avatar.updateMatrixWorld();
+                var toolRoot = POOLVR.toolRoot;
+                toolRoot.heading -= lastRotation;
+                toolRoot.quaternion.setFromAxisAngle(THREE.Object3D.DefaultUp, toolRoot.heading);
+
+                toolRoot.position.sub(lastPosition);
+                toolRoot.position.applyAxisAngle(THREE.Object3D.DefaultUp, -lastRotation);
+                toolRoot.position.add(camera.position);
+
+                toolRoot.updateMatrix();
+
+                avatar.heading += lastRotation;
+                avatar.quaternion.setFromAxisAngle(THREE.Object3D.DefaultUp, avatar.heading);
+                avatar.updateMatrix();
+                avatar.updateMatrixWorld();
+                POOLVR.updateToolMapping();
             }
         });
 
