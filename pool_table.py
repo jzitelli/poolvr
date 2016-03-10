@@ -76,27 +76,27 @@ def pool_table(L_table=2.3368, W_table=None, H_table=0.74295,
     H_nose = 0.5 * H_cushion
     W_nose = 0.05 * W_cushion
 
-    vertices = np.array([# bottom quad:
-                         [-0.5*W_playable + 0.4*W_cushion,                            0,                   0.5*W_cushion],
-                         [ 0.5*W_playable - 0.4*W_cushion,                            0,                   0.5*W_cushion],
-                         [ 0.5*W_playable - 1.2*np.sqrt(2)*W_cushion, H_cushion - H_nose, -0.5*W_cushion + W_nose],
-                         [-0.5*W_playable + 1.2*np.sqrt(2)*W_cushion, H_cushion - H_nose, -0.5*W_cushion + W_nose],
-                         # top quad:
-                         [-0.5*W_playable + 0.4*W_cushion,                            H_rail,              0.5*W_cushion],
-                         [ 0.5*W_playable - 0.4*W_cushion,                            H_rail,              0.5*W_cushion],
-                         [ 0.5*W_playable - 1.2*np.sqrt(2)*W_cushion, H_cushion,          -0.5*W_cushion],
-                         [-0.5*W_playable + 1.2*np.sqrt(2)*W_cushion, H_cushion,          -0.5*W_cushion]])
-    headCushionGeom = HexaBufferGeometry(vertices=vertices)
+    sqrt2 = np.sqrt(2)
 
-    verticesA = vertices.copy()
-    verticesA[2, 0] = 0.5*W_playable - 0.7*np.sqrt(2)*W_cushion
-    verticesA[6, 0] = verticesA[2, 0]
-    sideCushionGeomA = HexaBufferGeometry(vertices=verticesA)
+    headCushionGeom = HexaBufferGeometry(vertices=np.array([
+        # bottom quad:
+        [[-0.5*W_playable + 0.4*W_cushion,       0,                   0.5*W_cushion],
+         [ 0.5*W_playable - 0.4*W_cushion,       0,                   0.5*W_cushion],
+         [ 0.5*W_playable - 1.2*sqrt2*W_cushion, H_cushion - H_nose, -0.5*W_cushion + W_nose],
+         [-0.5*W_playable + 1.2*sqrt2*W_cushion, H_cushion - H_nose, -0.5*W_cushion + W_nose]],
+        # top quad:
+        [[-0.5*W_playable + 0.4*W_cushion,       H_rail,     0.5*W_cushion],
+         [ 0.5*W_playable - 0.4*W_cushion,       H_rail,     0.5*W_cushion],
+         [ 0.5*W_playable - 1.2*sqrt2*W_cushion, H_cushion, -0.5*W_cushion],
+         [-0.5*W_playable + 1.2*sqrt2*W_cushion, H_cushion, -0.5*W_cushion]]]))
 
-    verticesB = vertices.copy()
-    verticesB[3, 0] = -0.5*W_playable + 0.7*np.sqrt(2)*W_cushion
-    verticesB[7, 0] = verticesB[3, 0]
-    sideCushionGeomB = HexaBufferGeometry(vertices=verticesB)
+    rightHeadCushionGeom = HexaBufferGeometry(vertices=headCushionGeom.vertices.copy())
+    rightHeadCushionGeom.vertices[0, 2, 0] = 0.5*W_playable - 0.6*sqrt2*W_cushion
+    rightHeadCushionGeom.vertices[1, 2, 0] = rightHeadCushionGeom.vertices[0, 2, 0]
+
+    leftHeadCushionGeom = HexaBufferGeometry(vertices=headCushionGeom.vertices.copy())
+    leftHeadCushionGeom.vertices[0, 3, 0] = -0.5*W_playable + 0.6*sqrt2*W_cushion
+    leftHeadCushionGeom.vertices[1, 3, 0] = leftHeadCushionGeom.vertices[0, 3, 0]
 
     cushionData = {'cannonData': {'mass': 0, 'shapes': ['ConvexPolyhedron']}}
 
@@ -116,7 +116,7 @@ def pool_table(L_table=2.3368, W_table=None, H_table=0.74295,
                            userData=cushionData)
     poolTable.add(footCushionMesh)
     leftHeadCushionMesh = Mesh(name='leftHeadCushionMesh',
-                               geometry=sideCushionGeomB,
+                               geometry=leftHeadCushionGeom,
                                material=cushionMaterial,
                                position=[-0.5*W_table + 0.5*W_cushion, H_table, 0.25*L_table],
                                rotation=[0, -np.pi/2, 0],
@@ -124,7 +124,7 @@ def pool_table(L_table=2.3368, W_table=None, H_table=0.74295,
                                userData=cushionData)
     poolTable.add(leftHeadCushionMesh)
     leftFootCushionMesh = Mesh(name='leftFootCushionMesh',
-                               geometry=sideCushionGeomA,
+                               geometry=rightHeadCushionGeom,
                                material=cushionMaterial,
                                position=[-0.5*W_table + 0.5*W_cushion, H_table, -0.25*L_table],
                                rotation=[0, -np.pi/2, 0],
@@ -132,7 +132,7 @@ def pool_table(L_table=2.3368, W_table=None, H_table=0.74295,
                                userData=cushionData)
     poolTable.add(leftFootCushionMesh)
     rightHeadCushionMesh = Mesh(name='rightHeadCushionMesh',
-                                geometry=sideCushionGeomA,
+                                geometry=rightHeadCushionGeom,
                                 material=cushionMaterial,
                                 position=[0.5*W_table - 0.5*W_cushion, H_table, 0.25*L_table],
                                 rotation=[0, np.pi/2, 0],
@@ -140,7 +140,7 @@ def pool_table(L_table=2.3368, W_table=None, H_table=0.74295,
                                 userData=cushionData)
     poolTable.add(rightHeadCushionMesh)
     rightFootCushionMesh = Mesh(name='rightFootCushionMesh',
-                                geometry=sideCushionGeomB,
+                                geometry=leftHeadCushionGeom,
                                 material=cushionMaterial,
                                 position=[0.5*W_table - 0.5*W_cushion, H_table, -0.25*L_table],
                                 rotation=[0, np.pi/2, 0],
