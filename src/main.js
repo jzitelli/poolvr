@@ -120,11 +120,16 @@ POOLVR.moveAvatar = ( function () {
 } )();
 
 
-POOLVR.stroke = function () {
+POOLVR.stroke = ( function () {
     "use strict";
-    var body = POOLVR.ballBodies[0];
-    body.velocity.z = -3.5;
-};
+    var velocity = new THREE.Vector3();
+    return function () {
+        velocity.set(0, 0, -3.5);
+        velocity.applyQuaternion(POOLVR.toolRoot.worldQuaternion);
+        var body = POOLVR.ballBodies[0];
+        body.velocity.copy(velocity);
+    };
+} )();
 
 
 POOLVR.startTutorial = function () {
