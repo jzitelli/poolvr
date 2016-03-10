@@ -23,7 +23,8 @@ function makeTool(parent, world, options) {
 
     // parse options:
 
-    toolRoot.quaternion.setFromAxisAngle(UP, options.toolRotation || 0);
+    toolRoot.heading = options.toolRotation || 0;
+    toolRoot.quaternion.setFromAxisAngle(UP, toolRoot.heading);
     toolRoot.position.fromArray(options.toolOffset || [0, -0.42, -0.42]);
 
     var toolLength = options.toolLength || 0.5;
@@ -316,8 +317,8 @@ function makeTool(parent, world, options) {
             toolRoot.position.x +=  0.16 * dt * toolStrafe;
             toolRoot.position.z += -0.16 * dt * toolDrive;
             toolRoot.position.y +=  0.16 * dt * toolFloat;
-            toolRoot.rotation.y -= 0.15 * dt * rotateToolCW;
-            //toolRoot.quaternion.setFromAxisAngle(UP, toolRotation);
+            toolRoot.heading -= 0.15 * dt * rotateToolCW;
+            toolRoot.quaternion.setFromAxisAngle(UP, toolRoot.heading);
 
             toolRoot.updateMatrix();
 

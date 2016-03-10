@@ -329,16 +329,21 @@ function onLoad() {
             onResetVRSensor: function (lastRotation, lastPosition) {
                 // maintain correspondence between virtual / physical leap motion controller:
                 var camera = POOLVR.app.camera;
-                POOLVR.toolRoot.rotation.y -= (lastRotation - camera.rotation.y);
-                POOLVR.toolRoot.position.sub(lastPosition);
-                POOLVR.toolRoot.position.applyAxisAngle(THREE.Object3D.DefaultUp, -lastRotation + camera.rotation.y);
-                POOLVR.toolRoot.position.add(camera.position);
-                POOLVR.toolRoot.updateMatrix();
-                POOLVR.toolRoot.updateMatrixWorld();
-                POOLVR.avatar.heading += lastRotation - camera.rotation.y;
-                POOLVR.avatar.quaternion.setFromAxisAngle(THREE.Object3D.DefaultUp, avatar.heading);
-                POOLVR.avatar.updateMatrix();
-                POOLVR.avatar.updateMatrixWorld();
+                var toolRoot = POOLVR.toolRoot;
+                toolRoot.heading -= lastRotation;
+                toolRoot.quaternion.setFromAxisAngle(THREE.Object3D.DefaultUp, toolRoot.heading);
+
+                toolRoot.position.sub(lastPosition);
+                toolRoot.position.applyAxisAngle(THREE.Object3D.DefaultUp, -lastRotation);
+                toolRoot.position.add(camera.position);
+
+                toolRoot.updateMatrix();
+
+                avatar.heading += lastRotation;
+                avatar.quaternion.setFromAxisAngle(UP, avatar.heading);
+                avatar.updateMatrix();
+                avatar.updateMatrixWorld();
+                POOLVR.updateToolMapping();
             }
         });
 

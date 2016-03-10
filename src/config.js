@@ -97,7 +97,7 @@ POOLVR.gamepad.addEventListener("gamepadconnected", function(id) {
 
 POOLVR.parseURIConfig = function () {
     "use strict";
-    POOLVR.config.useTextGeomLogger = URL_PARAMS.useTextGeomLogger !== undefined ? URL_PARAMS.useTextGeomLogger : POOLVR.config.useTextGeomLogger;
+    POOLVR.config.useTextGeomLogger = false; //URL_PARAMS.useTextGeomLogger !== undefined ? URL_PARAMS.useTextGeomLogger : POOLVR.config.useTextGeomLogger;
     POOLVR.config.synthSpeakerVolume = URL_PARAMS.synthSpeakerVolume || POOLVR.config.synthSpeakerVolume;
     POOLVR.config.initialPosition = POOLVR.config.initialPosition;
     // Leap Motion config:
@@ -132,7 +132,7 @@ POOLVR.profile = URL_PARAMS.profile || POOLVR.profile || 'default';
 POOLVR.saveConfig = function (profileName) {
     "use strict";
     POOLVR.config.toolOptions.toolOffset = [POOLVR.toolRoot.position.x, POOLVR.toolRoot.position.y, POOLVR.toolRoot.position.z];
-    POOLVR.config.toolOptions.toolRotation = POOLVR.toolRoot.rotation.y;
+    POOLVR.config.toolOptions.toolRotation = POOLVR.toolRoot.heading;
     localStorage.setItem(profileName, JSON.stringify(POOLVR.config));
     console.log("saved configuration for profile '" + profileName + "':");
     console.log(JSON.stringify(POOLVR.config, undefined, 2));
