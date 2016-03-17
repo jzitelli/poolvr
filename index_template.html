@@ -25,7 +25,7 @@
         left: 15px;
         top: 15px;
         margin: 0;
-        padding: 0.5vh;
+        padding: 0.75vh;
         color: #ffffff;
         background-color: rgba(20, 20, 50, 0.7);
       }
@@ -34,7 +34,7 @@
         color: #b5e853;
       }
       h2 {
-        font-size: 3.4vh;
+        font-size: 3vh;
         color: #b5e853;
       }
       h3 {
@@ -60,13 +60,13 @@
         background-color: rgba(60, 20, 0, 0.6);
         box-sizing: border-box;
       }
-      #start {
+      #fsButton, #vrButton {
         font-size: 3vh;
         text-align: center;
         margin-top: 1vh;
         padding: 0.25em;
         color: #b5e853;
-        background-color: rgba(111, 20, 20, 0.6);
+        background-color: rgba(70, 16, 20, 1);
         box-sizing: border-box;
       }
       #webgl-canvas {
@@ -94,9 +94,7 @@
     <div id="overlay">
 
       <h1>poolvr</h1>
-      <button id="start" disabled>Start!</button>
 
-      <h2>How to play:</h2>
       <h3>Keyboard controls:</h3>
       <h4>Move around:</h4>
       <p>W/S/A/D (xz-plane), E/C (up/down)</p>
@@ -106,9 +104,22 @@
       <p>P: auto-position for next ball, +/-: cycle ball selection</p>
       <p>R: reset table, Z: reset VR sensor</p>
 
+      <h2>
+      <button id="vrButton" disabled>Play in VR</button>
+      or
+      <button id="fsButton" disabled>FULLSCREEN</button>
+      </h2>
+
       <hr>
 
       <h2>Configuration:</h2>
+
+      <label>
+        Profile name:
+        <input id="profileName" type="text" maxlength="30" required/>
+      </label>
+
+      <br>
 
       <label>
         <input type="checkbox" id="useBasicMaterials"/>
@@ -129,14 +140,7 @@
         Leap Motion Websocket address:
         <input id="leapAddress" type="text" maxlength="20" value="localhost" required/>
       </label>
-      <button id="leapIndicator">disconnected</button>
-
-      <br>
-
-      <label>
-        Profile name:
-        <input id="profileName" type="text" maxlength="30" required/>
-      </label>
+      <div id="leapIndicator">disconnected</div>
 
     </div>
 

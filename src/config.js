@@ -119,10 +119,6 @@ POOLVR.parseURIConfig = function () {
         POOLVR.config.usePointLight = URL_PARAMS.usePointLight !== undefined ? URL_PARAMS.usePointLight : POOLVR.config.usePointLight;
         POOLVR.config.useShadowMap  = URL_PARAMS.useShadowMap  !== undefined ? URL_PARAMS.useShadowMap  : POOLVR.config.useShadowMap;
     }
-    // THREE.WebGLRenderer config:
-    POOLVR.config.rendererOptions = {
-        antialias: URL_PARAMS.antialias !== undefined ? URL_PARAMS.antialias : (isMobile() === false)
-    };
 };
 
 

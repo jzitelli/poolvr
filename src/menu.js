@@ -60,15 +60,14 @@ POOLVR.setupMenu = function () {
         POOLVR.saveConfig(POOLVR.profile);
     }, false);
 
-    var overlay = document.getElementById('overlay');
-
-    var startButton = document.getElementById('start');
-
-    startButton.addEventListener('click', function () {
-        overlay.style.display = 'none';
-        // POOLVR.app.toggleFullscreen();
+    var vrButton = document.getElementById('vrButton');
+    var fsButton = document.getElementById('fsButton');
+    vrButton.addEventListener('click', function () {
         POOLVR.startTutorial();
     }, false);
-
-    startButton.disabled = false;
+    fsButton.addEventListener('click', function () {
+        POOLVR.startTutorial();
+    }, false);
+    fsButton.disabled = false;
+    vrButton.disabled = false;
 };

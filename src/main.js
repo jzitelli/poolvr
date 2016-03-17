@@ -239,10 +239,11 @@ function onLoad() {
             pointLight.updateMatrixWorld();
         }
 
-        var appConfig = combineObjects(POOLVR.config, {
-            rendererOptions: combineObjects(POOLVR.config.rendererOptions, {
-                canvas: document.getElementById('webgl-canvas')
-            }),
+        var appConfig = {
+            fsButton: document.getElementById('fsButton'),
+            vrButton: document.getElementById('vrButton'),
+            useShadowMap: POOLVR.config.useShadowMap,
+
             onResetVRSensor: function (lastRotation, lastPosition) {
                 // maintain correspondence between virtual / physical leap motion controller:
                 var camera = POOLVR.app.camera;
@@ -262,9 +263,16 @@ function onLoad() {
                 avatar.updateMatrixWorld();
                 POOLVR.updateToolMapping();
             }
-        });
 
-        POOLVR.app = new WebVRApp(scene, appConfig);
+        };
+
+        // THREE.WebGLRenderer options:
+        var rendererOptions = {
+            canvas: document.getElementById('webgl-canvas'),
+            antialias: URL_PARAMS.antialias !== undefined ? URL_PARAMS.antialias : (isMobile() === false)
+        };
+
+        POOLVR.app = new WebVRApp(scene, appConfig, rendererOptions);
 
         avatar.add(POOLVR.app.camera);
 

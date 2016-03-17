@@ -47,6 +47,7 @@
     "yawvrb": "git://github.com/jzitelli/yawvrb.js.git"
   },
   "scripts": {
-    "prepublish": "python update_index.py"
+    "prepublish": "python update_index.py",
+    "start": "python flask_app.py"
   }
 }
