@@ -107,13 +107,11 @@ function makeTool(parent, world, options) {
     interactionPlaneMesh.position.z = METERS2LEAP * (-0.5);
     interactionPlaneMesh.updateMatrix();
     interactionBoxRoot.add(interactionPlaneMesh);
+    interactionBoxRoot.renderOrder = 2;
 
     // leap motion controller:
     var IN2METER = 0.0254;
-    var boxGeom = new THREE.BoxGeometry(METERS2LEAP*IN2METER*3, METERS2LEAP*IN2METER*0.5, METERS2LEAP*IN2METER*1.2);
-    var leapGeom = new THREE.BufferGeometry();
-    leapGeom.fromGeometry(boxGeom);
-    boxGeom.dispose();
+    var leapGeom = new THREE.BoxBufferGeometry(METERS2LEAP*IN2METER*3, METERS2LEAP*IN2METER*0.5, METERS2LEAP*IN2METER*1.2);
     var leapMaterial = new THREE.MeshLambertMaterial({color: 0x777777});
     var leapMesh = new THREE.Mesh(leapGeom, leapMaterial);
     leapMesh.position.y = METERS2LEAP*IN2METER*0.25;
