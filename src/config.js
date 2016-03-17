@@ -121,6 +121,7 @@ POOLVR.parseURIConfig = function () {
     }
     // THREE.WebGLRenderer config:
     POOLVR.config.rendererOptions = {
+        canvas: document.getElementById('webgl-canvas'),
         antialias: URL_PARAMS.antialias !== undefined ? URL_PARAMS.antialias : (isMobile() === false)
     };
 };

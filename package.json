@@ -44,17 +44,9 @@
     "cannon": "git://github.com/jzitelli/cannon.js.git",
     "three": "git://github.com/jzitelli/three.js.git#dev",
     "three.py": "git://github.com/jzitelli/three.py.git#dev",
-    "webvr-polyfill": "git://github.com/jzitelli/webvr-polyfill.git#webvr-1.0"
-  },
-  "devDependencies": {
-    "grunt": "latest",
-    "grunt-contrib-clean": "latest",
-    "grunt-contrib-copy": "latest",
-    "grunt-contrib-concat": "latest",
-    "grunt-contrib-jshint": "latest",
-    "grunt-contrib-uglify": "latest"
+    "yawvrb": "git://github.com/jzitelli/yawvrb.js.git"
   },
   "scripts": {
-    "prepublish": "grunt && python update_index.py"
+    "prepublish": "python update_index.py"
   }
 }

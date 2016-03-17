@@ -240,7 +240,6 @@ function onLoad() {
         }
 
         var appConfig = combineObjects(POOLVR.config, {
-            canvasId: 'webgl-canvas',
             onResetVRSensor: function (lastRotation, lastPosition) {
                 // maintain correspondence between virtual / physical leap motion controller:
                 var camera = POOLVR.app.camera;
@@ -262,7 +261,7 @@ function onLoad() {
             }
         });
 
-        POOLVR.app = new WebVRApplication(scene, appConfig);
+        POOLVR.app = new WebVRApp(scene, appConfig);
 
         avatar.add(POOLVR.app.camera);
 
