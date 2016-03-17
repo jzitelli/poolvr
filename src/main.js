@@ -7,17 +7,17 @@ POOLVR.moveAvatar = ( function () {
     return function (keyboard, gamepad, dt) {
         var avatar = POOLVR.avatar;
 
-        var floatUp = keyboard.getValue("floatUp") + keyboard.getValue("floatDown");
-        var drive = keyboard.getValue("driveBack") + keyboard.getValue("driveForward");
-        var strafe = keyboard.getValue("strafeRight") + keyboard.getValue("strafeLeft");
-        var heading = -0.8 * dt * (keyboard.getValue("turnLeft") + keyboard.getValue("turnRight"));
-        if (avatar.floatMode) {
-            floatUp += gamepad.getValue("float");
-            strafe += gamepad.getValue("strafe");
-        } else {
-            drive += gamepad.getValue("drive");
-            heading += 0.8 * dt * gamepad.getValue("dheading");
-        }
+        var floatUp = keyboard.floatUp - keyboard.floatDown;
+        var drive = keyboard.driveBack - keyboard.driveForward;
+        var strafe = keyboard.strafeRight - keyboard.strafeLeft;
+        var heading = -0.8 * dt * (-keyboard.turnLeft + keyboard.turnRight);
+        // if (avatar.floatMode) {
+        //     floatUp += gamepad.getValue("float");
+        //     strafe += gamepad.getValue("strafe");
+        // } else {
+        //     drive += gamepad.getValue("drive");
+        //     heading += 0.8 * dt * gamepad.getValue("dheading");
+        // }
         floatUp *= floatSpeed;
         if (strafe || drive) {
             var len = walkSpeed * Math.min(1, 1 / Math.sqrt(drive * drive + strafe * strafe));
@@ -151,8 +151,8 @@ POOLVR.startAnimateLoop = function () {
         rS('poststep').end();
 
         rS('updatekeyboardgamepad').start();
-        keyboard.update(dt);
-        gamepad.update(dt);
+        // keyboard.update(dt);
+        // gamepad.update(dt);
 
         moveAvatar(keyboard, gamepad, dt);
         moveToolRoot(keyboard, gamepad, dt);

@@ -9,90 +9,86 @@ POOLVR.commands = {
     stroke:           POOLVR.stroke
 };
 
-// TODO: remove Primrose dependency for keyboard / gamepad input, it seems overkill for just this functionality + my Primrose version is very outdated.
-
 // TODO: control customization menu
 
 POOLVR.keyboardCommands = {
-    turnLeft:     {buttons: [-Primrose.Input.Keyboard.LEFTARROW]},
-    turnRight:    {buttons: [ Primrose.Input.Keyboard.RIGHTARROW]},
-    driveForward: {buttons: [-Primrose.Input.Keyboard.W]},
-    driveBack:    {buttons: [ Primrose.Input.Keyboard.S]},
-    strafeLeft:   {buttons: [-Primrose.Input.Keyboard.A]},
-    strafeRight:  {buttons: [ Primrose.Input.Keyboard.D]},
-    floatUp:      {buttons: [ Primrose.Input.Keyboard.E]},
-    floatDown:    {buttons: [-Primrose.Input.Keyboard.C]},
+    turnLeft:     {buttons: [37]},
+    turnRight:    {buttons: [39]},
+    driveForward: {buttons: [87]},
+    driveBack:    {buttons: [83]},
+    strafeLeft:   {buttons: [65]},
+    strafeRight:  {buttons: [68]},
+    floatUp:      {buttons: [69]},
+    floatDown:    {buttons: [67]},
 
-    moveToolUp:        {buttons: [Primrose.Input.Keyboard.O]},
-    moveToolDown:      {buttons: [Primrose.Input.Keyboard.PERIOD]},
-    moveToolForwards:  {buttons: [Primrose.Input.Keyboard.I]},
-    moveToolBackwards: {buttons: [Primrose.Input.Keyboard.K]},
-    moveToolLeft:      {buttons: [Primrose.Input.Keyboard.J]},
-    moveToolRight:     {buttons: [Primrose.Input.Keyboard.L]},
-    rotateToolCW:      {buttons: [Primrose.Input.Keyboard.U]},
-    rotateToolCCW:     {buttons: [Primrose.Input.Keyboard.Y]},
+    moveToolUp:        {buttons: [79]},
+    moveToolDown:      {buttons: [190]},
+    moveToolForwards:  {buttons: [73]},
+    moveToolBackwards: {buttons: [75]},
+    moveToolLeft:      {buttons: [74]},
+    moveToolRight:     {buttons: [76]},
+    rotateToolCW:      {buttons: [85]},
+    rotateToolCCW:     {buttons: [89]},
 
-    toggleVRControls: {buttons: [Primrose.Input.Keyboard.V],
+    toggleVRControls: {buttons: [86],
                        commandDown: POOLVR.commands.toggleVRControls, dt: 0.25},
-    toggleWireframe: {buttons: [Primrose.Input.Keyboard.NUMBER0],
+    toggleWireframe: {buttons: [96],
                       commandDown: POOLVR.commands.toggleWireframe, dt: 0.25},
-    resetVRSensor: {buttons: [Primrose.Input.Keyboard.Z],
+    resetVRSensor: {buttons: [90],
                     commandDown: POOLVR.commands.resetVRSensor, dt: 0.25},
-    resetTable: {buttons: [Primrose.Input.Keyboard.R],
+    resetTable: {buttons: [82],
                  commandDown: POOLVR.commands.resetTable, dt: 0.5},
-    autoPosition: {buttons: [Primrose.Input.Keyboard.P],
+    autoPosition: {buttons: [80],
                    commandDown: POOLVR.commands.autoPosition, dt: 0.5},
-    selectNextBall: {buttons: [Primrose.Input.Keyboard.ADD],
+    selectNextBall: {buttons: [107],
                      commandDown: POOLVR.commands.selectNextBall, dt: 0.5},
-    selectPrevBall: {buttons: [Primrose.Input.Keyboard.SUBTRACT],
+    selectPrevBall: {buttons: [109],
                      commandDown: POOLVR.commands.selectPrevBall, dt: 0.5},
-    stroke: {buttons: [Primrose.Input.Keyboard.SPACEBAR],
+    stroke: {buttons: [32],
              commandDown: POOLVR.commands.stroke, dt: 0.25}
 };
 
-POOLVR.keyboardCommands = makeObjectArray(POOLVR.keyboardCommands, 'name');
-
-POOLVR.keyboard = new Primrose.Input.Keyboard('keyboard', document, POOLVR.keyboardCommands);
+POOLVR.keyboard = new WebVRKeyboard(document, POOLVR.keyboardCommands);
 
 
-var DEADZONE = 0.2;
-POOLVR.gamepadCommands = {
-    strafe:   {axes: [ Primrose.Input.Gamepad.LSX], deadzone: DEADZONE},
-    drive:    {axes: [ Primrose.Input.Gamepad.LSY], deadzone: DEADZONE},
-    float:    {axes: [-Primrose.Input.Gamepad.LSY], deadzone: DEADZONE},
-    dheading: {axes: [-Primrose.Input.Gamepad.LSX], deadzone: DEADZONE},
-    pitch:    {axes: [ Primrose.Input.Gamepad.LSY], deadzone: DEADZONE,
-               integrate: true, max: 0.5 * Math.PI, min: -0.5 * Math.PI},
-    toggleFloatMode: {buttons: [Primrose.Input.Gamepad.XBOX_BUTTONS.leftStick],
-                      commandDown: function () { POOLVR.avatar.floatMode = true; },
-                      commandUp:   function () { POOLVR.avatar.floatMode = false; }},
+// var DEADZONE = 0.2;
+// POOLVR.gamepadCommands = {
+//     strafe:   {axes: [ WebVRGamepad.LSX], deadzone: DEADZONE},
+//     drive:    {axes: [ WebVRGamepad.LSY], deadzone: DEADZONE},
+//     float:    {axes: [-WebVRGamepad.LSY], deadzone: DEADZONE},
+//     dheading: {axes: [-WebVRGamepad.LSX], deadzone: DEADZONE},
+//     pitch:    {axes: [ WebVRGamepad.LSY], deadzone: DEADZONE,
+//                integrate: true, max: 0.5 * Math.PI, min: -0.5 * Math.PI},
+//     toggleFloatMode: {buttons: [WebVRGamepad.XBOX_BUTTONS.leftStick],
+//                       commandDown: function () { POOLVR.avatar.floatMode = true; },
+//                       commandUp:   function () { POOLVR.avatar.floatMode = false; }},
 
-    toolStrafe: {axes: [ Primrose.Input.Gamepad.RSX], deadzone: DEADZONE},
-    toolDrive:  {axes: [ Primrose.Input.Gamepad.RSY], deadzone: DEADZONE},
-    toolFloat:  {axes: [-Primrose.Input.Gamepad.RSY], deadzone: DEADZONE},
-    toggleToolFloatMode: {buttons: [Primrose.Input.Gamepad.XBOX_BUTTONS.rightStick],
-                          commandDown: function () { POOLVR.avatar.toolMode = true; },
-                          commandUp:   function () { POOLVR.avatar.toolMode = false; }},
+//     toolStrafe: {axes: [ WebVRGamepad.RSX], deadzone: DEADZONE},
+//     toolDrive:  {axes: [ WebVRGamepad.RSY], deadzone: DEADZONE},
+//     toolFloat:  {axes: [-WebVRGamepad.RSY], deadzone: DEADZONE},
+//     toggleToolFloatMode: {buttons: [WebVRGamepad.XBOX_BUTTONS.rightStick],
+//                           commandDown: function () { POOLVR.avatar.toolMode = true; },
+//                           commandUp:   function () { POOLVR.avatar.toolMode = false; }},
 
-    resetVRSensor: {buttons: [Primrose.Input.Gamepad.XBOX_BUTTONS.back],
-                    commandDown: POOLVR.commands.resetVRSensor, dt: 0.25},
-    selectNextBall: {buttons: [Primrose.Input.Gamepad.XBOX_BUTTONS.rightBumper],
-                     commandDown: POOLVR.commands.selectNextBall, dt: 0.25},
-    selectPrevBall: {buttons: [Primrose.Input.Gamepad.XBOX_BUTTONS.leftBumper],
-                     commandDown: POOLVR.commands.selectPrevBall, dt: 0.25},
-    autoPosition: {buttons: [Primrose.Input.Gamepad.XBOX_BUTTONS.Y],
-                   commandDown: POOLVR.commands.autoPosition, dt: 0.25}
-};
+//     resetVRSensor: {buttons: [WebVRGamepad.XBOX_BUTTONS.back],
+//                     commandDown: POOLVR.commands.resetVRSensor, dt: 0.25},
+//     selectNextBall: {buttons: [WebVRGamepad.XBOX_BUTTONS.rightBumper],
+//                      commandDown: POOLVR.commands.selectNextBall, dt: 0.25},
+//     selectPrevBall: {buttons: [WebVRGamepad.XBOX_BUTTONS.leftBumper],
+//                      commandDown: POOLVR.commands.selectPrevBall, dt: 0.25},
+//     autoPosition: {buttons: [WebVRGamepad.XBOX_BUTTONS.Y],
+//                    commandDown: POOLVR.commands.autoPosition, dt: 0.25}
+// };
 
 
-POOLVR.gamepadCommands = makeObjectArray(POOLVR.gamepadCommands, 'name');
-POOLVR.gamepad = new Primrose.Input.Gamepad("gamepad", POOLVR.gamepadCommands);
-POOLVR.gamepad.addEventListener("gamepadconnected", function(id) {
-    if (!this.isGamepadSet()) {
-        this.setGamepad(id);
-        console.log("gamepad " + id + " connected");
-    }
-}.bind(POOLVR.gamepad), false);
+// POOLVR.gamepadCommands = makeObjectArray(POOLVR.gamepadCommands, 'name');
+// POOLVR.gamepad = new WebVRGamepad("gamepad", POOLVR.gamepadCommands);
+// POOLVR.gamepad.addEventListener("gamepadconnected", function(id) {
+//     if (!this.isGamepadSet()) {
+//         this.setGamepad(id);
+//         console.log("gamepad " + id + " connected");
+//     }
+// }.bind(POOLVR.gamepad), false);
 
 
 POOLVR.parseURIConfig = function () {

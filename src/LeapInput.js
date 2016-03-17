@@ -297,20 +297,20 @@ function makeTool(parent, world, options) {
         var toolStrafe = 0;
         var rotateToolCW = 0;
         if (keyboard) {
-            toolDrive += keyboard.getValue("moveToolForwards") - keyboard.getValue("moveToolBackwards");
-            toolFloat += keyboard.getValue("moveToolUp") - keyboard.getValue("moveToolDown");
-            toolStrafe += keyboard.getValue("moveToolRight") - keyboard.getValue("moveToolLeft");
-            rotateToolCW += keyboard.getValue("rotateToolCW") - keyboard.getValue("rotateToolCCW");
+            toolDrive += keyboard.moveToolForwards - keyboard.moveToolBackwards;
+            toolFloat += keyboard.moveToolUp - keyboard.moveToolDown;
+            toolStrafe += keyboard.moveToolRight - keyboard.moveToolLeft;
+            rotateToolCW += keyboard.rotateToolCW - keyboard.rotateToolCCW;
         }
-        if (gamepad) {
-            if (parent.toolMode) {
-                toolFloat += gamepad.getValue("toolFloat");
-                toolStrafe += gamepad.getValue("toolStrafe");
-            } else {
-                toolDrive -= gamepad.getValue("toolDrive");
-                rotateToolCW -= gamepad.getValue("toolStrafe");
-            }
-        }
+        // if (gamepad) {
+        //     if (parent.toolMode) {
+        //         toolFloat += gamepad.getValue("toolFloat");
+        //         toolStrafe += gamepad.getValue("toolStrafe");
+        //     } else {
+        //         toolDrive -= gamepad.getValue("toolDrive");
+        //         rotateToolCW -= gamepad.getValue("toolStrafe");
+        //     }
+        // }
         if ((toolDrive !== 0) || (toolStrafe !== 0) || (toolFloat !== 0) || (rotateToolCW !== 0)) {
             toolRoot.position.x +=  0.16 * dt * toolStrafe;
             toolRoot.position.z += -0.16 * dt * toolDrive;
