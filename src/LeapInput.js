@@ -302,15 +302,15 @@ function makeTool(parent, world, options) {
             toolStrafe += keyboard.moveToolRight - keyboard.moveToolLeft;
             rotateToolCW += keyboard.rotateToolCW - keyboard.rotateToolCCW;
         }
-        // if (gamepad) {
-        //     if (parent.toolMode) {
-        //         toolFloat += gamepad.getValue("toolFloat");
-        //         toolStrafe += gamepad.getValue("toolStrafe");
-        //     } else {
-        //         toolDrive -= gamepad.getValue("toolDrive");
-        //         rotateToolCW -= gamepad.getValue("toolStrafe");
-        //     }
-        // }
+        if (gamepad) {
+            // if (POOLVR.toolFloatMode) {
+            //     toolFloat += gamepad.getValue("toolFloat");
+            //     toolStrafe += gamepad.getValue("toolStrafe");
+            // } else {
+            //     toolDrive -= gamepad.getValue("toolDrive");
+            //     rotateToolCW -= gamepad.getValue("toolStrafe");
+            // }
+        }
         if ((toolDrive !== 0) || (toolStrafe !== 0) || (toolFloat !== 0) || (rotateToolCW !== 0)) {
             toolRoot.position.x +=  0.16 * dt * toolStrafe;
             toolRoot.position.z += -0.16 * dt * toolDrive;

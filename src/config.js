@@ -31,64 +31,52 @@ POOLVR.keyboardCommands = {
     rotateToolCCW:     {buttons: [89]},
 
     toggleVRControls: {buttons: [86],
-                       commandDown: POOLVR.commands.toggleVRControls, dt: 0.25},
+                       commandDown: POOLVR.commands.toggleVRControls},
     toggleWireframe: {buttons: [96],
-                      commandDown: POOLVR.commands.toggleWireframe, dt: 0.25},
+                      commandDown: POOLVR.commands.toggleWireframe},
     resetVRSensor: {buttons: [90],
-                    commandDown: POOLVR.commands.resetVRSensor, dt: 0.25},
+                    commandDown: POOLVR.commands.resetVRSensor},
     resetTable: {buttons: [82],
-                 commandDown: POOLVR.commands.resetTable, dt: 0.5},
+                 commandDown: POOLVR.commands.resetTable},
     autoPosition: {buttons: [80],
-                   commandDown: POOLVR.commands.autoPosition, dt: 0.5},
+                   commandDown: POOLVR.commands.autoPosition},
     selectNextBall: {buttons: [107],
-                     commandDown: POOLVR.commands.selectNextBall, dt: 0.5},
+                     commandDown: POOLVR.commands.selectNextBall},
     selectPrevBall: {buttons: [109],
-                     commandDown: POOLVR.commands.selectPrevBall, dt: 0.5},
+                     commandDown: POOLVR.commands.selectPrevBall},
     stroke: {buttons: [32],
-             commandDown: POOLVR.commands.stroke, dt: 0.25}
+             commandDown: POOLVR.commands.stroke}
 };
 
 POOLVR.keyboard = new YAWVRB.Keyboard(window, POOLVR.keyboardCommands);
 
+POOLVR.floatMode = 0;
+POOLVR.toolFloatMode = 0;
 
-// var DEADZONE = 0.2;
-// POOLVR.gamepadCommands = {
-//     strafe:   {axes: [ WebVRGamepad.LSX], deadzone: DEADZONE},
-//     drive:    {axes: [ WebVRGamepad.LSY], deadzone: DEADZONE},
-//     float:    {axes: [-WebVRGamepad.LSY], deadzone: DEADZONE},
-//     dheading: {axes: [-WebVRGamepad.LSX], deadzone: DEADZONE},
-//     pitch:    {axes: [ WebVRGamepad.LSY], deadzone: DEADZONE,
-//                integrate: true, max: 0.5 * Math.PI, min: -0.5 * Math.PI},
-//     toggleFloatMode: {buttons: [WebVRGamepad.XBOX_BUTTONS.leftStick],
-//                       commandDown: function () { POOLVR.avatar.floatMode = true; },
-//                       commandUp:   function () { POOLVR.avatar.floatMode = false; }},
+POOLVR.gamepadCommands = {
+    turnLR:   {axes: [YAWVRB.Gamepad.AXES.LSX]},
+    moveFB:    {axes: [YAWVRB.Gamepad.AXES.LSY]},
+    toggleFloatMode: {buttons: [YAWVRB.Gamepad.BUTTONS.leftStick]}, /*
+                      commandDown: function () { POOLVR.floatMode = 1; },
+                      commandUp:   function () { POOLVR.floatMode = 0; }}, */
 
-//     toolStrafe: {axes: [ WebVRGamepad.RSX], deadzone: DEADZONE},
-//     toolDrive:  {axes: [ WebVRGamepad.RSY], deadzone: DEADZONE},
-//     toolFloat:  {axes: [-WebVRGamepad.RSY], deadzone: DEADZONE},
-//     toggleToolFloatMode: {buttons: [WebVRGamepad.XBOX_BUTTONS.rightStick],
-//                           commandDown: function () { POOLVR.avatar.toolMode = true; },
-//                           commandUp:   function () { POOLVR.avatar.toolMode = false; }},
+    toolTurnLR: {axes: [YAWVRB.Gamepad.AXES.RSX]},
+    toolMoveFB:  {axes: [YAWVRB.Gamepad.AXES.RSY]},
+    toggleToolFloatMode: {buttons: [YAWVRB.Gamepad.BUTTONS.rightStick]}, /*
+                          commandDown: function () { POOLVR.toolFloatMode = 1; },
+                          commandUp:   function () { POOLVR.toolFloatMode = 0; }}, */
 
-//     resetVRSensor: {buttons: [WebVRGamepad.XBOX_BUTTONS.back],
-//                     commandDown: POOLVR.commands.resetVRSensor, dt: 0.25},
-//     selectNextBall: {buttons: [WebVRGamepad.XBOX_BUTTONS.rightBumper],
-//                      commandDown: POOLVR.commands.selectNextBall, dt: 0.25},
-//     selectPrevBall: {buttons: [WebVRGamepad.XBOX_BUTTONS.leftBumper],
-//                      commandDown: POOLVR.commands.selectPrevBall, dt: 0.25},
-//     autoPosition: {buttons: [WebVRGamepad.XBOX_BUTTONS.Y],
-//                    commandDown: POOLVR.commands.autoPosition, dt: 0.25}
-// };
+    resetVRSensor: {buttons: [YAWVRB.Gamepad.BUTTONS.back],
+                    commandDown: POOLVR.commands.resetVRSensor},
+    selectNextBall: {buttons: [YAWVRB.Gamepad.BUTTONS.rightBumper],
+                     commandDown: POOLVR.commands.selectNextBall},
+    selectPrevBall: {buttons: [YAWVRB.Gamepad.BUTTONS.leftBumper],
+                     commandDown: POOLVR.commands.selectPrevBall},
+    autoPosition: {buttons: [YAWVRB.Gamepad.BUTTONS.Y],
+                   commandDown: POOLVR.commands.autoPosition}
+};
 
-
-// POOLVR.gamepadCommands = makeObjectArray(POOLVR.gamepadCommands, 'name');
-// POOLVR.gamepad = new WebVRGamepad("gamepad", POOLVR.gamepadCommands);
-// POOLVR.gamepad.addEventListener("gamepadconnected", function(id) {
-//     if (!this.isGamepadSet()) {
-//         this.setGamepad(id);
-//         console.log("gamepad " + id + " connected");
-//     }
-// }.bind(POOLVR.gamepad), false);
+POOLVR.gamepad = new YAWVRB.Gamepad(POOLVR.gamepadCommands);
 
 
 POOLVR.parseURIConfig = function () {

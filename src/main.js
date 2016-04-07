@@ -11,14 +11,17 @@ POOLVR.moveAvatar = ( function () {
         var drive = keyboard.driveBack - keyboard.driveForward;
         var strafe = keyboard.strafeRight - keyboard.strafeLeft;
         var heading = -0.8 * dt * (-keyboard.turnLeft + keyboard.turnRight);
-        // if (avatar.floatMode) {
-        //     floatUp += gamepad.getValue("float");
-        //     strafe += gamepad.getValue("strafe");
-        // } else {
-        //     drive += gamepad.getValue("drive");
-        //     heading += 0.8 * dt * gamepad.getValue("dheading");
-        // }
+
+        if (gamepad.toggleFloatMode) {
+            floatUp -= gamepad.moveFB;
+            strafe += gamepad.turnLR;
+        } else {
+            drive += gamepad.moveFB;
+            //heading += 0.008 * gamepad.turnLR;
+        }
+
         floatUp *= floatSpeed;
+
         if (strafe || drive) {
             var len = walkSpeed * Math.min(1, 1 / Math.sqrt(drive * drive + strafe * strafe));
             strafe *= len;
@@ -98,8 +101,7 @@ POOLVR.startAnimateLoop = function () {
                 updatetool: { caption: 'Leap frame update (ms)' },
                 updatevrcontrols: { caption: 'VRControls update (ms)' },
                 step: { caption: 'Cannon step (ms)' },
-                poststep: { caption: 'Cannon post-step (ms)' },
-                updatekeyboardgamepad: { caption: 'Move avatar / Leap (ms)' }
+                poststep: { caption: 'Cannon post-step (ms)' }
             },
             fractions: [
                 { base: 'frame', steps: [ 'updatetool', 'updatevrcontrols', 'render', 'step', 'poststep', 'updatekeyboardgamepad' ] }
@@ -150,16 +152,13 @@ POOLVR.startAnimateLoop = function () {
         updateBallsPostStep();
         rS('poststep').end();
 
-        rS('updatekeyboardgamepad').start();
-        // keyboard.update(dt);
-        // gamepad.update(dt);
+        gamepad.update();
 
         moveAvatar(keyboard, gamepad, dt);
         moveToolRoot(keyboard, gamepad, dt);
 
         avatar.updateMatrixWorld();
         updateToolMapping();
-        rS('updatekeyboardgamepad').end();
 
         lt = t;
 
@@ -189,8 +188,6 @@ function onLoad() {
     avatar.position.fromArray(POOLVR.config.initialPosition);
 
     avatar.heading = 0;
-    avatar.floatMode = false;
-    avatar.toolMode = false;
 
     POOLVR.synthSpeaker = new SynthSpeaker({volume: POOLVR.config.synthSpeakerVolume, rate: 0.8, pitch: 0.5});
 
