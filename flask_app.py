@@ -25,13 +25,12 @@ app.debug = True
 WebVRConfig = {
     #### webvr-polyfill configuration
     #"FORCE_ENABLE_VR":       True,
-    "K_FILTER":              0.98,
-    "PREDICTION_TIME_S":     0.020,
+    #"K_FILTER":              0.98,
+    "PREDICTION_TIME_S":     0.010,
     #"TOUCH_PANNER_DISABLED": True,
     #"YAW_ONLY":              True,
     #"MOUSE_KEYBOARD_CONTROLS_DISABLED": True
     "KEYBOARD_CONTROLS_DISABLED": True
-    #### webvr-boilerplate configuration
     #"FORCE_DISTORTION":      True,
     #"PREVENT_DISTORTION":    True,
     #"SHOW_EYE_CENTERS":      True,
@@ -45,7 +44,6 @@ POOLVR = {
         'useBasicMaterials'  : True,
         'useShadowMap'       : False,
         'usePointLight'      : False,
-        'useSkybox'          : False,
         'useTextGeomLogger'  : True,
         'L_table'            : 2.3368,
         'H_table'            : 0.74295,

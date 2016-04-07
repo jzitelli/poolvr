@@ -22,6 +22,7 @@
     "pool_table.py",
     "index.html",
     "index_template.html",
+    "stylesheet.css",
     "LICENSE",
     "README.md",
     "favicon.ico"

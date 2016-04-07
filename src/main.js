@@ -12,12 +12,14 @@ POOLVR.moveAvatar = ( function () {
         var strafe = keyboard.strafeRight - keyboard.strafeLeft;
         var heading = -0.8 * dt * (-keyboard.turnLeft + keyboard.turnRight);
 
+        // if (gamepad.toggleFloatMode !== 0 && gamepad.toggleFloatMode !== 1) console.log(gamepad.toggleFloatMode);
+
         if (gamepad.toggleFloatMode) {
             floatUp -= gamepad.moveFB;
             strafe += gamepad.turnLR;
         } else {
             drive += gamepad.moveFB;
-            //heading += 0.008 * gamepad.turnLR;
+            heading -= 0.2 * dt * gamepad.turnLR;
         }
 
         floatUp *= floatSpeed;

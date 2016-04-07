@@ -2,10 +2,13 @@
 var fs = require('fs')
 
 var srcFiles = [
+  "node_modules/yawvrb/src/App.js",
+  "node_modules/yawvrb/src/Keyboard.js",
+  "node_modules/yawvrb/src/Gamepad.js",
+  "node_modules/yawvrb/src/AppUtils.js",
   "node_modules/three.py/js/three.py.js",
   "node_modules/three.py/js/CANNONize.js",
   "src/TextGeomUtils.js",
-  "src/WebVRApplication.js",
   "src/utils.js",
   "src/LeapInput.js",
   "src/WebVRSound.js",
