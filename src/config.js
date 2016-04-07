@@ -48,7 +48,7 @@ POOLVR.keyboardCommands = {
              commandDown: POOLVR.commands.stroke, dt: 0.25}
 };
 
-POOLVR.keyboard = new WebVRKeyboard(document, POOLVR.keyboardCommands);
+POOLVR.keyboard = new YAWVRB.Keyboard(window, POOLVR.keyboardCommands);
 
 
 // var DEADZONE = 0.2;

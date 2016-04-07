@@ -242,7 +242,6 @@ function onLoad() {
         var appConfig = {
             fsButton: document.getElementById('fsButton'),
             vrButton: document.getElementById('vrButton'),
-            useShadowMap: POOLVR.config.useShadowMap,
 
             onResetVRSensor: function (lastRotation, lastPosition) {
                 // maintain correspondence between virtual / physical leap motion controller:
@@ -272,7 +271,11 @@ function onLoad() {
             antialias: URL_PARAMS.antialias !== undefined ? URL_PARAMS.antialias : (isMobile() === false)
         };
 
-        POOLVR.app = new WebVRApp(scene, appConfig, rendererOptions);
+        POOLVR.app = new YAWVRB.App(scene, appConfig, rendererOptions);
+
+        if (POOLVR.config.useShadowMap) {
+            app.renderer.shadowMap.enabled = true;
+        }
 
         avatar.add(POOLVR.app.camera);
 
