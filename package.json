@@ -47,8 +47,16 @@
     "three.py": "git://github.com/jzitelli/three.py.git#dev",
     "yawvrb": "git://github.com/jzitelli/yawvrb.js.git"
   },
+  "devDependencies": {
+    "grunt": "latest",
+    "grunt-contrib-clean": "latest",
+    "grunt-contrib-copy": "latest",
+    "grunt-contrib-concat": "latest",
+    "grunt-contrib-uglify": "latest"
+  },
   "scripts": {
     "prepublish": "python update_index.py",
-    "start": "python flask_app.py"
+    "start": "python flask_app.py",
+    "build": "eslint src/*.js && grunt"
   }
 }

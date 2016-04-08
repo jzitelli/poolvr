@@ -55,9 +55,6 @@ module.exports = function ( grunt ) {
     pkg: grunt.file.readJSON( "package.json" ),
     license: license,
     clean: [ "build" ],
-    jshint: {
-      default: srcFiles
-    },
     concat: {
       options: {
         process: function(src, path) {
@@ -87,9 +84,8 @@ module.exports = function ( grunt ) {
 
   grunt.loadNpmTasks( "grunt-contrib-clean" );
   grunt.loadNpmTasks( "grunt-contrib-copy" );
-  grunt.loadNpmTasks( "grunt-contrib-jshint" );
   grunt.loadNpmTasks( "grunt-contrib-concat" );
   grunt.loadNpmTasks( "grunt-contrib-uglify" );
 
-  grunt.registerTask( "default", [ "jshint", "clean", "concat", "uglify", "copy" ] );
+  grunt.registerTask( "default", [ "clean", "concat", "copy" ] );
 };
