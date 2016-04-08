@@ -303,13 +303,13 @@ function makeTool(parent, world, options) {
             rotateToolCW += keyboard.rotateToolCW - keyboard.rotateToolCCW;
         }
         if (gamepad) {
-            if (gamepad.toggleToolFloatMode) {
-                toolFloat += gamepad.toolMoveFB;
-                toolStrafe -= gamepad.toolMoveLR;
-            } else {
-                toolDrive -= gamepad.toolMoveFB;
-                rotateToolCW -= gamepad.toolTurnLR;
-            }
+            // if (gamepad.toggleToolFloatMode) {
+            //     toolFloat += gamepad.toolMoveFB;
+            //     toolStrafe -= gamepad.toolMoveLR;
+            // } else {
+            //     toolDrive -= gamepad.toolMoveFB;
+            //     rotateToolCW -= gamepad.toolTurnLR;
+            // }
         }
         if ((toolDrive !== 0) || (toolStrafe !== 0) || (toolFloat !== 0) || (rotateToolCW !== 0)) {
             toolRoot.position.x +=  0.16 * dt * toolStrafe;

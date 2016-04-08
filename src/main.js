@@ -4,6 +4,8 @@ POOLVR.moveAvatar = ( function () {
         walkSpeed = 0.333,
         floatSpeed = 0.1;
 
+    // var lastGamepadTimestamp;
+
     return function (keyboard, gamepad, dt) {
         var avatar = POOLVR.avatar;
 
@@ -12,15 +14,20 @@ POOLVR.moveAvatar = ( function () {
         var strafe = keyboard.strafeRight - keyboard.strafeLeft;
         var heading = -0.8 * dt * (-keyboard.turnLeft + keyboard.turnRight);
 
-        // if (gamepad.toggleFloatMode !== 0 && gamepad.toggleFloatMode !== 1) console.log(gamepad.toggleFloatMode);
+        // if (gamepad) {
+        //     if (gamepad.timestamp !== lastGamepadTimestamp) {
+        //         var toggleFloatButton = gamepad.buttons[10]; // left stick button
+        //         if ((isNaN(toggleFloatButton) && (toggleFloatButton.pressed || toggleFloatButton.value === 1)) || toggleFloatButton === 1) {
+        //             strafe += gamepad.axes[0];
+        //             floatUp -= gamepad.axes[1];
+        //         } else {
+        //             heading -= 0.2 * dt * gamepad.axes[0];
+        //             drive += gamepad.axes[1];
+        //         }
 
-        if (gamepad.toggleFloatMode) {
-            floatUp -= gamepad.moveFB;
-            strafe += gamepad.turnLR;
-        } else {
-            drive += gamepad.moveFB;
-            heading -= 0.2 * dt * gamepad.turnLR;
-        }
+        //         lastGamepadTimestamp = gamepad.timestamp;
+        //     }
+        // }
 
         floatUp *= floatSpeed;
 
@@ -77,7 +84,6 @@ POOLVR.startTutorial = function () {
 POOLVR.startAnimateLoop = function () {
     "use strict";
     var keyboard = POOLVR.keyboard,
-        gamepad  = POOLVR.gamepad,
         app      = POOLVR.app,
         world    = POOLVR.world,
         avatar   = POOLVR.avatar,
@@ -154,10 +160,10 @@ POOLVR.startAnimateLoop = function () {
         updateBallsPostStep();
         rS('poststep').end();
 
-        gamepad.update();
+        // gamepad.update();
 
-        moveAvatar(keyboard, gamepad, dt);
-        moveToolRoot(keyboard, gamepad, dt);
+        moveAvatar(keyboard, POOLVR.gamepad, dt);
+        moveToolRoot(keyboard, POOLVR.gamepad, dt);
 
         avatar.updateMatrixWorld();
         updateToolMapping();
@@ -174,9 +180,43 @@ POOLVR.startAnimateLoop = function () {
 
 };
 
+( function () {
+    "use strict";
+    function onGamepadConnected(evt) {
+        if (!POOLVR.gamepad) {
+            var gamepad = evt.gamepad;
+            POOLVR.gamepad = gamepad;
+            console.log('gamepad connected at index %d, id: %s\n%d buttons, %d axes', gamepad.index, gamepad.id, gamepad.buttons.length, gamepad.axes.length);
+            setInterval(function () { console.log(POOLVR.gamepad); }, 2000);
+        }
+    }
+    window.addEventListener("gamepadconnected", onGamepadConnected);
+
+    function onGamepadDisconnected(evt) {
+        if (POOLVR.gamepad && (evt.gamepad.index === POOLVR.gamepad.index)) {
+            POOLVR.gamepad = null;
+            console.warn('gamepad was disconnected');
+        }
+    }
+    window.addEventListener("gamepaddisconnected", onGamepadDisconnected);
+
+    // var gamepad;
+    // if (navigator.getGamepads) {
+    //     gamepad = navigator.getGamepads()[0];
+    // } else if (navigator.webkitGetGamepads) {
+    //     gamepad = navigator.webkitGetGamepads()[0];
+    // }
+    // if (gamepad) {
+    //     POOLVR.gamepad = gamepad;
+    //     console.log('gamepad connected at index %d, id: %s\n%d buttons, %d axes', gamepad.index, gamepad.id, gamepad.buttons.length, gamepad.axes.length);
+    //     setInterval(function () { console.log(POOLVR.gamepad); }, 2000);
+    // }
+
+} )();
 
 function onLoad() {
     "use strict";
+
     POOLVR.config = POOLVR.loadConfig(POOLVR.profile) || POOLVR.config;
     POOLVR.parseURIConfig();
 
