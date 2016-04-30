@@ -1,6 +1,6 @@
 {
   "name": "poolvr",
-  "description": "Play pool / billiards in VR with your Leap Motion controller, in a web browser!",
+  "description": "Play pool / billiards in WebVR!",
   "version": "0.1.0",
   "author": "Jeffrey Zitelli (https://github.com/jzitelli)",
   "license": "MIT",
@@ -20,9 +20,9 @@
     "Gruntfile.js",
     "flask_app.py",
     "pool_table.py",
-    "index.html",
+    "index.html",  
     "index_template.html",
-    "stylesheet.css",
+    "poolvr.css",
     "LICENSE",
     "README.md",
     "favicon.ico"
