@@ -21,10 +21,10 @@ var srcFiles = [
 ];
 
 var libFiles = [
-  "node_modules/three/build/three.min.js",
-  "node_modules/three/examples/js/effects/VREffect.js",
-  "node_modules/three/examples/js/controls/VRControls.js",
-  "node_modules/three/examples/js/objects/ShadowMesh.js",
+  "node_modules/three.js/build/three.min.js",
+  "node_modules/three.js/examples/js/effects/VREffect.js",
+  "node_modules/three.js/examples/js/controls/VRControls.js",
+  "node_modules/three.js/examples/js/objects/ShadowMesh.js",
   "node_modules/cannon/build/cannon.min.js",
   "node_modules/leapjs/leap-0.6.4.min.js",
   "node_modules/webvr-polyfill/build/webvr-polyfill.js"
