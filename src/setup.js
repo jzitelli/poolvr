@@ -141,6 +141,7 @@ POOLVR.setup = function () {
     POOLVR.avatar.add(leapTool.toolRoot);
 
     POOLVR.leapController.connect();
+    POOLVR.updateToolMapping();
 
     var basicMaterials = {};
     var nonbasicMaterials = {};

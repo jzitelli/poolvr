@@ -160,6 +160,7 @@ POOLVR.moveAvatar = ( function () {
 POOLVR.moveToolRoot = ( function () {
     "use strict";
     var UP = THREE.Object3D.DefaultUp;
+    var heading = 0;
     return function (keyboard, gamepad, dt) {
         var leapTool = POOLVR.leapTool;
         var toolRoot = leapTool.toolRoot;
@@ -176,21 +177,21 @@ POOLVR.moveToolRoot = ( function () {
             toolStrafe += keyboard.moveToolRight - keyboard.moveToolLeft;
             rotateToolCW += keyboard.rotateToolCW - keyboard.rotateToolCCW;
         }
-        if (gamepad) {
-            // if (gamepad.toggleToolFloatMode) {
-            //     toolFloat += gamepad.toolMoveFB;
-            //     toolStrafe -= gamepad.toolMoveLR;
-            // } else {
-                toolDrive -= gamepad.toolMoveFB;
-                rotateToolCW -= gamepad.toolTurnLR;
-            // }
-        }
+        // if (gamepad) {
+        //     if (gamepad.toggleToolFloatMode) {
+        //         toolFloat += gamepad.toolMoveFB;
+        //         toolStrafe -= gamepad.toolMoveLR;
+        //     } else {
+        //         toolDrive -= gamepad.toolMoveFB;
+        //         rotateToolCW -= gamepad.toolTurnLR;
+        //     }
+        // }
         if ((toolDrive !== 0) || (toolStrafe !== 0) || (toolFloat !== 0) || (rotateToolCW !== 0)) {
             toolRoot.position.x +=  0.16 * dt * toolStrafe;
             toolRoot.position.z += -0.16 * dt * toolDrive;
             toolRoot.position.y +=  0.16 * dt * toolFloat;
-            toolRoot.heading -= 0.15 * dt * rotateToolCW;
-            toolRoot.quaternion.setFromAxisAngle(UP, toolRoot.heading);
+            heading -= 0.15 * dt * rotateToolCW;
+            toolRoot.quaternion.setFromAxisAngle(UP, heading);
             toolRoot.updateMatrix();
             if (interactionBoxRoot.visible === false) {
                 interactionBoxRoot.visible = true;
@@ -309,7 +310,7 @@ POOLVR.startAnimateLoop = function () {
         // gamepad.update();
 
         moveAvatar(keyboard, POOLVR.gamepad, dt);
-        moveToolRoot(keyboard, POOLVR.gamepad, dt);
+        //moveToolRoot(keyboard, POOLVR.gamepad, dt);
 
         avatar.updateMatrixWorld();
         updateToolMapping();
