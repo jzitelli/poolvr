@@ -48,26 +48,26 @@ POOLVR.keyboardCommands = {
 
 POOLVR.keyboard = new YAWVRB.Keyboard(window, POOLVR.keyboardCommands);
 
-// POOLVR.gamepadCommands = {
-//     turnLR:   {axes: [YAWVRB.Gamepad.AXES.LSX]},
-//     moveFB:    {axes: [YAWVRB.Gamepad.AXES.LSY]},
-//     toggleFloatMode: {buttons: [YAWVRB.Gamepad.BUTTONS.leftStick]},
-//     toolTurnLR: {axes: [YAWVRB.Gamepad.AXES.RSX]},
-//     toolMoveFB:  {axes: [YAWVRB.Gamepad.AXES.RSY]},
-//     toggleToolFloatMode: {buttons: [YAWVRB.Gamepad.BUTTONS.rightStick]},
-//     resetVRSensor: {buttons: [YAWVRB.Gamepad.BUTTONS.back],
-//                     commandDown: POOLVR.commands.resetVRSensor},
-//     selectNextBall: {buttons: [YAWVRB.Gamepad.BUTTONS.rightBumper],
-//                      commandDown: POOLVR.commands.selectNextBall},
-//     selectPrevBall: {buttons: [YAWVRB.Gamepad.BUTTONS.leftBumper],
-//                      commandDown: POOLVR.commands.selectPrevBall},
-//     stroke: {buttons: [YAWVRB.Gamepad.BUTTONS.X],
-//              commandDown: POOLVR.commands.stroke},
-//     autoPosition: {buttons: [YAWVRB.Gamepad.BUTTONS.Y],
-//                    commandDown: POOLVR.commands.autoPosition}
-// };
+POOLVR.gamepadCommands = {
+    turnLR:   {axes: [YAWVRB.Gamepad.AXES.LSX]},
+    moveFB:    {axes: [YAWVRB.Gamepad.AXES.LSY]},
+    toggleFloatMode: {buttons: [YAWVRB.Gamepad.BUTTONS.leftStick]},
+    toolTurnLR: {axes: [YAWVRB.Gamepad.AXES.RSX]},
+    toolMoveFB:  {axes: [YAWVRB.Gamepad.AXES.RSY]},
+    toggleToolFloatMode: {buttons: [YAWVRB.Gamepad.BUTTONS.rightStick]},
+    resetVRSensor: {buttons: [YAWVRB.Gamepad.BUTTONS.back],
+                    commandDown: POOLVR.commands.resetVRSensor},
+    selectNextBall: {buttons: [YAWVRB.Gamepad.BUTTONS.rightBumper],
+                     commandDown: POOLVR.commands.selectNextBall},
+    selectPrevBall: {buttons: [YAWVRB.Gamepad.BUTTONS.leftBumper],
+                     commandDown: POOLVR.commands.selectPrevBall},
+    stroke: {buttons: [YAWVRB.Gamepad.BUTTONS.X],
+             commandDown: POOLVR.commands.stroke},
+    autoPosition: {buttons: [YAWVRB.Gamepad.BUTTONS.Y],
+                   commandDown: POOLVR.commands.autoPosition}
+};
 
-// POOLVR.gamepad = new YAWVRB.Gamepad(POOLVR.gamepadCommands);
+POOLVR.gamepad = new YAWVRB.Gamepad(POOLVR.gamepadCommands);
 
 POOLVR.parseURIConfig = function () {
     "use strict";
