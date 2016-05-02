@@ -119,20 +119,25 @@ POOLVR.setup = function () {
 
     POOLVR.leapIndicator = document.getElementById('leapIndicator');
 
-    var leapTool = makeTool( POOLVR.avatar, POOLVR.world, combineObjects(POOLVR.config.toolOptions, {
+    var leapTool = YAWVRB.LeapMotion.makeTool( combineObjects(POOLVR.config.toolOptions, {
         onConnect: function () {
             POOLVR.leapIndicator.innerHTML = 'connected';
         },
         onDisconnect: function () {
             POOLVR.leapIndicator.innerHTML = 'disconnected';
         }
-    }));
+    }) );
 
+    world.addBody(leapTool.toolBody);
+    POOLVR.avatar.add(leapTool.toolRoot);
+
+    POOLVR.leapTool           = leapTool;
     POOLVR.leapController     = leapTool.leapController;
     POOLVR.toolRoot           = leapTool.toolRoot;
+    POOLVR.toolMesh           = leapTool.toolMesh;
+    POOLVR.toolBody           = leapTool.toolBody;
     POOLVR.updateTool         = leapTool.updateTool;
     POOLVR.updateToolPostStep = leapTool.updateToolPostStep;
-    POOLVR.moveToolRoot       = leapTool.moveToolRoot;
     POOLVR.updateToolMapping  = leapTool.updateToolMapping;
 
     var basicMaterials = {};

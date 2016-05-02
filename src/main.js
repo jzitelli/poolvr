@@ -12,21 +12,6 @@ POOLVR.moveAvatar = ( function () {
         var strafe = keyboard.strafeRight - keyboard.strafeLeft;
         var heading = -0.8 * dt * (-keyboard.turnLeft + keyboard.turnRight);
 
-        // if (gamepad) {
-        //     if (gamepad.timestamp !== lastGamepadTimestamp) {
-        //         var toggleFloatButton = gamepad.buttons[10]; // left stick button
-        //         if ((isNaN(toggleFloatButton) && (toggleFloatButton.pressed || toggleFloatButton.value === 1)) || toggleFloatButton === 1) {
-        //             strafe += gamepad.axes[0];
-        //             floatUp -= gamepad.axes[1];
-        //         } else {
-        //             heading -= 0.2 * dt * gamepad.axes[0];
-        //             drive += gamepad.axes[1];
-        //         }
-
-        //         lastGamepadTimestamp = gamepad.timestamp;
-        //     }
-        // }
-
         floatUp *= floatSpeed;
 
         if (strafe || drive) {
@@ -51,6 +36,49 @@ POOLVR.moveAvatar = ( function () {
     };
 } )();
 
+POOLVR.moveToolRoot = ( function () {
+    "use strict";
+    var UP = THREE.Object3D.DefaultUp;
+    return function (keyboard, gamepad, dt) {
+        var leapTool = POOLVR.leapTool;
+        var toolRoot = POOLVR.toolRoot;
+        var interactionBoxRoot = leapTool.interactionBoxRoot;
+        var interactionPlaneMaterial = leapTool.interactionPlaneMaterial;
+        var interactionPlaneOpacity = POOLVR.config.toolOptions.interactionPlaneOpacity;
+        var toolDrive = 0;
+        var toolFloat = 0;
+        var toolStrafe = 0;
+        var rotateToolCW = 0;
+        if (keyboard) {
+            toolDrive += keyboard.moveToolForwards - keyboard.moveToolBackwards;
+            toolFloat += keyboard.moveToolUp - keyboard.moveToolDown;
+            toolStrafe += keyboard.moveToolRight - keyboard.moveToolLeft;
+            rotateToolCW += keyboard.rotateToolCW - keyboard.rotateToolCCW;
+        }
+        if (gamepad) {
+            if (gamepad.toggleToolFloatMode) {
+                toolFloat += gamepad.toolMoveFB;
+                toolStrafe -= gamepad.toolMoveLR;
+            } else {
+                toolDrive -= gamepad.toolMoveFB;
+                rotateToolCW -= gamepad.toolTurnLR;
+            }
+        }
+        if ((toolDrive !== 0) || (toolStrafe !== 0) || (toolFloat !== 0) || (rotateToolCW !== 0)) {
+            toolRoot.position.x +=  0.16 * dt * toolStrafe;
+            toolRoot.position.z += -0.16 * dt * toolDrive;
+            toolRoot.position.y +=  0.16 * dt * toolFloat;
+            toolRoot.heading -= 0.15 * dt * rotateToolCW;
+            toolRoot.quaternion.setFromAxisAngle(UP, toolRoot.heading);
+            toolRoot.updateMatrix();
+            if (interactionBoxRoot.visible === false) {
+                interactionBoxRoot.visible = true;
+                interactionPlaneMaterial.opacity = interactionPlaneOpacity;
+            }
+            leapTool.setDeadtime(0);
+        }
+    };
+} )();
 
 POOLVR.startTutorial = function () {
     "use strict";
@@ -178,40 +206,6 @@ POOLVR.startAnimateLoop = function () {
 
 };
 
-( function () {
-    "use strict";
-    function onGamepadConnected(evt) {
-        if (!POOLVR.gamepad) {
-            var gamepad = evt.gamepad;
-            POOLVR.gamepad = gamepad;
-            console.log('gamepad connected at index %d, id: %s\n%d buttons, %d axes', gamepad.index, gamepad.id, gamepad.buttons.length, gamepad.axes.length);
-            setInterval(function () { console.log(POOLVR.gamepad); }, 2000);
-        }
-    }
-    window.addEventListener("gamepadconnected", onGamepadConnected);
-
-    function onGamepadDisconnected(evt) {
-        if (POOLVR.gamepad && (evt.gamepad.index === POOLVR.gamepad.index)) {
-            POOLVR.gamepad = null;
-            console.warn('gamepad was disconnected');
-        }
-    }
-    window.addEventListener("gamepaddisconnected", onGamepadDisconnected);
-
-    // var gamepad;
-    // if (navigator.getGamepads) {
-    //     gamepad = navigator.getGamepads()[0];
-    // } else if (navigator.webkitGetGamepads) {
-    //     gamepad = navigator.webkitGetGamepads()[0];
-    // }
-    // if (gamepad) {
-    //     POOLVR.gamepad = gamepad;
-    //     console.log('gamepad connected at index %d, id: %s\n%d buttons, %d axes', gamepad.index, gamepad.id, gamepad.buttons.length, gamepad.axes.length);
-    //     setInterval(function () { console.log(POOLVR.gamepad); }, 2000);
-    // }
-
-} )();
-
 function onLoad() {
     "use strict";
 
@@ -225,7 +219,7 @@ function onLoad() {
     POOLVR.avatar = new THREE.Object3D();
     var avatar = POOLVR.avatar;
 
-    avatar.position.set(0, 1.2, -4*12*0.0254);
+    avatar.position.set(0, 1.1, 3.5*12*0.0254);
 
     avatar.heading = 0;
 
