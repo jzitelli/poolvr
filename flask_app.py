@@ -51,10 +51,12 @@ POOLVR = {
         'ball_diameter'      : 2.25 * pool_table.IN2METER,
         'synthSpeakerVolume' : 0.4,
         'toolOptions': {
-            'toolOffset'  : [0, -0.42, -0.48],
-            'toolRotation': 0,
-            'tipShape'    : 'Cylinder',
-            'toolRadius'  : 0.013
+            'toolOffset'  :  [0, -0.42, -0.48],
+            'toolRotation':  0,
+            'tipShape'    :  'Cylinder',
+            'toolRadius'  :  0.013,
+            'tipRadius'   :  0.013,
+            'toolLength'  : 0.35
         }
     }
 }

@@ -81,7 +81,7 @@ POOLVR.stroke = ( function () {
     var velocity = new THREE.Vector3();
     return function () {
         velocity.set(0, 0, -3.5);
-        velocity.applyQuaternion(POOLVR.toolRoot.worldQuaternion);
+        velocity.applyQuaternion(POOLVR.leapTool.worldQuaternion);
         var body = POOLVR.ballBodies[0];
         body.velocity.copy(velocity);
     };

@@ -113,9 +113,7 @@ POOLVR.setup = function () {
 
     var useShadowMap = POOLVR.config.useShadowMap;
 
-    if (!useShadowMap) {
-        POOLVR.shadowMaterial = new THREE.MeshBasicMaterial({color: 0x002200});
-    }
+    POOLVR.shadowMaterial = new THREE.MeshBasicMaterial({color: 0x002200});
 
     POOLVR.leapIndicator = document.getElementById('leapIndicator');
 
@@ -125,7 +123,9 @@ POOLVR.setup = function () {
         },
         onDisconnect: function () {
             POOLVR.leapIndicator.innerHTML = 'disconnected';
-        }
+        },
+        shadowMaterial: POOLVR.shadowMaterial,
+        shadowPlane: 1.01 * POOLVR.config.H_table
     }) );
 
     POOLVR.leapTool           = leapTool;
@@ -140,8 +140,14 @@ POOLVR.setup = function () {
     world.addBody(leapTool.toolBody);
     POOLVR.avatar.add(leapTool.toolRoot);
 
+    if (!useShadowMap) {
+        POOLVR.app.scene.add(POOLVR.leapTool.toolShadowMesh);
+    }
+
     POOLVR.leapController.connect();
     POOLVR.updateToolMapping();
+
+    POOLVR.objectSelector.addSelectable(POOLVR.toolRoot);
 
     var basicMaterials = {};
     var nonbasicMaterials = {};

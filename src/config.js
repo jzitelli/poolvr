@@ -73,6 +73,14 @@ POOLVR.parseURIConfig = function () {
     "use strict";
     POOLVR.config.useTextGeomLogger = false; //URL_PARAMS.useTextGeomLogger !== undefined ? URL_PARAMS.useTextGeomLogger : POOLVR.config.useTextGeomLogger;
     POOLVR.config.synthSpeakerVolume = URL_PARAMS.synthSpeakerVolume || POOLVR.config.synthSpeakerVolume;
+    POOLVR.config.useBasicMaterials = URL_PARAMS.useBasicMaterials !== undefined ? URL_PARAMS.useBasicMaterials : POOLVR.config.useBasicMaterials;
+    if (POOLVR.config.useBasicMaterials) {
+        POOLVR.config.usePointLight = false;
+        POOLVR.config.useShadowMap  = false;
+    } else {
+        POOLVR.config.usePointLight = URL_PARAMS.usePointLight !== undefined ? URL_PARAMS.usePointLight : POOLVR.config.usePointLight;
+        POOLVR.config.useShadowMap  = URL_PARAMS.useShadowMap  !== undefined ? URL_PARAMS.useShadowMap  : POOLVR.config.useShadowMap;
+    }
     // Leap Motion config:
     POOLVR.config.toolOptions = POOLVR.config.toolOptions || {};
     POOLVR.config.toolOptions.toolLength   = URL_PARAMS.toolLength   || POOLVR.config.toolOptions.toolLength;
@@ -84,14 +92,6 @@ POOLVR.parseURIConfig = function () {
     POOLVR.config.toolOptions.host         = URL_PARAMS.host         || POOLVR.config.toolOptions.host;
     POOLVR.config.toolOptions.port         = URL_PARAMS.port         || POOLVR.config.toolOptions.port;
     POOLVR.config.toolOptions.interactionPlaneOpacity = URL_PARAMS.interactionPlaneOpacity || 0.22;
-    POOLVR.config.useBasicMaterials = URL_PARAMS.useBasicMaterials !== undefined ? URL_PARAMS.useBasicMaterials : POOLVR.config.useBasicMaterials;
-    if (POOLVR.config.useBasicMaterials) {
-        POOLVR.config.usePointLight = false;
-        POOLVR.config.useShadowMap  = false;
-    } else {
-        POOLVR.config.usePointLight = URL_PARAMS.usePointLight !== undefined ? URL_PARAMS.usePointLight : POOLVR.config.usePointLight;
-        POOLVR.config.useShadowMap  = URL_PARAMS.useShadowMap  !== undefined ? URL_PARAMS.useShadowMap  : POOLVR.config.useShadowMap;
-    }
 };
 
 
