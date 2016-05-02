@@ -45,7 +45,7 @@ p {
   background-color: rgba(60, 20, 0, 0.6);
   box-sizing: border-box;
 }
-#start {
+#fsButton, #vrButton {
   font-size: 3vh;
   text-align: center;
   margin-top: 1vh;

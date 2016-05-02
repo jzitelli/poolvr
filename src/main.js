@@ -4,8 +4,6 @@ POOLVR.moveAvatar = ( function () {
         walkSpeed = 0.333,
         floatSpeed = 0.1;
 
-    // var lastGamepadTimestamp;
-
     return function (keyboard, gamepad, dt) {
         var avatar = POOLVR.avatar;
 
@@ -227,7 +225,7 @@ function onLoad() {
     POOLVR.avatar = new THREE.Object3D();
     var avatar = POOLVR.avatar;
 
-    avatar.position.fromArray(POOLVR.config.initialPosition);
+    avatar.position.set(0, 1.2, -4*12*0.0254);
 
     avatar.heading = 0;
 
