@@ -128,9 +128,6 @@ POOLVR.setup = function () {
         }
     }) );
 
-    world.addBody(leapTool.toolBody);
-    POOLVR.avatar.add(leapTool.toolRoot);
-
     POOLVR.leapTool           = leapTool;
     POOLVR.leapController     = leapTool.leapController;
     POOLVR.toolRoot           = leapTool.toolRoot;
@@ -139,6 +136,11 @@ POOLVR.setup = function () {
     POOLVR.updateTool         = leapTool.updateTool;
     POOLVR.updateToolPostStep = leapTool.updateToolPostStep;
     POOLVR.updateToolMapping  = leapTool.updateToolMapping;
+
+    world.addBody(leapTool.toolBody);
+    POOLVR.avatar.add(leapTool.toolRoot);
+
+    POOLVR.leapController.connect();
 
     var basicMaterials = {};
     var nonbasicMaterials = {};

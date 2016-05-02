@@ -1,211 +1,3 @@
-POOLVR.moveAvatar = ( function () {
-    "use strict";
-    var UP = THREE.Object3D.DefaultUp,
-        walkSpeed = 0.333,
-        floatSpeed = 0.1;
-
-    return function (keyboard, gamepad, dt) {
-        var avatar = POOLVR.avatar;
-
-        var floatUp = keyboard.floatUp - keyboard.floatDown;
-        var drive = keyboard.driveBack - keyboard.driveForward;
-        var strafe = keyboard.strafeRight - keyboard.strafeLeft;
-        var heading = -0.8 * dt * (-keyboard.turnLeft + keyboard.turnRight);
-
-        floatUp *= floatSpeed;
-
-        if (strafe || drive) {
-            var len = walkSpeed * Math.min(1, 1 / Math.sqrt(drive * drive + strafe * strafe));
-            strafe *= len;
-            drive *= len;
-        } else {
-            strafe = 0;
-            drive = 0;
-        }
-        if (floatUp !== 0 || strafe !== 0 || heading !== 0 || drive !== 0) {
-            avatar.heading += heading;
-            var cosHeading = Math.cos(avatar.heading),
-                sinHeading = Math.sin(avatar.heading);
-            avatar.quaternion.setFromAxisAngle(UP, avatar.heading);
-            avatar.position.x += dt * (strafe * cosHeading + drive * sinHeading);
-            avatar.position.z += dt * (drive * cosHeading - strafe * sinHeading);
-            avatar.position.y += dt * floatUp;
-
-            avatar.updateMatrix();
-        }
-    };
-} )();
-
-POOLVR.moveToolRoot = ( function () {
-    "use strict";
-    var UP = THREE.Object3D.DefaultUp;
-    return function (keyboard, gamepad, dt) {
-        var leapTool = POOLVR.leapTool;
-        var toolRoot = leapTool.toolRoot;
-        var interactionBoxRoot = leapTool.interactionBoxRoot;
-        var interactionPlaneMaterial = leapTool.interactionPlaneMaterial;
-        var interactionPlaneOpacity = POOLVR.config.toolOptions.interactionPlaneOpacity || 0.2;
-        var toolDrive = 0;
-        var toolFloat = 0;
-        var toolStrafe = 0;
-        var rotateToolCW = 0;
-        if (keyboard) {
-            toolDrive += keyboard.moveToolForwards - keyboard.moveToolBackwards;
-            toolFloat += keyboard.moveToolUp - keyboard.moveToolDown;
-            toolStrafe += keyboard.moveToolRight - keyboard.moveToolLeft;
-            rotateToolCW += keyboard.rotateToolCW - keyboard.rotateToolCCW;
-        }
-        if (gamepad) {
-            // if (gamepad.toggleToolFloatMode) {
-            //     toolFloat += gamepad.toolMoveFB;
-            //     toolStrafe -= gamepad.toolMoveLR;
-            // } else {
-                toolDrive -= gamepad.toolMoveFB;
-                rotateToolCW -= gamepad.toolTurnLR;
-            // }
-        }
-        if ((toolDrive !== 0) || (toolStrafe !== 0) || (toolFloat !== 0) || (rotateToolCW !== 0)) {
-            toolRoot.position.x +=  0.16 * dt * toolStrafe;
-            toolRoot.position.z += -0.16 * dt * toolDrive;
-            toolRoot.position.y +=  0.16 * dt * toolFloat;
-            toolRoot.heading -= 0.15 * dt * rotateToolCW;
-            toolRoot.quaternion.setFromAxisAngle(UP, toolRoot.heading);
-            toolRoot.updateMatrix();
-            if (interactionBoxRoot.visible === false) {
-                interactionBoxRoot.visible = true;
-                interactionPlaneMaterial.opacity = interactionPlaneOpacity;
-            }
-            leapTool.setDeadtime(0);
-        }
-    };
-} )();
-
-POOLVR.startTutorial = function () {
-    "use strict";
-    POOLVR.synthSpeaker.speak("Hello.  Welcome. To. Pool-ver.", function () {
-        POOLVR.textGeomLogger.log("HELLO.  WELCOME TO POOLVR.");
-    });
-
-    POOLVR.synthSpeaker.speak("Please wave a stick-like object in front of your Leap Motion controller.", function () {
-        POOLVR.textGeomLogger.log("PLEASE WAVE A STICK-LIKE OBJECT IN FRONT OF YOUR");
-        POOLVR.textGeomLogger.log("LEAP MOTION CONTROLLER.");
-    });
-
-    POOLVR.synthSpeaker.speak("Keep the stick within the interaction box when you want to make contact with.  A ball.", function () {
-        POOLVR.textGeomLogger.log("KEEP THE STICK WITHIN THE INTERACTION BOX WHEN YOU WANT");
-        POOLVR.textGeomLogger.log("TO MAKE CONTACT WITH A BALL...");
-    });
-
-    POOLVR.synthSpeaker.speak("If you are playing in VR, try using the I, J, K, and L keys.  To move the virtual. Leap Motion Controller.  So that it coincides with the controller in your physical environment.", function () {
-        POOLVR.textGeomLogger.log("IF YOU ARE PLAYING IN VR, TRY USING THE");
-        POOLVR.textGeomLogger.log("I / J / K / L / O / . / Y / U KEYS");
-        POOLVR.textGeomLogger.log("TO MOVE THE VIRTUAL LEAP MOTION CONTROLLER");
-        POOLVR.textGeomLogger.log("SO THAT IT COINCIDES WITH THE CONTROLLER");
-        POOLVR.textGeomLogger.log("IN YOUR PHYSICAL ENVIRONMENT.");
-    });
-
-};
-
-
-POOLVR.startAnimateLoop = function () {
-    "use strict";
-    var keyboard = POOLVR.keyboard,
-        app      = POOLVR.app,
-        world    = POOLVR.world,
-        avatar   = POOLVR.avatar,
-        updateTool          = POOLVR.updateTool,
-        updateToolPostStep  = POOLVR.updateToolPostStep,
-        moveToolRoot        = POOLVR.moveToolRoot,
-        moveAvatar          = POOLVR.moveAvatar,
-        updateBallsPostStep = POOLVR.updateBallsPostStep,
-        updateToolMapping   = POOLVR.updateToolMapping;
-
-    var glS, rS;
-    if (URL_PARAMS.rstats) {
-        /* jshint ignore:start */
-        var tS = new threeStats( POOLVR.app.renderer );
-        glS = new glStats();
-        rS  = new rStats({
-            CSSPath: "lib/rstats/",
-            values: {
-                frame: { caption: 'Total frame time (ms)' },
-                calls: { caption: 'Calls (three.js)' },
-                raf: { caption: 'Time since last rAF (ms)' },
-                // rstats: { caption: 'rStats update (ms)' }, // no worky?
-                updatetool: { caption: 'Leap frame update (ms)' },
-                updatevrcontrols: { caption: 'VRControls update (ms)' },
-                step: { caption: 'Cannon step (ms)' },
-                poststep: { caption: 'Cannon post-step (ms)' }
-            },
-            fractions: [
-                { base: 'frame', steps: [ 'updatetool', 'updatevrcontrols', 'render', 'step', 'poststep', 'updatekeyboardgamepad' ] }
-            ],
-            plugins: [tS, glS]
-        });
-        /* jshint ignore:end */
-    } else {
-        glS = {start: function () {}};
-        rS  = function (id) { return {start:  function () {},
-                                      end:    function () {},
-                                      tick:   function () {},
-                                      frame:  function () {},
-                                      update: function () {}}; };
-    }
-
-    var lt = 0;
-
-    function animate(t) {
-        rS('frame').start();
-        glS.start();
-        rS('raf').tick();
-        rS('fps').frame();
-
-        var dt = (t - lt) * 0.001;
-
-        rS('updatetool').start();
-        updateTool(dt);
-        rS('updatetool').end();
-
-        rS('updatevrcontrols').start();
-        if (app.vrControlsEnabled) {
-            app.vrControls.update();
-            app.camera.updateMatrixWorld();
-        }
-        rS('updatevrcontrols').end();
-
-        rS('render').start();
-        app.vrEffect.render(app.scene, app.camera);
-        rS('render').end();
-
-        rS('step').start();
-        world.step(Math.min(1/60, dt), dt, 10);
-        rS('step').end();
-
-        rS('poststep').start();
-        updateToolPostStep();
-        updateBallsPostStep();
-        rS('poststep').end();
-
-        // gamepad.update();
-
-        moveAvatar(keyboard, POOLVR.gamepad, dt);
-        moveToolRoot(keyboard, POOLVR.gamepad, dt);
-
-        avatar.updateMatrixWorld();
-        updateToolMapping();
-
-        lt = t;
-
-        requestAnimationFrame(animate);
-
-        rS('frame').end();
-        rS().update();
-    }
-
-    requestAnimationFrame(animate);
-
-};
-
 function onLoad() {
     "use strict";
 
@@ -325,5 +117,211 @@ function onLoad() {
         POOLVR.startAnimateLoop();
 
     } );
-
 }
+
+POOLVR.moveAvatar = ( function () {
+    "use strict";
+    var UP = THREE.Object3D.DefaultUp,
+        walkSpeed = 0.333,
+        floatSpeed = 0.1;
+
+    return function (keyboard, gamepad, dt) {
+        var avatar = POOLVR.avatar;
+
+        var floatUp = keyboard.floatUp - keyboard.floatDown;
+        var drive = keyboard.driveBack - keyboard.driveForward;
+        var strafe = keyboard.strafeRight - keyboard.strafeLeft;
+        var heading = -0.8 * dt * (-keyboard.turnLeft + keyboard.turnRight);
+
+        floatUp *= floatSpeed;
+
+        if (strafe || drive) {
+            var len = walkSpeed * Math.min(1, 1 / Math.sqrt(drive * drive + strafe * strafe));
+            strafe *= len;
+            drive *= len;
+        } else {
+            strafe = 0;
+            drive = 0;
+        }
+        if (floatUp !== 0 || strafe !== 0 || heading !== 0 || drive !== 0) {
+            avatar.heading += heading;
+            var cosHeading = Math.cos(avatar.heading),
+                sinHeading = Math.sin(avatar.heading);
+            avatar.quaternion.setFromAxisAngle(UP, avatar.heading);
+            avatar.position.x += dt * (strafe * cosHeading + drive * sinHeading);
+            avatar.position.z += dt * (drive * cosHeading - strafe * sinHeading);
+            avatar.position.y += dt * floatUp;
+
+            avatar.updateMatrix();
+        }
+    };
+} )();
+
+POOLVR.moveToolRoot = ( function () {
+    "use strict";
+    var UP = THREE.Object3D.DefaultUp;
+    return function (keyboard, gamepad, dt) {
+        var leapTool = POOLVR.leapTool;
+        var toolRoot = leapTool.toolRoot;
+        var interactionBoxRoot = leapTool.interactionBoxRoot;
+        var interactionPlaneMaterial = leapTool.interactionPlaneMaterial;
+        var interactionPlaneOpacity = POOLVR.config.toolOptions.interactionPlaneOpacity || 0.2;
+        var toolDrive = 0;
+        var toolFloat = 0;
+        var toolStrafe = 0;
+        var rotateToolCW = 0;
+        if (keyboard) {
+            toolDrive += keyboard.moveToolForwards - keyboard.moveToolBackwards;
+            toolFloat += keyboard.moveToolUp - keyboard.moveToolDown;
+            toolStrafe += keyboard.moveToolRight - keyboard.moveToolLeft;
+            rotateToolCW += keyboard.rotateToolCW - keyboard.rotateToolCCW;
+        }
+        if (gamepad) {
+            // if (gamepad.toggleToolFloatMode) {
+            //     toolFloat += gamepad.toolMoveFB;
+            //     toolStrafe -= gamepad.toolMoveLR;
+            // } else {
+                toolDrive -= gamepad.toolMoveFB;
+                rotateToolCW -= gamepad.toolTurnLR;
+            // }
+        }
+        if ((toolDrive !== 0) || (toolStrafe !== 0) || (toolFloat !== 0) || (rotateToolCW !== 0)) {
+            toolRoot.position.x +=  0.16 * dt * toolStrafe;
+            toolRoot.position.z += -0.16 * dt * toolDrive;
+            toolRoot.position.y +=  0.16 * dt * toolFloat;
+            toolRoot.heading -= 0.15 * dt * rotateToolCW;
+            toolRoot.quaternion.setFromAxisAngle(UP, toolRoot.heading);
+            toolRoot.updateMatrix();
+            if (interactionBoxRoot.visible === false) {
+                interactionBoxRoot.visible = true;
+                interactionPlaneMaterial.opacity = interactionPlaneOpacity;
+            }
+            leapTool.setDeadtime(0);
+        }
+    };
+} )();
+
+POOLVR.startTutorial = function () {
+    "use strict";
+    POOLVR.synthSpeaker.speak("Hello.  Welcome. To. Pool-ver.", function () {
+        POOLVR.textGeomLogger.log("HELLO.  WELCOME TO POOLVR.");
+    });
+
+    POOLVR.synthSpeaker.speak("Please wave a stick-like object in front of your Leap Motion controller.", function () {
+        POOLVR.textGeomLogger.log("PLEASE WAVE A STICK-LIKE OBJECT IN FRONT OF YOUR");
+        POOLVR.textGeomLogger.log("LEAP MOTION CONTROLLER.");
+    });
+
+    POOLVR.synthSpeaker.speak("Keep the stick within the interaction box when you want to make contact with.  A ball.", function () {
+        POOLVR.textGeomLogger.log("KEEP THE STICK WITHIN THE INTERACTION BOX WHEN YOU WANT");
+        POOLVR.textGeomLogger.log("TO MAKE CONTACT WITH A BALL...");
+    });
+
+    POOLVR.synthSpeaker.speak("If you are playing in VR, try using the I, J, K, and L keys.  To move the virtual. Leap Motion Controller.  So that it coincides with the controller in your physical environment.", function () {
+        POOLVR.textGeomLogger.log("IF YOU ARE PLAYING IN VR, TRY USING THE");
+        POOLVR.textGeomLogger.log("I / J / K / L / O / . / Y / U KEYS");
+        POOLVR.textGeomLogger.log("TO MOVE THE VIRTUAL LEAP MOTION CONTROLLER");
+        POOLVR.textGeomLogger.log("SO THAT IT COINCIDES WITH THE CONTROLLER");
+        POOLVR.textGeomLogger.log("IN YOUR PHYSICAL ENVIRONMENT.");
+    });
+
+};
+
+POOLVR.startAnimateLoop = function () {
+    "use strict";
+    var keyboard = POOLVR.keyboard,
+        app      = POOLVR.app,
+        world    = POOLVR.world,
+        avatar   = POOLVR.avatar,
+        updateTool          = POOLVR.updateTool,
+        updateToolPostStep  = POOLVR.updateToolPostStep,
+        moveToolRoot        = POOLVR.moveToolRoot,
+        moveAvatar          = POOLVR.moveAvatar,
+        updateBallsPostStep = POOLVR.updateBallsPostStep,
+        updateToolMapping   = POOLVR.updateToolMapping;
+
+    var glS, rS;
+    if (URL_PARAMS.rstats) {
+        /* jshint ignore:start */
+        var tS = new threeStats( POOLVR.app.renderer );
+        glS = new glStats();
+        rS  = new rStats({
+            CSSPath: "lib/rstats/",
+            values: {
+                frame: { caption: 'Total frame time (ms)' },
+                calls: { caption: 'Calls (three.js)' },
+                raf: { caption: 'Time since last rAF (ms)' },
+                // rstats: { caption: 'rStats update (ms)' }, // no worky?
+                updatetool: { caption: 'Leap frame update (ms)' },
+                updatevrcontrols: { caption: 'VRControls update (ms)' },
+                step: { caption: 'Cannon step (ms)' },
+                poststep: { caption: 'Cannon post-step (ms)' }
+            },
+            fractions: [
+                { base: 'frame', steps: [ 'updatetool', 'updatevrcontrols', 'render', 'step', 'poststep', 'updatekeyboardgamepad' ] }
+            ],
+            plugins: [tS, glS]
+        });
+        /* jshint ignore:end */
+    } else {
+        glS = {start: function () {}};
+        rS  = function (id) { return {start:  function () {},
+                                      end:    function () {},
+                                      tick:   function () {},
+                                      frame:  function () {},
+                                      update: function () {}}; };
+    }
+
+    var lt = 0;
+
+    function animate(t) {
+        rS('frame').start();
+        glS.start();
+        rS('raf').tick();
+        rS('fps').frame();
+
+        var dt = (t - lt) * 0.001;
+
+        rS('updatetool').start();
+        updateTool(dt);
+        rS('updatetool').end();
+
+        rS('updatevrcontrols').start();
+        if (app.vrControlsEnabled) {
+            app.vrControls.update();
+            app.camera.updateMatrixWorld();
+        }
+        rS('updatevrcontrols').end();
+
+        rS('render').start();
+        app.vrEffect.render(app.scene, app.camera);
+        rS('render').end();
+
+        rS('step').start();
+        world.step(Math.min(1/60, dt), dt, 10);
+        rS('step').end();
+
+        rS('poststep').start();
+        updateToolPostStep();
+        updateBallsPostStep();
+        rS('poststep').end();
+
+        // gamepad.update();
+
+        moveAvatar(keyboard, POOLVR.gamepad, dt);
+        moveToolRoot(keyboard, POOLVR.gamepad, dt);
+
+        avatar.updateMatrixWorld();
+        updateToolMapping();
+
+        lt = t;
+
+        requestAnimationFrame(animate);
+
+        rS('frame').end();
+        rS().update();
+    }
+
+    requestAnimationFrame(animate);
+
+};

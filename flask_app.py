@@ -23,11 +23,11 @@ app.debug = True
 
 
 WebVRConfig = {
-    "ENABLE_LEAP_MOTION": True,
+    "ENABLE_LEAP_MOTION": False,
     "LEAP_MOTION_HOST": "127.0.0.1",
     #"FORCE_ENABLE_VR":       True,
     #"K_FILTER":              0.98,
-    "PREDICTION_TIME_S":     0.010,
+    "PREDICTION_TIME_S":     0.020,
     #"TOUCH_PANNER_DISABLED": True,
     #"YAW_ONLY":              True,
     #"MOUSE_KEYBOARD_CONTROLS_DISABLED": True
@@ -53,7 +53,8 @@ POOLVR = {
         'toolOptions': {
             'toolOffset'  : [0, -0.42, -0.48],
             'toolRotation': 0,
-            'tipShape'    : 'Cylinder'
+            'tipShape'    : 'Cylinder',
+            'toolRadius'  : 0.013
         }
     }
 }

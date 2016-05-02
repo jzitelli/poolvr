@@ -46,9 +46,6 @@ POOLVR.setupMenu = function () {
     leapAddressInput.value = '127.0.0.1';
     var host = leapAddressInput.value;
     POOLVR.config.toolOptions.host = host;
-    // POOLVR.leapController.connection.host = host;
-    // POOLVR.leapController.connection.disconnect(true);
-    // POOLVR.leapController.connect();
     leapAddressInput.addEventListener('change', onLeapAddressChange, false);
     function onLeapAddressChange() {
         var host = leapAddressInput.value;

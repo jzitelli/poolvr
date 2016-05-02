@@ -61,6 +61,6 @@
     "prepublish": "python update_index.py",
     "start": "python flask_app.py",
     "lint": "eslint src/*.js",
-    "build": "npm run lint && grunt"
+    "build": "grunt"
   }
 }
