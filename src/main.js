@@ -41,10 +41,10 @@ POOLVR.moveToolRoot = ( function () {
     var UP = THREE.Object3D.DefaultUp;
     return function (keyboard, gamepad, dt) {
         var leapTool = POOLVR.leapTool;
-        var toolRoot = POOLVR.toolRoot;
+        var toolRoot = leapTool.toolRoot;
         var interactionBoxRoot = leapTool.interactionBoxRoot;
         var interactionPlaneMaterial = leapTool.interactionPlaneMaterial;
-        var interactionPlaneOpacity = POOLVR.config.toolOptions.interactionPlaneOpacity;
+        var interactionPlaneOpacity = POOLVR.config.toolOptions.interactionPlaneOpacity || 0.2;
         var toolDrive = 0;
         var toolFloat = 0;
         var toolStrafe = 0;
@@ -56,13 +56,13 @@ POOLVR.moveToolRoot = ( function () {
             rotateToolCW += keyboard.rotateToolCW - keyboard.rotateToolCCW;
         }
         if (gamepad) {
-            if (gamepad.toggleToolFloatMode) {
-                toolFloat += gamepad.toolMoveFB;
-                toolStrafe -= gamepad.toolMoveLR;
-            } else {
+            // if (gamepad.toggleToolFloatMode) {
+            //     toolFloat += gamepad.toolMoveFB;
+            //     toolStrafe -= gamepad.toolMoveLR;
+            // } else {
                 toolDrive -= gamepad.toolMoveFB;
                 rotateToolCW -= gamepad.toolTurnLR;
-            }
+            // }
         }
         if ((toolDrive !== 0) || (toolStrafe !== 0) || (toolFloat !== 0) || (rotateToolCW !== 0)) {
             toolRoot.position.x +=  0.16 * dt * toolStrafe;

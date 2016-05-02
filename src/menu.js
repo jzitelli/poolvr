@@ -43,15 +43,21 @@ POOLVR.setupMenu = function () {
 
     // TODO: regular expression format check
     var leapAddressInput = document.getElementById('leapAddress');
-    leapAddressInput.value = 'localhost';
-    leapAddressInput.addEventListener('change', function (evt) {
+    leapAddressInput.value = '127.0.0.1';
+    var host = leapAddressInput.value;
+    POOLVR.config.toolOptions.host = host;
+    // POOLVR.leapController.connection.host = host;
+    // POOLVR.leapController.connection.disconnect(true);
+    // POOLVR.leapController.connect();
+    leapAddressInput.addEventListener('change', onLeapAddressChange, false);
+    function onLeapAddressChange() {
         var host = leapAddressInput.value;
         POOLVR.config.toolOptions.host = host;
         POOLVR.saveConfig(POOLVR.profile);
         POOLVR.leapController.connection.host = host;
         POOLVR.leapController.connection.disconnect(true);
         POOLVR.leapController.connect();
-    }, false);
+    }
 
     var profileNameInput = document.getElementById('profileName');
     profileNameInput.value = POOLVR.profile;
