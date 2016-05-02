@@ -23,7 +23,6 @@ app.debug = True
 
 
 WebVRConfig = {
-    #### webvr-polyfill configuration
     "ENABLE_LEAP_MOTION": True,
     "LEAP_MOTION_HOST": "127.0.0.1",
     #"FORCE_ENABLE_VR":       True,

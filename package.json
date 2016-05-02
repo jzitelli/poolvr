@@ -50,6 +50,7 @@
     "yawvrb": "git://github.com/jzitelli/yawvrb.js.git"
   },
   "devDependencies": {
+    "eslint": "latest",
     "grunt": "latest",
     "grunt-contrib-clean": "latest",
     "grunt-contrib-copy": "latest",
@@ -59,6 +60,7 @@
   "scripts": {
     "prepublish": "python update_index.py",
     "start": "python flask_app.py",
-    "build": "eslint src/*.js && grunt"
+    "lint": "eslint src/*.js",
+    "build": "npm run lint && grunt"
   }
 }

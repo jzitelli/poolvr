@@ -219,8 +219,7 @@ function onLoad() {
     POOLVR.avatar = new THREE.Object3D();
     var avatar = POOLVR.avatar;
 
-    avatar.position.set(0, 1.1, 3.5*12*0.0254);
-
+    avatar.position.set(0, 0.98295, 1.0042);
     avatar.heading = 0;
 
     POOLVR.synthSpeaker = new SynthSpeaker({volume: POOLVR.config.synthSpeakerVolume, rate: 0.8, pitch: 0.5});
