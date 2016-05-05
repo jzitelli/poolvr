@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+
+    <meta name="viewport" content="width=device-width, shrink-to-fit=no">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+    <link rel="shortcut icon" href="favicon.ico">
+
+    <title>poolvr</title>
+
+    <link rel="stylesheet" href="poolvr.css">
+
+{{ json_config }}
+
+  </head>
+
+  <body onload="onLoad()">
+
+    <canvas id="webgl-canvas"></canvas>
+
+    <div id="overlay">
+
+      <h1>poolvr</h1>
+
+      <h2>
+      <button id="vrButton">toggle VR</button>
+      <button id="fsButton">toggle fullscreen</button>
+      </h2>
+
+      <h3>Keyboard controls:</h3>
+<!--
+      <h4>Move around:</h4>
+      <p>W/S/A/D (xz-plane), E/C (up/down)</p>
+      <h4>Move virtual Leap controller:</h4>
+      <p>I/K/J/L (xz-plane), O/. (up/down)</p>
+      <h4>Actions:</h4>
+      <p>P: auto-position for next ball, +/-: cycle ball selection</p>
+      <p>R: reset table, Z: reset VR sensor</p>
+ -->
+      <h3>Gamepad controls:</h3>
+      <h3>Mobile controls:</h3>
+
+      <hr>
+
+      <h2>Configuration:</h2>
+
+      <label>
+        Profile name:
+        <input id="profileName" type="text" maxlength="30" required/>
+      </label>
+
+      <br>
+
+      <label>
+        <input type="checkbox" id="useBasicMaterials"/>
+        EGA mode (max performance)
+      </label>
+      <label>
+        <input type="checkbox" id="useShadowMap"/>
+        Shadow maps
+      </label>
+
+      <br>
+
+      <label>
+        <input type="checkbox" id="useSpotLight"/>
+        Spot light
+      </label>
+      <label>
+        <input type="checkbox" id="usePointLight"/>
+        Point light
+      </label>
+
+      <br>
+
+      <div id="leapIndicator">disconnected</div>
+
+      <label>
+        Leap Motion websocket address:
+        <input id="leapAddress" type="text" maxlength="20" value="localhost" required/>
+      </label>
+
+      <br>
+
+      <button id="clearProfile">Reset profile options to DEFAULTS</button>
+
+    </div>
+
+
+{% if config['DEBUG'] %}
+
+    <script src="node_modules/three.js/build/three.min.js"></script>
+    <script src="node_modules/three.js/examples/js/effects/VREffect.js"></script>
+    <script src="node_modules/three.js/examples/js/controls/VRControls.js"></script>
+    <script src="node_modules/three.js/examples/js/objects/ShadowMesh.js"></script>
+
+    <script src="node_modules/leapjs/leap-0.6.4.js"></script>
+
+    <script src="node_modules/webvr-polyfill/build/webvr-polyfill.js"></script>
+
+    <script src="node_modules/cannon/build/cannon.min.js"></script>
+
+    <script src="lib/rstats/rStats.js"></script>
+    <script src="lib/rstats/rStats.extras.js"></script>
+
+    <script src="node_modules/yawvrb/build/yawvrb.js"></script>
+
+    <script src="node_modules/three.py/js/three.py.js"></script>
+    <script src="node_modules/three.py/js/CANNONize.js"></script>
+
+    <script src="src/TextGeomUtils.js"></script>
+    <script src="src/utils.js"></script>
+    <script src="src/WebVRSound.js"></script>
+    <script src="src/SynthSpeaker.js"></script>
+
+    <script src="src/actions.js"></script>
+    <script src="src/config.js"></script>
+    <script src="src/menu.js"></script>
+    <script src="src/setup.js"></script>
+
+    <script src="src/main.js"></script>
+
+{% else %}
+
+    <script src="lib/three.min.js"></script>
+    <script src="lib/VREffect.js"></script>
+    <script src="lib/VRControls.js"></script>
+    <script src="lib/ShadowMesh.js"></script>
+
+    <script src="lib/leap-0.6.4.min.js"></script>
+
+    <script src="lib/webvr-polyfill.js"></script>
+
+    <script src="lib/cannon.min.js"></script>
+
+    <script src="lib/rstats/rStats.js"></script>
+    <script src="lib/rstats/rStats.extras.js"></script>
+
+    <script src="node_modules/yawvrb/build/yawvrb.js"></script>
+
+    <script src="build/poolvr.min.js"></script>
+
+{% endif %}
+
+  </body>
+
+</html>

@@ -93,7 +93,7 @@ def poolvr():
     Serves the poolvr app HTML.
     """
     poolvr_config = get_poolvr_config()
-    return render_template("index_template.html",
+    return render_template("poolvr_template.html",
                            json_config=Markup(r"""<script>
 var WebVRConfig = %s;
 
@@ -103,6 +103,22 @@ var THREEPY_SCENE = %s;
 </script>""" % (json.dumps(WebVRConfig, indent=2),
                 json.dumps({'config': poolvr_config}, indent=2),
                 json.dumps(pool_table.pool_hall(**poolvr_config).export()))))
+
+
+
+@app.route('/index.html')
+def dashboard():
+    """
+    """
+    poolvr_config = get_poolvr_config()
+    return render_template("index_template.html",
+                           json_config=Markup(r"""<script>
+var WebVRConfig = %s;
+
+var POOLVR = %s;
+
+var THREEPY_SCENE = %s;
+</script>"""))
 
 
 
