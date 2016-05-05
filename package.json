@@ -16,14 +16,14 @@
     "images/",
     "sounds/",
     "src/",
+    "favicon.ico",
     "Gruntfile.js",
-    "flask_app.py",
-    "pool_table.py",
     "index_template.html",
     "poolvr.css",
+    "poolvr.py",
+    "pool_table.py",
     "LICENSE",
-    "README.md",
-    "favicon.ico"
+    "README.md"
   ],
   "keywords": [
     "pool",
@@ -39,12 +39,13 @@
     "Google Cardboard",
     "Oculus Rift",
     "HTC Vive",
-    "OSVR"
+    "OSVR",
+    "webvr-polyfill",
+    "webvr-samples"
   ],
   "dependencies": {
     "leapjs": "0.6.4",
     "cannon": "git://github.com/jzitelli/cannon.js.git",
-    "three.js": "git://github.com/jzitelli/three.js.git#dev",
     "three.py": "git://github.com/jzitelli/three.py.git#dev",
     "yawvrb": "git://github.com/jzitelli/yawvrb.js.git"
   },
@@ -59,8 +60,8 @@
   "scripts": {
     "update_index": "python update_index.py",
     "prepublish": "npm run update_index",
-    "start": "npm run update_index && python flask_app.py",
     "lint": "eslint src/*.js",
-    "build": "grunt"
+    "start": "python poolvr.py",
+    "build": "npm run lint && grunt"
   }
 }

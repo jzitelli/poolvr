@@ -2,7 +2,7 @@
 
 import json
 from jinja2 import Environment, FileSystemLoader, Markup
-from flask_app import TEMPLATE_FOLDER, WebVRConfig, POOLVR, pool_table
+from poolvr import TEMPLATE_FOLDER, WebVRConfig, POOLVR, pool_table
 
 
 
