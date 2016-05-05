@@ -11,25 +11,6 @@ function onLoad() {
     POOLVR.avatar = new THREE.Object3D();
     var avatar = POOLVR.avatar;
 
-    var appConfig = {
-        onResetVRSensor: function (lastRotation, lastPosition) {
-            // maintain correspondence between virtual / physical leap motion controller:
-            var camera = POOLVR.app.camera;
-            var toolRoot = POOLVR.toolRoot;
-            toolRoot.heading -= lastRotation;
-            toolRoot.quaternion.setFromAxisAngle(THREE.Object3D.DefaultUp, toolRoot.heading);
-            toolRoot.position.sub(lastPosition);
-            toolRoot.position.applyAxisAngle(THREE.Object3D.DefaultUp, -lastRotation);
-            toolRoot.position.add(camera.position);
-            toolRoot.updateMatrix();
-            avatar.heading += lastRotation;
-            avatar.quaternion.setFromAxisAngle(THREE.Object3D.DefaultUp, avatar.heading);
-            avatar.updateMatrix();
-            avatar.updateMatrixWorld();
-            POOLVR.updateToolMapping();
-        }
-    };
-
     POOLVR.synthSpeaker = new SynthSpeaker({volume: POOLVR.config.synthSpeakerVolume, rate: 0.8, pitch: 0.5});
 
     if (POOLVR.config.useTextGeomLogger) {
@@ -56,6 +37,25 @@ function onLoad() {
     var rendererOptions = {
         canvas: document.getElementById('webgl-canvas'),
         antialias: antialias
+    };
+
+    var appConfig = {
+        onResetVRSensor: function (lastRotation, lastPosition) {
+            // maintain correspondence between virtual / physical leap motion controller:
+            var camera = POOLVR.app.camera;
+            var toolRoot = POOLVR.toolRoot;
+            toolRoot.heading -= lastRotation;
+            toolRoot.quaternion.setFromAxisAngle(THREE.Object3D.DefaultUp, toolRoot.heading);
+            toolRoot.position.sub(lastPosition);
+            toolRoot.position.applyAxisAngle(THREE.Object3D.DefaultUp, -lastRotation);
+            toolRoot.position.add(camera.position);
+            toolRoot.updateMatrix();
+            avatar.heading += lastRotation;
+            avatar.quaternion.setFromAxisAngle(THREE.Object3D.DefaultUp, avatar.heading);
+            avatar.updateMatrix();
+            avatar.updateMatrixWorld();
+            POOLVR.updateToolMapping();
+        }
     };
 
     POOLVR.app = new YAWVRB.App(undefined, appConfig, rendererOptions);
