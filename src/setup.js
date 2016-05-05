@@ -119,11 +119,11 @@ POOLVR.setup = function () {
 
     var leapTool = YAWVRB.LeapMotion.makeTool( combineObjects(POOLVR.config.toolOptions, {
         onConnect: function () {
-            POOLVR.leapIndicator.innerHTML = 'connected';
-            POOLVR.leapIndicator.style['background-color'] = 'rgba(20, 60, 20, 0.7)';
+            POOLVR.leapIndicator.innerHTML = 'Leap Motion: connected';
+            POOLVR.leapIndicator.style['background-color'] = 'rgba(20, 160, 20, 0.8)';
         },
         onDisconnect: function () {
-            POOLVR.leapIndicator.innerHTML = 'disconnected';
+            POOLVR.leapIndicator.innerHTML = 'Leap Motion: disconnected';
             POOLVR.leapIndicator.style['background-color'] = 'rgba(60, 20, 20, 0.4)';
         },
         shadowMaterial: POOLVR.shadowMaterial,

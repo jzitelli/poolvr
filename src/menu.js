@@ -1,6 +1,5 @@
 POOLVR.setupMenu = function () {
     "use strict";
-    var inputs = document.querySelectorAll('input');
 
     function onFocus(evt) {
         POOLVR.keyboard.enabled = false;
@@ -8,6 +7,9 @@ POOLVR.setupMenu = function () {
     function onBlur(evt) {
         POOLVR.keyboard.enabled = true;
     }
+
+    var inputs = document.querySelectorAll('input');
+    //inputs = Array.prototype.push.apply(inputs, document.querySelectorAll('button'));
     for (var i = 0; i < inputs.length; i++) {
         inputs[i].addEventListener('focus', onFocus, false);
         inputs[i].addEventListener('blur', onBlur, false);
@@ -41,6 +43,16 @@ POOLVR.setupMenu = function () {
         }
     }, false);
 
+    var useSpotLightInput = document.getElementById('useSpotLight');
+    useSpotLightInput.checked = POOLVR.config.useSpotLight;
+    useSpotLightInput.addEventListener('change', function (evt) {
+        POOLVR.config.useSpotLight = useSpotLightInput.checked;
+        POOLVR.saveConfig(POOLVR.profile);
+        if (window.confirm('This change requires a page reload to take effect - reload now?')) {
+            document.location.reload();
+        }
+    }, false);
+
     // TODO: regular expression format check
     var leapAddressInput = document.getElementById('leapAddress');
     leapAddressInput.value = '127.0.0.1';
@@ -65,8 +77,8 @@ POOLVR.setupMenu = function () {
 
     var vrButton = document.getElementById('vrButton');
     vrButton.addEventListener('click', function () {
-        console.log('asdf');
         POOLVR.app.toggleVR();
+        vrButton.blur();
     }, false);
 
     var fsButton = document.getElementById('fsButton');

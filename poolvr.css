@@ -7,52 +7,56 @@ body {
 }
 #overlay {
   position: absolute;
-  left: 15px;
-  top: 15px;
-  margin: 0;
-  padding: 0.5vh;
+  left: 10px;
+  top: 10px;
+  margin: 0.1vh;
+  padding: 0.1vh;
   color: #ffffff;
   background-color: rgba(20, 20, 50, 0.7);
 }
 h1 {
-  font-size: 27pt;
+  font-size: 16pt;
   color: #b5e853;
 }
 h2 {
-  font-size: 20pt;
+  font-size: 13pt;
   color: #b5e853;
 }
 h3 {
-  font-size: 16pt;
+  font-size: 11pt;
 }
 h4 {
-  font-size: 14pt;
+  font-size: 10pt;
   margin-left: 1vw;
 }
 p {
-  font-size: 13pt;
-  margin-left: 1.5vw;
+  font-size: 9pt;
+  margin-left: 1.2vw;
 }
 #leapAddress, #profileName {
   margin: 2vh;
 }
 #leapIndicator {
-  font-size: 3vh;
+  font-size: 12pt;
   text-align: center;
   margin-top: 1vh;
-  padding: 0.25em;
+  padding: 0.1em;
   color: #b5e853;
   background-color: rgba(60, 20, 0, 0.6);
   box-sizing: border-box;
 }
 #fsButton, #vrButton {
-  font-size: 3vh;
+  font-size: 12pt;
   text-align: center;
-  margin-top: 1vh;
-  padding: 0.25em;
+  margin-top: 0.1vh;
+  padding: 0.1vh;
   color: #b5e853;
   background-color: rgba(111, 20, 20, 0.6);
   box-sizing: border-box;
+}
+button {
+  font-family: monospace;
+  font-size: 18pt;
 }
 #webgl-canvas {
   position: fixed;
