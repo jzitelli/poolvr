@@ -48,7 +48,8 @@ POOLVR.playCollisionSound = (function () {
     var ballBallBuffer;
     var request = new XMLHttpRequest();
     request.responseType = 'arraybuffer';
-    request.open('GET', 'sounds/ballBall.ogg');
+    var filename = (!/Edge/.test(navigator.userAgent)) ? 'sounds/ballBall.ogg' : 'sounds/ballBall.mp3';
+    request.open('GET', filename);
     request.onload = function() {
         WebVRSound.audioContext.decodeAudioData(this.response, function(buffer) {
             ballBallBuffer = buffer;
@@ -67,7 +68,8 @@ POOLVR.playPocketedSound = (function () {
     var ballPocketedBuffer;
     var request = new XMLHttpRequest();
     request.responseType = 'arraybuffer';
-    request.open('GET', 'sounds/ballPocketed.ogg');
+    var filename = (!/Edge/.test(navigator.userAgent)) ? 'sounds/ballPocketed.ogg' : 'sounds/ballPocketed.mp3';
+    request.open('GET', filename);
     request.onload = function() {
         WebVRSound.audioContext.decodeAudioData(this.response, function(buffer) {
             ballPocketedBuffer = buffer;
@@ -112,28 +114,25 @@ POOLVR.setup = function () {
         POOLVR.app.scene.traverse( function (node) {
             if (node instanceof THREE.Mesh) {
                 var material = node.material;
-                var name = material.name;
-                if (materials[name]) {
-                    node.material = materials[name];
+                var uuid = material.uuid;
+                if (materials[uuid]) {
+                    node.material = materials[uuid];
                 }
             }
         } );
     };
 
-    var floorBody;
-    var ceilingBody;
+    var floorBody, ceilingBody;
     var pxWallBody, nxWallBody, pzWallBody, nzWallBody;
 
     scene.traverse(function (node) {
 
         if (node instanceof THREE.Mesh) {
 
-            if ( node.material.name && (nonbasicMaterials[node.material.name] === undefined) &&
-                (node.material instanceof THREE.MeshLambertMaterial || node.material instanceof THREE.MeshPhongMaterial) ) {
-                nonbasicMaterials[node.material.name] = node.material;
+            if ((node.material instanceof THREE.MeshLambertMaterial || node.material instanceof THREE.MeshPhongMaterial) && (basicMaterials[node.material.uuid] === undefined)) {
                 var basicMaterial = new THREE.MeshBasicMaterial({color: node.material.color.getHex(), transparent: node.material.transparent, side: node.material.side});
-                basicMaterial.name = node.material.name;
-                basicMaterials[node.material.name] = basicMaterial;
+                basicMaterials[node.material.uuid] = basicMaterial;
+                nonbasicMaterials[basicMaterial.uuid] = node.material;
             }
 
             var ballNum;
