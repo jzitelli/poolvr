@@ -33,6 +33,9 @@ p {
   font-size: 9pt;
   margin-left: 1.2vw;
 }
+label {
+  font-size: 9pt;
+}
 #leapAddress, #profileName {
   margin: 2vh;
 }

@@ -83,18 +83,9 @@ POOLVR.playPocketedSound = (function () {
 
 POOLVR.setup = function () {
     "use strict";
-    var world = new CANNON.World();
-    world.gravity.set( 0, -POOLVR.config.gravity, 0 );
-    //world.broadphase = new CANNON.SAPBroadphase( world );
-    world.defaultContactMaterial.contactEquationStiffness   = 1e7;
-    world.defaultContactMaterial.frictionEquationStiffness  = 2e6;
-    world.defaultContactMaterial.contactEquationRelaxation  = 2;
-    world.defaultContactMaterial.frictionEquationRelaxation = 3;
-    world.solver.iterations = 9;
-
-    POOLVR.world = world;
 
     var scene = POOLVR.app.scene;
+    var world = POOLVR.world;
 
     THREE.py.CANNONize(scene, world);
 
@@ -113,44 +104,6 @@ POOLVR.setup = function () {
 
     var useShadowMap = POOLVR.config.useShadowMap;
 
-    POOLVR.shadowMaterial = new THREE.MeshBasicMaterial({color: 0x002200});
-
-    POOLVR.leapIndicator = document.getElementById('leapIndicator');
-
-    var leapTool = YAWVRB.LeapMotion.makeTool( combineObjects(POOLVR.config.toolOptions, {
-        onConnect: function () {
-            POOLVR.leapIndicator.innerHTML = 'Leap Motion: connected';
-            POOLVR.leapIndicator.style['background-color'] = 'rgba(20, 160, 20, 0.8)';
-        },
-        onDisconnect: function () {
-            POOLVR.leapIndicator.innerHTML = 'Leap Motion: disconnected';
-            POOLVR.leapIndicator.style['background-color'] = 'rgba(60, 20, 20, 0.4)';
-        },
-        shadowMaterial: POOLVR.shadowMaterial,
-        shadowPlane: 1.01 * POOLVR.config.H_table
-    }) );
-
-    POOLVR.leapTool           = leapTool;
-    POOLVR.leapController     = leapTool.leapController;
-    POOLVR.toolRoot           = leapTool.toolRoot;
-    POOLVR.toolMesh           = leapTool.toolMesh;
-    POOLVR.toolBody           = leapTool.toolBody;
-    POOLVR.updateTool         = leapTool.updateTool;
-    POOLVR.updateToolPostStep = leapTool.updateToolPostStep;
-    POOLVR.updateToolMapping  = leapTool.updateToolMapping;
-
-    world.addBody(leapTool.toolBody);
-    POOLVR.avatar.add(leapTool.toolRoot);
-
-    if (!useShadowMap) {
-        POOLVR.app.scene.add(POOLVR.leapTool.toolShadowMesh);
-    }
-
-    POOLVR.leapController.connect();
-    POOLVR.updateToolMapping();
-
-    POOLVR.objectSelector.addSelectable(POOLVR.toolRoot);
-
     var basicMaterials = {};
     var nonbasicMaterials = {};
 
@@ -168,6 +121,8 @@ POOLVR.setup = function () {
     };
 
     var floorBody;
+    var ceilingBody;
+    var pxWallBody, nxWallBody, pzWallBody, nzWallBody;
 
     scene.traverse(function (node) {
 
@@ -200,6 +155,10 @@ POOLVR.setup = function () {
             else if (node.name === 'floorMesh') {
                 floorBody = node.body;
                 floorBody.material = POOLVR.floorMaterial;
+            }
+            else if (node.name === 'ceilingMesh') {
+                ceilingBody = node.body;
+                ceilingBody.material = POOLVR.floorMaterial;
             }
             else if (node.name.endsWith('RailMesh')) {
                 node.body.material = POOLVR.railMaterial;

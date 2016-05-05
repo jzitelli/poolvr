@@ -49,9 +49,12 @@ POOLVR.keyboardCommands = {
 POOLVR.keyboard = new YAWVRB.Keyboard(window, POOLVR.keyboardCommands);
 
 POOLVR.gamepadCommands = {
-    turnLR:   {axes: [YAWVRB.Gamepad.AXES.LSX]},
-    moveFB:    {axes: [YAWVRB.Gamepad.AXES.LSY]},
+    turnLR: {axes: [YAWVRB.Gamepad.AXES.LSX]},
+    moveFB: {axes: [YAWVRB.Gamepad.AXES.LSY]},
+    moveLR: {axes: [YAWVRB.Gamepad.AXES.RSX]},
+    turnUD: {axes: [YAWVRB.Gamepad.AXES.RSY]},
     toggleFloatMode: {buttons: [YAWVRB.Gamepad.BUTTONS.leftStick]},
+    // TODO: clean up
     toolTurnLR: {axes: [YAWVRB.Gamepad.AXES.RSX]},
     toolMoveFB:  {axes: [YAWVRB.Gamepad.AXES.RSY]},
     toggleToolFloatMode: {buttons: [YAWVRB.Gamepad.BUTTONS.rightStick]},
@@ -64,7 +67,8 @@ POOLVR.gamepadCommands = {
     stroke: {buttons: [YAWVRB.Gamepad.BUTTONS.X],
              commandDown: POOLVR.commands.stroke},
     autoPosition: {buttons: [YAWVRB.Gamepad.BUTTONS.Y],
-                   commandDown: POOLVR.commands.autoPosition}
+                   commandDown: POOLVR.commands.autoPosition},
+    toggleVR: {buttons: [YAWVRB.Gamepad.BUTTONS.start], commandDown: POOLVR.commands.toggleVR}
 };
 
 POOLVR.parseURIConfig = function () {
