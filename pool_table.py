@@ -212,12 +212,13 @@ def pool_hall(useSkybox=False,
     Defines a three.js scene containing a pool table + billiard balls.
     """
     scene = Scene()
-    L_room, W_room = 10, 10
+    L_room, W_room = 3.2, 3.2
     floorMesh = Mesh(name="floorMesh",
                      geometry=PlaneBufferGeometry(width=W_room, height=L_room),
                      material=MeshBasicMaterial(color=0xffffff,
-                                                map=Texture(image=Image(url=url_prefix+"images/deck.png"),
-                                                            repeat=[4*L_room, 4*W_room], wrap=[RepeatWrapping, RepeatWrapping])),
+                                                map=Texture(image=Image(url=url_prefix+"images/texture000.png"),
+                                                            #repeat=[4*L_room, 4*W_room], wrap=[RepeatWrapping, RepeatWrapping])),
+                                                            repeat=[1, 1], wrap=[ClampToEdgeWrapping, ClampToEdgeWrapping])),
                      position=[0, 0, 0],
                      rotation=[-np.pi/2, 0, 0],
                      userData={'cannonData': {'mass': 0,

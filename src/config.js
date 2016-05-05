@@ -69,18 +69,22 @@ POOLVR.gamepadCommands = {
 
 POOLVR.parseURIConfig = function () {
     "use strict";
-    POOLVR.config.useTextGeomLogger = false; //URL_PARAMS.useTextGeomLogger !== undefined ? URL_PARAMS.useTextGeomLogger : POOLVR.config.useTextGeomLogger;
+    POOLVR.config.useTextGeomLogger = URL_PARAMS.useTextGeomLogger !== undefined ? URL_PARAMS.useTextGeomLogger : POOLVR.config.useTextGeomLogger;
     POOLVR.config.synthSpeakerVolume = URL_PARAMS.synthSpeakerVolume || POOLVR.config.synthSpeakerVolume;
     POOLVR.config.useBasicMaterials = URL_PARAMS.useBasicMaterials !== undefined ? URL_PARAMS.useBasicMaterials : POOLVR.config.useBasicMaterials;
+
     if (POOLVR.config.useBasicMaterials) {
         POOLVR.config.usePointLight = false;
+        POOLVR.config.useSpotLight = false;
         POOLVR.config.useShadowMap  = false;
     } else {
         POOLVR.config.usePointLight = URL_PARAMS.usePointLight !== undefined ? URL_PARAMS.usePointLight : POOLVR.config.usePointLight;
         POOLVR.config.useShadowMap  = URL_PARAMS.useShadowMap  !== undefined ? URL_PARAMS.useShadowMap  : POOLVR.config.useShadowMap;
     }
+
     // Leap Motion config:
     POOLVR.config.toolOptions = POOLVR.config.toolOptions || {};
+
     POOLVR.config.toolOptions.toolLength   = URL_PARAMS.toolLength   || POOLVR.config.toolOptions.toolLength;
     POOLVR.config.toolOptions.toolRadius   = URL_PARAMS.toolRadius   || POOLVR.config.toolOptions.toolRadius;
     POOLVR.config.toolOptions.toolMass     = URL_PARAMS.toolMass     || POOLVR.config.toolOptions.toolMass;
@@ -119,6 +123,7 @@ POOLVR.loadConfig = function (profileName) {
             }
         }
         console.log("loaded configuration for profile '" + profileName + "'");
+        console.log(JSON.stringify(config, undefined, 2));
     }
     return config;
 };

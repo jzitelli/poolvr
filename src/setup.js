@@ -120,9 +120,11 @@ POOLVR.setup = function () {
     var leapTool = YAWVRB.LeapMotion.makeTool( combineObjects(POOLVR.config.toolOptions, {
         onConnect: function () {
             POOLVR.leapIndicator.innerHTML = 'connected';
+            POOLVR.leapIndicator.style['background-color'] = 'rgba(20, 60, 20, 0.7)';
         },
         onDisconnect: function () {
             POOLVR.leapIndicator.innerHTML = 'disconnected';
+            POOLVR.leapIndicator.style['background-color'] = 'rgba(60, 20, 20, 0.4)';
         },
         shadowMaterial: POOLVR.shadowMaterial,
         shadowPlane: 1.01 * POOLVR.config.H_table

@@ -64,13 +64,16 @@ POOLVR.setupMenu = function () {
     }, false);
 
     var vrButton = document.getElementById('vrButton');
-    var fsButton = document.getElementById('fsButton');
     vrButton.addEventListener('click', function () {
-        POOLVR.startTutorial();
+        console.log('asdf');
+        POOLVR.app.toggleVR();
     }, false);
+
+    var fsButton = document.getElementById('fsButton');
     fsButton.addEventListener('click', function () {
-        POOLVR.startTutorial();
+        POOLVR.app.toggleFullscreen();
     }, false);
-    fsButton.disabled = false;
-    vrButton.disabled = false;
+
+    // fsButton.disabled = false;
+    // vrButton.disabled = true;
 };

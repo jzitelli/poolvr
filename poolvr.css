@@ -1,9 +1,9 @@
 body {
-  background-color: #000;
+  background-color: #010101;
   margin: 0;
   padding: 0;
   overflow: hidden;
-  font-family: Monaco, "Bitstream Vera Sans Mono", "Lucida Console", Terminal, monospace;
+  font-family: "Anonymous Pro Regular", Monaco, "Bitstream Vera Sans Mono", "Lucida Console", Terminal, monospace;
 }
 #overlay {
   position: absolute;
@@ -15,22 +15,22 @@ body {
   background-color: rgba(20, 20, 50, 0.7);
 }
 h1 {
-  font-size: 5.5vh;
+  font-size: 27pt;
   color: #b5e853;
 }
 h2 {
-  font-size: 3vh;
+  font-size: 20pt;
   color: #b5e853;
 }
 h3 {
-  font-size: 2.2vh;
+  font-size: 16pt;
 }
 h4 {
-  font-size: 1.75vh;
+  font-size: 14pt;
   margin-left: 1vw;
 }
 p {
-  font-size: 1.4vh;
+  font-size: 13pt;
   margin-left: 1.5vw;
 }
 #leapAddress, #profileName {

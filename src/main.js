@@ -64,8 +64,6 @@ function onLoad() {
         }
 
         var appConfig = {
-            fsButton: document.getElementById('fsButton'),
-            vrButton: document.getElementById('vrButton'),
             onResetVRSensor: function (lastRotation, lastPosition) {
                 // maintain correspondence between virtual / physical leap motion controller:
                 var camera = POOLVR.app.camera;

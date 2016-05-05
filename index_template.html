@@ -36,9 +36,8 @@
       <p>R: reset table, Z: reset VR sensor</p>
 
       <h2>
-      <button id="vrButton" disabled>Play in VR</button>
-      or
-      <button id="fsButton" disabled>FULLSCREEN</button>
+      <button id="vrButton">toggle VR</button>
+      <button id="fsButton">toggle fullscreen</button>
       </h2>
 
       <hr>
@@ -73,12 +72,16 @@
       </label>
       <div id="leapIndicator">disconnected</div>
 
+      <br>
+
+      <button id="clearProfile">Reset profile options to DEFAULTS</button>
+
     </div>
 
 
 {% if config['DEBUG'] %}
 
-    <script src="node_modules/three.js/build/three.js"></script>
+    <script src="node_modules/three.js/build/three.min.js"></script>
     <script src="node_modules/three.js/examples/js/effects/VREffect.js"></script>
     <script src="node_modules/three.js/examples/js/controls/VRControls.js"></script>
     <script src="node_modules/three.js/examples/js/objects/ShadowMesh.js"></script>
@@ -87,7 +90,7 @@
 
     <script src="node_modules/webvr-polyfill/build/webvr-polyfill.js"></script>
 
-    <script src="node_modules/cannon/build/cannon.js"></script>
+    <script src="node_modules/cannon/build/cannon.min.js"></script>
 
     <script src="lib/rstats/rStats.js"></script>
     <script src="lib/rstats/rStats.extras.js"></script>
