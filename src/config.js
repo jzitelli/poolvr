@@ -67,8 +67,6 @@ POOLVR.gamepadCommands = {
                    commandDown: POOLVR.commands.autoPosition}
 };
 
-POOLVR.gamepad = new YAWVRB.Gamepad(POOLVR.gamepadCommands);
-
 POOLVR.parseURIConfig = function () {
     "use strict";
     POOLVR.config.useTextGeomLogger = false; //URL_PARAMS.useTextGeomLogger !== undefined ? URL_PARAMS.useTextGeomLogger : POOLVR.config.useTextGeomLogger;

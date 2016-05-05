@@ -24,7 +24,7 @@ app.debug = True
 
 WebVRConfig = {
     "ENABLE_LEAP_MOTION": False,
-    "LEAP_MOTION_HOST": "127.0.0.1",
+    #"LEAP_MOTION_HOST": "127.0.0.1",
     #"FORCE_ENABLE_VR":       True,
     #"K_FILTER":              0.98,
     "PREDICTION_TIME_S":     0.020,

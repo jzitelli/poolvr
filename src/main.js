@@ -110,13 +110,15 @@ POOLVR.moveAvatar = ( function () {
         walkSpeed = 0.333,
         floatSpeed = 0.1;
 
-    return function (keyboard, gamepad, dt) {
+    return function (keyboard, dt) {
         var avatar = POOLVR.avatar;
 
         var floatUp = keyboard.floatUp - keyboard.floatDown;
         var drive = keyboard.driveBack - keyboard.driveForward;
         var strafe = keyboard.strafeRight - keyboard.strafeLeft;
         var heading = -0.8 * dt * (-keyboard.turnLeft + keyboard.turnRight);
+
+        var gamepadValues = YAWVRB.Gamepad.update();
 
         floatUp *= floatSpeed;
 
@@ -146,7 +148,7 @@ POOLVR.moveToolRoot = ( function () {
     "use strict";
     var UP = THREE.Object3D.DefaultUp;
     var heading = 0;
-    return function (keyboard, gamepad, dt) {
+    return function (keyboard, dt) {
         var leapTool = POOLVR.leapTool;
         var toolRoot = leapTool.toolRoot;
         var toolDrive = 0;
@@ -159,15 +161,9 @@ POOLVR.moveToolRoot = ( function () {
             toolStrafe += keyboard.moveToolRight - keyboard.moveToolLeft;
             rotateToolCW += keyboard.rotateToolCW - keyboard.rotateToolCCW;
         }
-        // if (gamepad) {
-        //     if (gamepad.toggleToolFloatMode) {
-        //         toolFloat += gamepad.toolMoveFB;
-        //         toolStrafe -= gamepad.toolMoveLR;
-        //     } else {
-        //         toolDrive -= gamepad.toolMoveFB;
-        //         rotateToolCW -= gamepad.toolTurnLR;
-        //     }
-        // }
+
+        var gamepadValues = YAWVRB.Gamepad.update();
+
         if ((toolDrive !== 0) || (toolStrafe !== 0) || (toolFloat !== 0) || (rotateToolCW !== 0)) {
             toolRoot.position.x +=  0.16 * dt * toolStrafe;
             toolRoot.position.z += -0.16 * dt * toolDrive;
@@ -208,7 +204,6 @@ POOLVR.startTutorial = function () {
 POOLVR.startAnimateLoop = function () {
     "use strict";
     var keyboard = POOLVR.keyboard,
-        gamepad  = POOLVR.gamepad,
         app      = POOLVR.app,
         world    = POOLVR.world,
         avatar   = POOLVR.avatar,
@@ -285,10 +280,8 @@ POOLVR.startAnimateLoop = function () {
         updateBallsPostStep();
         rS('poststep').end();
 
-        gamepad.update();
-
-        moveAvatar(keyboard, gamepad, dt);
-        moveToolRoot(keyboard, gamepad, dt);
+        moveAvatar(keyboard, dt);
+        moveToolRoot(keyboard, dt);
 
         avatar.updateMatrixWorld();
         updateToolMapping();
