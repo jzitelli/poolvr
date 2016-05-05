@@ -2,7 +2,9 @@ body {
   background-color: #010101;
   margin: 0;
   padding: 0;
+  /*
   overflow: hidden;
+  */
   font-family: "Anonymous Pro Regular", Monaco, "Bitstream Vera Sans Mono", "Lucida Console", Terminal, monospace;
 }
 #overlay {
@@ -49,9 +51,10 @@ label {
   box-sizing: border-box;
 }
 #fsButton, #vrButton {
-  font-size: 12pt;
+  font-family: monospace;
+  font-size: 14pt;
+  font-style: bold;
   text-align: center;
-  margin-top: 0.1vh;
   padding: 0.1vh;
   color: #b5e853;
   background-color: rgba(111, 20, 20, 0.6);
@@ -59,7 +62,12 @@ label {
 }
 button {
   font-family: monospace;
-  font-size: 18pt;
+  font-size: 14pt;
+  text-align: center;
+  padding: 0.1vh;
+  color: #b5e853;
+  background-color: rgba(111, 20, 20, 0.6);
+  box-sizing: border-box;
 }
 #webgl-canvas {
   position: fixed;
