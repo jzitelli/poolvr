@@ -1,3 +1,4 @@
+/* global POOLVR */
 // TODO: load from JSON config
 POOLVR.ballMaterial            = new CANNON.Material();
 POOLVR.ballBallContactMaterial = new CANNON.ContactMaterial(POOLVR.ballMaterial, POOLVR.ballMaterial, {

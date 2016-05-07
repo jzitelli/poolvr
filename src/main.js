@@ -1,3 +1,4 @@
+/* global POOLVR */
 function onLoad() {
     "use strict";
 
@@ -32,7 +33,7 @@ function onLoad() {
         };
     }
 
-    var antialias = (URL_PARAMS.antialias !== undefined ? URL_PARAMS.antialias : POOLVR.config.antialias) || !isMobile();
+    var antialias = (POOLVR.URL_PARAMS.antialias !== undefined ? POOLVR.URL_PARAMS.antialias : POOLVR.config.antialias) || !POOLVR.isMobile();
 
     var rendererOptions = {
         canvas: document.getElementById('webgl-canvas'),
@@ -85,17 +86,26 @@ function onLoad() {
 
     POOLVR.leapIndicator = document.getElementById('leapIndicator');
 
-    var leapTool = YAWVRB.LeapMotion.makeTool( combineObjects(POOLVR.config.toolOptions, {
+    var leapTool = YAWVRB.LeapMotion.makeTool( POOLVR.combineObjects(POOLVR.config.toolOptions, {
         onConnect: function () {
             POOLVR.leapIndicator.innerHTML = 'Leap Motion: connected';
+            POOLVR.leapIndicator.style['background-color'] = 'rgba(60, 100, 20, 0.8)';
+        },
+        onStreamingStarted: function () {
+            POOLVR.leapIndicator.innerHTML = 'Leap Motion: connected, streaming';
             POOLVR.leapIndicator.style['background-color'] = 'rgba(20, 160, 20, 0.8)';
+        },
+        onStreamingStopped: function () {
+            POOLVR.leapIndicator.innerHTML = 'Leap Motion: connected, streaming stopped';
+            POOLVR.leapIndicator.style['background-color'] = 'rgba(60, 100, 20, 0.8)';
         },
         onDisconnect: function () {
             POOLVR.leapIndicator.innerHTML = 'Leap Motion: disconnected';
             POOLVR.leapIndicator.style['background-color'] = 'rgba(60, 20, 20, 0.4)';
         },
+        useShadowMesh: !POOLVR.config.useShadowMap,
         shadowMaterial: POOLVR.shadowMaterial,
-        shadowPlane: 1.01 * POOLVR.config.H_table
+        shadowPlane: POOLVR.config.H_table + 0.001
     }) );
 
     POOLVR.leapTool           = leapTool;
@@ -107,21 +117,26 @@ function onLoad() {
     POOLVR.updateToolPostStep = leapTool.updateToolPostStep;
     POOLVR.updateToolMapping  = leapTool.updateToolMapping;
 
+    POOLVR.toolMesh.renderOrder = -1;
     avatar.add(leapTool.toolRoot);
     world.addBody(leapTool.toolBody);
-
-    if (!POOLVR.config.useShadowMap) {
-        POOLVR.app.scene.add(POOLVR.leapTool.toolShadowMesh);
-    }
 
     POOLVR.leapController.connect();
 
     POOLVR.objectSelector.addSelectable(POOLVR.toolRoot);
+
     THREE.py.parse(THREEPY_SCENE).then( function (scene) {
 
         scene.autoUpdate = false;
 
         POOLVR.app.scene = scene;
+
+        if (leapTool.toolShadowMesh) {
+            console.log('toolShadowMesh:');
+            console.log(leapTool.toolShadowMesh);
+            POOLVR.app.scene.add(leapTool.toolShadowMesh);
+            //leapTool.toolShadowMesh.renderOrder = 1;
+        }
 
         if (POOLVR.config.useSpotLight) {
             var centerSpotLight = new THREE.SpotLight(0xffffee, 1, 8, Math.PI / 2);
@@ -294,7 +309,7 @@ POOLVR.startAnimateLoop = function () {
         updateToolMapping   = POOLVR.updateToolMapping;
 
     var glS, rS;
-    if (URL_PARAMS.rstats) {
+    if (POOLVR.URL_PARAMS.rstats) {
         /* jshint ignore:start */
         var tS = new threeStats( POOLVR.app.renderer );
         glS = new glStats();
@@ -347,6 +362,7 @@ POOLVR.startAnimateLoop = function () {
         rS('updatevrcontrols').end();
 
         rS('render').start();
+
         app.vrEffect.render(app.scene, app.camera);
         rS('render').end();
 

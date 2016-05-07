@@ -49,7 +49,7 @@ POOLVR = {
         'L_table'            : 2.3368,
         'H_table'            : 0.74295,
         'ball_diameter'      : 2.25 * pool_table.IN2METER,
-        'H_ceiling'          : 8 * 12 * 0.0254,
+        #'H_ceiling'          : 8 * 12 * 0.0254,
         'synthSpeakerVolume' : 0.4,
         'toolOptions': {
             'toolOffset'  :  [0, -0.42, -0.48],

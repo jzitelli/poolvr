@@ -1,3 +1,4 @@
+/* global POOLVR */
 POOLVR.setupMenu = function () {
     "use strict";
 
@@ -55,7 +56,7 @@ POOLVR.setupMenu = function () {
 
     // TODO: regular expression format check
     var leapAddressInput = document.getElementById('leapAddress');
-    leapAddressInput.value = '127.0.0.1';
+    leapAddressInput.value = 'localhost';
     var host = leapAddressInput.value;
     POOLVR.config.toolOptions.host = host;
     leapAddressInput.addEventListener('change', onLeapAddressChange, false);
@@ -85,6 +86,41 @@ POOLVR.setupMenu = function () {
     fsButton.addEventListener('click', function () {
         POOLVR.app.toggleFullscreen();
     }, false);
+
+    var vrDisplay = null;
+
+    if (!navigator.getVRDisplays) {
+
+        vrButton.style.display = 'none';
+        vrButton.disabled = true;
+        console.warn('navigator does not provide getVRDisplays');
+
+    } else {
+
+        navigator.getVRDisplays().then( function (vrDisplays) {
+
+            for (var i = 0; i < vrDisplays.length; i++) {
+                console.log(vrDisplays[i]);
+                if (vrDisplays[i].capabilities && vrDisplays[i].capabilities.canPresent) {
+                    vrDisplay = vrDisplays[i];
+                    break;
+                }
+            }
+            if (!vrDisplay) {
+
+                vrButton.style.display = 'none';
+                vrButton.disabled = true;
+
+            }
+
+        } ).catch( function (err) {
+
+            vrButton.style.display = 'none';
+            vrButton.disabled = true;
+            console.error(err);
+
+        } );
+    }
 
     // fsButton.disabled = false;
     // vrButton.disabled = true;

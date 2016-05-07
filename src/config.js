@@ -1,5 +1,7 @@
+/* global POOLVR */
 POOLVR.commands = {
-    toggleVRControls: function () { POOLVR.app.toggleVRControls(); POOLVR.app.camera.updateMatrix(); },
+    toggleVR:         function () { POOLVR.app.toggleVR(); },
+    toggleVRControls: function () { POOLVR.app.toggleVRControls(); },
     toggleWireframe:  function () { POOLVR.app.toggleWireframe(); },
     resetVRSensor:    function () { POOLVR.app.resetVRSensor(); },
     resetTable:       POOLVR.resetTable,
@@ -28,9 +30,9 @@ POOLVR.keyboardCommands = {
     rotateToolCW:      {buttons: [85]},
     rotateToolCCW:     {buttons: [89]},
 
-    toggleVRControls: {buttons: [86],
-                       commandDown: POOLVR.commands.toggleVRControls},
-    toggleWireframe: {buttons: [96],
+    toggleVR: {buttons: [YAWVRB.Keyboard.KEYCODES.NUMBER9],
+               commandDown: POOLVR.commands.toggleVR},
+    toggleWireframe: {buttons: [YAWVRB.Keyboard.KEYCODES.B],
                       commandDown: POOLVR.commands.toggleWireframe},
     resetVRSensor: {buttons: [90],
                     commandDown: POOLVR.commands.resetVRSensor},
@@ -42,7 +44,7 @@ POOLVR.keyboardCommands = {
                      commandDown: POOLVR.commands.selectNextBall},
     selectPrevBall: {buttons: [109],
                      commandDown: POOLVR.commands.selectPrevBall},
-    stroke: {buttons: [32],
+    stroke: {buttons: [YAWVRB.Keyboard.KEYCODES.SPACEBAR],
              commandDown: POOLVR.commands.stroke}
 };
 
@@ -73,35 +75,37 @@ POOLVR.gamepadCommands = {
 
 POOLVR.parseURIConfig = function () {
     "use strict";
-    POOLVR.config.useTextGeomLogger = URL_PARAMS.useTextGeomLogger !== undefined ? URL_PARAMS.useTextGeomLogger : POOLVR.config.useTextGeomLogger;
-    POOLVR.config.synthSpeakerVolume = URL_PARAMS.synthSpeakerVolume || POOLVR.config.synthSpeakerVolume;
-    POOLVR.config.useBasicMaterials = URL_PARAMS.useBasicMaterials !== undefined ? URL_PARAMS.useBasicMaterials : POOLVR.config.useBasicMaterials;
-
-    if (POOLVR.config.useBasicMaterials) {
-        POOLVR.config.usePointLight = false;
-        POOLVR.config.useSpotLight = false;
-        POOLVR.config.useShadowMap  = false;
-    } else {
-        POOLVR.config.usePointLight = URL_PARAMS.usePointLight !== undefined ? URL_PARAMS.usePointLight : POOLVR.config.usePointLight;
-        POOLVR.config.useShadowMap  = URL_PARAMS.useShadowMap  !== undefined ? URL_PARAMS.useShadowMap  : POOLVR.config.useShadowMap;
-    }
+    POOLVR.config.useTextGeomLogger  = POOLVR.URL_PARAMS.useTextGeomLogger !== undefined ? POOLVR.URL_PARAMS.useTextGeomLogger : POOLVR.config.useTextGeomLogger;
+    POOLVR.config.synthSpeakerVolume = POOLVR.URL_PARAMS.synthSpeakerVolume || POOLVR.config.synthSpeakerVolume;
+    POOLVR.config.useBasicMaterials  = POOLVR.URL_PARAMS.useBasicMaterials !== undefined ? POOLVR.URL_PARAMS.useBasicMaterials : POOLVR.config.useBasicMaterials;
 
     // Leap Motion config:
     POOLVR.config.toolOptions = POOLVR.config.toolOptions || {};
 
-    POOLVR.config.toolOptions.toolLength   = URL_PARAMS.toolLength   || POOLVR.config.toolOptions.toolLength;
-    POOLVR.config.toolOptions.toolRadius   = URL_PARAMS.toolRadius   || POOLVR.config.toolOptions.toolRadius;
-    POOLVR.config.toolOptions.toolMass     = URL_PARAMS.toolMass     || POOLVR.config.toolOptions.toolMass;
-    POOLVR.config.toolOptions.toolOffset   = URL_PARAMS.toolOffset   || POOLVR.config.toolOptions.toolOffset;
-    POOLVR.config.toolOptions.toolRotation = URL_PARAMS.toolRotation || POOLVR.config.toolOptions.toolRotation;
-    POOLVR.config.toolOptions.tipShape     = URL_PARAMS.tipShape     || POOLVR.config.toolOptions.tipShape;
-    POOLVR.config.toolOptions.host         = URL_PARAMS.host         || POOLVR.config.toolOptions.host;
-    POOLVR.config.toolOptions.port         = URL_PARAMS.port         || POOLVR.config.toolOptions.port;
-    POOLVR.config.toolOptions.interactionPlaneOpacity = URL_PARAMS.interactionPlaneOpacity || 0.22;
+    POOLVR.config.toolOptions.toolLength   = POOLVR.URL_PARAMS.toolLength   || POOLVR.config.toolOptions.toolLength;
+    POOLVR.config.toolOptions.toolRadius   = POOLVR.URL_PARAMS.toolRadius   || POOLVR.config.toolOptions.toolRadius;
+    POOLVR.config.toolOptions.toolMass     = POOLVR.URL_PARAMS.toolMass     || POOLVR.config.toolOptions.toolMass;
+    POOLVR.config.toolOptions.toolOffset   = POOLVR.URL_PARAMS.toolOffset   || POOLVR.config.toolOptions.toolOffset;
+    POOLVR.config.toolOptions.toolRotation = POOLVR.URL_PARAMS.toolRotation || POOLVR.config.toolOptions.toolRotation;
+    POOLVR.config.toolOptions.tipShape     = POOLVR.URL_PARAMS.tipShape     || POOLVR.config.toolOptions.tipShape;
+    POOLVR.config.toolOptions.host         = POOLVR.URL_PARAMS.host         || POOLVR.config.toolOptions.host;
+    POOLVR.config.toolOptions.port         = POOLVR.URL_PARAMS.port         || POOLVR.config.toolOptions.port;
+    POOLVR.config.toolOptions.interactionPlaneOpacity = POOLVR.URL_PARAMS.interactionPlaneOpacity || 0.22;
+
+    if (POOLVR.config.useBasicMaterials) {
+        POOLVR.config.useSpotLight = false;
+        POOLVR.config.usePointLight = false;
+        POOLVR.config.useShadowMap  = false;
+    } else {
+        POOLVR.config.useSpotLight  = POOLVR.URL_PARAMS.useSpotLight  !== undefined ? POOLVR.URL_PARAMS.useSpotLight  : (POOLVR.config.useSpotLight || true);
+        POOLVR.config.usePointLight = POOLVR.URL_PARAMS.usePointLight !== undefined ? POOLVR.URL_PARAMS.usePointLight : POOLVR.config.usePointLight;
+        POOLVR.config.useShadowMap  = POOLVR.URL_PARAMS.useShadowMap  !== undefined ? POOLVR.URL_PARAMS.useShadowMap  : POOLVR.config.useShadowMap;
+    }
+
 };
 
 
-POOLVR.profile = URL_PARAMS.profile || POOLVR.profile || 'default';
+POOLVR.profile = POOLVR.URL_PARAMS.profile || POOLVR.profile || 'default';
 
 
 POOLVR.saveConfig = function (profileName) {
