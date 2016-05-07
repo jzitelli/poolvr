@@ -79,7 +79,7 @@ function onLoad() {
 
     POOLVR.world = world;
 
-    POOLVR.objectSelector = new YAWVRB.AppUtils.ObjectSelector();
+    POOLVR.objectSelector = new YAWVRB.Utils.ObjectSelector();
 
     POOLVR.shadowMaterial = new THREE.MeshBasicMaterial({color: 0x002200});
 
