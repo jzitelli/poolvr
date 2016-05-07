@@ -138,7 +138,7 @@ function onLoad() {
             //leapTool.toolShadowMesh.renderOrder = 1;
         }
 
-        if (POOLVR.config.useSpotLight) {
+        // if (POOLVR.config.useSpotLight) {
             var centerSpotLight = new THREE.SpotLight(0xffffee, 1, 8, Math.PI / 2);
             centerSpotLight.position.set(0, 3, 0);
             centerSpotLight.castShadow = true;
@@ -151,7 +151,8 @@ function onLoad() {
             centerSpotLight.updateMatrix();
             centerSpotLight.updateMatrixWorld();
             POOLVR.centerSpotLight = centerSpotLight;
-        }
+            POOLVR.centerSpotLight.visible = POOLVR.config.useSpotLight;
+        // }
 
         if (POOLVR.config.usePointLight) {
             var pointLight = new THREE.PointLight(0xaa8866, 0.8, 40);

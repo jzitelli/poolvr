@@ -18,14 +18,24 @@ POOLVR.setupMenu = function () {
 
     var useBasicMaterialsInput = document.getElementById('useBasicMaterials');
     useBasicMaterialsInput.checked = POOLVR.config.useBasicMaterials;
+    var useShadowMapInput = document.getElementById('useShadowMap');
+    useShadowMapInput.checked = POOLVR.config.useShadowMap;
+    var usePointLightInput = document.getElementById('usePointLight');
+    usePointLightInput.checked = POOLVR.config.usePointLight;
+    var useSpotLightInput = document.getElementById('useSpotLight');
+    useSpotLightInput.checked = POOLVR.config.useSpotLight;
+
     useBasicMaterialsInput.addEventListener('change', function (evt) {
         POOLVR.config.useBasicMaterials = useBasicMaterialsInput.checked;
         POOLVR.saveConfig(POOLVR.profile);
+        if (!POOLVR.config.useBasicMaterials && !(POOLVR.config.useSpotLight || POOLVR.config.usePointLight)) {
+            useSpotLightInput.checked = true;
+            POOLVR.config.useSpotLight = true;
+            POOLVR.centerSpotLight.visible = true;
+        }
         POOLVR.switchMaterials(POOLVR.config.useBasicMaterials);
     }, false);
 
-    var useShadowMapInput = document.getElementById('useShadowMap');
-    useShadowMapInput.checked = POOLVR.config.useShadowMap;
     useShadowMapInput.addEventListener('change', function (evt) {
         POOLVR.config.useShadowMap = useShadowMapInput.checked;
         POOLVR.saveConfig(POOLVR.profile);
@@ -34,8 +44,6 @@ POOLVR.setupMenu = function () {
         }
     }, false);
 
-    var usePointLightInput = document.getElementById('usePointLight');
-    usePointLightInput.checked = POOLVR.config.usePointLight;
     usePointLightInput.addEventListener('change', function (evt) {
         POOLVR.config.usePointLight = usePointLightInput.checked;
         POOLVR.saveConfig(POOLVR.profile);
@@ -44,14 +52,10 @@ POOLVR.setupMenu = function () {
         }
     }, false);
 
-    var useSpotLightInput = document.getElementById('useSpotLight');
-    useSpotLightInput.checked = POOLVR.config.useSpotLight;
     useSpotLightInput.addEventListener('change', function (evt) {
         POOLVR.config.useSpotLight = useSpotLightInput.checked;
         POOLVR.saveConfig(POOLVR.profile);
-        if (window.confirm('This change requires a page reload to take effect - reload now?')) {
-            document.location.reload();
-        }
+        POOLVR.centerSpotLight.visible = POOLVR.config.useSpotLight;
     }, false);
 
     // TODO: regular expression format check
