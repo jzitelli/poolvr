@@ -103,7 +103,8 @@ var POOLVR = %s;
 var THREEPY_SCENE = %s;
 </script>""" % (json.dumps(WebVRConfig, indent=2),
                 json.dumps({'config': poolvr_config}, indent=2),
-                json.dumps(pool_table.pool_hall(**poolvr_config).export()))))
+                json.dumps(pool_table.pool_hall(**poolvr_config).export()))),
+                           version_id='v0.1.1')
 
 
 

@@ -45,7 +45,8 @@ POOLVR.keyboardCommands = {
     selectPrevBall: {buttons: [109],
                      commandDown: POOLVR.commands.selectPrevBall},
     stroke: {buttons: [YAWVRB.Keyboard.KEYCODES.SPACEBAR],
-             commandDown: POOLVR.commands.stroke}
+             commandDown: POOLVR.commands.stroke},
+    toggleMenu: {buttons: [YAWVRB.Keyboard.KEYCODES.M], commandDown: POOLVR.commands.toggleMenu}
 };
 
 POOLVR.keyboard = new YAWVRB.Keyboard(window, POOLVR.keyboardCommands);

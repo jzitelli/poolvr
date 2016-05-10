@@ -350,7 +350,8 @@ POOLVR.keyboardCommands = {
     selectPrevBall: {buttons: [109],
                      commandDown: POOLVR.commands.selectPrevBall},
     stroke: {buttons: [YAWVRB.Keyboard.KEYCODES.SPACEBAR],
-             commandDown: POOLVR.commands.stroke}
+             commandDown: POOLVR.commands.stroke},
+    toggleMenu: {buttons: [YAWVRB.Keyboard.KEYCODES.M], commandDown: POOLVR.commands.toggleMenu}
 };
 
 POOLVR.keyboard = new YAWVRB.Keyboard(window, POOLVR.keyboardCommands);
@@ -451,10 +452,9 @@ require('./menu.js');
 require('./setup.js');
 
 /* global POOLVR, THREE, YAWVRB, CANNON, TextGeomUtils, SynthSpeaker, THREEPY_SCENE, threeStats, glStats, rStats */
-
-
 window.onLoad = function () {
     "use strict";
+    if (POOLVR.URL_PARAMS.clearLocalStorage) localStorage.clear();
 
     THREE.Object3D.DefaultMatrixAutoUpdate = false;
 
@@ -467,7 +467,7 @@ window.onLoad = function () {
     world.defaultContactMaterial.frictionEquationStiffness  = 2e6;
     world.defaultContactMaterial.contactEquationRelaxation  = 2;
     world.defaultContactMaterial.frictionEquationRelaxation = 3;
-    //world.broadphase = new CANNON.SAPBroadphase( world );
+    world.broadphase = new CANNON.SAPBroadphase( world );
     world.solver.iterations = 10;
 
     POOLVR.stage = new YAWVRB.Stage();
@@ -541,19 +541,22 @@ window.onLoad = function () {
         antialias: antialias
     };
 
+    var euler = new THREE.Euler(0, 0, 0, 'YXZ');
     var appConfig = {
         onResetVRSensor: function (lastRotation, lastPosition) {
             // maintain correspondence between virtual / physical leap motion controller:
             var camera = POOLVR.app.camera;
             var toolRoot = POOLVR.leapTool.toolRoot;
-            toolRoot.heading -= lastRotation;
-            toolRoot.quaternion.setFromAxisAngle(THREE.Object3D.DefaultUp, toolRoot.heading);
+            euler.setFromQuaternion(toolRoot.quaternion);
+            euler.y -= lastRotation;
+            toolRoot.quaternion.setFromAxisAngle(THREE.Object3D.DefaultUp, euler.y);
             toolRoot.position.sub(lastPosition);
             toolRoot.position.applyAxisAngle(THREE.Object3D.DefaultUp, -lastRotation);
             toolRoot.position.add(camera.position);
             toolRoot.updateMatrix();
-            avatar.heading += lastRotation;
-            avatar.quaternion.setFromAxisAngle(THREE.Object3D.DefaultUp, avatar.heading);
+            euler.setFromQuaternion(avatar.quaternion);
+            euler.y += lastRotation;
+            avatar.quaternion.setFromAxisAngle(THREE.Object3D.DefaultUp, euler.y);
             avatar.updateMatrix();
             avatar.updateMatrixWorld();
             POOLVR.leapTool.updateToolMapping();
@@ -568,7 +571,6 @@ window.onLoad = function () {
 
     avatar.add(POOLVR.app.camera);
     avatar.position.set(0, 0.98295, 1.0042);
-    avatar.heading = 0;
 
     THREE.py.parse(THREEPY_SCENE).then( function (scene) {
 
@@ -627,6 +629,7 @@ POOLVR.moveAvatar = ( function () {
     var UP = THREE.Object3D.DefaultUp,
         walkSpeed = 0.333,
         floatSpeed = 0.1;
+    var euler = new THREE.Euler(0, 0, 0, 'YXZ');
 
     return function (keyboard, gamepadValues, dt) {
         var avatar = POOLVR.avatar;
@@ -658,10 +661,11 @@ POOLVR.moveAvatar = ( function () {
             drive = 0;
         }
         if (floatUp !== 0 || strafe !== 0 || heading !== 0 || drive !== 0) {
-            avatar.heading += heading;
-            var cosHeading = Math.cos(avatar.heading),
-                sinHeading = Math.sin(avatar.heading);
-            avatar.quaternion.setFromAxisAngle(UP, avatar.heading);
+            euler.setFromQuaternion(avatar.quaternion);
+            euler.y += heading;
+            var cosHeading = Math.cos(euler.y),
+                sinHeading = Math.sin(euler.y);
+            avatar.quaternion.setFromAxisAngle(UP, euler.y);
             avatar.position.x += dt * (strafe * cosHeading + drive * sinHeading);
             avatar.position.z += dt * (drive * cosHeading - strafe * sinHeading);
             avatar.position.y += dt * floatUp;
@@ -674,7 +678,7 @@ POOLVR.moveAvatar = ( function () {
 POOLVR.moveToolRoot = ( function () {
     "use strict";
     var UP = THREE.Object3D.DefaultUp;
-    var heading = 0;
+    var euler = new THREE.Euler(0, 0, 0, 'YXZ');
     return function (keyboard, gamepadValues, dt) {
         var leapTool = POOLVR.leapTool;
         var toolRoot = leapTool.toolRoot;
@@ -688,7 +692,6 @@ POOLVR.moveToolRoot = ( function () {
             toolStrafe += keyboard.moveToolRight - keyboard.moveToolLeft;
             rotateToolCW += keyboard.rotateToolCW - keyboard.rotateToolCCW;
         }
-
         for (var i = 0; i < gamepadValues.length; i++) {
             var values = gamepadValues[i];
             if (values.toggleToolFloatMode) {
@@ -699,15 +702,15 @@ POOLVR.moveToolRoot = ( function () {
                 if (values.toolTurnLR) rotateToolCW += values.toolTurnLR;
             }
         }
-
         if ((toolDrive !== 0) || (toolStrafe !== 0) || (toolFloat !== 0) || (rotateToolCW !== 0)) {
             toolRoot.position.x +=  0.16 * dt * toolStrafe;
             toolRoot.position.z += -0.16 * dt * toolDrive;
             toolRoot.position.y +=  0.16 * dt * toolFloat;
-            heading -= 0.15 * dt * rotateToolCW;
-            toolRoot.quaternion.setFromAxisAngle(UP, heading);
+            euler.setFromQuaternion(toolRoot.quaternion);
+            euler.y -= 0.15 * dt * rotateToolCW;
+            toolRoot.quaternion.setFromAxisAngle(UP, euler.y);
             toolRoot.updateMatrix();
-            POOLVR.leapTool.setDeadtime(0);
+            leapTool.setDeadtime(0);
         }
     };
 } )();
@@ -846,7 +849,7 @@ POOLVR.setupMenu = function () {
     var overlay = document.getElementById('overlay');
 
     POOLVR.toggleMenu = function () {
-        if (overlay.style.display === 'none') { 
+        if (overlay.style.display === 'none') {
             overlay.style.display = 'block';
         } else {
             overlay.style.display = 'none';
@@ -913,17 +916,14 @@ POOLVR.setupMenu = function () {
 
     // TODO: regular expression format check
     var leapAddressInput = document.getElementById('leapAddress');
-    leapAddressInput.value = 'localhost';
-    var host = leapAddressInput.value;
-    POOLVR.config.toolOptions.host = host;
+    leapAddressInput.value = POOLVR.config.toolOptions.host || 'localhost';
     leapAddressInput.addEventListener('change', onLeapAddressChange, false);
     function onLeapAddressChange() {
         var host = leapAddressInput.value;
         POOLVR.config.toolOptions.host = host;
-        POOLVR.saveConfig(POOLVR.profile);
-        POOLVR.leapController.connection.host = host;
-        POOLVR.leapController.connection.disconnect(true);
-        POOLVR.leapController.connect();
+        POOLVR.leapTool.leapController.connection.host = host;
+        POOLVR.leapTool.leapController.connection.disconnect(true);
+        POOLVR.leapTool.leapController.connect();
     }
 
     var profileNameInput = document.getElementById('profileName');
@@ -931,7 +931,6 @@ POOLVR.setupMenu = function () {
     profileNameInput.value = POOLVR.profile;
     profileNameInput.addEventListener('change', function () {
         POOLVR.profile = profileNameInput.value;
-        // POOLVR.saveConfig(POOLVR.profile);
     }, false);
 
     var vrButton = document.getElementById('vrButton');
