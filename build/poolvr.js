@@ -267,11 +267,11 @@ POOLVR.autoPosition = ( function () {
         }
 
         var avatar = POOLVR.avatar;
-        avatar.heading = Math.atan2(
+        var heading = Math.atan2(
             -(POOLVR.ballMeshes[POOLVR.nextBall].position.x - POOLVR.ballMeshes[0].position.x),
             -(POOLVR.ballMeshes[POOLVR.nextBall].position.z - POOLVR.ballMeshes[0].position.z)
         );
-        avatar.quaternion.setFromAxisAngle(UP, avatar.heading);
+        avatar.quaternion.setFromAxisAngle(UP, heading);
 
         // nextVector.copy(POOLVR.toolRoot.worldPosition);
         nextVector.copy(POOLVR.leapTool.toolRoot.position);
@@ -454,7 +454,11 @@ require('./setup.js');
 /* global POOLVR, THREE, YAWVRB, CANNON, TextGeomUtils, SynthSpeaker, THREEPY_SCENE, threeStats, glStats, rStats */
 window.onLoad = function () {
     "use strict";
-    if (POOLVR.URL_PARAMS.clearLocalStorage) localStorage.clear();
+
+    // if (POOLVR.URL_PARAMS.clearLocalStorage) {
+        console.log('clearing localStorage...');
+        localStorage.clear();
+    // }
 
     THREE.Object3D.DefaultMatrixAutoUpdate = false;
 
@@ -480,6 +484,8 @@ window.onLoad = function () {
     POOLVR.config = POOLVR.loadConfig(POOLVR.profile) || POOLVR.config;
     POOLVR.parseURIConfig();
     console.log("POOLVR.config =\n" + JSON.stringify(POOLVR.config, undefined, 2));
+
+    POOLVR.leapIndicator = document.getElementById('leapIndicator');
 
     var leapTool = YAWVRB.LeapMotion.makeTool( POOLVR.combineObjects(POOLVR.config.toolOptions, {
         onConnect: function () {
@@ -545,6 +551,7 @@ window.onLoad = function () {
     var appConfig = {
         onResetVRSensor: function (lastRotation, lastPosition) {
             // maintain correspondence between virtual / physical leap motion controller:
+            console.log('lastRotation: %f\nlastPosition: %s', lastRotation, JSON.stringify(lastPosition));
             var camera = POOLVR.app.camera;
             var toolRoot = POOLVR.leapTool.toolRoot;
             euler.setFromQuaternion(toolRoot.quaternion);
@@ -911,8 +918,6 @@ POOLVR.setupMenu = function () {
         POOLVR.saveConfig(POOLVR.profile);
         POOLVR.centerSpotLight.visible = POOLVR.config.useSpotLight;
     }, false);
-
-    POOLVR.leapIndicator = document.getElementById('leapIndicator');
 
     // TODO: regular expression format check
     var leapAddressInput = document.getElementById('leapAddress');
