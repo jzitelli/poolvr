@@ -257,9 +257,9 @@ POOLVR.autoPosition = ( function () {
     return function () {
 
         if (POOLVR.synthSpeaker.speaking === false) {
-            if (speakCount <= 7) {
+            if (speakCount <= 3) {
                 POOLVR.synthSpeaker.speak("You are being auto-positioned.");
-                if (speakCount === 7) {
+                if (speakCount === 3) {
                     POOLVR.synthSpeaker.speak("I will stop saying that now.");
                 }
                 speakCount++;
@@ -305,7 +305,7 @@ POOLVR.stroke = ( function () {
 },{}],5:[function(require,module,exports){
 /* global POOLVR, YAWVRB */
 POOLVR.commands = {
-    toggleVR:         function () { POOLVR.app.toggleVR(); },
+    toggleMenu:       function () { POOLVR.toggleMenu(); },
     toggleVRControls: function () { POOLVR.app.toggleVRControls(); },
     toggleWireframe:  function () { POOLVR.app.toggleWireframe(); },
     resetVRSensor:    function () { POOLVR.app.resetVRSensor(); },
@@ -375,7 +375,7 @@ POOLVR.gamepadCommands = {
              commandDown: POOLVR.commands.stroke},
     autoPosition: {buttons: [YAWVRB.Gamepad.BUTTONS.Y],
                    commandDown: POOLVR.commands.autoPosition},
-    toggleVR: {buttons: [YAWVRB.Gamepad.BUTTONS.start], commandDown: POOLVR.commands.toggleVR}
+    toggleMenu: {buttons: [YAWVRB.Gamepad.BUTTONS.start], commandDown: POOLVR.commands.toggleMenu}
 };
 
 POOLVR.parseURIConfig = function () {
@@ -843,6 +843,16 @@ POOLVR.startAnimateLoop = function () {
 POOLVR.setupMenu = function () {
     "use strict";
 
+    var overlay = document.getElementById('overlay');
+
+    POOLVR.toggleMenu = function () {
+        if (overlay.style.display === 'none') {
+            overlay.style.display = 'block';
+        } else {
+            overlay.style.display = 'none';
+        }
+    };
+
     function onFocus() {
         POOLVR.keyboard.enabled = false;
     }
@@ -903,17 +913,15 @@ POOLVR.setupMenu = function () {
 
     // TODO: regular expression format check
     var leapAddressInput = document.getElementById('leapAddress');
-    leapAddressInput.value = 'localhost';
-    var host = leapAddressInput.value;
-    POOLVR.config.toolOptions.host = host;
+    leapAddressInput.value = POOLVR.config.toolOptions.host || 'localhost';
     leapAddressInput.addEventListener('change', onLeapAddressChange, false);
     function onLeapAddressChange() {
         var host = leapAddressInput.value;
         POOLVR.config.toolOptions.host = host;
         POOLVR.saveConfig(POOLVR.profile);
-        POOLVR.leapController.connection.host = host;
-        POOLVR.leapController.connection.disconnect(true);
-        POOLVR.leapController.connect();
+        POOLVR.leapTool.leapController.connection.host = host;
+        POOLVR.leapTool.leapController.connection.disconnect(true);
+        POOLVR.leapTool.leapController.connect();
     }
 
     var profileNameInput = document.getElementById('profileName');
@@ -921,13 +929,13 @@ POOLVR.setupMenu = function () {
     profileNameInput.value = POOLVR.profile;
     profileNameInput.addEventListener('change', function () {
         POOLVR.profile = profileNameInput.value;
-        // POOLVR.saveConfig(POOLVR.profile);
     }, false);
 
     var vrButton = document.getElementById('vrButton');
     vrButton.addEventListener('click', function () {
         POOLVR.app.toggleVR();
         vrButton.blur();
+        overlay.style.display = 'none';
     }, false);
 
     var fsButton = document.getElementById('fsButton');
@@ -944,7 +952,7 @@ POOLVR.setupMenu = function () {
     loadProfileButton.addEventListener('click', function () {
         var config = POOLVR.loadConfig(POOLVR.profile);
         if (config) {
-            console.log('loaded configuration for "%s":', POOLVR.profileName);
+            console.log('loaded configuration for "%s":', POOLVR.profile);
             console.log(JSON.stringify(config, undefined, 2));
             POOLVR.config = config;
             POOLVR.stage.load(POOLVR.config.stage);
