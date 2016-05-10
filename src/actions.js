@@ -53,11 +53,11 @@ POOLVR.autoPosition = ( function () {
         }
 
         var avatar = POOLVR.avatar;
-        avatar.heading = Math.atan2(
+        var heading = Math.atan2(
             -(POOLVR.ballMeshes[POOLVR.nextBall].position.x - POOLVR.ballMeshes[0].position.x),
             -(POOLVR.ballMeshes[POOLVR.nextBall].position.z - POOLVR.ballMeshes[0].position.z)
         );
-        avatar.quaternion.setFromAxisAngle(UP, avatar.heading);
+        avatar.quaternion.setFromAxisAngle(UP, heading);
 
         // nextVector.copy(POOLVR.toolRoot.worldPosition);
         nextVector.copy(POOLVR.leapTool.toolRoot.position);

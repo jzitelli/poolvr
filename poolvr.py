@@ -6,6 +6,7 @@ import logging
 _logger = logging.getLogger(__name__)
 import json
 from copy import deepcopy
+import subprocess
 
 from flask import Flask, render_template, request, Markup
 
@@ -50,19 +51,19 @@ POOLVR = {
         'L_table'            : 2.3368,
         'H_table'            : 0.74295,
         'ball_diameter'      : 2.25 * pool_table.IN2METER,
-        #'H_ceiling'          : 8 * 12 * 0.0254,
+        'H_ceiling'          : 8 * 12 * 0.0254,
         'synthSpeakerVolume' : 0.4,
         'toolOptions': {
-            'toolOffset'  :  [0, -0.42, -0.48],
-            'toolRotation':  0,
-            'tipShape'    :  'Cylinder',
-            'toolRadius'  :  0.013,
-            'tipRadius'   :  0.013,
-            'toolLength'  : 0.35
+            'position'  : [0, -0.42, -0.49],
+            'rotation'  : [0, 0, 0],
+            'tipShape'  : 'Cylinder',
+            'toolRadius': 0.0123,
+            'tipRadius' : 0.0123,
+            'toolLength': 0.37,
+            'host'      : '127.0.0.1'
         }
     }
 }
-
 
 
 def get_poolvr_config():
@@ -86,7 +87,7 @@ def get_poolvr_config():
     config.update(args)
     return config
 
-
+# completed_proc = subprocess.run(['git', 'rev-list'], stdout=subprocess.PIPE)
 
 @app.route('/')
 def poolvr():
@@ -125,6 +126,7 @@ var THREEPY_SCENE = %s;
 
 
 def main():
+    # _logger.info(completed_proc.stdout)
     _logger.info("app.config =\n%s" % '\n'.join(['%s: %s' % (k, str(v))
                                                  for k, v in sorted(app.config.items(),
                                                                     key=lambda i: i[0])]))

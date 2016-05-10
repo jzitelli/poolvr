@@ -68,8 +68,6 @@ POOLVR.setupMenu = function () {
         POOLVR.centerSpotLight.visible = POOLVR.config.useSpotLight;
     }, false);
 
-    POOLVR.leapIndicator = document.getElementById('leapIndicator');
-
     // TODO: regular expression format check
     var leapAddressInput = document.getElementById('leapAddress');
     leapAddressInput.value = POOLVR.config.toolOptions.host || 'localhost';
