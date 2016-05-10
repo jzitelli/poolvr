@@ -1,90 +1,44 @@
-/* global POOLVR */
-function onLoad() {
+/* global require */
+window.POOLVR = window.POOLVR || {};
+require('./TextGeomUtils.js');
+require('./utils.js');
+require('./WebVRSound.js');
+require('./SynthSpeaker.js');
+require('./actions.js');
+require('./config.js');
+require('./menu.js');
+require('./setup.js');
+
+/* global POOLVR, THREE, YAWVRB, CANNON, TextGeomUtils, SynthSpeaker, THREEPY_SCENE, threeStats, glStats, rStats */
+
+
+window.onLoad = function () {
     "use strict";
-
-    POOLVR.config = POOLVR.loadConfig(POOLVR.profile) || POOLVR.config;
-    POOLVR.parseURIConfig();
-
-    console.log("POOLVR.config =\n" + JSON.stringify(POOLVR.config, undefined, 2));
 
     THREE.Object3D.DefaultMatrixAutoUpdate = false;
 
     POOLVR.avatar = new THREE.Object3D();
     var avatar = POOLVR.avatar;
 
-    POOLVR.synthSpeaker = new SynthSpeaker({volume: POOLVR.config.synthSpeakerVolume, rate: 0.8, pitch: 0.5});
-
-    if (POOLVR.config.useTextGeomLogger) {
-        var fontLoader = new THREE.FontLoader();
-        fontLoader.load('fonts/Anonymous Pro_Regular.js', function (font) {
-            var textGeomCacher = new TextGeomUtils.TextGeomCacher(font, {size: 0.12});
-            var textGeomLoggerMaterial = new THREE.MeshBasicMaterial({color: 0xff3210});
-            POOLVR.textGeomLogger = new TextGeomUtils.TextGeomLogger(textGeomCacher,
-                {material: textGeomLoggerMaterial, nrows: 8, lineHeight: 1.8 * 0.12});
-            avatar.add(POOLVR.textGeomLogger.root);
-            POOLVR.textGeomLogger.root.position.set(-2.7, 0.88, -3.3);
-            POOLVR.textGeomLogger.root.updateMatrix();
-        });
-    } else {
-        POOLVR.textGeomLogger = {
-            root: new THREE.Object3D(),
-            log: function (msg) { console.log(msg); },
-            clear: function () {}
-        };
-    }
-
-    var antialias = (POOLVR.URL_PARAMS.antialias !== undefined ? POOLVR.URL_PARAMS.antialias : POOLVR.config.antialias) || !POOLVR.isMobile();
-
-    var rendererOptions = {
-        canvas: document.getElementById('webgl-canvas'),
-        antialias: antialias
-    };
-
-    var appConfig = {
-        onResetVRSensor: function (lastRotation, lastPosition) {
-            // maintain correspondence between virtual / physical leap motion controller:
-            var camera = POOLVR.app.camera;
-            var toolRoot = POOLVR.toolRoot;
-            toolRoot.heading -= lastRotation;
-            toolRoot.quaternion.setFromAxisAngle(THREE.Object3D.DefaultUp, toolRoot.heading);
-            toolRoot.position.sub(lastPosition);
-            toolRoot.position.applyAxisAngle(THREE.Object3D.DefaultUp, -lastRotation);
-            toolRoot.position.add(camera.position);
-            toolRoot.updateMatrix();
-            avatar.heading += lastRotation;
-            avatar.quaternion.setFromAxisAngle(THREE.Object3D.DefaultUp, avatar.heading);
-            avatar.updateMatrix();
-            avatar.updateMatrixWorld();
-            POOLVR.updateToolMapping();
-        }
-    };
-
-    POOLVR.app = new YAWVRB.App(undefined, appConfig, rendererOptions);
-
-    if (POOLVR.config.useShadowMap) {
-        app.renderer.shadowMap.enabled = true;
-    }
-
-    avatar.add(POOLVR.app.camera);
-    avatar.position.set(0, 0.98295, 1.0042);
-    avatar.heading = 0;
-
     var world = new CANNON.World();
-    world.gravity.set( 0, -POOLVR.config.gravity, 0 );
-    //world.broadphase = new CANNON.SAPBroadphase( world );
+    POOLVR.world = world;
     world.defaultContactMaterial.contactEquationStiffness   = 1e7;
     world.defaultContactMaterial.frictionEquationStiffness  = 2e6;
     world.defaultContactMaterial.contactEquationRelaxation  = 2;
     world.defaultContactMaterial.frictionEquationRelaxation = 3;
+    //world.broadphase = new CANNON.SAPBroadphase( world );
     world.solver.iterations = 10;
 
-    POOLVR.world = world;
+    POOLVR.stage = new YAWVRB.Stage();
 
     POOLVR.objectSelector = new YAWVRB.Utils.ObjectSelector();
-
     POOLVR.shadowMaterial = new THREE.MeshBasicMaterial({color: 0x002200});
 
-    POOLVR.leapIndicator = document.getElementById('leapIndicator');
+    POOLVR.setupMenu();
+
+    POOLVR.config = POOLVR.loadConfig(POOLVR.profile) || POOLVR.config;
+    POOLVR.parseURIConfig();
+    console.log("POOLVR.config =\n" + JSON.stringify(POOLVR.config, undefined, 2));
 
     var leapTool = YAWVRB.LeapMotion.makeTool( POOLVR.combineObjects(POOLVR.config.toolOptions, {
         onConnect: function () {
@@ -107,23 +61,73 @@ function onLoad() {
         shadowMaterial: POOLVR.shadowMaterial,
         shadowPlane: POOLVR.config.H_table + 0.001
     }) );
-
-    POOLVR.leapTool           = leapTool;
-    POOLVR.leapController     = leapTool.leapController;
-    POOLVR.toolRoot           = leapTool.toolRoot;
-    POOLVR.toolMesh           = leapTool.toolMesh;
-    POOLVR.toolBody           = leapTool.toolBody;
-    POOLVR.updateTool         = leapTool.updateTool;
-    POOLVR.updateToolPostStep = leapTool.updateToolPostStep;
-    POOLVR.updateToolMapping  = leapTool.updateToolMapping;
-
-    POOLVR.toolMesh.renderOrder = -1;
+    POOLVR.leapTool = leapTool;
+    leapTool.toolMesh.renderOrder = -1;
     avatar.add(leapTool.toolRoot);
     world.addBody(leapTool.toolBody);
+    leapTool.leapController.connect();
+    POOLVR.objectSelector.addSelectable(POOLVR.leapTool.toolRoot);
+    leapTool.toolRoot.name = 'toolRoot';
 
-    POOLVR.leapController.connect();
+    POOLVR.stage.objects.push(POOLVR.leapTool.toolRoot);
+    POOLVR.stage.load(POOLVR.config.stage);
 
-    POOLVR.objectSelector.addSelectable(POOLVR.toolRoot);
+    if (POOLVR.config.useTextGeomLogger) {
+        var fontLoader = new THREE.FontLoader();
+        fontLoader.load('fonts/Anonymous Pro_Regular.js', function (font) {
+            var textGeomCacher = new TextGeomUtils.TextGeomCacher(font, {size: 0.12});
+            var textGeomLoggerMaterial = new THREE.MeshBasicMaterial({color: 0xff3210});
+            POOLVR.textGeomLogger = new TextGeomUtils.TextGeomLogger(textGeomCacher,
+                {material: textGeomLoggerMaterial, nrows: 8, lineHeight: 1.8 * 0.12});
+            avatar.add(POOLVR.textGeomLogger.root);
+            POOLVR.textGeomLogger.root.position.set(-2.7, 0.88, -3.3);
+            POOLVR.textGeomLogger.root.updateMatrix();
+        });
+    } else {
+        POOLVR.textGeomLogger = {
+            root: new THREE.Object3D(),
+            log: function (msg) { console.log(msg); },
+            clear: function () {}
+        };
+    }
+    POOLVR.synthSpeaker = new SynthSpeaker({volume: POOLVR.config.synthSpeakerVolume, rate: 0.8, pitch: 0.5});
+    world.gravity.set( 0, -POOLVR.config.gravity, 0 );
+
+    var antialias = (POOLVR.URL_PARAMS.antialias !== undefined ? POOLVR.URL_PARAMS.antialias : POOLVR.config.antialias) || !POOLVR.isMobile();
+
+    var rendererOptions = {
+        canvas: document.getElementById('webgl-canvas'),
+        antialias: antialias
+    };
+
+    var appConfig = {
+        onResetVRSensor: function (lastRotation, lastPosition) {
+            // maintain correspondence between virtual / physical leap motion controller:
+            var camera = POOLVR.app.camera;
+            var toolRoot = POOLVR.leapTool.toolRoot;
+            toolRoot.heading -= lastRotation;
+            toolRoot.quaternion.setFromAxisAngle(THREE.Object3D.DefaultUp, toolRoot.heading);
+            toolRoot.position.sub(lastPosition);
+            toolRoot.position.applyAxisAngle(THREE.Object3D.DefaultUp, -lastRotation);
+            toolRoot.position.add(camera.position);
+            toolRoot.updateMatrix();
+            avatar.heading += lastRotation;
+            avatar.quaternion.setFromAxisAngle(THREE.Object3D.DefaultUp, avatar.heading);
+            avatar.updateMatrix();
+            avatar.updateMatrixWorld();
+            POOLVR.leapTool.updateToolMapping();
+        }
+    };
+
+    POOLVR.app = new YAWVRB.App(undefined, appConfig, rendererOptions);
+    var app = POOLVR.app;
+    if (POOLVR.config.useShadowMap) {
+        app.renderer.shadowMap.enabled = true;
+    }
+
+    avatar.add(POOLVR.app.camera);
+    avatar.position.set(0, 0.98295, 1.0042);
+    avatar.heading = 0;
 
     THREE.py.parse(THREEPY_SCENE).then( function (scene) {
 
@@ -132,27 +136,23 @@ function onLoad() {
         POOLVR.app.scene = scene;
 
         if (leapTool.toolShadowMesh) {
-            console.log('toolShadowMesh:');
-            console.log(leapTool.toolShadowMesh);
             POOLVR.app.scene.add(leapTool.toolShadowMesh);
             //leapTool.toolShadowMesh.renderOrder = 1;
         }
 
-        // if (POOLVR.config.useSpotLight) {
-            var centerSpotLight = new THREE.SpotLight(0xffffee, 1, 8, Math.PI / 2);
-            centerSpotLight.position.set(0, 3, 0);
-            centerSpotLight.castShadow = true;
-            centerSpotLight.shadow.camera.matrixAutoUpdate = true;
-            centerSpotLight.shadow.camera.near = 1;
-            centerSpotLight.shadow.camera.far = 3;
-            centerSpotLight.shadow.camera.fov = 80;
-            //centerSpotLight.shadow.radius = 0.5;
-            scene.add(centerSpotLight);
-            centerSpotLight.updateMatrix();
-            centerSpotLight.updateMatrixWorld();
-            POOLVR.centerSpotLight = centerSpotLight;
-            POOLVR.centerSpotLight.visible = POOLVR.config.useSpotLight;
-        // }
+        var centerSpotLight = new THREE.SpotLight(0xffffee, 1, 8, Math.PI / 2);
+        centerSpotLight.position.set(0, 3, 0);
+        centerSpotLight.castShadow = true;
+        centerSpotLight.shadow.camera.matrixAutoUpdate = true;
+        centerSpotLight.shadow.camera.near = 1;
+        centerSpotLight.shadow.camera.far = 3;
+        centerSpotLight.shadow.camera.fov = 80;
+        //centerSpotLight.shadow.radius = 0.5;
+        scene.add(centerSpotLight);
+        centerSpotLight.updateMatrix();
+        centerSpotLight.updateMatrixWorld();
+        POOLVR.centerSpotLight = centerSpotLight;
+        POOLVR.centerSpotLight.visible = POOLVR.config.useSpotLight;
 
         if (POOLVR.config.usePointLight) {
             var pointLight = new THREE.PointLight(0xaa8866, 0.8, 40);
@@ -166,20 +166,20 @@ function onLoad() {
         avatar.updateMatrix();
         avatar.updateMatrixWorld();
 
-        POOLVR.setupMenu();
-
         POOLVR.setup();
+
+        POOLVR.stage.load(POOLVR.config.stage);
 
         scene.updateMatrixWorld(true);
 
-        POOLVR.updateToolMapping();
+        POOLVR.leapTool.updateToolMapping();
 
         POOLVR.switchMaterials(POOLVR.config.useBasicMaterials);
 
         POOLVR.startAnimateLoop();
 
     } );
-}
+};
 
 POOLVR.moveAvatar = ( function () {
     "use strict";
@@ -266,6 +266,7 @@ POOLVR.moveToolRoot = ( function () {
             heading -= 0.15 * dt * rotateToolCW;
             toolRoot.quaternion.setFromAxisAngle(UP, heading);
             toolRoot.updateMatrix();
+            POOLVR.leapTool.setDeadtime(0);
         }
     };
 } )();
@@ -302,12 +303,12 @@ POOLVR.startAnimateLoop = function () {
         app      = POOLVR.app,
         world    = POOLVR.world,
         avatar   = POOLVR.avatar,
-        updateTool          = POOLVR.updateTool,
-        updateToolPostStep  = POOLVR.updateToolPostStep,
-        moveToolRoot        = POOLVR.moveToolRoot,
-        moveAvatar          = POOLVR.moveAvatar,
+        updateTool          = POOLVR.leapTool.updateTool,
+        updateToolPostStep  = POOLVR.leapTool.updateToolPostStep,
+        updateToolMapping   = POOLVR.leapTool.updateToolMapping,
         updateBallsPostStep = POOLVR.updateBallsPostStep,
-        updateToolMapping   = POOLVR.updateToolMapping;
+        moveToolRoot        = POOLVR.moveToolRoot,
+        moveAvatar          = POOLVR.moveAvatar;
 
     var glS, rS;
     if (POOLVR.URL_PARAMS.rstats) {
@@ -334,11 +335,11 @@ POOLVR.startAnimateLoop = function () {
         /* jshint ignore:end */
     } else {
         glS = {start: function () {}};
-        rS  = function (id) { return {start:  function () {},
-                                      end:    function () {},
-                                      tick:   function () {},
-                                      frame:  function () {},
-                                      update: function () {}}; };
+        rS  = function () { return {start:  function () {},
+                                    end:    function () {},
+                                    tick:   function () {},
+                                    frame:  function () {},
+                                    update: function () {}}; };
     }
 
     var lt = 0;

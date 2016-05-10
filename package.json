@@ -17,13 +17,12 @@
     "sounds/",
     "src/",
     "favicon.ico",
-    "Gruntfile.js",
     "index.html",
+    "pool_table.py",
     "poolvr.html",
     "poolvr_template.html",
     "poolvr.css",
     "poolvr.py",
-    "pool_table.py",
     "LICENSE",
     "README.md"
   ],
@@ -60,7 +59,7 @@
     "update_index": "python update_index.py",
     "prepublish": "npm run update_index",
     "lint": "eslint src/*.js",
-    "start": "python poolvr.py",
-    "build": "npm run lint"
+    "build": "npm run lint && browserify src/main.js -o build/poolvr.js",
+    "start": "python poolvr.py"
   }
 }

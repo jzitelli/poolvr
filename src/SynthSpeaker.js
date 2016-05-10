@@ -1,4 +1,4 @@
-var SynthSpeaker = ( function() {
+window.SynthSpeaker = ( function() {
     "use strict";
     function SynthSpeaker(options) {
         options = options || {};

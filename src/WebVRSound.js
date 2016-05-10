@@ -1,4 +1,4 @@
-var WebVRSound = (function (numGainNodes) {
+window.WebVRSound = ( function (numGainNodes) {
     "use strict";
     numGainNodes = numGainNodes || 4;
 
@@ -34,4 +34,4 @@ var WebVRSound = (function (numGainNodes) {
         playBuffer: playBuffer
     };
 
-})();
+} )();

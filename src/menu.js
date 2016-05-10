@@ -2,10 +2,10 @@
 POOLVR.setupMenu = function () {
     "use strict";
 
-    function onFocus(evt) {
+    function onFocus() {
         POOLVR.keyboard.enabled = false;
     }
-    function onBlur(evt) {
+    function onBlur() {
         POOLVR.keyboard.enabled = true;
     }
 
@@ -25,7 +25,7 @@ POOLVR.setupMenu = function () {
     var useSpotLightInput = document.getElementById('useSpotLight');
     useSpotLightInput.checked = POOLVR.config.useSpotLight;
 
-    useBasicMaterialsInput.addEventListener('change', function (evt) {
+    useBasicMaterialsInput.addEventListener('change', function () {
         POOLVR.config.useBasicMaterials = useBasicMaterialsInput.checked;
         POOLVR.saveConfig(POOLVR.profile);
         if (!POOLVR.config.useBasicMaterials && !(POOLVR.config.useSpotLight || POOLVR.config.usePointLight)) {
@@ -36,7 +36,7 @@ POOLVR.setupMenu = function () {
         POOLVR.switchMaterials(POOLVR.config.useBasicMaterials);
     }, false);
 
-    useShadowMapInput.addEventListener('change', function (evt) {
+    useShadowMapInput.addEventListener('change', function () {
         POOLVR.config.useShadowMap = useShadowMapInput.checked;
         POOLVR.saveConfig(POOLVR.profile);
         if (window.confirm('This change requires a page reload to take effect - reload now?')) {
@@ -44,7 +44,7 @@ POOLVR.setupMenu = function () {
         }
     }, false);
 
-    usePointLightInput.addEventListener('change', function (evt) {
+    usePointLightInput.addEventListener('change', function () {
         POOLVR.config.usePointLight = usePointLightInput.checked;
         POOLVR.saveConfig(POOLVR.profile);
         if (window.confirm('This change requires a page reload to take effect - reload now?')) {
@@ -52,11 +52,13 @@ POOLVR.setupMenu = function () {
         }
     }, false);
 
-    useSpotLightInput.addEventListener('change', function (evt) {
+    useSpotLightInput.addEventListener('change', function () {
         POOLVR.config.useSpotLight = useSpotLightInput.checked;
         POOLVR.saveConfig(POOLVR.profile);
         POOLVR.centerSpotLight.visible = POOLVR.config.useSpotLight;
     }, false);
+
+    POOLVR.leapIndicator = document.getElementById('leapIndicator');
 
     // TODO: regular expression format check
     var leapAddressInput = document.getElementById('leapAddress');
@@ -74,10 +76,11 @@ POOLVR.setupMenu = function () {
     }
 
     var profileNameInput = document.getElementById('profileName');
+    POOLVR.profile = profileNameInput.value || 'default';
     profileNameInput.value = POOLVR.profile;
-    profileNameInput.addEventListener('change', function (evt) {
+    profileNameInput.addEventListener('change', function () {
         POOLVR.profile = profileNameInput.value;
-        POOLVR.saveConfig(POOLVR.profile);
+        // POOLVR.saveConfig(POOLVR.profile);
     }, false);
 
     var vrButton = document.getElementById('vrButton');
@@ -89,6 +92,22 @@ POOLVR.setupMenu = function () {
     var fsButton = document.getElementById('fsButton');
     fsButton.addEventListener('click', function () {
         POOLVR.app.toggleFullscreen();
+    }, false);
+
+    var saveProfileButton = document.getElementById('saveProfileButton');
+    saveProfileButton.addEventListener('click', function () {
+        POOLVR.saveConfig(POOLVR.profile);
+    }, false);
+
+    var loadProfileButton = document.getElementById('loadProfileButton');
+    loadProfileButton.addEventListener('click', function () {
+        var config = POOLVR.loadConfig(POOLVR.profile);
+        if (config) {
+            console.log('loaded configuration for "%s":', POOLVR.profileName);
+            console.log(JSON.stringify(config, undefined, 2));
+            POOLVR.config = config;
+            POOLVR.stage.load(POOLVR.config.stage);
+        }
     }, false);
 
     var vrDisplay = null;
@@ -125,7 +144,4 @@ POOLVR.setupMenu = function () {
 
         } );
     }
-
-    // fsButton.disabled = false;
-    // vrButton.disabled = true;
 };

@@ -44,6 +44,7 @@ POOLVR = {
         'gravity'            : 9.8,
         'useBasicMaterials'  : True,
         'useShadowMap'       : False,
+        'useSpotLight'       : True,
         'usePointLight'      : False,
         'useTextGeomLogger'  : True,
         'L_table'            : 2.3368,

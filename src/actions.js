@@ -1,3 +1,4 @@
+/* global POOLVR, THREE */
 POOLVR.selectNextBall = function (inc) {
     "use strict";
     inc = inc || 1;
@@ -59,7 +60,7 @@ POOLVR.autoPosition = ( function () {
         avatar.quaternion.setFromAxisAngle(UP, avatar.heading);
 
         // nextVector.copy(POOLVR.toolRoot.worldPosition);
-        nextVector.copy(POOLVR.toolRoot.position);
+        nextVector.copy(POOLVR.leapTool.toolRoot.position);
         nextVector.applyQuaternion(avatar.quaternion);
         nextVector.add(avatar.position);
 
@@ -70,7 +71,7 @@ POOLVR.autoPosition = ( function () {
         avatar.updateMatrix();
         avatar.updateMatrixWorld();
 
-        POOLVR.updateToolMapping();
+        POOLVR.leapTool.updateToolMapping();
 
     };
 } )();

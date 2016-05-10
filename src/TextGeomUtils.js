@@ -1,4 +1,5 @@
-var TextGeomUtils = ( function () {
+/* global THREE */
+window.TextGeomUtils = ( function () {
     "use strict";
     var alphas  = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
     var digits  = "0123456789";
@@ -45,7 +46,7 @@ var TextGeomUtils = ( function () {
         options = options || {};
         var material   = options.material || new THREE.MeshBasicMaterial({color: 0xff2201});
         var nrows      = options.nrows || 20;
-        var ncols      = options.ncols || 30;
+        //var ncols      = options.ncols || 30;
         var lineHeight = options.lineHeight || 1.8 * 0.12;
 
         var lineObjects = {};

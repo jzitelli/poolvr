@@ -1,4 +1,4 @@
-/* global POOLVR */
+/* global POOLVR, THREE, CANNON, WebVRSound */
 // TODO: load from JSON config
 POOLVR.ballMaterial            = new CANNON.Material();
 POOLVR.ballBallContactMaterial = new CANNON.ContactMaterial(POOLVR.ballMaterial, POOLVR.ballMaterial, {
@@ -124,7 +124,6 @@ POOLVR.setup = function () {
     };
 
     var floorBody, ceilingBody;
-    var pxWallBody, nxWallBody, pzWallBody, nzWallBody;
 
     scene.traverse(function (node) {
 

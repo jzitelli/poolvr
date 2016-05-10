@@ -1,4 +1,4 @@
-/* global POOLVR */
+/* global POOLVR, YAWVRB */
 POOLVR.commands = {
     toggleVR:         function () { POOLVR.app.toggleVR(); },
     toggleVRControls: function () { POOLVR.app.toggleVRControls(); },
@@ -75,6 +75,7 @@ POOLVR.gamepadCommands = {
 
 POOLVR.parseURIConfig = function () {
     "use strict";
+    POOLVR.config = POOLVR.config || {};
     POOLVR.config.useTextGeomLogger  = POOLVR.URL_PARAMS.useTextGeomLogger !== undefined ? POOLVR.URL_PARAMS.useTextGeomLogger : POOLVR.config.useTextGeomLogger;
     POOLVR.config.synthSpeakerVolume = POOLVR.URL_PARAMS.synthSpeakerVolume || POOLVR.config.synthSpeakerVolume;
     POOLVR.config.useBasicMaterials  = POOLVR.URL_PARAMS.useBasicMaterials !== undefined ? POOLVR.URL_PARAMS.useBasicMaterials : POOLVR.config.useBasicMaterials;
@@ -105,16 +106,14 @@ POOLVR.parseURIConfig = function () {
 };
 
 
-POOLVR.profile = POOLVR.URL_PARAMS.profile || POOLVR.profile || 'default';
-
-
 POOLVR.saveConfig = function (profileName) {
     "use strict";
-    POOLVR.config.toolOptions.toolOffset = [POOLVR.toolRoot.position.x, POOLVR.toolRoot.position.y, POOLVR.toolRoot.position.z];
-    POOLVR.config.toolOptions.toolRotation = POOLVR.toolRoot.heading;
-    localStorage.setItem(profileName, JSON.stringify(POOLVR.config));
-    console.log("saved configuration for profile '" + profileName + "':");
-    console.log(JSON.stringify(POOLVR.config, undefined, 2));
+    if (POOLVR.stage) {
+        POOLVR.config.stage = POOLVR.stage.save();
+    }
+    localStorage.setItem(profileName, JSON.stringify(POOLVR.config, undefined, 2));
+    console.log('saved configuration for profile "%s":', profileName);
+    console.log(localStorage[profileName]);
 };
 
 
@@ -126,11 +125,9 @@ POOLVR.loadConfig = function (profileName) {
         config = {};
         localStorageConfig = JSON.parse(localStorageConfig);
         for (var k in localStorageConfig) {
-            if (POOLVR.config.hasOwnProperty(k)) {
-                config[k] = localStorageConfig[k];
-            }
+            config[k] = localStorageConfig[k];
         }
-        console.log("loaded configuration for profile '" + profileName + "'");
+        console.log('loaded configuration for profile "%s"',  profileName);
         console.log(JSON.stringify(config, undefined, 2));
     }
     return config;

@@ -1,3 +1,4 @@
+/* global POOLVR */
 POOLVR.URL_PARAMS = ( function () {
     "use strict";
     var params = {};
