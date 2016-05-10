@@ -247,7 +247,6 @@ POOLVR.moveToolRoot = ( function () {
             toolStrafe += keyboard.moveToolRight - keyboard.moveToolLeft;
             rotateToolCW += keyboard.rotateToolCW - keyboard.rotateToolCCW;
         }
-
         for (var i = 0; i < gamepadValues.length; i++) {
             var values = gamepadValues[i];
             if (values.toggleToolFloatMode) {
@@ -258,7 +257,6 @@ POOLVR.moveToolRoot = ( function () {
                 if (values.toolTurnLR) rotateToolCW += values.toolTurnLR;
             }
         }
-
         if ((toolDrive !== 0) || (toolStrafe !== 0) || (toolFloat !== 0) || (rotateToolCW !== 0)) {
             toolRoot.position.x +=  0.16 * dt * toolStrafe;
             toolRoot.position.z += -0.16 * dt * toolDrive;
@@ -266,7 +264,7 @@ POOLVR.moveToolRoot = ( function () {
             heading -= 0.15 * dt * rotateToolCW;
             toolRoot.quaternion.setFromAxisAngle(UP, heading);
             toolRoot.updateMatrix();
-            POOLVR.leapTool.setDeadtime(0);
+            leapTool.setDeadtime(0);
         }
     };
 } )();
