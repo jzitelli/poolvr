@@ -2,6 +2,16 @@
 POOLVR.setupMenu = function () {
     "use strict";
 
+    var overlay = document.getElementById('overlay');
+
+    POOLVR.toggleMenu = function () {
+        if (overlay.style.display === 'none') { 
+            overlay.style.display = 'block';
+        } else {
+            overlay.style.display = 'none';
+        }
+    };
+
     function onFocus() {
         POOLVR.keyboard.enabled = false;
     }
@@ -87,6 +97,7 @@ POOLVR.setupMenu = function () {
     vrButton.addEventListener('click', function () {
         POOLVR.app.toggleVR();
         vrButton.blur();
+        overlay.style.display = 'none';
     }, false);
 
     var fsButton = document.getElementById('fsButton');
@@ -103,7 +114,7 @@ POOLVR.setupMenu = function () {
     loadProfileButton.addEventListener('click', function () {
         var config = POOLVR.loadConfig(POOLVR.profile);
         if (config) {
-            console.log('loaded configuration for "%s":', POOLVR.profileName);
+            console.log('loaded configuration for "%s":', POOLVR.profile);
             console.log(JSON.stringify(config, undefined, 2));
             POOLVR.config = config;
             POOLVR.stage.load(POOLVR.config.stage);

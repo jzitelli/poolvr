@@ -43,9 +43,9 @@ POOLVR.autoPosition = ( function () {
     return function () {
 
         if (POOLVR.synthSpeaker.speaking === false) {
-            if (speakCount <= 7) {
+            if (speakCount <= 3) {
                 POOLVR.synthSpeaker.speak("You are being auto-positioned.");
-                if (speakCount === 7) {
+                if (speakCount === 3) {
                     POOLVR.synthSpeaker.speak("I will stop saying that now.");
                 }
                 speakCount++;

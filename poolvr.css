@@ -38,26 +38,26 @@ p {
 label {
   font-size: 9pt;
 }
-#leapAddress, #profileName {
-  margin: 2vh;
-}
-#leapIndicator {
-  font-size: 12pt;
-  text-align: center;
-  margin-top: 1vh;
-  padding: 0.1em;
-  color: #b5e853;
-  background-color: rgba(60, 20, 0, 0.6);
-  box-sizing: border-box;
-}
-#fsButton, #vrButton, #saveProfileButton, #loadProfileButton {
+button {
   font-family: monospace;
   font-size: 14pt;
   font-style: bold;
   text-align: center;
-  padding: 0.1vh;
+  padding: 0.2vh;
   color: #b5e853;
   background-color: rgba(111, 20, 20, 0.6);
+  box-sizing: border-box;
+}
+#leapAddress, #profileName {
+  margin: 0.2vh;
+}
+#leapIndicator {
+  font-size: 12pt;
+  text-align: center;
+  margin-top: 0.4vh;
+  padding: 0.1em;
+  color: #b5e853;
+  background-color: rgba(60, 20, 0, 0.6);
   box-sizing: border-box;
 }
 #webgl-canvas {

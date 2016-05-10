@@ -1,6 +1,6 @@
 /* global POOLVR, YAWVRB */
 POOLVR.commands = {
-    toggleVR:         function () { POOLVR.app.toggleVR(); },
+    toggleMenu:       function () { POOLVR.toggleMenu(); },
     toggleVRControls: function () { POOLVR.app.toggleVRControls(); },
     toggleWireframe:  function () { POOLVR.app.toggleWireframe(); },
     resetVRSensor:    function () { POOLVR.app.resetVRSensor(); },
@@ -70,7 +70,7 @@ POOLVR.gamepadCommands = {
              commandDown: POOLVR.commands.stroke},
     autoPosition: {buttons: [YAWVRB.Gamepad.BUTTONS.Y],
                    commandDown: POOLVR.commands.autoPosition},
-    toggleVR: {buttons: [YAWVRB.Gamepad.BUTTONS.start], commandDown: POOLVR.commands.toggleVR}
+    toggleMenu: {buttons: [YAWVRB.Gamepad.BUTTONS.start], commandDown: POOLVR.commands.toggleMenu}
 };
 
 POOLVR.parseURIConfig = function () {
