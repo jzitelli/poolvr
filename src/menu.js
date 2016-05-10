@@ -5,7 +5,7 @@ POOLVR.setupMenu = function () {
     var overlay = document.getElementById('overlay');
 
     POOLVR.toggleMenu = function () {
-        if (overlay.style.display === 'none') { 
+        if (overlay.style.display === 'none') {
             overlay.style.display = 'block';
         } else {
             overlay.style.display = 'none';
@@ -72,17 +72,15 @@ POOLVR.setupMenu = function () {
 
     // TODO: regular expression format check
     var leapAddressInput = document.getElementById('leapAddress');
-    leapAddressInput.value = 'localhost';
-    var host = leapAddressInput.value;
-    POOLVR.config.toolOptions.host = host;
+    leapAddressInput.value = POOLVR.config.toolOptions.host || 'localhost';
     leapAddressInput.addEventListener('change', onLeapAddressChange, false);
     function onLeapAddressChange() {
         var host = leapAddressInput.value;
         POOLVR.config.toolOptions.host = host;
         POOLVR.saveConfig(POOLVR.profile);
-        POOLVR.leapController.connection.host = host;
-        POOLVR.leapController.connection.disconnect(true);
-        POOLVR.leapController.connect();
+        POOLVR.leapTool.leapController.connection.host = host;
+        POOLVR.leapTool.leapController.connection.disconnect(true);
+        POOLVR.leapTool.leapController.connect();
     }
 
     var profileNameInput = document.getElementById('profileName');
@@ -90,7 +88,6 @@ POOLVR.setupMenu = function () {
     profileNameInput.value = POOLVR.profile;
     profileNameInput.addEventListener('change', function () {
         POOLVR.profile = profileNameInput.value;
-        // POOLVR.saveConfig(POOLVR.profile);
     }, false);
 
     var vrButton = document.getElementById('vrButton');
