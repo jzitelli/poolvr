@@ -20,7 +20,6 @@ POOLVR.setupMenu = function () {
     }
 
     var inputs = document.querySelectorAll('input');
-    //inputs = Array.prototype.push.apply(inputs, document.querySelectorAll('button'));
     for (var i = 0; i < inputs.length; i++) {
         inputs[i].addEventListener('focus', onFocus, false);
         inputs[i].addEventListener('blur', onBlur, false);
@@ -28,10 +27,13 @@ POOLVR.setupMenu = function () {
 
     var useBasicMaterialsInput = document.getElementById('useBasicMaterials');
     useBasicMaterialsInput.checked = POOLVR.config.useBasicMaterials;
+
     var useShadowMapInput = document.getElementById('useShadowMap');
     useShadowMapInput.checked = POOLVR.config.useShadowMap;
+
     var usePointLightInput = document.getElementById('usePointLight');
     usePointLightInput.checked = POOLVR.config.usePointLight;
+
     var useSpotLightInput = document.getElementById('useSpotLight');
     useSpotLightInput.checked = POOLVR.config.useSpotLight;
 

@@ -54,13 +54,14 @@ POOLVR = {
         'H_ceiling'          : 8 * 12 * 0.0254,
         'synthSpeakerVolume' : 0.4,
         'toolOptions': {
+            'host'      : '127.0.0.1',
+            'tipShape'  : 'Cylinder',
             'position'  : [0, -0.42, -0.49],
             'rotation'  : [0, 0, 0],
-            'tipShape'  : 'Cylinder',
-            'toolRadius': 0.0123,
-            'tipRadius' : 0.0123,
+            'toolRadius': 0.012,
+            'tipRadius' : 0.012,
             'toolLength': 0.37,
-            'host'      : '127.0.0.1'
+            'interactionPlaneOpacity': 0.22
         }
     }
 }

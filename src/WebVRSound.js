@@ -35,3 +35,42 @@ window.WebVRSound = ( function (numGainNodes) {
     };
 
 } )();
+
+/* global POOLVR, WebVRSound */
+POOLVR.playCollisionSound = (function () {
+    "use strict";
+    var ballBallBuffer;
+    var request = new XMLHttpRequest();
+    request.responseType = 'arraybuffer';
+    var filename = (!/Edge/.test(navigator.userAgent)) ? 'sounds/ballBall.ogg' : 'sounds/ballBall.mp3';
+    request.open('GET', filename);
+    request.onload = function() {
+        WebVRSound.audioContext.decodeAudioData(this.response, function(buffer) {
+            ballBallBuffer = buffer;
+        });
+    };
+    request.send();
+    var playCollisionSound = function (v) {
+        WebVRSound.playBuffer(ballBallBuffer, Math.min(1, v / 10));
+    };
+    return playCollisionSound;
+})();
+
+POOLVR.playPocketedSound = (function () {
+    "use strict";
+    var ballPocketedBuffer;
+    var request = new XMLHttpRequest();
+    request.responseType = 'arraybuffer';
+    var filename = (!/Edge/.test(navigator.userAgent)) ? 'sounds/ballPocketed.ogg' : 'sounds/ballPocketed.mp3';
+    request.open('GET', filename);
+    request.onload = function() {
+        WebVRSound.audioContext.decodeAudioData(this.response, function(buffer) {
+            ballPocketedBuffer = buffer;
+        });
+    };
+    request.send();
+    var playPocketedSound = function () {
+        WebVRSound.playBuffer(ballPocketedBuffer, 0.5);
+    };
+    return playPocketedSound;
+})();

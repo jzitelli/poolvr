@@ -77,23 +77,6 @@ POOLVR.gamepadCommands = {
 POOLVR.parseURIConfig = function () {
     "use strict";
     POOLVR.config = POOLVR.config || {};
-    POOLVR.config.useTextGeomLogger  = POOLVR.URL_PARAMS.useTextGeomLogger !== undefined ? POOLVR.URL_PARAMS.useTextGeomLogger : POOLVR.config.useTextGeomLogger;
-    POOLVR.config.synthSpeakerVolume = POOLVR.URL_PARAMS.synthSpeakerVolume || POOLVR.config.synthSpeakerVolume;
-    POOLVR.config.useBasicMaterials  = POOLVR.URL_PARAMS.useBasicMaterials !== undefined ? POOLVR.URL_PARAMS.useBasicMaterials : POOLVR.config.useBasicMaterials;
-
-    // Leap Motion config:
-    POOLVR.config.toolOptions = POOLVR.config.toolOptions || {};
-
-    POOLVR.config.toolOptions.toolLength   = POOLVR.URL_PARAMS.toolLength   || POOLVR.config.toolOptions.toolLength;
-    POOLVR.config.toolOptions.toolRadius   = POOLVR.URL_PARAMS.toolRadius   || POOLVR.config.toolOptions.toolRadius;
-    POOLVR.config.toolOptions.toolMass     = POOLVR.URL_PARAMS.toolMass     || POOLVR.config.toolOptions.toolMass;
-    POOLVR.config.toolOptions.toolOffset   = POOLVR.URL_PARAMS.toolOffset   || POOLVR.config.toolOptions.toolOffset;
-    POOLVR.config.toolOptions.toolRotation = POOLVR.URL_PARAMS.toolRotation || POOLVR.config.toolOptions.toolRotation;
-    POOLVR.config.toolOptions.tipShape     = POOLVR.URL_PARAMS.tipShape     || POOLVR.config.toolOptions.tipShape;
-    POOLVR.config.toolOptions.host         = POOLVR.URL_PARAMS.host         || POOLVR.config.toolOptions.host;
-    POOLVR.config.toolOptions.port         = POOLVR.URL_PARAMS.port         || POOLVR.config.toolOptions.port;
-    POOLVR.config.toolOptions.interactionPlaneOpacity = POOLVR.URL_PARAMS.interactionPlaneOpacity || 0.22;
-
     if (POOLVR.config.useBasicMaterials) {
         POOLVR.config.useSpotLight = false;
         POOLVR.config.usePointLight = false;
@@ -103,7 +86,8 @@ POOLVR.parseURIConfig = function () {
         POOLVR.config.usePointLight = POOLVR.URL_PARAMS.usePointLight !== undefined ? POOLVR.URL_PARAMS.usePointLight : POOLVR.config.usePointLight;
         POOLVR.config.useShadowMap  = POOLVR.URL_PARAMS.useShadowMap  !== undefined ? POOLVR.URL_PARAMS.useShadowMap  : POOLVR.config.useShadowMap;
     }
-
+    // Leap Motion config:
+    POOLVR.config.toolOptions = POOLVR.config.toolOptions || {};
 };
 
 

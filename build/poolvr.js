@@ -211,6 +211,45 @@ window.WebVRSound = ( function (numGainNodes) {
 
 } )();
 
+/* global POOLVR, WebVRSound */
+POOLVR.playCollisionSound = (function () {
+    "use strict";
+    var ballBallBuffer;
+    var request = new XMLHttpRequest();
+    request.responseType = 'arraybuffer';
+    var filename = (!/Edge/.test(navigator.userAgent)) ? 'sounds/ballBall.ogg' : 'sounds/ballBall.mp3';
+    request.open('GET', filename);
+    request.onload = function() {
+        WebVRSound.audioContext.decodeAudioData(this.response, function(buffer) {
+            ballBallBuffer = buffer;
+        });
+    };
+    request.send();
+    var playCollisionSound = function (v) {
+        WebVRSound.playBuffer(ballBallBuffer, Math.min(1, v / 10));
+    };
+    return playCollisionSound;
+})();
+
+POOLVR.playPocketedSound = (function () {
+    "use strict";
+    var ballPocketedBuffer;
+    var request = new XMLHttpRequest();
+    request.responseType = 'arraybuffer';
+    var filename = (!/Edge/.test(navigator.userAgent)) ? 'sounds/ballPocketed.ogg' : 'sounds/ballPocketed.mp3';
+    request.open('GET', filename);
+    request.onload = function() {
+        WebVRSound.audioContext.decodeAudioData(this.response, function(buffer) {
+            ballPocketedBuffer = buffer;
+        });
+    };
+    request.send();
+    var playPocketedSound = function () {
+        WebVRSound.playBuffer(ballPocketedBuffer, 0.5);
+    };
+    return playPocketedSound;
+})();
+
 },{}],4:[function(require,module,exports){
 /* global POOLVR, THREE */
 POOLVR.selectNextBall = function (inc) {
@@ -382,23 +421,6 @@ POOLVR.gamepadCommands = {
 POOLVR.parseURIConfig = function () {
     "use strict";
     POOLVR.config = POOLVR.config || {};
-    POOLVR.config.useTextGeomLogger  = POOLVR.URL_PARAMS.useTextGeomLogger !== undefined ? POOLVR.URL_PARAMS.useTextGeomLogger : POOLVR.config.useTextGeomLogger;
-    POOLVR.config.synthSpeakerVolume = POOLVR.URL_PARAMS.synthSpeakerVolume || POOLVR.config.synthSpeakerVolume;
-    POOLVR.config.useBasicMaterials  = POOLVR.URL_PARAMS.useBasicMaterials !== undefined ? POOLVR.URL_PARAMS.useBasicMaterials : POOLVR.config.useBasicMaterials;
-
-    // Leap Motion config:
-    POOLVR.config.toolOptions = POOLVR.config.toolOptions || {};
-
-    POOLVR.config.toolOptions.toolLength   = POOLVR.URL_PARAMS.toolLength   || POOLVR.config.toolOptions.toolLength;
-    POOLVR.config.toolOptions.toolRadius   = POOLVR.URL_PARAMS.toolRadius   || POOLVR.config.toolOptions.toolRadius;
-    POOLVR.config.toolOptions.toolMass     = POOLVR.URL_PARAMS.toolMass     || POOLVR.config.toolOptions.toolMass;
-    POOLVR.config.toolOptions.toolOffset   = POOLVR.URL_PARAMS.toolOffset   || POOLVR.config.toolOptions.toolOffset;
-    POOLVR.config.toolOptions.toolRotation = POOLVR.URL_PARAMS.toolRotation || POOLVR.config.toolOptions.toolRotation;
-    POOLVR.config.toolOptions.tipShape     = POOLVR.URL_PARAMS.tipShape     || POOLVR.config.toolOptions.tipShape;
-    POOLVR.config.toolOptions.host         = POOLVR.URL_PARAMS.host         || POOLVR.config.toolOptions.host;
-    POOLVR.config.toolOptions.port         = POOLVR.URL_PARAMS.port         || POOLVR.config.toolOptions.port;
-    POOLVR.config.toolOptions.interactionPlaneOpacity = POOLVR.URL_PARAMS.interactionPlaneOpacity || 0.22;
-
     if (POOLVR.config.useBasicMaterials) {
         POOLVR.config.useSpotLight = false;
         POOLVR.config.usePointLight = false;
@@ -408,7 +430,8 @@ POOLVR.parseURIConfig = function () {
         POOLVR.config.usePointLight = POOLVR.URL_PARAMS.usePointLight !== undefined ? POOLVR.URL_PARAMS.usePointLight : POOLVR.config.usePointLight;
         POOLVR.config.useShadowMap  = POOLVR.URL_PARAMS.useShadowMap  !== undefined ? POOLVR.URL_PARAMS.useShadowMap  : POOLVR.config.useShadowMap;
     }
-
+    // Leap Motion config:
+    POOLVR.config.toolOptions = POOLVR.config.toolOptions || {};
 };
 
 
@@ -449,41 +472,109 @@ require('./SynthSpeaker.js');
 require('./actions.js');
 require('./config.js');
 require('./menu.js');
-require('./setup.js');
 
 /* global POOLVR, THREE, YAWVRB, CANNON, TextGeomUtils, SynthSpeaker, THREEPY_SCENE, threeStats, glStats, rStats */
 window.onLoad = function () {
     "use strict";
 
-    // if (POOLVR.URL_PARAMS.clearLocalStorage) {
+    if (POOLVR.URL_PARAMS.clearLocalStorage) {
         console.log('clearing localStorage...');
         localStorage.clear();
-    // }
+    }
 
     THREE.Object3D.DefaultMatrixAutoUpdate = false;
 
     POOLVR.avatar = new THREE.Object3D();
     var avatar = POOLVR.avatar;
 
+    // TODO: load from JSON config
     var world = new CANNON.World();
-    POOLVR.world = world;
     world.defaultContactMaterial.contactEquationStiffness   = 1e7;
     world.defaultContactMaterial.frictionEquationStiffness  = 2e6;
     world.defaultContactMaterial.contactEquationRelaxation  = 2;
     world.defaultContactMaterial.frictionEquationRelaxation = 3;
     world.broadphase = new CANNON.SAPBroadphase( world );
     world.solver.iterations = 10;
+    POOLVR.world = world;
+
+    POOLVR.ballMaterial            = new CANNON.Material();
+    POOLVR.ballBallContactMaterial = new CANNON.ContactMaterial(POOLVR.ballMaterial, POOLVR.ballMaterial, {
+        restitution: 0.92,
+        friction: 0.14
+    });
+    POOLVR.playableSurfaceMaterial            = new CANNON.Material();
+    POOLVR.ballPlayableSurfaceContactMaterial = new CANNON.ContactMaterial(POOLVR.ballMaterial, POOLVR.playableSurfaceMaterial, {
+        restitution: 0.3,
+        friction: 0.21
+    });
+    POOLVR.cushionMaterial            = new CANNON.Material();
+    POOLVR.ballCushionContactMaterial = new CANNON.ContactMaterial(POOLVR.ballMaterial, POOLVR.cushionMaterial, {
+        restitution: 0.8,
+        friction: 0.12
+    });
+    POOLVR.floorMaterial            = new CANNON.Material();
+    POOLVR.floorBallContactMaterial = new CANNON.ContactMaterial(POOLVR.floorMaterial, POOLVR.ballMaterial, {
+        restitution: 0.86,
+        friction: 0.4
+    });
+    POOLVR.railMaterial            = new CANNON.Material();
+    POOLVR.railBallContactMaterial = new CANNON.ContactMaterial(POOLVR.railMaterial, POOLVR.ballMaterial, {
+        restitution: 0.7,
+        friction: 0.07
+    });
+    POOLVR.tipMaterial            = new CANNON.Material();
+    POOLVR.tipBallContactMaterial = new CANNON.ContactMaterial(POOLVR.tipMaterial, POOLVR.ballMaterial, {
+        restitution: 0.01,
+        friction: 0.15,
+        contactEquationRelaxation: 2,
+        frictionEquationRelaxation: 2
+    });
+    world.addMaterial(POOLVR.ballMaterial);
+    world.addMaterial(POOLVR.playableSurfaceMaterial);
+    world.addMaterial(POOLVR.cushionMaterial);
+    world.addMaterial(POOLVR.floorMaterial);
+    world.addMaterial(POOLVR.tipMaterial);
+    world.addMaterial(POOLVR.railMaterial);
+    world.addContactMaterial(POOLVR.ballBallContactMaterial);
+    world.addContactMaterial(POOLVR.ballPlayableSurfaceContactMaterial);
+    world.addContactMaterial(POOLVR.ballCushionContactMaterial);
+    world.addContactMaterial(POOLVR.floorBallContactMaterial);
+    world.addContactMaterial(POOLVR.tipBallContactMaterial);
+    world.addContactMaterial(POOLVR.railBallContactMaterial);
 
     POOLVR.stage = new YAWVRB.Stage();
 
     POOLVR.objectSelector = new YAWVRB.Utils.ObjectSelector();
     POOLVR.shadowMaterial = new THREE.MeshBasicMaterial({color: 0x002200});
 
-    POOLVR.setupMenu();
-
     POOLVR.config = POOLVR.loadConfig(POOLVR.profile) || POOLVR.config;
     POOLVR.parseURIConfig();
     console.log("POOLVR.config =\n" + JSON.stringify(POOLVR.config, undefined, 2));
+
+    world.gravity.set( 0, -POOLVR.config.gravity, 0 );
+
+    if (POOLVR.config.useTextGeomLogger) {
+        var fontLoader = new THREE.FontLoader();
+        fontLoader.load('fonts/Anonymous Pro_Regular.js', function (font) {
+            var textGeomCacher = new TextGeomUtils.TextGeomCacher(font, {size: 0.12});
+            var textGeomLoggerMaterial = new THREE.MeshBasicMaterial({color: 0xff3210});
+            POOLVR.textGeomLogger = new TextGeomUtils.TextGeomLogger(textGeomCacher,
+                {material: textGeomLoggerMaterial, nrows: 8, lineHeight: 1.8 * 0.12});
+            avatar.add(POOLVR.textGeomLogger.root);
+            POOLVR.textGeomLogger.root.position.set(-2.7, 0.88, -3.3);
+            POOLVR.textGeomLogger.root.updateMatrix();
+        });
+    } else {
+        POOLVR.textGeomLogger = {
+            root: new THREE.Object3D(),
+            log: function (msg) { console.log(msg); },
+            clear: function () {}
+        };
+    }
+
+    POOLVR.synthSpeaker = new SynthSpeaker({volume: POOLVR.config.synthSpeakerVolume, rate: 0.8, pitch: 0.5});
+
+    POOLVR.setupMenu();
 
     POOLVR.leapIndicator = document.getElementById('leapIndicator');
 
@@ -518,27 +609,6 @@ window.onLoad = function () {
 
     POOLVR.stage.objects.push(POOLVR.leapTool.toolRoot);
     POOLVR.stage.load(POOLVR.config.stage);
-
-    if (POOLVR.config.useTextGeomLogger) {
-        var fontLoader = new THREE.FontLoader();
-        fontLoader.load('fonts/Anonymous Pro_Regular.js', function (font) {
-            var textGeomCacher = new TextGeomUtils.TextGeomCacher(font, {size: 0.12});
-            var textGeomLoggerMaterial = new THREE.MeshBasicMaterial({color: 0xff3210});
-            POOLVR.textGeomLogger = new TextGeomUtils.TextGeomLogger(textGeomCacher,
-                {material: textGeomLoggerMaterial, nrows: 8, lineHeight: 1.8 * 0.12});
-            avatar.add(POOLVR.textGeomLogger.root);
-            POOLVR.textGeomLogger.root.position.set(-2.7, 0.88, -3.3);
-            POOLVR.textGeomLogger.root.updateMatrix();
-        });
-    } else {
-        POOLVR.textGeomLogger = {
-            root: new THREE.Object3D(),
-            log: function (msg) { console.log(msg); },
-            clear: function () {}
-        };
-    }
-    POOLVR.synthSpeaker = new SynthSpeaker({volume: POOLVR.config.synthSpeakerVolume, rate: 0.8, pitch: 0.5});
-    world.gravity.set( 0, -POOLVR.config.gravity, 0 );
 
     var antialias = (POOLVR.URL_PARAMS.antialias !== undefined ? POOLVR.URL_PARAMS.antialias : POOLVR.config.antialias) || !POOLVR.isMobile();
 
@@ -587,7 +657,6 @@ window.onLoad = function () {
 
         if (leapTool.toolShadowMesh) {
             POOLVR.app.scene.add(leapTool.toolShadowMesh);
-            //leapTool.toolShadowMesh.renderOrder = 1;
         }
 
         var centerSpotLight = new THREE.SpotLight(0xffffee, 1, 8, Math.PI / 2);
@@ -616,7 +685,140 @@ window.onLoad = function () {
         avatar.updateMatrix();
         avatar.updateMatrixWorld();
 
-        POOLVR.setup();
+        THREE.py.CANNONize(scene, world);
+
+        POOLVR.ballMeshes = [];
+        POOLVR.ballBodies = [];
+        POOLVR.initialPositions = [];
+        POOLVR.onTable = [true,
+                          true, true, true, true, true, true, true,
+                          true,
+                          true, true, true, true, true, true, true];
+        POOLVR.nextBall = 1;
+
+        var floorBody, ceilingBody;
+        var basicMaterials = {};
+        var nonbasicMaterials = {};
+        scene.traverse(function (node) {
+            if (node instanceof THREE.Mesh) {
+                if ((node.material instanceof THREE.MeshLambertMaterial || node.material instanceof THREE.MeshPhongMaterial) && (basicMaterials[node.material.uuid] === undefined)) {
+                    var basicMaterial = new THREE.MeshBasicMaterial({color: node.material.color.getHex(), transparent: node.material.transparent, side: node.material.side});
+                    basicMaterials[node.material.uuid] = basicMaterial;
+                    nonbasicMaterials[basicMaterial.uuid] = node.material;
+                }
+                var ballNum;
+                if (node.name.startsWith('ballMesh')) {
+                    ballNum = Number(node.name.split(' ')[1]);
+                    POOLVR.ballMeshes[ballNum] = node;
+                    POOLVR.ballBodies[ballNum] = node.body;
+                    POOLVR.initialPositions[ballNum] = new THREE.Vector3().copy(node.position);
+                    node.body.bounces = 0;
+                    node.body.ballNum = ballNum;
+                    node.body.material = POOLVR.ballMaterial;
+                }
+                else if (node.name === 'playableSurfaceMesh') {
+                    node.body.material = POOLVR.playableSurfaceMaterial;
+                }
+                else if (node.name.endsWith('CushionMesh')) {
+                    node.body.material = POOLVR.cushionMaterial;
+                }
+                else if (node.name === 'floorMesh') {
+                    floorBody = node.body;
+                    floorBody.material = POOLVR.floorMaterial;
+                }
+                else if (node.name === 'ceilingMesh') {
+                    ceilingBody = node.body;
+                    ceilingBody.material = POOLVR.floorMaterial;
+                }
+                else if (node.name.endsWith('RailMesh')) {
+                    node.body.material = POOLVR.railMaterial;
+                }
+            }
+        });
+
+        POOLVR.switchMaterials = function (useBasicMaterials) {
+            var materials = useBasicMaterials ? basicMaterials : nonbasicMaterials;
+            POOLVR.app.scene.traverse( function (node) {
+                if (node instanceof THREE.Mesh) {
+                    var material = node.material;
+                    var uuid = material.uuid;
+                    if (materials[uuid]) {
+                        node.material = materials[uuid];
+                    }
+                }
+            } );
+        };
+
+        var H_table = POOLVR.config.H_table;
+        if (!POOLVR.config.useShadowMap) {
+            var ballShadowMeshes = [];
+            var ballShadowGeom = new THREE.CircleBufferGeometry(0.5*POOLVR.config.ball_diameter, 16);
+            ballShadowGeom.rotateX(-0.5*Math.PI);
+            POOLVR.ballMeshes.forEach( function (mesh, ballNum) {
+                var ballShadowMesh = new THREE.Mesh(ballShadowGeom, POOLVR.shadowMaterial);
+                ballShadowMesh.position.copy(mesh.position);
+                ballShadowMesh.position.y = H_table + 0.0004;
+                ballShadowMeshes[ballNum] = ballShadowMesh;
+                scene.add(ballShadowMesh);
+            } );
+        }
+
+        POOLVR.updateBallsPostStep = function () {
+            for (var i = 0; i < POOLVR.ballMeshes.length; i++) {
+                var mesh = POOLVR.ballMeshes[i];
+                var body = POOLVR.ballBodies[i];
+                mesh.position.copy(body.interpolatedPosition);
+                mesh.quaternion.copy(body.interpolatedQuaternion);
+                mesh.updateMatrix();
+                mesh.updateMatrixWorld();
+                if (!POOLVR.config.useShadowMap) {
+                    var shadowMesh = ballShadowMeshes[i];
+                    shadowMesh.position.x = mesh.position.x;
+                    shadowMesh.position.z = mesh.position.z;
+                    shadowMesh.updateMatrix();
+                    shadowMesh.updateMatrixWorld();
+                }
+            }
+        };
+
+        // ball-floor collision
+        floorBody.addEventListener(CANNON.Body.COLLIDE_EVENT_NAME, function (evt) {
+            var body = evt.body;
+            if (body.ballNum === 0) {
+                POOLVR.textGeomLogger.log("SCRATCH.");
+                POOLVR.synthSpeaker.speak("Scratch.");
+                body.position.copy(POOLVR.initialPositions[0]);
+                body.velocity.set(0, 0, 0);
+                body.angularVelocity.set(0, 0, 0);
+            } else if (body.ballNum !== undefined) {
+                body.bounces++;
+                if (body.bounces === 1) {
+                    // POOLVR.textGeomLogger.log(body.mesh.name + " HIT THE FLOOR!");
+                    POOLVR.playPocketedSound();
+                    POOLVR.onTable[body.ballNum] = false;
+                    POOLVR.nextBall = POOLVR.onTable.slice(1).indexOf(true) + 1;
+                    if (POOLVR.nextBall === 0) {
+                        POOLVR.synthSpeaker.speak("You cleared the table.  Well done.");
+                        POOLVR.textGeomLogger.log("YOU CLEARED THE TABLE.  WELL DONE.");
+                        POOLVR.resetTable();
+                    }
+                } else if (body.bounces === 7) {
+                    body.sleep();
+                    body.mesh.visible = false;
+                }
+            }
+        });
+
+        var relVelocity = new CANNON.Vec3();
+        world.addEventListener('beginContact', function (evt) {
+            var bodyA = evt.bodyA;
+            var bodyB = evt.bodyB;
+            if (bodyA.material === bodyB.material) {
+                // ball-ball collision
+                bodyA.velocity.vsub(bodyB.velocity, relVelocity);
+                POOLVR.playCollisionSound(relVelocity.lengthSquared());
+            }
+        });
 
         POOLVR.stage.load(POOLVR.config.stage);
 
@@ -627,7 +829,6 @@ window.onLoad = function () {
         POOLVR.switchMaterials(POOLVR.config.useBasicMaterials);
 
         POOLVR.startAnimateLoop();
-
     } );
 };
 
@@ -848,7 +1049,7 @@ POOLVR.startAnimateLoop = function () {
 
 };
 
-},{"./SynthSpeaker.js":1,"./TextGeomUtils.js":2,"./WebVRSound.js":3,"./actions.js":4,"./config.js":5,"./menu.js":7,"./setup.js":8,"./utils.js":9}],7:[function(require,module,exports){
+},{"./SynthSpeaker.js":1,"./TextGeomUtils.js":2,"./WebVRSound.js":3,"./actions.js":4,"./config.js":5,"./menu.js":7,"./utils.js":8}],7:[function(require,module,exports){
 /* global POOLVR */
 POOLVR.setupMenu = function () {
     "use strict";
@@ -871,7 +1072,6 @@ POOLVR.setupMenu = function () {
     }
 
     var inputs = document.querySelectorAll('input');
-    //inputs = Array.prototype.push.apply(inputs, document.querySelectorAll('button'));
     for (var i = 0; i < inputs.length; i++) {
         inputs[i].addEventListener('focus', onFocus, false);
         inputs[i].addEventListener('blur', onBlur, false);
@@ -879,10 +1079,13 @@ POOLVR.setupMenu = function () {
 
     var useBasicMaterialsInput = document.getElementById('useBasicMaterials');
     useBasicMaterialsInput.checked = POOLVR.config.useBasicMaterials;
+
     var useShadowMapInput = document.getElementById('useShadowMap');
     useShadowMapInput.checked = POOLVR.config.useShadowMap;
+
     var usePointLightInput = document.getElementById('usePointLight');
     usePointLightInput.checked = POOLVR.config.usePointLight;
+
     var useSpotLightInput = document.getElementById('useSpotLight');
     useSpotLightInput.checked = POOLVR.config.useSpotLight;
 
@@ -1003,265 +1206,6 @@ POOLVR.setupMenu = function () {
 };
 
 },{}],8:[function(require,module,exports){
-/* global POOLVR, THREE, CANNON, WebVRSound */
-// TODO: load from JSON config
-POOLVR.ballMaterial            = new CANNON.Material();
-POOLVR.ballBallContactMaterial = new CANNON.ContactMaterial(POOLVR.ballMaterial, POOLVR.ballMaterial, {
-    restitution: 0.92,
-    friction: 0.14
-});
-POOLVR.playableSurfaceMaterial            = new CANNON.Material();
-POOLVR.ballPlayableSurfaceContactMaterial = new CANNON.ContactMaterial(POOLVR.ballMaterial, POOLVR.playableSurfaceMaterial, {
-    restitution: 0.3,
-    friction: 0.21
-});
-POOLVR.cushionMaterial            = new CANNON.Material();
-POOLVR.ballCushionContactMaterial = new CANNON.ContactMaterial(POOLVR.ballMaterial, POOLVR.cushionMaterial, {
-    restitution: 0.8,
-    friction: 0.12
-});
-POOLVR.floorMaterial            = new CANNON.Material();
-POOLVR.floorBallContactMaterial = new CANNON.ContactMaterial(POOLVR.floorMaterial, POOLVR.ballMaterial, {
-    restitution: 0.86,
-    friction: 0.4
-});
-POOLVR.railMaterial            = new CANNON.Material();
-POOLVR.railBallContactMaterial = new CANNON.ContactMaterial(POOLVR.railMaterial, POOLVR.ballMaterial, {
-    restitution: 0.7,
-    friction: 0.07
-});
-POOLVR.tipMaterial            = new CANNON.Material();
-POOLVR.tipBallContactMaterial = new CANNON.ContactMaterial(POOLVR.tipMaterial, POOLVR.ballMaterial, {
-    restitution: 0.01,
-    friction: 0.15,
-    contactEquationRelaxation: 2,
-    frictionEquationRelaxation: 2
-});
-
-
-POOLVR.ballMeshes = [];
-POOLVR.ballBodies = [];
-POOLVR.initialPositions = [];
-POOLVR.onTable = [true,
-                  true, true, true, true, true, true, true,
-                  true,
-                  true, true, true, true, true, true, true];
-POOLVR.nextBall = 1;
-
-
-POOLVR.playCollisionSound = (function () {
-    "use strict";
-    var ballBallBuffer;
-    var request = new XMLHttpRequest();
-    request.responseType = 'arraybuffer';
-    var filename = (!/Edge/.test(navigator.userAgent)) ? 'sounds/ballBall.ogg' : 'sounds/ballBall.mp3';
-    request.open('GET', filename);
-    request.onload = function() {
-        WebVRSound.audioContext.decodeAudioData(this.response, function(buffer) {
-            ballBallBuffer = buffer;
-        });
-    };
-    request.send();
-    var playCollisionSound = function (v) {
-        WebVRSound.playBuffer(ballBallBuffer, Math.min(1, v / 10));
-    };
-    return playCollisionSound;
-})();
-
-
-POOLVR.playPocketedSound = (function () {
-    "use strict";
-    var ballPocketedBuffer;
-    var request = new XMLHttpRequest();
-    request.responseType = 'arraybuffer';
-    var filename = (!/Edge/.test(navigator.userAgent)) ? 'sounds/ballPocketed.ogg' : 'sounds/ballPocketed.mp3';
-    request.open('GET', filename);
-    request.onload = function() {
-        WebVRSound.audioContext.decodeAudioData(this.response, function(buffer) {
-            ballPocketedBuffer = buffer;
-        });
-    };
-    request.send();
-    var playPocketedSound = function () {
-        WebVRSound.playBuffer(ballPocketedBuffer, 0.5);
-    };
-    return playPocketedSound;
-})();
-
-
-POOLVR.setup = function () {
-    "use strict";
-
-    var scene = POOLVR.app.scene;
-    var world = POOLVR.world;
-
-    THREE.py.CANNONize(scene, world);
-
-    world.addMaterial(POOLVR.ballMaterial);
-    world.addMaterial(POOLVR.playableSurfaceMaterial);
-    world.addMaterial(POOLVR.cushionMaterial);
-    world.addMaterial(POOLVR.floorMaterial);
-    world.addMaterial(POOLVR.tipMaterial);
-    world.addMaterial(POOLVR.railMaterial);
-    world.addContactMaterial(POOLVR.ballBallContactMaterial);
-    world.addContactMaterial(POOLVR.ballPlayableSurfaceContactMaterial);
-    world.addContactMaterial(POOLVR.ballCushionContactMaterial);
-    world.addContactMaterial(POOLVR.floorBallContactMaterial);
-    world.addContactMaterial(POOLVR.tipBallContactMaterial);
-    world.addContactMaterial(POOLVR.railBallContactMaterial);
-
-    var useShadowMap = POOLVR.config.useShadowMap;
-
-    var basicMaterials = {};
-    var nonbasicMaterials = {};
-
-    POOLVR.switchMaterials = function (useBasicMaterials) {
-        var materials = useBasicMaterials ? basicMaterials : nonbasicMaterials;
-        POOLVR.app.scene.traverse( function (node) {
-            if (node instanceof THREE.Mesh) {
-                var material = node.material;
-                var uuid = material.uuid;
-                if (materials[uuid]) {
-                    node.material = materials[uuid];
-                }
-            }
-        } );
-    };
-
-    var floorBody, ceilingBody;
-
-    scene.traverse(function (node) {
-
-        if (node instanceof THREE.Mesh) {
-
-            if ((node.material instanceof THREE.MeshLambertMaterial || node.material instanceof THREE.MeshPhongMaterial) && (basicMaterials[node.material.uuid] === undefined)) {
-                var basicMaterial = new THREE.MeshBasicMaterial({color: node.material.color.getHex(), transparent: node.material.transparent, side: node.material.side});
-                basicMaterials[node.material.uuid] = basicMaterial;
-                nonbasicMaterials[basicMaterial.uuid] = node.material;
-            }
-
-            var ballNum;
-            if (node.name.startsWith('ballMesh')) {
-                ballNum = Number(node.name.split(' ')[1]);
-                POOLVR.ballMeshes[ballNum] = node;
-                POOLVR.ballBodies[ballNum] = node.body;
-                POOLVR.initialPositions[ballNum] = new THREE.Vector3().copy(node.position);
-                node.body.bounces = 0;
-                node.body.ballNum = ballNum;
-                node.body.material = POOLVR.ballMaterial;
-            }
-            else if (node.name === 'playableSurfaceMesh') {
-                node.body.material = POOLVR.playableSurfaceMaterial;
-            }
-            else if (node.name.endsWith('CushionMesh')) {
-                node.body.material = POOLVR.cushionMaterial;
-            }
-            else if (node.name === 'floorMesh') {
-                floorBody = node.body;
-                floorBody.material = POOLVR.floorMaterial;
-            }
-            else if (node.name === 'ceilingMesh') {
-                ceilingBody = node.body;
-                ceilingBody.material = POOLVR.floorMaterial;
-            }
-            else if (node.name.endsWith('RailMesh')) {
-                node.body.material = POOLVR.railMaterial;
-            }
-
-        }
-
-    });
-
-    var H_table = POOLVR.config.H_table;
-
-    if (!useShadowMap) {
-
-        var ballShadowMeshes = [];
-        var ballShadowGeom = new THREE.CircleBufferGeometry(0.5*POOLVR.config.ball_diameter, 16);
-        ballShadowGeom.rotateX(-0.5*Math.PI);
-
-        POOLVR.ballMeshes.forEach( function (mesh, ballNum) {
-            var ballShadowMesh = new THREE.Mesh(ballShadowGeom, POOLVR.shadowMaterial);
-            ballShadowMesh.position.copy(mesh.position);
-            ballShadowMesh.position.y = H_table + 0.0004;
-            ballShadowMeshes[ballNum] = ballShadowMesh;
-            scene.add(ballShadowMesh);
-        } );
-
-    }
-
-    POOLVR.updateBallsPostStep = function () {
-
-        for (var i = 0; i < POOLVR.ballMeshes.length; i++) {
-
-            var mesh = POOLVR.ballMeshes[i];
-            var body = POOLVR.ballBodies[i];
-            mesh.position.copy(body.interpolatedPosition);
-            mesh.quaternion.copy(body.interpolatedQuaternion);
-            mesh.updateMatrix();
-            mesh.updateMatrixWorld();
-
-            if (!useShadowMap) {
-                var shadowMesh = ballShadowMeshes[i];
-                shadowMesh.position.x = mesh.position.x;
-                shadowMesh.position.z = mesh.position.z;
-                shadowMesh.updateMatrix();
-                shadowMesh.updateMatrixWorld();
-            }
-
-        }
-
-    };
-
-    // ball-floor collision
-    floorBody.addEventListener(CANNON.Body.COLLIDE_EVENT_NAME, function (evt) {
-
-        var body = evt.body;
-
-        if (body.ballNum === 0) {
-
-            POOLVR.textGeomLogger.log("SCRATCH.");
-            POOLVR.synthSpeaker.speak("Scratch.");
-            body.position.copy(POOLVR.initialPositions[0]);
-            body.velocity.set(0, 0, 0);
-            body.angularVelocity.set(0, 0, 0);
-
-        } else if (body.ballNum !== undefined) {
-
-            body.bounces++;
-            if (body.bounces === 1) {
-                // POOLVR.textGeomLogger.log(body.mesh.name + " HIT THE FLOOR!");
-                POOLVR.playPocketedSound();
-                POOLVR.onTable[body.ballNum] = false;
-                POOLVR.nextBall = POOLVR.onTable.slice(1).indexOf(true) + 1;
-                if (POOLVR.nextBall === 0) {
-                    POOLVR.synthSpeaker.speak("You cleared the table.  Well done.");
-                    POOLVR.textGeomLogger.log("YOU CLEARED THE TABLE.  WELL DONE.");
-                    POOLVR.resetTable();
-                }
-            } else if (body.bounces === 7) {
-                body.sleep();
-                body.mesh.visible = false;
-            }
-
-        }
-
-    });
-
-    var relVelocity = new CANNON.Vec3();
-    world.addEventListener('beginContact', function (evt) {
-        var bodyA = evt.bodyA;
-        var bodyB = evt.bodyB;
-        if (bodyA.material === bodyB.material) {
-            // ball-ball collision
-            bodyA.velocity.vsub(bodyB.velocity, relVelocity);
-            POOLVR.playCollisionSound(relVelocity.lengthSquared());
-        }
-    });
-
-};
-
-},{}],9:[function(require,module,exports){
 /* global POOLVR */
 POOLVR.URL_PARAMS = ( function () {
     "use strict";
