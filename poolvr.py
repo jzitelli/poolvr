@@ -108,22 +108,6 @@ var THREEPY_SCENE = %s;
 
 
 
-@app.route('/index.html')
-def dashboard():
-    """
-    """
-    poolvr_config = get_poolvr_config()
-    return render_template("index_template.html",
-                           json_config=Markup(r"""<script>
-var WebVRConfig = %s;
-
-var POOLVR = %s;
-
-var THREEPY_SCENE = %s;
-</script>"""))
-
-
-
 def main():
     # _logger.info(completed_proc.stdout)
     _logger.info("app.config =\n%s" % '\n'.join(['%s: %s' % (k, str(v))

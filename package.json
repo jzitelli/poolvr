@@ -52,13 +52,16 @@
   },
   "devDependencies": {
     "eslint": "latest",
-    "browserify": "latest"
+    "browserify": "latest",
+    "watchify": "latest",
+    "uglify-js": "latest"
   },
   "scripts": {
     "update_index": "python update_index.py",
     "prepublish": "npm run update_index",
     "lint": "eslint src/*.js",
     "build": "npm run lint && browserify src/main.js -o build/poolvr.js",
+    "build-min": "npm run lint && browserify src/main.js | uglifyjs -c > build/poolvr.min.js",
     "start": "python poolvr.py"
   }
 }
