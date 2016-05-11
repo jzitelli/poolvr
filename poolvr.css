@@ -2,9 +2,7 @@ body {
   background-color: #010101;
   margin: 0;
   padding: 0;
-  /*
   overflow: hidden;
-  */
   font-family: "Anonymous Pro Regular", Monaco, "Bitstream Vera Sans Mono", "Lucida Console", Terminal, monospace;
 }
 #overlay {
@@ -53,12 +51,14 @@ button {
 }
 #leapIndicator {
   font-size: 12pt;
+  /*position: relative;*/
+  /*width: 50%;*/
   text-align: center;
-  margin-top: 0.4vh;
-  padding: 0.1em;
+  margin-top: 0.2vh;
+  padding: 0.05em;
+  box-sizing: border-box;
   color: #b5e853;
   background-color: rgba(60, 20, 0, 0.6);
-  box-sizing: border-box;
 }
 #webgl-canvas {
   position: fixed;

@@ -13,15 +13,15 @@ THREEPY_DIR = os.path.join(os.path.split(__file__)[0], 'node_modules', 'three.py
 sys.path.append(THREEPY_DIR)
 from three import *
 
-IN2METER = 0.0254
-FT2METER = IN2METER / 12
+INCH2METER = 0.0254
+FT2METER = INCH2METER / 12
 
 
 
 def pool_table(L_table=2.3368, W_table=None, H_table=0.74295,
                L_playable=None, W_playable=None,
-               ball_diameter=2.25*IN2METER,
-               W_cushion=2*IN2METER, H_cushion=None, W_rail=None,
+               ball_diameter=2.25*INCH2METER,
+               W_cushion=2*INCH2METER, H_cushion=None, W_rail=None,
                **kwargs):
     """
     Creates parameterized three.js pool table
@@ -53,7 +53,7 @@ def pool_table(L_table=2.3368, W_table=None, H_table=0.74295,
     cushionMaterial = MeshPhongMaterial(name="cushionMaterial", color=0x028844, shininess=5, shading=FlatShading)
     railMaterial = MeshPhongMaterial(name="railMaterial", color=0xdda400, shininess=10, shading=FlatShading)
 
-    thickness = IN2METER
+    thickness = INCH2METER
     playableSurfaceGeom = BoxBufferGeometry(W_playable, thickness, L_playable)
     playableSurfaceMesh = Mesh(name='playableSurfaceMesh',
                                geometry=playableSurfaceGeom,
@@ -205,7 +205,7 @@ def pool_table(L_table=2.3368, W_table=None, H_table=0.74295,
 def pool_hall(useSkybox=False,
               L_table=2.3368,
               H_table=0.74295,
-              ball_diameter=2.25*IN2METER,
+              ball_diameter=2.25*INCH2METER,
               url_prefix="",
               **kwargs):
     """

@@ -71,12 +71,15 @@
 
       <br>
 
-      <div id="leapIndicator">disconnected</div>
-
       <label>
         Leap websocket address:
         <input id="leapAddress" type="text" maxlength="18" />
       </label>
+      <div id="leapIndicator">
+        not connected
+      </div>
+
+      {{ extra_overlay_content if extra_overlay_content else "" }}
 
     </div>
 

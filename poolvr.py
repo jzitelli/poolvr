@@ -6,7 +6,13 @@ import logging
 _logger = logging.getLogger(__name__)
 import json
 from copy import deepcopy
+
 import subprocess
+
+completed_proc = subprocess.run(['git', 'rev-list', '--max-count=4', 'HEAD'], stdout=subprocess.PIPE, check=True, universal_newlines=True)
+GIT_REVS = []
+for line in completed_proc.stdout.splitlines():
+    GIT_REVS.append(line)
 
 from flask import Flask, render_template, request, Markup
 
@@ -25,18 +31,14 @@ app.debug = True
 
 WebVRConfig = {
     "ENABLE_LEAP_MOTION": False,
-    #"LEAP_MOTION_HOST": "127.0.0.1",
-    #"FORCE_ENABLE_VR":       True,
-    #"K_FILTER":              0.98,
+    "LEAP_MOTION_HOST": "127.0.0.1",
+    "FORCE_ENABLE_VR":       False,
+    "K_FILTER":              0.98,
     "PREDICTION_TIME_S":     0.020,
-    #"TOUCH_PANNER_DISABLED": True,
-    #"YAW_ONLY":              True,
-    #"MOUSE_KEYBOARD_CONTROLS_DISABLED": True
+    "TOUCH_PANNER_DISABLED": False,
+    "YAW_ONLY":              False,
+    "MOUSE_KEYBOARD_CONTROLS_DISABLED": False,
     "KEYBOARD_CONTROLS_DISABLED": True
-    #"FORCE_DISTORTION":      True,
-    #"PREVENT_DISTORTION":    True,
-    #"SHOW_EYE_CENTERS":      True,
-    #"NO_DPDB_FETCH":         True
 }
 
 
@@ -50,7 +52,7 @@ POOLVR = {
         'useTextGeomLogger'  : True,
         'L_table'            : 2.3368,
         'H_table'            : 0.74295,
-        'ball_diameter'      : 2.25 * pool_table.IN2METER,
+        'ball_diameter'      : 2.25 * pool_table.INCH2METER,
         'H_ceiling'          : 8 * 12 * 0.0254,
         'synthSpeakerVolume' : 0.4,
         'toolOptions': {
@@ -72,7 +74,6 @@ def get_poolvr_config():
     config = deepcopy(POOLVR['config'])
     args = dict({k: v for k, v in request.args.items()
                  if k in config})
-    # TODO: better way
     for k, v in args.items():
         if v == 'false':
             args[k] = False
@@ -86,7 +87,27 @@ def get_poolvr_config():
     config.update(args)
     return config
 
-# completed_proc = subprocess.run(['git', 'rev-list'], stdout=subprocess.PIPE)
+def get_webvr_config():
+    """
+    Constructs WebVRConfig dict based on request url parameters.
+    """
+    config = deepcopy(WebVRConfig)
+    args = dict({k: v for k, v in request.args.items()
+                 if k in config})
+    for k, v in args.items():
+        if v == 'false':
+            args[k] = False
+        elif v == 'true':
+            args[k] = True
+        elif not (v is False or v is True or v is None):
+            try:
+                args[k] = float(v)
+            except Exception as err:
+                pass
+    config.update(args)
+    return config
+
+
 
 @app.route('/')
 def poolvr():
@@ -94,6 +115,7 @@ def poolvr():
     Serves the poolvr app HTML.
     """
     poolvr_config = get_poolvr_config()
+    webvr_config = get_webvr_config()
     return render_template("poolvr_template.html",
                            json_config=Markup(r"""<script>
 var WebVRConfig = %s;
@@ -101,15 +123,19 @@ var WebVRConfig = %s;
 var POOLVR = %s;
 
 var THREEPY_SCENE = %s;
-</script>""" % (json.dumps(WebVRConfig, indent=2),
+</script>""" % (json.dumps(webvr_config, indent=2),
                 json.dumps({'config': poolvr_config}, indent=2),
                 json.dumps(pool_table.pool_hall(**poolvr_config).export()))),
-                           version_id='v0.1.1')
+                           version_id='v0.1.1',
+                           extra_overlay_content=Markup(r"""
+<a href="https://github.com/jzitelli/poolvr/commit/{0}">current commit</a>
+<br>
+<a href="https://github.com/jzitelli/poolvr/commit/{1}">last commit</a>
+""".format(GIT_REVS[0], GIT_REVS[1])))
 
 
 
 def main():
-    # _logger.info(completed_proc.stdout)
     _logger.info("app.config =\n%s" % '\n'.join(['%s: %s' % (k, str(v))
                                                  for k, v in sorted(app.config.items(),
                                                                     key=lambda i: i[0])]))
