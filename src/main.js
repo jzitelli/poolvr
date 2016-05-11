@@ -8,7 +8,7 @@ require('./actions.js');
 require('./config.js');
 require('./menu.js');
 
-/* global POOLVR, THREE, YAWVRB, CANNON, TextGeomUtils, SynthSpeaker, THREEPY_SCENE, threeStats, glStats, rStats */
+/* global POOLVR, THREE, YAWVRB, CANNON, TextGeomUtils, SynthSpeaker, THREEPY_SCENE */
 window.onLoad = function () {
     "use strict";
 
@@ -145,11 +145,9 @@ window.onLoad = function () {
     POOLVR.stage.objects.push(POOLVR.leapTool.toolRoot);
     POOLVR.stage.load(POOLVR.config.stage);
 
-    var antialias = (POOLVR.URL_PARAMS.antialias !== undefined ? POOLVR.URL_PARAMS.antialias : POOLVR.config.antialias) || !POOLVR.isMobile();
-
     var rendererOptions = {
         canvas: document.getElementById('webgl-canvas'),
-        antialias: antialias
+        antialias: (POOLVR.URL_PARAMS.antialias !== undefined ? POOLVR.URL_PARAMS.antialias : POOLVR.config.antialias) || !POOLVR.isMobile()
     };
 
     var euler = new THREE.Euler(0, 0, 0, 'YXZ');
@@ -495,80 +493,28 @@ POOLVR.startAnimateLoop = function () {
         updateToolMapping   = POOLVR.leapTool.updateToolMapping,
         updateBallsPostStep = POOLVR.updateBallsPostStep,
         moveToolRoot        = POOLVR.moveToolRoot,
-        moveAvatar          = POOLVR.moveAvatar;
-
-    var glS, rS;
-    if (POOLVR.URL_PARAMS.rstats) {
-        /* jshint ignore:start */
-        var tS = new threeStats( POOLVR.app.renderer );
-        glS = new glStats();
-        rS  = new rStats({
-            CSSPath: "lib/rstats/",
-            values: {
-                frame: { caption: 'Total frame time (ms)' },
-                calls: { caption: 'Calls (three.js)' },
-                raf: { caption: 'Time since last rAF (ms)' },
-                // rstats: { caption: 'rStats update (ms)' }, // no worky?
-                updatetool: { caption: 'Leap frame update (ms)' },
-                updatevrcontrols: { caption: 'VRControls update (ms)' },
-                step: { caption: 'Cannon step (ms)' },
-                poststep: { caption: 'Cannon post-step (ms)' }
-            },
-            fractions: [
-                { base: 'frame', steps: [ 'updatetool', 'updatevrcontrols', 'render', 'step', 'poststep', 'updatekeyboardgamepad' ] }
-            ],
-            plugins: [tS, glS]
-        });
-        /* jshint ignore:end */
-    } else {
-        glS = {start: function () {}};
-        rS  = function () { return {start:  function () {},
-                                    end:    function () {},
-                                    tick:   function () {},
-                                    frame:  function () {},
-                                    update: function () {}}; };
-    }
+        moveAvatar          = POOLVR.moveAvatar,
+        gamepadCommands = POOLVR.gamepadCommands;
 
     var lt = 0;
 
     function animate(t) {
-        rS('frame').start();
-        glS.start();
-        rS('raf').tick();
-        rS('fps').frame();
 
         var dt = (t - lt) * 0.001;
 
-        rS('updatetool').start();
         updateTool(dt);
-        rS('updatetool').end();
 
-        rS('updatevrcontrols').start();
-        if (app.vrControlsEnabled) {
-            app.vrControls.update();
-            app.camera.updateMatrixWorld();
-        }
-        rS('updatevrcontrols').end();
-
-        rS('render').start();
-
-        app.vrEffect.render(app.scene, app.camera);
-        rS('render').end();
-
-        rS('step').start();
+        app.render();
+        
         world.step(Math.min(1/60, dt), dt, 10);
-        rS('step').end();
 
-        rS('poststep').start();
         updateToolPostStep();
         updateBallsPostStep();
-        rS('poststep').end();
 
-        var gamepadValues = YAWVRB.Gamepad.update(POOLVR.gamepadCommands);
+        var gamepadValues = YAWVRB.Gamepad.update(gamepadCommands);
 
         moveAvatar(keyboard, gamepadValues, dt);
         moveToolRoot(keyboard, gamepadValues, dt);
-
         avatar.updateMatrixWorld();
         updateToolMapping();
 
@@ -576,8 +522,6 @@ POOLVR.startAnimateLoop = function () {
 
         requestAnimationFrame(animate);
 
-        rS('frame').end();
-        rS().update();
     }
 
     requestAnimationFrame(animate);
