@@ -26,9 +26,7 @@
 
       <h1>poolvr</h1>
 
-      {% if version_id %}
-      <h2>{{ version_id }}</h2>
-      {% endif %}
+      {{ version_content if version_content else '' }}
 
       <h2>
         <button id="vrButton">toggle VR</button>

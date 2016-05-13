@@ -43,6 +43,7 @@ WebVRConfig = {
 
 
 POOLVR = {
+    'version': 'v0.1.1',
     'config': {
         'gravity'            : 9.8,
         'useBasicMaterials'  : True,
@@ -126,13 +127,19 @@ var THREEPY_SCENE = %s;
 </script>""" % (json.dumps(webvr_config, indent=2),
                 json.dumps({'config': poolvr_config}, indent=2),
                 json.dumps(pool_table.pool_hall(**poolvr_config).export()))),
-                           version_id='v0.1.1',
-                           extra_overlay_content=Markup(r"""
-<h2>Version info:</h2>
+                           version_content=Markup(r"""
+<h2>{2}</h2>
+<table>
+<tr>
+<td>
 <a style="color: #feb;" href="https://github.com/jzitelli/poolvr/commit/{0}">current commit</a>
-<br>
-<a style="color: #feb;" href="https://github.com/jzitelli/poolvr/commit/{1}">last commit</a>
-""".format(GIT_REVS[0], GIT_REVS[1])))
+</td>
+<td>
+<a style="color: #feb;" href="https://github.com/jzitelli/poolvr/commit/{1}">previous commit</a>
+</td>
+</tr>
+</table>
+""".format(GIT_REVS[0], GIT_REVS[1], POOLVR['version'])))
 
 
 
@@ -144,15 +151,15 @@ def main():
            ***********
            p o o l v r
     *************************
-             v0.1.1
+             {0}
  *******************************
  STARTING FLASK APP!!!!!!!!!!!!!
  *******************************
-             v0.1.1
+             {0}
     *************************
            p o o l v r
            ***********
-""")
+""".format(POOLVR['version']))
     app.run(host='0.0.0.0', port=5000)
 
 
