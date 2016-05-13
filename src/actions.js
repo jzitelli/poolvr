@@ -3,9 +3,11 @@ POOLVR.selectNextBall = function (inc) {
     "use strict";
     inc = inc || 1;
     var next = Math.max(1, Math.min(15, POOLVR.nextBall + inc));
+    if (next === POOLVR.nextBall) return;
     while (!POOLVR.onTable[next]) {
+        var _next = next;
         next = Math.max(1, Math.min(15, next + inc));
-        if (next === POOLVR.nextBall) {
+        if (next === _next) {
             break;
         }
     }

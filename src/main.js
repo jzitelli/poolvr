@@ -1,14 +1,12 @@
 /* global require */
 window.POOLVR = window.POOLVR || {};
-require('./TextGeomUtils.js');
 require('./utils.js');
 require('./WebVRSound.js');
-require('./SynthSpeaker.js');
 require('./actions.js');
 require('./config.js');
 require('./menu.js');
 
-/* global POOLVR, THREE, YAWVRB, CANNON, TextGeomUtils, SynthSpeaker, THREEPY_SCENE */
+/* global POOLVR, THREE, YAWVRB, CANNON, THREEPY_SCENE */
 window.onLoad = function () {
     "use strict";
 
@@ -91,9 +89,9 @@ window.onLoad = function () {
     if (POOLVR.config.useTextGeomLogger) {
         var fontLoader = new THREE.FontLoader();
         fontLoader.load('fonts/Anonymous Pro_Regular.js', function (font) {
-            var textGeomCacher = new TextGeomUtils.TextGeomCacher(font, {size: 0.12});
+            var textGeomCacher = new YAWVRB.TextGeomUtils.TextGeomCacher(font, {size: 0.12});
             var textGeomLoggerMaterial = new THREE.MeshBasicMaterial({color: 0xff3210});
-            POOLVR.textGeomLogger = new TextGeomUtils.TextGeomLogger(textGeomCacher,
+            POOLVR.textGeomLogger = new YAWVRB.TextGeomUtils.TextGeomLogger(textGeomCacher,
                 {material: textGeomLoggerMaterial, nrows: 8, lineHeight: 1.8 * 0.12});
             avatar.add(POOLVR.textGeomLogger.root);
             POOLVR.textGeomLogger.root.position.set(-2.7, 0.88, -3.3);
@@ -103,11 +101,12 @@ window.onLoad = function () {
         POOLVR.textGeomLogger = {
             root: new THREE.Object3D(),
             log: function (msg) { console.log(msg); },
+            update: function () {},
             clear: function () {}
         };
     }
 
-    POOLVR.synthSpeaker = new SynthSpeaker({volume: POOLVR.config.synthSpeakerVolume, rate: 0.8, pitch: 0.5});
+    POOLVR.synthSpeaker = new YAWVRB.SynthSpeaker({volume: POOLVR.config.synthSpeakerVolume, rate: 0.8, pitch: 0.5});
 
     POOLVR.setupMenu();
 
@@ -501,6 +500,8 @@ POOLVR.startAnimateLoop = function () {
     function animate(t) {
 
         var dt = (t - lt) * 0.001;
+
+        POOLVR.textGeomLogger.update(t);
 
         updateTool(dt);
 

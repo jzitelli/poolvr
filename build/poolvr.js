@@ -1,178 +1,4 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-window.SynthSpeaker = ( function() {
-    "use strict";
-    function SynthSpeaker(options) {
-        options = options || {};
-        this.volume = options.volume || 1;
-        this.rate   = options.rate || 1;
-        this.pitch  = options.pitch || 1;
-
-        this.queue = [];
-        this.onBegins = [];
-        this.onEnds = [];
-        this.speaking = false;
-
-        var onend = function () {
-            var onEnd = this.onEnds.shift();
-            if (onEnd) {
-                onEnd();
-            }
-            this.utterance = new SpeechSynthesisUtterance();
-            this.utterance.volume = this.volume;
-            this.utterance.rate = this.rate;
-            this.utterance.pitch = this.pitch;
-            this.utterance.onend = onend;
-            if (this.queue.length > 0) {
-                this.utterance.text = this.queue.shift();
-                var onBegin = this.onBegins.shift();
-                if (onBegin) {
-                    onBegin();
-                }
-                speechSynthesis.speak(this.utterance);
-            } else {
-                this.speaking = false;
-            }
-        }.bind(this);
-
-        this.utterance = new SpeechSynthesisUtterance();
-        this.utterance.onend = onend;
-        this.utterance.volume = this.volume;
-        this.utterance.rate = this.rate;
-        this.utterance.pitch = this.pitch;
-
-    }
-
-    SynthSpeaker.prototype.speak = function(text, onBegin, onEnd) {
-        this.onEnds.push(onEnd);
-        if (this.speaking) {
-            this.queue.push(text);
-            this.onBegins.push(onBegin);
-        } else {
-            if (onBegin) {
-                onBegin();
-            }
-            this.utterance.text = text;
-            this.speaking = true;
-            speechSynthesis.speak(this.utterance);
-        }
-    };
-
-    if (window.speechSynthesis) {
-        return SynthSpeaker;
-    } else {
-        console.warn("speechSynthesis not supported");
-        return function () {
-            this.volume = 0;
-            this.rate = 1;
-            this.pitch = 1;
-            this.speak = function (text, onBegin, onEnd) {
-                if (onBegin) onBegin();
-                if (onEnd) onEnd();
-            };
-        };
-    }
-} )();
-
-},{}],2:[function(require,module,exports){
-/* global THREE */
-window.TextGeomUtils = ( function () {
-    "use strict";
-    var alphas  = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    var digits  = "0123456789";
-    var symbols = ",./;'[]\\-=<>?:\"{}|_+~!@#$%^&*()";
-    var chars   = alphas + digits + symbols;
-
-    function TextGeomCacher(font, options) {
-        options = options || {};
-        var textGeomParams = {
-            font:          font,
-            size:          options.size || 0.12,
-            height:        options.height || 0,
-            curveSegments: options.curveSegments || 2
-        };
-
-        this.geometries = {};
-        for (var i = 0; i < chars.length; i++) {
-            var c = chars[i];
-            var geom = new THREE.TextGeometry(c, textGeomParams);
-            var bufferGeom = new THREE.BufferGeometry();
-            bufferGeom.fromGeometry(geom);
-            geom.dispose();
-            this.geometries[c] = bufferGeom;
-        }
-
-        this.makeObject = function (text, material) {
-            var object = new THREE.Object3D();
-            object.matrixAutoUpdate = false;
-            for (var j = 0; j < text.length; j++) {
-                var c = text[j];
-                if (c !== ' ') {
-                    var mesh = new THREE.Mesh(this.geometries[c], material);
-                    mesh.matrixAutoUpdate = false;
-                    mesh.position.x = 0.8*textGeomParams.size * j;
-                    mesh.updateMatrix();
-                    object.add(mesh);
-                }
-            }
-            return object;
-        }.bind(this);
-    }
-
-    function TextGeomLogger(textGeomCacher, options) {
-        options = options || {};
-        var material   = options.material || new THREE.MeshBasicMaterial({color: 0xff2201});
-        var nrows      = options.nrows || 20;
-        //var ncols      = options.ncols || 30;
-        var lineHeight = options.lineHeight || 1.8 * 0.12;
-
-        var lineObjects = {};
-
-        this.root = new THREE.Object3D();
-        this.root.matrixAutoUpdate = false;
-
-        this.log = function (msg) {
-            var lines = msg.split(/\n/);
-            // create / clone lines:
-            for (var i = 0; i < lines.length; i++) {
-                var line = lines[i];
-                var lineObject = lineObjects[line];
-                if (lineObject) {
-                    var clone = lineObject.clone();
-                    this.root.add(clone);
-                } else {
-                    lineObject = textGeomCacher.makeObject(line, material);
-                    this.root.add(lineObject);
-                    lineObjects[line] = lineObject;
-                }
-            }
-            // remove rows exceeding max display
-            for (i = this.root.children.length - 1; i >= nrows; i--) {
-                this.root.remove(this.root.children[0]);
-            }
-            // scroll lines:
-            for (i = 0; i < this.root.children.length; i++) {
-                var child = this.root.children[i];
-                child.position.y = (this.root.children.length - i) * lineHeight;
-                child.updateMatrix();
-            }
-            this.root.updateMatrixWorld(true);
-        }.bind(this);
-
-        this.clear = function () {
-            for (var i = this.root.children.length - 1; i >= 0; i--) {
-                this.root.remove(this.root.children[this.root.children.length - 1]);
-            }
-        }.bind(this);
-    }
-
-    return {
-        TextGeomCacher: TextGeomCacher,
-        TextGeomLogger: TextGeomLogger
-    };
-
-} )();
-
-},{}],3:[function(require,module,exports){
 window.WebVRSound = ( function (numGainNodes) {
     "use strict";
     numGainNodes = numGainNodes || 4;
@@ -250,15 +76,17 @@ POOLVR.playPocketedSound = (function () {
     return playPocketedSound;
 })();
 
-},{}],4:[function(require,module,exports){
+},{}],2:[function(require,module,exports){
 /* global POOLVR, THREE */
 POOLVR.selectNextBall = function (inc) {
     "use strict";
     inc = inc || 1;
     var next = Math.max(1, Math.min(15, POOLVR.nextBall + inc));
+    if (next === POOLVR.nextBall) return;
     while (!POOLVR.onTable[next]) {
+        var _next = next;
         next = Math.max(1, Math.min(15, next + inc));
-        if (next === POOLVR.nextBall) {
+        if (next === _next) {
             break;
         }
     }
@@ -341,7 +169,7 @@ POOLVR.stroke = ( function () {
     };
 } )();
 
-},{}],5:[function(require,module,exports){
+},{}],3:[function(require,module,exports){
 /* global POOLVR, YAWVRB */
 POOLVR.commands = {
     toggleMenu:       function () { POOLVR.toggleMenu(); },
@@ -462,18 +290,16 @@ POOLVR.loadConfig = function (profileName) {
     return config;
 };
 
-},{}],6:[function(require,module,exports){
+},{}],4:[function(require,module,exports){
 /* global require */
 window.POOLVR = window.POOLVR || {};
-require('./TextGeomUtils.js');
 require('./utils.js');
 require('./WebVRSound.js');
-require('./SynthSpeaker.js');
 require('./actions.js');
 require('./config.js');
 require('./menu.js');
 
-/* global POOLVR, THREE, YAWVRB, CANNON, TextGeomUtils, SynthSpeaker, THREEPY_SCENE */
+/* global POOLVR, THREE, YAWVRB, CANNON, THREEPY_SCENE */
 window.onLoad = function () {
     "use strict";
 
@@ -556,9 +382,9 @@ window.onLoad = function () {
     if (POOLVR.config.useTextGeomLogger) {
         var fontLoader = new THREE.FontLoader();
         fontLoader.load('fonts/Anonymous Pro_Regular.js', function (font) {
-            var textGeomCacher = new TextGeomUtils.TextGeomCacher(font, {size: 0.12});
+            var textGeomCacher = new YAWVRB.TextGeomUtils.TextGeomCacher(font, {size: 0.12});
             var textGeomLoggerMaterial = new THREE.MeshBasicMaterial({color: 0xff3210});
-            POOLVR.textGeomLogger = new TextGeomUtils.TextGeomLogger(textGeomCacher,
+            POOLVR.textGeomLogger = new YAWVRB.TextGeomUtils.TextGeomLogger(textGeomCacher,
                 {material: textGeomLoggerMaterial, nrows: 8, lineHeight: 1.8 * 0.12});
             avatar.add(POOLVR.textGeomLogger.root);
             POOLVR.textGeomLogger.root.position.set(-2.7, 0.88, -3.3);
@@ -568,11 +394,12 @@ window.onLoad = function () {
         POOLVR.textGeomLogger = {
             root: new THREE.Object3D(),
             log: function (msg) { console.log(msg); },
+            update: function () {},
             clear: function () {}
         };
     }
 
-    POOLVR.synthSpeaker = new SynthSpeaker({volume: POOLVR.config.synthSpeakerVolume, rate: 0.8, pitch: 0.5});
+    POOLVR.synthSpeaker = new YAWVRB.SynthSpeaker({volume: POOLVR.config.synthSpeakerVolume, rate: 0.8, pitch: 0.5});
 
     POOLVR.setupMenu();
 
@@ -967,6 +794,8 @@ POOLVR.startAnimateLoop = function () {
 
         var dt = (t - lt) * 0.001;
 
+        POOLVR.textGeomLogger.update(t);
+
         updateTool(dt);
 
         app.render();
@@ -993,7 +822,7 @@ POOLVR.startAnimateLoop = function () {
 
 };
 
-},{"./SynthSpeaker.js":1,"./TextGeomUtils.js":2,"./WebVRSound.js":3,"./actions.js":4,"./config.js":5,"./menu.js":7,"./utils.js":8}],7:[function(require,module,exports){
+},{"./WebVRSound.js":1,"./actions.js":2,"./config.js":3,"./menu.js":5,"./utils.js":6}],5:[function(require,module,exports){
 /* global POOLVR */
 POOLVR.setupMenu = function () {
     "use strict";
@@ -1149,7 +978,7 @@ POOLVR.setupMenu = function () {
     }
 };
 
-},{}],8:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 /* global POOLVR */
 POOLVR.URL_PARAMS = ( function () {
     "use strict";
@@ -1212,4 +1041,4 @@ POOLVR.isMobile = function () {
     return (/(android|bb\d+|meego).+mobile|avantgo|bada\/|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|iris|kindle|lge |maemo|midp|mmp|mobile.+firefox|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows ce|xda|xiino/i.test(a)||/1207|6310|6590|3gso|4thp|50[1-6]i|770s|802s|a wa|abac|ac(er|oo|s\-)|ai(ko|rn)|al(av|ca|co)|amoi|an(ex|ny|yw)|aptu|ar(ch|go)|as(te|us)|attw|au(di|\-m|r |s )|avan|be(ck|ll|nq)|bi(lb|rd)|bl(ac|az)|br(e|v)w|bumb|bw\-(n|u)|c55\/|capi|ccwa|cdm\-|cell|chtm|cldc|cmd\-|co(mp|nd)|craw|da(it|ll|ng)|dbte|dc\-s|devi|dica|dmob|do(c|p)o|ds(12|\-d)|el(49|ai)|em(l2|ul)|er(ic|k0)|esl8|ez([4-7]0|os|wa|ze)|fetc|fly(\-|_)|g1 u|g560|gene|gf\-5|g\-mo|go(\.w|od)|gr(ad|un)|haie|hcit|hd\-(m|p|t)|hei\-|hi(pt|ta)|hp( i|ip)|hs\-c|ht(c(\-| |_|a|g|p|s|t)|tp)|hu(aw|tc)|i\-(20|go|ma)|i230|iac( |\-|\/)|ibro|idea|ig01|ikom|im1k|inno|ipaq|iris|ja(t|v)a|jbro|jemu|jigs|kddi|keji|kgt( |\/)|klon|kpt |kwc\-|kyo(c|k)|le(no|xi)|lg( g|\/(k|l|u)|50|54|\-[a-w])|libw|lynx|m1\-w|m3ga|m50\/|ma(te|ui|xo)|mc(01|21|ca)|m\-cr|me(rc|ri)|mi(o8|oa|ts)|mmef|mo(01|02|bi|de|do|t(\-| |o|v)|zz)|mt(50|p1|v )|mwbp|mywa|n10[0-2]|n20[2-3]|n30(0|2)|n50(0|2|5)|n7(0(0|1)|10)|ne((c|m)\-|on|tf|wf|wg|wt)|nok(6|i)|nzph|o2im|op(ti|wv)|oran|owg1|p800|pan(a|d|t)|pdxg|pg(13|\-([1-8]|c))|phil|pire|pl(ay|uc)|pn\-2|po(ck|rt|se)|prox|psio|pt\-g|qa\-a|qc(07|12|21|32|60|\-[2-7]|i\-)|qtek|r380|r600|raks|rim9|ro(ve|zo)|s55\/|sa(ge|ma|mm|ms|ny|va)|sc(01|h\-|oo|p\-)|sdk\/|se(c(\-|0|1)|47|mc|nd|ri)|sgh\-|shar|sie(\-|m)|sk\-0|sl(45|id)|sm(al|ar|b3|it|t5)|so(ft|ny)|sp(01|h\-|v\-|v )|sy(01|mb)|t2(18|50)|t6(00|10|18)|ta(gt|lk)|tcl\-|tdg\-|tel(i|m)|tim\-|t\-mo|to(pl|sh)|ts(70|m\-|m3|m5)|tx\-9|up(\.b|g1|si)|utst|v400|v750|veri|vi(rg|te)|vk(40|5[0-3]|\-v)|vm40|voda|vulc|vx(52|53|60|61|70|80|81|83|85|98)|w3c(\-| )|webc|whit|wi(g |nc|nw)|wmlb|wonu|x700|yas\-|your|zeto|zte\-/i.test(a.substr(0,4)));
 };
 
-},{}]},{},[6]);
+},{}]},{},[4]);
