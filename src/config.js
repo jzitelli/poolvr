@@ -80,7 +80,7 @@ POOLVR.vrGamepadACommands = {
 
 POOLVR.vrGamepadBCommands = {
     toolTurnLR: {axes: [YAWVRB.Gamepads.AXES.LSX]},
-    toolMoveFB:  {axes: [YAWVRB.Gamepads.AXES.LSY]},
+    toolMoveFB:  {axes: [YAWVRB.Gamepads.AXES.LSY], flipAxes: true},
     toggleToolFloatMode: {buttons: [0]}
 };
 

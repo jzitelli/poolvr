@@ -24,15 +24,17 @@ window.onLoad = function () {
     POOLVR.parseURIConfig();
     console.log("POOLVR.config =\n" + JSON.stringify(POOLVR.config, undefined, 2));
 
-    for (var i = 0; i < YAWVRB.Gamepads.gamepads.length; i++) {
-        var gamepad = YAWVRB.Gamepads.gamepads[i];
-        if (!gamepad) continue;
-        if      (i === 0 && /openvr/i.test(gamepad.id)) YAWVRB.Gamepads.setGamepadCommands(gamepad.index, POOLVR.vrGamepadACommands);
-        else if (i === 1 && /openvr/i.test(gamepad.id)) YAWVRB.Gamepads.setGamepadCommands(gamepad.index, POOLVR.vrGamepadBCommands);
-        else if (/xbox/i.test(gamepad.id) || /xinput/i.test(gamepad.id)) YAWVRB.Gamepads.setGamepadCommands(gamepad.index, POOLVR.gamepadCommands);
-    }
-
     var didA = false;
+    for (var i = 0; i < YAWVRB.Gamepads.vrGamepads.length; i++) {
+        var gamepad = YAWVRB.Gamepads.vrGamepads[i];
+        if (!gamepad) continue;
+        if (i === 0) {
+            YAWVRB.Gamepads.setGamepadCommands(gamepad.index, POOLVR.vrGamepadACommands);
+            didA = true;
+        } else if (i === 1) {
+            YAWVRB.Gamepads.setGamepadCommands(gamepad.index, POOLVR.vrGamepadBCommands);
+        }
+    }
     YAWVRB.Gamepads.setOnGamepadConnected( function (e) {
         var gamepad = e.gamepad;
         if (!gamepad) return;
@@ -46,8 +48,10 @@ window.onLoad = function () {
         }
         else if (/xbox/i.test(gamepad.id) || /xinput/i.test(gamepad.id)) YAWVRB.Gamepads.setGamepadCommands(gamepad.index, POOLVR.gamepadCommands);
     } );
+
     // TODO: load from JSON config
     var world = new CANNON.World();
+    world.gravity.set( 0, -POOLVR.config.gravity, 0 );
     world.defaultContactMaterial.contactEquationStiffness   = 1e7;
     world.defaultContactMaterial.frictionEquationStiffness  = 2e6;
     world.defaultContactMaterial.contactEquationRelaxation  = 2;
@@ -106,8 +110,6 @@ window.onLoad = function () {
     POOLVR.objectSelector = new YAWVRB.Utils.ObjectSelector();
     POOLVR.shadowMaterial = new THREE.MeshBasicMaterial({color: 0x002200});
 
-    world.gravity.set( 0, -POOLVR.config.gravity, 0 );
-
     if (POOLVR.config.useTextGeomLogger) {
         var fontLoader = new THREE.FontLoader();
         fontLoader.load('fonts/Anonymous Pro_Regular.js', function (font) {
@@ -136,19 +138,19 @@ window.onLoad = function () {
 
     var leapTool = YAWVRB.LeapMotion.makeTool( POOLVR.combineObjects(POOLVR.config.toolOptions, {
         onConnect: function () {
-            POOLVR.leapIndicator.innerHTML = 'Leap Motion: connected';
+            POOLVR.leapIndicator.innerHTML = 'Leap Motion: websocket connected';
             POOLVR.leapIndicator.style['background-color'] = 'rgba(60, 100, 20, 0.8)';
         },
         onStreamingStarted: function () {
-            POOLVR.leapIndicator.innerHTML = 'Leap Motion: connected, streaming';
+            POOLVR.leapIndicator.innerHTML = 'Leap Motion: websocket connected, streaming';
             POOLVR.leapIndicator.style['background-color'] = 'rgba(20, 160, 20, 0.8)';
         },
         onStreamingStopped: function () {
-            POOLVR.leapIndicator.innerHTML = 'Leap Motion: connected, streaming stopped';
+            POOLVR.leapIndicator.innerHTML = 'Leap Motion: websocket connected, streaming stopped';
             POOLVR.leapIndicator.style['background-color'] = 'rgba(60, 100, 20, 0.8)';
         },
         onDisconnect: function () {
-            POOLVR.leapIndicator.innerHTML = 'Leap Motion: disconnected';
+            POOLVR.leapIndicator.innerHTML = 'Leap Motion: websocket disconnected';
             POOLVR.leapIndicator.style['background-color'] = 'rgba(60, 20, 20, 0.4)';
         },
         useShadowMesh: !POOLVR.config.useShadowMap,
