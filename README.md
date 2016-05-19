@@ -1,6 +1,6 @@
 # **poolvr**
 
-Play pool / billiards with your [Leap Motion controller](https://www.leapmotion.com) in VR, in a web browser!
+Play pool / billiards in WebVR!  Supports both Leap Motion and HTC Vive controllers!
 
 ![screenshot](http://jzitelli.github.io/poolvr/images/poolvr-0.1.0-02162016.png)
 
@@ -15,7 +15,7 @@ This project began as an experimental example that I introduced into my fork of 
 It's been improved since the 3D Jam ended!
 Some amazing features are planned!
 
-You can [try a live version of **poolvr**](http://jzitelli.github.io/poolvr/poolvr-webvr1/index.html) which is hosted on [the project's GitHub pages](https://jzitelli.github.io/poolvr).
+You can [try a live version of **poolvr**](http://jzitelli.github.io/poolvr/poolvr-0.1.1/poolvr.html) which is hosted on [the project's GitHub pages](https://jzitelli.github.io/poolvr).
 
 
 ## Acknowledgements:
