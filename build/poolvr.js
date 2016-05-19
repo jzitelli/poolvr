@@ -252,8 +252,9 @@ POOLVR.vrGamepadACommands = {
 
 POOLVR.vrGamepadBCommands = {
     toolTurnLR: {axes: [YAWVRB.Gamepads.AXES.LSX]},
-    toolMoveFB:  {axes: [YAWVRB.Gamepads.AXES.LSY]},
-    toggleToolFloatMode: {buttons: [0]}
+    toolMoveFB:  {axes: [YAWVRB.Gamepads.AXES.LSY], flipAxes: true},
+    toggleToolFloatMode: {buttons: [0]},
+    resetVRSensor: {buttons: [3], commandDown: POOLVR.commands.resetVRSensor}
 };
 
 POOLVR.parseURIConfig = function () {
@@ -327,23 +328,34 @@ window.onLoad = function () {
     POOLVR.parseURIConfig();
     console.log("POOLVR.config =\n" + JSON.stringify(POOLVR.config, undefined, 2));
 
-    for (var i = 0; i < YAWVRB.Gamepads.gamepads.length; i++) {
-        var gamepad = YAWVRB.Gamepads.gamepads[i];
+    var didA = false;
+    for (var i = 0; i < YAWVRB.Gamepads.vrGamepads.length; i++) {
+        var gamepad = YAWVRB.Gamepads.vrGamepads[i];
         if (!gamepad) continue;
-        if      (i === 0 && /openvr/i.test(gamepad.id)) YAWVRB.Gamepads.setGamepadCommands(gamepad.index, POOLVR.vrGamepadACommands);
-        else if (i === 1 && /openvr/i.test(gamepad.id)) YAWVRB.Gamepads.setGamepadCommands(gamepad.index, POOLVR.vrGamepadBCommands);
-        else if (/xbox/i.test(gamepad.id) || /xinput/i.test(gamepad.id)) YAWVRB.Gamepads.setGamepadCommands(gamepad.index, POOLVR.gamepadCommands);
+        if (i === 0) {
+            YAWVRB.Gamepads.setGamepadCommands(gamepad.index, POOLVR.vrGamepadACommands);
+            didA = true;
+        } else if (i === 1) {
+            YAWVRB.Gamepads.setGamepadCommands(gamepad.index, POOLVR.vrGamepadBCommands);
+        }
     }
-
     YAWVRB.Gamepads.setOnGamepadConnected( function (e) {
         var gamepad = e.gamepad;
         if (!gamepad) return;
-        if      (/openvr/i.test(gamepad.id)) YAWVRB.Gamepads.setGamepadCommands(gamepad.index, POOLVR.vrGamepadACommands);
-        // else if (/openvr/i.test(gamepad.id)) YAWVRB.Gamepads.setGamepadCommands(gamepad.index, POOLVR.vrGamepadBCommands);
+        if (/openvr/i.test(gamepad.id)) {
+            if (didA) {
+                YAWVRB.Gamepads.setGamepadCommands(gamepad.index, POOLVR.vrGamepadBCommands);
+            } else {
+                YAWVRB.Gamepads.setGamepadCommands(gamepad.index, POOLVR.vrGamepadACommands);
+                didA = true;
+            }
+        }
         else if (/xbox/i.test(gamepad.id) || /xinput/i.test(gamepad.id)) YAWVRB.Gamepads.setGamepadCommands(gamepad.index, POOLVR.gamepadCommands);
     } );
+
     // TODO: load from JSON config
     var world = new CANNON.World();
+    world.gravity.set( 0, -POOLVR.config.gravity, 0 );
     world.defaultContactMaterial.contactEquationStiffness   = 1e7;
     world.defaultContactMaterial.frictionEquationStiffness  = 2e6;
     world.defaultContactMaterial.contactEquationRelaxation  = 2;
@@ -402,12 +414,10 @@ window.onLoad = function () {
     POOLVR.objectSelector = new YAWVRB.Utils.ObjectSelector();
     POOLVR.shadowMaterial = new THREE.MeshBasicMaterial({color: 0x002200});
 
-    world.gravity.set( 0, -POOLVR.config.gravity, 0 );
-
     if (POOLVR.config.useTextGeomLogger) {
         var fontLoader = new THREE.FontLoader();
         fontLoader.load('fonts/Anonymous Pro_Regular.js', function (font) {
-            var textGeomCacher = new YAWVRB.TextGeomUtils.TextGeomCacher(font, {size: 0.12});
+            var textGeomCacher = new YAWVRB.TextGeomUtils.TextGeomCacher(font, {size: 0.12, curveSegments: 3});
             var textGeomLoggerMaterial = new THREE.MeshBasicMaterial({color: 0xff3210});
             POOLVR.textGeomLogger = new YAWVRB.TextGeomUtils.TextGeomLogger(textGeomCacher,
                 {material: textGeomLoggerMaterial, nrows: 8, lineHeight: 1.8 * 0.12});
@@ -432,19 +442,19 @@ window.onLoad = function () {
 
     var leapTool = YAWVRB.LeapMotion.makeTool( POOLVR.combineObjects(POOLVR.config.toolOptions, {
         onConnect: function () {
-            POOLVR.leapIndicator.innerHTML = 'Leap Motion: connected';
+            POOLVR.leapIndicator.innerHTML = 'Leap Motion: websocket connected';
             POOLVR.leapIndicator.style['background-color'] = 'rgba(60, 100, 20, 0.8)';
         },
         onStreamingStarted: function () {
-            POOLVR.leapIndicator.innerHTML = 'Leap Motion: connected, streaming';
+            POOLVR.leapIndicator.innerHTML = 'Leap Motion: websocket connected, streaming';
             POOLVR.leapIndicator.style['background-color'] = 'rgba(20, 160, 20, 0.8)';
         },
         onStreamingStopped: function () {
-            POOLVR.leapIndicator.innerHTML = 'Leap Motion: connected, streaming stopped';
+            POOLVR.leapIndicator.innerHTML = 'Leap Motion: websocket connected, streaming stopped';
             POOLVR.leapIndicator.style['background-color'] = 'rgba(60, 100, 20, 0.8)';
         },
         onDisconnect: function () {
-            POOLVR.leapIndicator.innerHTML = 'Leap Motion: disconnected';
+            POOLVR.leapIndicator.innerHTML = 'Leap Motion: websocket disconnected';
             POOLVR.leapIndicator.style['background-color'] = 'rgba(60, 20, 20, 0.4)';
         },
         useShadowMesh: !POOLVR.config.useShadowMap,
@@ -461,7 +471,16 @@ window.onLoad = function () {
 
     avatar.add(POOLVR.leapTool.toolRoot);
 
-    POOLVR.stage.load(POOLVR.config.stage);
+    if (YAWVRB.Gamepads.vrGamepads[0]) {
+        var openVRTool = YAWVRB.Gamepads.makeTool(YAWVRB.Gamepads.vrGamepads[0], YAWVRB.Utils.combineObjects(POOLVR.config.toolOptions, {
+            useShadowMesh: !POOLVR.config.useShadowMap,
+            shadowMaterial: POOLVR.shadowMaterial,
+            shadowPlane: POOLVR.config.H_table + 0.001
+        }));
+        avatar.add(openVRTool.mesh);
+        world.addBody(openVRTool.body);
+        POOLVR.openVRTool = openVRTool;
+    }
 
     var rendererOptions = {
         canvas: document.getElementById('webgl-canvas'),
@@ -823,6 +842,8 @@ POOLVR.startAnimateLoop = function () {
 
         updateTool(dt);
 
+        if (POOLVR.openVRTool) POOLVR.openVRTool.update(dt);
+
         app.render();
 
         world.step(Math.min(1/60, dt), dt, 10);
@@ -830,7 +851,7 @@ POOLVR.startAnimateLoop = function () {
         updateToolPostStep();
         updateBallsPostStep();
 
-        var gamepadValues = YAWVRB.Gamepads.update(t);
+        var gamepadValues = YAWVRB.Gamepads.update();
 
         moveAvatar(keyboard, gamepadValues, dt);
         moveToolRoot(keyboard, gamepadValues, dt);

@@ -167,7 +167,16 @@ window.onLoad = function () {
 
     avatar.add(POOLVR.leapTool.toolRoot);
 
-    POOLVR.stage.load(POOLVR.config.stage);
+    if (YAWVRB.Gamepads.vrGamepads[0]) {
+        var openVRTool = YAWVRB.Gamepads.makeTool(YAWVRB.Gamepads.vrGamepads[0], YAWVRB.Utils.combineObjects(POOLVR.config.toolOptions, {
+            useShadowMesh: !POOLVR.config.useShadowMap,
+            shadowMaterial: POOLVR.shadowMaterial,
+            shadowPlane: POOLVR.config.H_table + 0.001
+        }));
+        avatar.add(openVRTool.mesh);
+        world.addBody(openVRTool.body);
+        POOLVR.openVRTool = openVRTool;
+    }
 
     var rendererOptions = {
         canvas: document.getElementById('webgl-canvas'),
@@ -529,6 +538,8 @@ POOLVR.startAnimateLoop = function () {
 
         updateTool(dt);
 
+        if (POOLVR.openVRTool) POOLVR.openVRTool.update(dt);
+
         app.render();
 
         world.step(Math.min(1/60, dt), dt, 10);
@@ -536,7 +547,7 @@ POOLVR.startAnimateLoop = function () {
         updateToolPostStep();
         updateBallsPostStep();
 
-        var gamepadValues = YAWVRB.Gamepads.update(t);
+        var gamepadValues = YAWVRB.Gamepads.update();
 
         moveAvatar(keyboard, gamepadValues, dt);
         moveToolRoot(keyboard, gamepadValues, dt);
