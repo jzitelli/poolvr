@@ -167,6 +167,7 @@ window.onLoad = function () {
 
     avatar.add(POOLVR.leapTool.toolRoot);
 
+
     if (YAWVRB.Gamepads.vrGamepads[0]) {
         var openVRTool = YAWVRB.Gamepads.makeTool(YAWVRB.Gamepads.vrGamepads[0], YAWVRB.Utils.combineObjects(POOLVR.config.toolOptions, {
             useShadowMesh: !POOLVR.config.useShadowMap,
@@ -538,7 +539,7 @@ POOLVR.startAnimateLoop = function () {
 
         updateTool(dt);
 
-        if (POOLVR.openVRTool) POOLVR.openVRTool.update(dt);
+        if (POOLVR.openVRTool) POOLVR.openVRTool.update(t);
 
         app.render();
 
