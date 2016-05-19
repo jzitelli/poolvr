@@ -52,26 +52,26 @@ POOLVR.keyboardCommands = {
 POOLVR.keyboard = new YAWVRB.Keyboard(window, POOLVR.keyboardCommands);
 
 POOLVR.gamepadCommands = {
-    turnLR: {axes: [YAWVRB.Gamepad.AXES.LSX]},
-    moveFB: {axes: [YAWVRB.Gamepad.AXES.LSY]},
-    moveLR: {axes: [YAWVRB.Gamepad.AXES.RSX]},
-    turnUD: {axes: [YAWVRB.Gamepad.AXES.RSY]},
-    toggleFloatMode: {buttons: [YAWVRB.Gamepad.BUTTONS.leftStick]},
+    turnLR: {axes: [YAWVRB.Gamepads.AXES.LSX]},
+    moveFB: {axes: [YAWVRB.Gamepads.AXES.LSY]},
+    moveLR: {axes: [YAWVRB.Gamepads.AXES.RSX]},
+    turnUD: {axes: [YAWVRB.Gamepads.AXES.RSY]},
+    toggleFloatMode: {buttons: [YAWVRB.Gamepads.BUTTONS.leftStick]},
     // TODO: clean up
-    toolTurnLR: {axes: [YAWVRB.Gamepad.AXES.RSX]},
-    toolMoveFB:  {axes: [YAWVRB.Gamepad.AXES.RSY]},
-    toggleToolFloatMode: {buttons: [YAWVRB.Gamepad.BUTTONS.rightStick]},
-    resetVRSensor: {buttons: [YAWVRB.Gamepad.BUTTONS.back],
+    toolTurnLR: {axes: [YAWVRB.Gamepads.AXES.RSX]},
+    toolMoveFB:  {axes: [YAWVRB.Gamepads.AXES.RSY]},
+    toggleToolFloatMode: {buttons: [YAWVRB.Gamepads.BUTTONS.rightStick]},
+    resetVRSensor: {buttons: [YAWVRB.Gamepads.BUTTONS.back],
                     commandDown: POOLVR.commands.resetVRSensor},
-    selectNextBall: {buttons: [YAWVRB.Gamepad.BUTTONS.rightBumper],
+    selectNextBall: {buttons: [YAWVRB.Gamepads.BUTTONS.rightBumper],
                      commandDown: POOLVR.commands.selectNextBall},
-    selectPrevBall: {buttons: [YAWVRB.Gamepad.BUTTONS.leftBumper],
+    selectPrevBall: {buttons: [YAWVRB.Gamepads.BUTTONS.leftBumper],
                      commandDown: POOLVR.commands.selectPrevBall},
-    stroke: {buttons: [YAWVRB.Gamepad.BUTTONS.X],
+    stroke: {buttons: [YAWVRB.Gamepads.BUTTONS.X],
              commandDown: POOLVR.commands.stroke},
-    autoPosition: {buttons: [YAWVRB.Gamepad.BUTTONS.Y],
+    autoPosition: {buttons: [YAWVRB.Gamepads.BUTTONS.Y],
                    commandDown: POOLVR.commands.autoPosition},
-    toggleMenu: {buttons: [YAWVRB.Gamepad.BUTTONS.start], commandDown: POOLVR.commands.toggleMenu}
+    toggleMenu: {buttons: [YAWVRB.Gamepads.BUTTONS.start], commandDown: POOLVR.commands.toggleMenu}
 };
 
 POOLVR.parseURIConfig = function () {

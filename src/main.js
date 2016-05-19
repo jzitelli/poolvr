@@ -141,7 +141,8 @@ window.onLoad = function () {
     POOLVR.objectSelector.addSelectable(POOLVR.leapTool.toolRoot);
     leapTool.toolRoot.name = 'toolRoot';
 
-    POOLVR.stage.objects.push(POOLVR.leapTool.toolRoot);
+    avatar.add(POOLVR.leapTool.toolRoot);
+
     POOLVR.stage.load(POOLVR.config.stage);
 
     var rendererOptions = {
@@ -492,8 +493,7 @@ POOLVR.startAnimateLoop = function () {
         updateToolMapping   = POOLVR.leapTool.updateToolMapping,
         updateBallsPostStep = POOLVR.updateBallsPostStep,
         moveToolRoot        = POOLVR.moveToolRoot,
-        moveAvatar          = POOLVR.moveAvatar,
-        gamepadCommands = POOLVR.gamepadCommands;
+        moveAvatar          = POOLVR.moveAvatar;
 
     var lt = 0;
 
@@ -506,13 +506,13 @@ POOLVR.startAnimateLoop = function () {
         updateTool(dt);
 
         app.render();
-        
+
         world.step(Math.min(1/60, dt), dt, 10);
 
         updateToolPostStep();
         updateBallsPostStep();
 
-        var gamepadValues = YAWVRB.Gamepad.update(gamepadCommands);
+        var gamepadValues = YAWVRB.Gamepads.update(t);
 
         moveAvatar(keyboard, gamepadValues, dt);
         moveToolRoot(keyboard, gamepadValues, dt);
