@@ -174,6 +174,7 @@ POOLVR.stroke = ( function () {
 POOLVR.commands = {
     toggleMenu:       function () { POOLVR.toggleMenu(); },
     toggleVRControls: function () { POOLVR.app.toggleVRControls(); },
+    toggleVR:         function () { POOLVR.app.toggleVR(); },
     toggleWireframe:  function () { POOLVR.app.toggleWireframe(); },
     resetVRSensor:    function () { POOLVR.app.resetVRSensor(); },
     resetTable:       POOLVR.resetTable,
@@ -229,7 +230,6 @@ POOLVR.gamepadCommands = {
     moveLR: {axes: [YAWVRB.Gamepads.AXES.RSX]},
     turnUD: {axes: [YAWVRB.Gamepads.AXES.RSY]},
     toggleFloatMode: {buttons: [YAWVRB.Gamepads.BUTTONS.leftStick]},
-    // TODO: clean up
     toolTurnLR: {axes: [YAWVRB.Gamepads.AXES.RSX]},
     toolMoveFB:  {axes: [YAWVRB.Gamepads.AXES.RSY]},
     toggleToolFloatMode: {buttons: [YAWVRB.Gamepads.BUTTONS.rightStick]},
@@ -244,6 +244,16 @@ POOLVR.gamepadCommands = {
     autoPosition: {buttons: [YAWVRB.Gamepads.BUTTONS.Y],
                    commandDown: POOLVR.commands.autoPosition},
     toggleMenu: {buttons: [YAWVRB.Gamepads.BUTTONS.start], commandDown: POOLVR.commands.toggleMenu}
+};
+
+POOLVR.vrGamepadACommands = {
+    toggleVR: {buttons: [3], commandDown: POOLVR.commands.toggleVR}
+};
+
+POOLVR.vrGamepadBCommands = {
+    toolTurnLR: {axes: [YAWVRB.Gamepads.AXES.LSX]},
+    toolMoveFB:  {axes: [YAWVRB.Gamepads.AXES.LSY]},
+    toggleToolFloatMode: {buttons: [0]}
 };
 
 POOLVR.parseURIConfig = function () {
@@ -313,6 +323,25 @@ window.onLoad = function () {
     POOLVR.avatar = new THREE.Object3D();
     var avatar = POOLVR.avatar;
 
+    POOLVR.config = POOLVR.loadConfig(POOLVR.profile) || POOLVR.config;
+    POOLVR.parseURIConfig();
+    console.log("POOLVR.config =\n" + JSON.stringify(POOLVR.config, undefined, 2));
+
+    for (var i = 0; i < YAWVRB.Gamepads.gamepads.length; i++) {
+        var gamepad = YAWVRB.Gamepads.gamepads[i];
+        if (!gamepad) continue;
+        if      (i === 0 && /openvr/i.test(gamepad.id)) YAWVRB.Gamepads.setGamepadCommands(gamepad.index, POOLVR.vrGamepadACommands);
+        else if (i === 1 && /openvr/i.test(gamepad.id)) YAWVRB.Gamepads.setGamepadCommands(gamepad.index, POOLVR.vrGamepadBCommands);
+        else if (/xbox/i.test(gamepad.id) || /xinput/i.test(gamepad.id)) YAWVRB.Gamepads.setGamepadCommands(gamepad.index, POOLVR.gamepadCommands);
+    }
+
+    YAWVRB.Gamepads.setOnGamepadConnected( function (e) {
+        var gamepad = e.gamepad;
+        if (!gamepad) return;
+        if      (/openvr/i.test(gamepad.id)) YAWVRB.Gamepads.setGamepadCommands(gamepad.index, POOLVR.vrGamepadACommands);
+        // else if (/openvr/i.test(gamepad.id)) YAWVRB.Gamepads.setGamepadCommands(gamepad.index, POOLVR.vrGamepadBCommands);
+        else if (/xbox/i.test(gamepad.id) || /xinput/i.test(gamepad.id)) YAWVRB.Gamepads.setGamepadCommands(gamepad.index, POOLVR.gamepadCommands);
+    } );
     // TODO: load from JSON config
     var world = new CANNON.World();
     world.defaultContactMaterial.contactEquationStiffness   = 1e7;
@@ -372,10 +401,6 @@ window.onLoad = function () {
 
     POOLVR.objectSelector = new YAWVRB.Utils.ObjectSelector();
     POOLVR.shadowMaterial = new THREE.MeshBasicMaterial({color: 0x002200});
-
-    POOLVR.config = POOLVR.loadConfig(POOLVR.profile) || POOLVR.config;
-    POOLVR.parseURIConfig();
-    console.log("POOLVR.config =\n" + JSON.stringify(POOLVR.config, undefined, 2));
 
     world.gravity.set( 0, -POOLVR.config.gravity, 0 );
 

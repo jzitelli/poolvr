@@ -20,6 +20,25 @@ window.onLoad = function () {
     POOLVR.avatar = new THREE.Object3D();
     var avatar = POOLVR.avatar;
 
+    POOLVR.config = POOLVR.loadConfig(POOLVR.profile) || POOLVR.config;
+    POOLVR.parseURIConfig();
+    console.log("POOLVR.config =\n" + JSON.stringify(POOLVR.config, undefined, 2));
+
+    for (var i = 0; i < YAWVRB.Gamepads.gamepads.length; i++) {
+        var gamepad = YAWVRB.Gamepads.gamepads[i];
+        if (!gamepad) continue;
+        if      (i === 0 && /openvr/i.test(gamepad.id)) YAWVRB.Gamepads.setGamepadCommands(gamepad.index, POOLVR.vrGamepadACommands);
+        else if (i === 1 && /openvr/i.test(gamepad.id)) YAWVRB.Gamepads.setGamepadCommands(gamepad.index, POOLVR.vrGamepadBCommands);
+        else if (/xbox/i.test(gamepad.id) || /xinput/i.test(gamepad.id)) YAWVRB.Gamepads.setGamepadCommands(gamepad.index, POOLVR.gamepadCommands);
+    }
+
+    YAWVRB.Gamepads.setOnGamepadConnected( function (e) {
+        var gamepad = e.gamepad;
+        if (!gamepad) return;
+        if      (/openvr/i.test(gamepad.id)) YAWVRB.Gamepads.setGamepadCommands(gamepad.index, POOLVR.vrGamepadACommands);
+        // else if (/openvr/i.test(gamepad.id)) YAWVRB.Gamepads.setGamepadCommands(gamepad.index, POOLVR.vrGamepadBCommands);
+        else if (/xbox/i.test(gamepad.id) || /xinput/i.test(gamepad.id)) YAWVRB.Gamepads.setGamepadCommands(gamepad.index, POOLVR.gamepadCommands);
+    } );
     // TODO: load from JSON config
     var world = new CANNON.World();
     world.defaultContactMaterial.contactEquationStiffness   = 1e7;
@@ -79,10 +98,6 @@ window.onLoad = function () {
 
     POOLVR.objectSelector = new YAWVRB.Utils.ObjectSelector();
     POOLVR.shadowMaterial = new THREE.MeshBasicMaterial({color: 0x002200});
-
-    POOLVR.config = POOLVR.loadConfig(POOLVR.profile) || POOLVR.config;
-    POOLVR.parseURIConfig();
-    console.log("POOLVR.config =\n" + JSON.stringify(POOLVR.config, undefined, 2));
 
     world.gravity.set( 0, -POOLVR.config.gravity, 0 );
 
