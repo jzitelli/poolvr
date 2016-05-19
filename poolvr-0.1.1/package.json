@@ -1,0 +1,66 @@
+{
+  "name": "poolvr",
+  "description": "Play pool / billiards in WebVR!",
+  "version": "0.1.1",
+  "author": "Jeffrey Zitelli (https://github.com/jzitelli)",
+  "license": "MIT",
+  "homepage": "https://jzitelli.github.io/poolvr",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jzitelli/poolvr.git"
+  },
+  "bugs": "https://github.com/jzitelli/poolvr/issues",
+  "files": [
+    "build/",
+    "fonts/",
+    "images/",
+    "sounds/",
+    "src/",
+    "favicon.ico",
+    "pool_table.py",
+    "poolvr.html",
+    "poolvr_template.html",
+    "poolvr.css",
+    "poolvr.py",
+    "LICENSE",
+    "README.md"
+  ],
+  "keywords": [
+    "pool",
+    "billiards",
+    "cannon.js",
+    "three.js",
+    "WebGL",
+    "Leap Motion",
+    "VR",
+    "virtual reality",
+    "WebVR",
+    "Primrose",
+    "Google Cardboard",
+    "Oculus Rift",
+    "HTC Vive",
+    "webvr-polyfill",
+    "webvr-samples"
+  ],
+  "dependencies": {
+    "leapjs": "0.6.4",
+    "cannon": "git://github.com/jzitelli/cannon.js.git",
+    "three.js": "git://github.com/jzitelli/three.js.git#dev",
+    "three.py": "git://github.com/jzitelli/three.py.git#dev",
+    "yawvrb": "git://github.com/jzitelli/yawvrb.git"
+  },
+  "devDependencies": {
+    "eslint": "latest",
+    "browserify": "latest",
+    "watchify": "latest",
+    "uglify-js": "latest"
+  },
+  "scripts": {
+    "update_index": "python update_index.py",
+    "prepublish": "npm run update_index",
+    "lint": "eslint src/*.js",
+    "build": "npm run lint && browserify src/main.js -o build/poolvr.js && echo wrote build/poolvr.js && cat build/poolvr.js | uglifyjs -c > build/poolvr.min.js && echo wrote build/poolvr.min.js",
+    "watch": "npm run build && watchify src/main.js -o build/poolvr.js",
+    "start": "python poolvr.py"
+  }
+}
