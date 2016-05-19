@@ -263,7 +263,7 @@ def pool_hall(useSkybox=False,
                       for i, color in enumerate(ball_colors)]
 
     ballData = {'cannonData': {'mass': 0.17, 'shapes': ['Sphere'],
-                               'linearDamping': 0.25, 'angularDamping': 0.32}}
+                               'linearDamping': 0.27, 'angularDamping': 0.34}}
 
     y_position = H_table + ball_radius + 0.0001 # epsilon distance which the ball will fall from initial position
 
