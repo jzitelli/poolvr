@@ -32,11 +32,18 @@ window.onLoad = function () {
         else if (/xbox/i.test(gamepad.id) || /xinput/i.test(gamepad.id)) YAWVRB.Gamepads.setGamepadCommands(gamepad.index, POOLVR.gamepadCommands);
     }
 
+    var didA = false;
     YAWVRB.Gamepads.setOnGamepadConnected( function (e) {
         var gamepad = e.gamepad;
         if (!gamepad) return;
-        if      (/openvr/i.test(gamepad.id)) YAWVRB.Gamepads.setGamepadCommands(gamepad.index, POOLVR.vrGamepadACommands);
-        // else if (/openvr/i.test(gamepad.id)) YAWVRB.Gamepads.setGamepadCommands(gamepad.index, POOLVR.vrGamepadBCommands);
+        if (/openvr/i.test(gamepad.id)) {
+            if (didA) {
+                YAWVRB.Gamepads.setGamepadCommands(gamepad.index, POOLVR.vrGamepadBCommands);
+            } else {
+                YAWVRB.Gamepads.setGamepadCommands(gamepad.index, POOLVR.vrGamepadACommands);
+                didA = true;
+            }
+        }
         else if (/xbox/i.test(gamepad.id) || /xinput/i.test(gamepad.id)) YAWVRB.Gamepads.setGamepadCommands(gamepad.index, POOLVR.gamepadCommands);
     } );
     // TODO: load from JSON config
@@ -104,7 +111,7 @@ window.onLoad = function () {
     if (POOLVR.config.useTextGeomLogger) {
         var fontLoader = new THREE.FontLoader();
         fontLoader.load('fonts/Anonymous Pro_Regular.js', function (font) {
-            var textGeomCacher = new YAWVRB.TextGeomUtils.TextGeomCacher(font, {size: 0.12});
+            var textGeomCacher = new YAWVRB.TextGeomUtils.TextGeomCacher(font, {size: 0.12, curveSegments: 3});
             var textGeomLoggerMaterial = new THREE.MeshBasicMaterial({color: 0xff3210});
             POOLVR.textGeomLogger = new YAWVRB.TextGeomUtils.TextGeomLogger(textGeomCacher,
                 {material: textGeomLoggerMaterial, nrows: 8, lineHeight: 1.8 * 0.12});
