@@ -88,7 +88,7 @@ window.onLoad = function () {
     POOLVR.tipMaterial            = new CANNON.Material();
     POOLVR.tipBallContactMaterial = new CANNON.ContactMaterial(POOLVR.tipMaterial, POOLVR.ballMaterial, {
         restitution: 0.01,
-        friction: 0.15,
+        friction: 0.13,
         contactEquationRelaxation: 2,
         frictionEquationRelaxation: 2
     });
@@ -155,7 +155,8 @@ window.onLoad = function () {
         },
         useShadowMesh: !POOLVR.config.useShadowMap,
         shadowMaterial: POOLVR.shadowMaterial,
-        shadowPlane: POOLVR.config.H_table + 0.001
+        shadowPlane: POOLVR.config.H_table + 0.001,
+        tipMaterial: POOLVR.tipMaterial
     }) );
     POOLVR.leapTool = leapTool;
     leapTool.toolMesh.renderOrder = -1;
@@ -167,12 +168,12 @@ window.onLoad = function () {
 
     avatar.add(POOLVR.leapTool.toolRoot);
 
-
     if (YAWVRB.Gamepads.vrGamepads[0]) {
         var openVRTool = YAWVRB.Gamepads.makeTool(YAWVRB.Gamepads.vrGamepads[0], YAWVRB.Utils.combineObjects(POOLVR.config.toolOptions, {
             useShadowMesh: !POOLVR.config.useShadowMap,
             shadowMaterial: POOLVR.shadowMaterial,
-            shadowPlane: POOLVR.config.H_table + 0.001
+            shadowPlane: POOLVR.config.H_table + 0.001,
+            tipMaterial: POOLVR.tipMaterial
         }));
         avatar.add(openVRTool.mesh);
         world.addBody(openVRTool.body);
@@ -539,7 +540,7 @@ POOLVR.startAnimateLoop = function () {
 
         updateTool(dt);
 
-        if (POOLVR.openVRTool) POOLVR.openVRTool.update(t);
+        if (POOLVR.openVRTool) POOLVR.openVRTool.update(dt);
 
         app.render();
 

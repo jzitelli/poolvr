@@ -75,14 +75,18 @@ POOLVR.gamepadCommands = {
 };
 
 POOLVR.vrGamepadACommands = {
-    toggleVR: {buttons: [3], commandDown: POOLVR.commands.toggleVR}
+    toggleVR: {buttons: [3], commandDown: POOLVR.commands.toggleVR},
+    moveLR: {axes: [YAWVRB.Gamepads.AXES.LSX]},
+    moveFB: {axes: [YAWVRB.Gamepads.AXES.LSY]},
+    autoPosition: {buttons: [2], commandDown: POOLVR.commands.autoPosition}
 };
 
 POOLVR.vrGamepadBCommands = {
     toolTurnLR: {axes: [YAWVRB.Gamepads.AXES.LSX]},
     toolMoveFB:  {axes: [YAWVRB.Gamepads.AXES.LSY], flipAxes: true},
     toggleToolFloatMode: {buttons: [0]},
-    resetVRSensor: {buttons: [3], commandDown: POOLVR.commands.resetVRSensor}
+    resetVRSensor: {buttons: [3], commandDown: POOLVR.commands.resetVRSensor},
+    resetTable: {buttons: [2], commandDown: POOLVR.commands.resetTable}
 };
 
 POOLVR.parseURIConfig = function () {

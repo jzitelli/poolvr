@@ -247,14 +247,18 @@ POOLVR.gamepadCommands = {
 };
 
 POOLVR.vrGamepadACommands = {
-    toggleVR: {buttons: [3], commandDown: POOLVR.commands.toggleVR}
+    toggleVR: {buttons: [3], commandDown: POOLVR.commands.toggleVR},
+    moveLR: {axes: [YAWVRB.Gamepads.AXES.LSX]},
+    moveFB: {axes: [YAWVRB.Gamepads.AXES.LSY]},
+    autoPosition: {buttons: [2], commandDown: POOLVR.commands.autoPosition}
 };
 
 POOLVR.vrGamepadBCommands = {
     toolTurnLR: {axes: [YAWVRB.Gamepads.AXES.LSX]},
     toolMoveFB:  {axes: [YAWVRB.Gamepads.AXES.LSY], flipAxes: true},
     toggleToolFloatMode: {buttons: [0]},
-    resetVRSensor: {buttons: [3], commandDown: POOLVR.commands.resetVRSensor}
+    resetVRSensor: {buttons: [3], commandDown: POOLVR.commands.resetVRSensor},
+    resetTable: {buttons: [2], commandDown: POOLVR.commands.resetTable}
 };
 
 POOLVR.parseURIConfig = function () {
@@ -392,7 +396,7 @@ window.onLoad = function () {
     POOLVR.tipMaterial            = new CANNON.Material();
     POOLVR.tipBallContactMaterial = new CANNON.ContactMaterial(POOLVR.tipMaterial, POOLVR.ballMaterial, {
         restitution: 0.01,
-        friction: 0.15,
+        friction: 0.13,
         contactEquationRelaxation: 2,
         frictionEquationRelaxation: 2
     });
@@ -459,7 +463,8 @@ window.onLoad = function () {
         },
         useShadowMesh: !POOLVR.config.useShadowMap,
         shadowMaterial: POOLVR.shadowMaterial,
-        shadowPlane: POOLVR.config.H_table + 0.001
+        shadowPlane: POOLVR.config.H_table + 0.001,
+        tipMaterial: POOLVR.tipMaterial
     }) );
     POOLVR.leapTool = leapTool;
     leapTool.toolMesh.renderOrder = -1;
@@ -471,12 +476,12 @@ window.onLoad = function () {
 
     avatar.add(POOLVR.leapTool.toolRoot);
 
-
     if (YAWVRB.Gamepads.vrGamepads[0]) {
         var openVRTool = YAWVRB.Gamepads.makeTool(YAWVRB.Gamepads.vrGamepads[0], YAWVRB.Utils.combineObjects(POOLVR.config.toolOptions, {
             useShadowMesh: !POOLVR.config.useShadowMap,
             shadowMaterial: POOLVR.shadowMaterial,
-            shadowPlane: POOLVR.config.H_table + 0.001
+            shadowPlane: POOLVR.config.H_table + 0.001,
+            tipMaterial: POOLVR.tipMaterial
         }));
         avatar.add(openVRTool.mesh);
         world.addBody(openVRTool.body);
@@ -843,7 +848,7 @@ POOLVR.startAnimateLoop = function () {
 
         updateTool(dt);
 
-        if (POOLVR.openVRTool) POOLVR.openVRTool.update(t);
+        if (POOLVR.openVRTool) POOLVR.openVRTool.update(dt);
 
         app.render();
 
