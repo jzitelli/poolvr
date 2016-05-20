@@ -87,7 +87,7 @@ window.onLoad = function () {
     });
     POOLVR.tipMaterial            = new CANNON.Material();
     POOLVR.tipBallContactMaterial = new CANNON.ContactMaterial(POOLVR.tipMaterial, POOLVR.ballMaterial, {
-        restitution: 0.01,
+        restitution: 0.5,
         friction: 0.13,
         contactEquationRelaxation: 2,
         frictionEquationRelaxation: 2
@@ -169,12 +169,12 @@ window.onLoad = function () {
     avatar.add(POOLVR.leapTool.toolRoot);
 
     if (YAWVRB.Gamepads.vrGamepads[0]) {
-        var openVRTool = YAWVRB.Gamepads.makeTool(YAWVRB.Gamepads.vrGamepads[0], YAWVRB.Utils.combineObjects(POOLVR.config.toolOptions, {
-            useShadowMesh: !POOLVR.config.useShadowMap,
-            shadowMaterial: POOLVR.shadowMaterial,
-            shadowPlane: POOLVR.config.H_table + 0.001,
-            tipMaterial: POOLVR.tipMaterial
-        }));
+        var toolOptions = {};
+        for (var kwarg in POOLVR.config.toolOptions) {
+            toolOptions[kwarg] = POOLVR.config.toolOptions[kwarg];
+        }
+        toolOptions.toolMass = 0.2;
+        var openVRTool = YAWVRB.Gamepads.makeTool(YAWVRB.Gamepads.vrGamepads[0], toolOptions);
         avatar.add(openVRTool.mesh);
         world.addBody(openVRTool.body);
         POOLVR.openVRTool = openVRTool;
