@@ -170,7 +170,7 @@ POOLVR.stroke = ( function () {
 } )();
 
 },{}],3:[function(require,module,exports){
-/* global POOLVR, YAWVRB */
+/* global POOLVR, YAWVRB, CANNON */
 POOLVR.commands = {
     toggleMenu:       function () { POOLVR.toggleMenu(); },
     toggleVRControls: function () { POOLVR.app.toggleVRControls(); },
@@ -261,6 +261,7 @@ POOLVR.vrGamepadBCommands = {
     resetTable: {buttons: [2], commandDown: POOLVR.commands.resetTable}
 };
 
+
 POOLVR.parseURIConfig = function () {
     "use strict";
     POOLVR.config = POOLVR.config || {};
@@ -269,12 +270,13 @@ POOLVR.parseURIConfig = function () {
         POOLVR.config.usePointLight = false;
         POOLVR.config.useShadowMap  = false;
     } else {
-        POOLVR.config.useSpotLight  = POOLVR.URL_PARAMS.useSpotLight  !== undefined ? POOLVR.URL_PARAMS.useSpotLight  : (POOLVR.config.useSpotLight || true);
-        POOLVR.config.usePointLight = POOLVR.URL_PARAMS.usePointLight !== undefined ? POOLVR.URL_PARAMS.usePointLight : POOLVR.config.usePointLight;
-        POOLVR.config.useShadowMap  = POOLVR.URL_PARAMS.useShadowMap  !== undefined ? POOLVR.URL_PARAMS.useShadowMap  : POOLVR.config.useShadowMap;
+        POOLVR.config.useSpotLight  = YAWVRB.Utils.URL_PARAMS.useSpotLight  !== undefined ? YAWVRB.Utils.URL_PARAMS.useSpotLight  : (POOLVR.config.useSpotLight || true);
+        POOLVR.config.usePointLight = YAWVRB.Utils.URL_PARAMS.usePointLight !== undefined ? YAWVRB.Utils.URL_PARAMS.usePointLight : POOLVR.config.usePointLight;
+        POOLVR.config.useShadowMap  = YAWVRB.Utils.URL_PARAMS.useShadowMap  !== undefined ? YAWVRB.Utils.URL_PARAMS.useShadowMap  : POOLVR.config.useShadowMap;
     }
     // Leap Motion config:
     POOLVR.config.toolOptions = POOLVR.config.toolOptions || {};
+    POOLVR.config.toolOptions.tipMaterial = POOLVR.tipMaterial;
 };
 
 
@@ -300,63 +302,13 @@ POOLVR.loadConfig = function (profileName) {
             config[k] = localStorageConfig[k];
         }
         console.log('loaded configuration for profile "%s"',  profileName);
-        console.log(JSON.stringify(config, undefined, 2));
     }
     return config;
 };
 
-},{}],4:[function(require,module,exports){
-/* global require */
-window.POOLVR = window.POOLVR || {};
-require('./utils.js');
-require('./WebVRSound.js');
-require('./actions.js');
-require('./config.js');
-require('./menu.js');
 
-/* global POOLVR, THREE, YAWVRB, CANNON, THREEPY_SCENE */
-window.onLoad = function () {
+( function () {
     "use strict";
-
-    if (POOLVR.URL_PARAMS.clearLocalStorage) {
-        console.log('clearing localStorage...');
-        localStorage.clear();
-    }
-
-    THREE.Object3D.DefaultMatrixAutoUpdate = false;
-
-    POOLVR.avatar = new THREE.Object3D();
-    var avatar = POOLVR.avatar;
-
-    POOLVR.config = POOLVR.loadConfig(POOLVR.profile) || POOLVR.config;
-    POOLVR.parseURIConfig();
-    console.log("POOLVR.config =\n" + JSON.stringify(POOLVR.config, undefined, 2));
-
-    var didA = false;
-    for (var i = 0; i < YAWVRB.Gamepads.vrGamepads.length; i++) {
-        var gamepad = YAWVRB.Gamepads.vrGamepads[i];
-        if (!gamepad) continue;
-        if (i === 0) {
-            YAWVRB.Gamepads.setGamepadCommands(gamepad.index, POOLVR.vrGamepadACommands);
-            didA = true;
-        } else if (i === 1) {
-            YAWVRB.Gamepads.setGamepadCommands(gamepad.index, POOLVR.vrGamepadBCommands);
-        }
-    }
-    YAWVRB.Gamepads.setOnGamepadConnected( function (e) {
-        var gamepad = e.gamepad;
-        if (!gamepad) return;
-        if (/openvr/i.test(gamepad.id)) {
-            if (didA) {
-                YAWVRB.Gamepads.setGamepadCommands(gamepad.index, POOLVR.vrGamepadBCommands);
-            } else {
-                YAWVRB.Gamepads.setGamepadCommands(gamepad.index, POOLVR.vrGamepadACommands);
-                didA = true;
-            }
-        }
-        else if (/xbox/i.test(gamepad.id) || /xinput/i.test(gamepad.id)) YAWVRB.Gamepads.setGamepadCommands(gamepad.index, POOLVR.gamepadCommands);
-    } );
-
     // TODO: load from JSON config
     var world = new CANNON.World();
     world.gravity.set( 0, -POOLVR.config.gravity, 0 );
@@ -395,10 +347,11 @@ window.onLoad = function () {
     });
     POOLVR.tipMaterial            = new CANNON.Material();
     POOLVR.tipBallContactMaterial = new CANNON.ContactMaterial(POOLVR.tipMaterial, POOLVR.ballMaterial, {
-        restitution: 0.01,
+        restitution: 0.25,
         friction: 0.13,
         contactEquationRelaxation: 2,
-        frictionEquationRelaxation: 2
+        frictionEquationRelaxation: 2,
+        contactEquationStiffness: 1e8
     });
     world.addMaterial(POOLVR.ballMaterial);
     world.addMaterial(POOLVR.playableSurfaceMaterial);
@@ -412,11 +365,73 @@ window.onLoad = function () {
     world.addContactMaterial(POOLVR.floorBallContactMaterial);
     world.addContactMaterial(POOLVR.tipBallContactMaterial);
     world.addContactMaterial(POOLVR.railBallContactMaterial);
+} )();
+
+},{}],4:[function(require,module,exports){
+/* global require */
+window.POOLVR = window.POOLVR || {};
+require('./WebVRSound.js');
+require('./actions.js');
+require('./config.js');
+require('./menu.js');
+
+/* global POOLVR, THREE, YAWVRB, CANNON, THREEPY_SCENE */
+window.onLoad = function () {
+    "use strict";
+
+    if (YAWVRB.Utils.URL_PARAMS.clearLocalStorage) {
+        console.log('clearing localStorage...');
+        localStorage.clear();
+    }
+
+    THREE.Object3D.DefaultMatrixAutoUpdate = false;
+
+    POOLVR.avatar = new THREE.Object3D();
+    var avatar = POOLVR.avatar;
+
+    POOLVR.config = POOLVR.loadConfig(POOLVR.profile) || POOLVR.config;
+    POOLVR.parseURIConfig();
+    console.log("POOLVR.config =\n" + JSON.stringify(POOLVR.config, undefined, 2));
 
     POOLVR.stage = new YAWVRB.Stage();
 
     POOLVR.objectSelector = new YAWVRB.Utils.ObjectSelector();
+
     POOLVR.shadowMaterial = new THREE.MeshBasicMaterial({color: 0x002200});
+
+    var world = POOLVR.world;
+
+    function setupOpenVRTool() {
+        var toolOptions = {};
+        for (var kwarg in POOLVR.config.toolOptions) {
+            toolOptions[kwarg] = POOLVR.config.toolOptions[kwarg];
+        }
+        toolOptions.toolMass = 2;
+        var openVRTool = YAWVRB.Gamepads.makeTool(YAWVRB.Gamepads.vrGamepads[0], toolOptions);
+        avatar.add(openVRTool.mesh);
+        world.addBody(openVRTool.body);
+        POOLVR.openVRTool = openVRTool;
+    }
+
+    var didA = false;
+    function onGamepadConnected(e) {
+        var gamepad = e.gamepad;
+        if (!gamepad) return;
+        if (/openvr/i.test(gamepad.id)) {
+            if (didA) {
+                YAWVRB.Gamepads.setGamepadCommands(gamepad.index, POOLVR.vrGamepadBCommands);
+            } else {
+                YAWVRB.Gamepads.setGamepadCommands(gamepad.index, POOLVR.vrGamepadACommands);
+                setupOpenVRTool();
+                didA = true;
+            }
+        }
+        else if (/xbox/i.test(gamepad.id) || /xinput/i.test(gamepad.id)) YAWVRB.Gamepads.setGamepadCommands(gamepad.index, POOLVR.gamepadCommands);
+    }
+    YAWVRB.Gamepads.setOnGamepadConnected(onGamepadConnected);
+    for (var i = 0; i < YAWVRB.Gamepads.vrGamepads.length; i++) {
+        onGamepadConnected({gamepad: YAWVRB.Gamepads.vrGamepads[i]});
+    }
 
     if (POOLVR.config.useTextGeomLogger) {
         var fontLoader = new THREE.FontLoader();
@@ -440,11 +455,12 @@ window.onLoad = function () {
 
     POOLVR.synthSpeaker = new YAWVRB.SynthSpeaker({volume: POOLVR.config.synthSpeakerVolume, rate: 0.8, pitch: 0.5});
 
+    // TODO: return menu items
     POOLVR.setupMenu();
 
     POOLVR.leapIndicator = document.getElementById('leapIndicator');
 
-    var leapTool = YAWVRB.LeapMotion.makeTool( POOLVR.combineObjects(POOLVR.config.toolOptions, {
+    var leapTool = YAWVRB.LeapMotion.makeTool( YAWVRB.Utils.combineObjects(POOLVR.config.toolOptions, {
         onConnect: function () {
             POOLVR.leapIndicator.innerHTML = 'Leap Motion: websocket connected';
             POOLVR.leapIndicator.style['background-color'] = 'rgba(60, 100, 20, 0.8)';
@@ -473,24 +489,11 @@ window.onLoad = function () {
     leapTool.leapController.connect();
     POOLVR.objectSelector.addSelectable(POOLVR.leapTool.toolRoot);
     leapTool.toolRoot.name = 'toolRoot';
-
     avatar.add(POOLVR.leapTool.toolRoot);
-
-    if (YAWVRB.Gamepads.vrGamepads[0]) {
-        var openVRTool = YAWVRB.Gamepads.makeTool(YAWVRB.Gamepads.vrGamepads[0], YAWVRB.Utils.combineObjects(POOLVR.config.toolOptions, {
-            useShadowMesh: !POOLVR.config.useShadowMap,
-            shadowMaterial: POOLVR.shadowMaterial,
-            shadowPlane: POOLVR.config.H_table + 0.001,
-            tipMaterial: POOLVR.tipMaterial
-        }));
-        avatar.add(openVRTool.mesh);
-        world.addBody(openVRTool.body);
-        POOLVR.openVRTool = openVRTool;
-    }
 
     var rendererOptions = {
         canvas: document.getElementById('webgl-canvas'),
-        antialias: (POOLVR.URL_PARAMS.antialias !== undefined ? POOLVR.URL_PARAMS.antialias : POOLVR.config.antialias) || !POOLVR.isMobile()
+        antialias: (YAWVRB.Utils.URL_PARAMS.antialias !== undefined ? YAWVRB.Utils.URL_PARAMS.antialias : POOLVR.config.antialias) || !YAWVRB.Utils.isMobile()
     };
 
     var euler = new THREE.Euler(0, 0, 0, 'YXZ');
@@ -874,7 +877,7 @@ POOLVR.startAnimateLoop = function () {
 
 };
 
-},{"./WebVRSound.js":1,"./actions.js":2,"./config.js":3,"./menu.js":5,"./utils.js":6}],5:[function(require,module,exports){
+},{"./WebVRSound.js":1,"./actions.js":2,"./config.js":3,"./menu.js":5}],5:[function(require,module,exports){
 /* global POOLVR */
 POOLVR.setupMenu = function () {
     "use strict";
@@ -1028,69 +1031,6 @@ POOLVR.setupMenu = function () {
 
         } );
     }
-};
-
-},{}],6:[function(require,module,exports){
-/* global POOLVR */
-POOLVR.URL_PARAMS = ( function () {
-    "use strict";
-    var params = {};
-    location.search.substr(1).split("&").forEach( function(item) {
-        var k = item.split("=")[0],
-            v = decodeURIComponent(item.split("=")[1]);
-        if (k in params) {
-            params[k].push(v);
-        } else {
-            params[k] = [v];
-        }
-    } );
-    for (var k in params) {
-        if (params[k].length === 1)
-            params[k] = params[k][0];
-        if (params[k] === 'true')
-            params[k] = true;
-        else if (params[k] === 'false')
-            params[k] = false;
-    }
-    return params;
-} )();
-
-
-POOLVR.combineObjects = function (a, b) {
-    "use strict";
-    var c = {},
-        k;
-    for (k in a) {
-        c[k] = a[k];
-    }
-    for (k in b) {
-        if (!c.hasOwnProperty(k)) {
-            c[k] = b[k];
-        }
-    }
-    return c;
-};
-
-
-POOLVR.makeObjectArray = function (obj, keyKey) {
-    "use strict";
-    keyKey = keyKey || "key";
-    return Object.keys(obj).map(function (k) {
-        var item = {};
-        item[keyKey] = k;
-        for (var p in obj[k]) {
-            item[p] = obj[k][p];
-        }
-        return item;
-    });
-};
-
-
-// adapted from detectmobilebrowsers.com
-POOLVR.isMobile = function () {
-    "use strict";
-    var a = navigator.userAgent || navigator.vendor || window.opera;
-    return (/(android|bb\d+|meego).+mobile|avantgo|bada\/|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|iris|kindle|lge |maemo|midp|mmp|mobile.+firefox|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows ce|xda|xiino/i.test(a)||/1207|6310|6590|3gso|4thp|50[1-6]i|770s|802s|a wa|abac|ac(er|oo|s\-)|ai(ko|rn)|al(av|ca|co)|amoi|an(ex|ny|yw)|aptu|ar(ch|go)|as(te|us)|attw|au(di|\-m|r |s )|avan|be(ck|ll|nq)|bi(lb|rd)|bl(ac|az)|br(e|v)w|bumb|bw\-(n|u)|c55\/|capi|ccwa|cdm\-|cell|chtm|cldc|cmd\-|co(mp|nd)|craw|da(it|ll|ng)|dbte|dc\-s|devi|dica|dmob|do(c|p)o|ds(12|\-d)|el(49|ai)|em(l2|ul)|er(ic|k0)|esl8|ez([4-7]0|os|wa|ze)|fetc|fly(\-|_)|g1 u|g560|gene|gf\-5|g\-mo|go(\.w|od)|gr(ad|un)|haie|hcit|hd\-(m|p|t)|hei\-|hi(pt|ta)|hp( i|ip)|hs\-c|ht(c(\-| |_|a|g|p|s|t)|tp)|hu(aw|tc)|i\-(20|go|ma)|i230|iac( |\-|\/)|ibro|idea|ig01|ikom|im1k|inno|ipaq|iris|ja(t|v)a|jbro|jemu|jigs|kddi|keji|kgt( |\/)|klon|kpt |kwc\-|kyo(c|k)|le(no|xi)|lg( g|\/(k|l|u)|50|54|\-[a-w])|libw|lynx|m1\-w|m3ga|m50\/|ma(te|ui|xo)|mc(01|21|ca)|m\-cr|me(rc|ri)|mi(o8|oa|ts)|mmef|mo(01|02|bi|de|do|t(\-| |o|v)|zz)|mt(50|p1|v )|mwbp|mywa|n10[0-2]|n20[2-3]|n30(0|2)|n50(0|2|5)|n7(0(0|1)|10)|ne((c|m)\-|on|tf|wf|wg|wt)|nok(6|i)|nzph|o2im|op(ti|wv)|oran|owg1|p800|pan(a|d|t)|pdxg|pg(13|\-([1-8]|c))|phil|pire|pl(ay|uc)|pn\-2|po(ck|rt|se)|prox|psio|pt\-g|qa\-a|qc(07|12|21|32|60|\-[2-7]|i\-)|qtek|r380|r600|raks|rim9|ro(ve|zo)|s55\/|sa(ge|ma|mm|ms|ny|va)|sc(01|h\-|oo|p\-)|sdk\/|se(c(\-|0|1)|47|mc|nd|ri)|sgh\-|shar|sie(\-|m)|sk\-0|sl(45|id)|sm(al|ar|b3|it|t5)|so(ft|ny)|sp(01|h\-|v\-|v )|sy(01|mb)|t2(18|50)|t6(00|10|18)|ta(gt|lk)|tcl\-|tdg\-|tel(i|m)|tim\-|t\-mo|to(pl|sh)|ts(70|m\-|m3|m5)|tx\-9|up(\.b|g1|si)|utst|v400|v750|veri|vi(rg|te)|vk(40|5[0-3]|\-v)|vm40|voda|vulc|vx(52|53|60|61|70|80|81|83|85|98)|w3c(\-| )|webc|whit|wi(g |nc|nw)|wmlb|wonu|x700|yas\-|your|zeto|zte\-/i.test(a.substr(0,4)));
 };
 
 },{}]},{},[4]);
