@@ -46,6 +46,12 @@ button {
   background-color: rgba(111, 20, 20, 0.6);
   box-sizing: border-box;
 }
+a {
+  font-family: monospace;
+  font-size: 11pt;
+  color: #feb;
+  padding: 0.4vh;
+}
 #leapAddress, #profileName {
   margin: 0.2vh;
 }

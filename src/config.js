@@ -1,4 +1,4 @@
-/* global POOLVR, YAWVRB, CANNON */
+/* global POOLVR, YAWVRB, CANNON, THREE */
 POOLVR.commands = {
     toggleMenu:       function () { POOLVR.toggleMenu(); },
     toggleVRControls: function () { POOLVR.app.toggleVRControls(); },
@@ -104,7 +104,9 @@ POOLVR.parseURIConfig = function () {
     }
     // Leap Motion config:
     POOLVR.config.toolOptions = POOLVR.config.toolOptions || {};
-    POOLVR.config.toolOptions.tipMaterial = POOLVR.tipMaterial;
+    POOLVR.config.toolOptions.useShadowMesh = !POOLVR.config.useShadowMap;
+    POOLVR.config.toolOptions.shadowPlane = POOLVR.config.H_table + 0.001;
+    POOLVR.config.toolOptions.shadowMaterial = POOLVR.shadowMaterial;
 };
 
 
@@ -175,11 +177,10 @@ POOLVR.loadConfig = function (profileName) {
     });
     POOLVR.tipMaterial            = new CANNON.Material();
     POOLVR.tipBallContactMaterial = new CANNON.ContactMaterial(POOLVR.tipMaterial, POOLVR.ballMaterial, {
-        restitution: 0.25,
+        restitution: 0.01,
         friction: 0.13,
         contactEquationRelaxation: 2,
-        frictionEquationRelaxation: 2,
-        contactEquationStiffness: 1e8
+        frictionEquationRelaxation: 2
     });
     world.addMaterial(POOLVR.ballMaterial);
     world.addMaterial(POOLVR.playableSurfaceMaterial);
@@ -194,3 +195,5 @@ POOLVR.loadConfig = function (profileName) {
     world.addContactMaterial(POOLVR.tipBallContactMaterial);
     world.addContactMaterial(POOLVR.railBallContactMaterial);
 } )();
+
+POOLVR.shadowMaterial = new THREE.MeshBasicMaterial({color: 0x002200});

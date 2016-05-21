@@ -133,10 +133,10 @@ var THREEPY_SCENE = %s;
 <table>
 <tr>
 <td>
-<a style="color: #feb;" href="https://github.com/jzitelli/poolvr/commit/{0}">current commit</a>
+<a href="https://github.com/jzitelli/poolvr/commit/{0}">current commit</a>
 </td>
 <td>
-<a style="color: #feb;" href="https://github.com/jzitelli/poolvr/commit/{1}">previous commit</a>
+<a href="https://github.com/jzitelli/poolvr/commit/{1}">previous commit</a>
 </td>
 </tr>
 </table>
