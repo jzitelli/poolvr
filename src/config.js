@@ -98,9 +98,9 @@ POOLVR.parseURIConfig = function () {
         POOLVR.config.usePointLight = false;
         POOLVR.config.useShadowMap  = false;
     } else {
-        POOLVR.config.useSpotLight  = POOLVR.URL_PARAMS.useSpotLight  !== undefined ? POOLVR.URL_PARAMS.useSpotLight  : (POOLVR.config.useSpotLight || true);
-        POOLVR.config.usePointLight = POOLVR.URL_PARAMS.usePointLight !== undefined ? POOLVR.URL_PARAMS.usePointLight : POOLVR.config.usePointLight;
-        POOLVR.config.useShadowMap  = POOLVR.URL_PARAMS.useShadowMap  !== undefined ? POOLVR.URL_PARAMS.useShadowMap  : POOLVR.config.useShadowMap;
+        POOLVR.config.useSpotLight  = YAWVRB.Utils.URL_PARAMS.useSpotLight  !== undefined ? YAWVRB.Utils.URL_PARAMS.useSpotLight  : (POOLVR.config.useSpotLight || true);
+        POOLVR.config.usePointLight = YAWVRB.Utils.URL_PARAMS.usePointLight !== undefined ? YAWVRB.Utils.URL_PARAMS.usePointLight : POOLVR.config.usePointLight;
+        POOLVR.config.useShadowMap  = YAWVRB.Utils.URL_PARAMS.useShadowMap  !== undefined ? YAWVRB.Utils.URL_PARAMS.useShadowMap  : POOLVR.config.useShadowMap;
     }
     // Leap Motion config:
     POOLVR.config.toolOptions = POOLVR.config.toolOptions || {};
@@ -130,7 +130,6 @@ POOLVR.loadConfig = function (profileName) {
             config[k] = localStorageConfig[k];
         }
         console.log('loaded configuration for profile "%s"',  profileName);
-        console.log(JSON.stringify(config, undefined, 2));
     }
     return config;
 };

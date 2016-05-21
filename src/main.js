@@ -1,6 +1,5 @@
 /* global require */
 window.POOLVR = window.POOLVR || {};
-require('./utils.js');
 require('./WebVRSound.js');
 require('./actions.js');
 require('./config.js');
@@ -10,7 +9,7 @@ require('./menu.js');
 window.onLoad = function () {
     "use strict";
 
-    if (POOLVR.URL_PARAMS.clearLocalStorage) {
+    if (YAWVRB.Utils.URL_PARAMS.clearLocalStorage) {
         console.log('clearing localStorage...');
         localStorage.clear();
     }
@@ -90,7 +89,8 @@ window.onLoad = function () {
     POOLVR.setupMenu();
 
     POOLVR.leapIndicator = document.getElementById('leapIndicator');
-    var leapTool = YAWVRB.LeapMotion.makeTool( POOLVR.combineObjects(POOLVR.config.toolOptions, {
+
+    var leapTool = YAWVRB.LeapMotion.makeTool( YAWVRB.Utils.combineObjects(POOLVR.config.toolOptions, {
         onConnect: function () {
             POOLVR.leapIndicator.innerHTML = 'Leap Motion: websocket connected';
             POOLVR.leapIndicator.style['background-color'] = 'rgba(60, 100, 20, 0.8)';
