@@ -59,15 +59,7 @@ window.onLoad = function () {
             toolOptions[kwarg] = POOLVR.config.toolOptions[kwarg];
         }
         toolOptions.toolMass = 2;
-        toolOptions.tipMaterial = new CANNON.Material();
-        toolOptions.name = "OpenVR tipMaterial";
-        world.addContactMaterial(new CANNON.ContactMaterial(toolOptions.tipMaterial, POOLVR.ballMaterial, {
-            restitution: 0.8,
-            friction: 0.13,
-            contactEquationRelaxation: 2,
-            frictionEquationRelaxation: 2,
-            contactEquationStiffness: 1e8
-        }));
+        toolOptions.tipMaterial = POOLVR.openVRTipMaterial;
         console.log('openVRTool options:');
         console.log(toolOptions);
         var openVRTool = YAWVRB.Gamepads.makeTool(YAWVRB.Gamepads.vrGamepads[0], toolOptions);
@@ -176,6 +168,10 @@ window.onLoad = function () {
 
         if (leapTool.toolShadowMesh) {
             POOLVR.app.scene.add(leapTool.toolShadowMesh);
+        }
+
+        if (POOLVR.openVRTool && POOLVR.openVRTool.shadowMesh) {
+            POOLVR.app.scene.add(POOLVR.openVRTool.shadowMesh);
         }
 
         var centerSpotLight = new THREE.SpotLight(0xffffee, 1, 8, Math.PI / 2);

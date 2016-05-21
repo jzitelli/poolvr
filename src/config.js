@@ -182,18 +182,30 @@ POOLVR.loadConfig = function (profileName) {
         contactEquationRelaxation: 2,
         frictionEquationRelaxation: 2
     });
-    world.addMaterial(POOLVR.ballMaterial);
+    POOLVR.openVRTipMaterial            = new CANNON.Material();
+    POOLVR.openVRTipBallContactMaterial = new CANNON.ContactMaterial(POOLVR.openVRTipMaterial, POOLVR.ballMaterial, {
+        restitution: 1,
+        friction: 0.13,
+        contactEquationRelaxation: 2,
+        frictionEquationRelaxation: 2,
+        contactEquationStiffness: 1e8
+    });
+
     world.addMaterial(POOLVR.playableSurfaceMaterial);
     world.addMaterial(POOLVR.cushionMaterial);
-    world.addMaterial(POOLVR.floorMaterial);
-    world.addMaterial(POOLVR.tipMaterial);
     world.addMaterial(POOLVR.railMaterial);
+    world.addMaterial(POOLVR.floorMaterial);
+    world.addMaterial(POOLVR.ballMaterial);
+    world.addMaterial(POOLVR.tipMaterial);
+    world.addMaterial(POOLVR.openVRTipMaterial);
+
     world.addContactMaterial(POOLVR.ballBallContactMaterial);
     world.addContactMaterial(POOLVR.ballPlayableSurfaceContactMaterial);
     world.addContactMaterial(POOLVR.ballCushionContactMaterial);
     world.addContactMaterial(POOLVR.floorBallContactMaterial);
-    world.addContactMaterial(POOLVR.tipBallContactMaterial);
     world.addContactMaterial(POOLVR.railBallContactMaterial);
+    world.addContactMaterial(POOLVR.tipBallContactMaterial);
+    world.addContactMaterial(POOLVR.openVRTipBallContactMaterial);
 } )();
 
 POOLVR.shadowMaterial = new THREE.MeshBasicMaterial({color: 0x002200});
