@@ -1,4 +1,4 @@
-/* global POOLVR, YAWVRB */
+/* global POOLVR, YAWVRB, CANNON */
 POOLVR.commands = {
     toggleMenu:       function () { POOLVR.toggleMenu(); },
     toggleVRControls: function () { POOLVR.app.toggleVRControls(); },
@@ -89,6 +89,7 @@ POOLVR.vrGamepadBCommands = {
     resetTable: {buttons: [2], commandDown: POOLVR.commands.resetTable}
 };
 
+
 POOLVR.parseURIConfig = function () {
     "use strict";
     POOLVR.config = POOLVR.config || {};
@@ -103,6 +104,7 @@ POOLVR.parseURIConfig = function () {
     }
     // Leap Motion config:
     POOLVR.config.toolOptions = POOLVR.config.toolOptions || {};
+    POOLVR.config.toolOptions.tipMaterial = POOLVR.tipMaterial;
 };
 
 
@@ -132,3 +134,64 @@ POOLVR.loadConfig = function (profileName) {
     }
     return config;
 };
+
+
+( function () {
+    "use strict";
+    // TODO: load from JSON config
+    var world = new CANNON.World();
+    world.gravity.set( 0, -POOLVR.config.gravity, 0 );
+    world.defaultContactMaterial.contactEquationStiffness   = 1e7;
+    world.defaultContactMaterial.frictionEquationStiffness  = 2e6;
+    world.defaultContactMaterial.contactEquationRelaxation  = 2;
+    world.defaultContactMaterial.frictionEquationRelaxation = 3;
+    world.broadphase = new CANNON.SAPBroadphase( world );
+    world.solver.iterations = 10;
+    POOLVR.world = world;
+
+    POOLVR.ballMaterial            = new CANNON.Material();
+    POOLVR.ballBallContactMaterial = new CANNON.ContactMaterial(POOLVR.ballMaterial, POOLVR.ballMaterial, {
+        restitution: 0.92,
+        friction: 0.14
+    });
+    POOLVR.playableSurfaceMaterial            = new CANNON.Material();
+    POOLVR.ballPlayableSurfaceContactMaterial = new CANNON.ContactMaterial(POOLVR.ballMaterial, POOLVR.playableSurfaceMaterial, {
+        restitution: 0.3,
+        friction: 0.21
+    });
+    POOLVR.cushionMaterial            = new CANNON.Material();
+    POOLVR.ballCushionContactMaterial = new CANNON.ContactMaterial(POOLVR.ballMaterial, POOLVR.cushionMaterial, {
+        restitution: 0.8,
+        friction: 0.12
+    });
+    POOLVR.floorMaterial            = new CANNON.Material();
+    POOLVR.floorBallContactMaterial = new CANNON.ContactMaterial(POOLVR.floorMaterial, POOLVR.ballMaterial, {
+        restitution: 0.86,
+        friction: 0.4
+    });
+    POOLVR.railMaterial            = new CANNON.Material();
+    POOLVR.railBallContactMaterial = new CANNON.ContactMaterial(POOLVR.railMaterial, POOLVR.ballMaterial, {
+        restitution: 0.7,
+        friction: 0.07
+    });
+    POOLVR.tipMaterial            = new CANNON.Material();
+    POOLVR.tipBallContactMaterial = new CANNON.ContactMaterial(POOLVR.tipMaterial, POOLVR.ballMaterial, {
+        restitution: 0.25,
+        friction: 0.13,
+        contactEquationRelaxation: 2,
+        frictionEquationRelaxation: 2,
+        contactEquationStiffness: 1e8
+    });
+    world.addMaterial(POOLVR.ballMaterial);
+    world.addMaterial(POOLVR.playableSurfaceMaterial);
+    world.addMaterial(POOLVR.cushionMaterial);
+    world.addMaterial(POOLVR.floorMaterial);
+    world.addMaterial(POOLVR.tipMaterial);
+    world.addMaterial(POOLVR.railMaterial);
+    world.addContactMaterial(POOLVR.ballBallContactMaterial);
+    world.addContactMaterial(POOLVR.ballPlayableSurfaceContactMaterial);
+    world.addContactMaterial(POOLVR.ballCushionContactMaterial);
+    world.addContactMaterial(POOLVR.floorBallContactMaterial);
+    world.addContactMaterial(POOLVR.tipBallContactMaterial);
+    world.addContactMaterial(POOLVR.railBallContactMaterial);
+} )();

@@ -62,6 +62,7 @@ POOLVR = {
             'toolRadius': 0.012,
             'tipRadius' : 0.012,
             'toolLength': 0.37,
+            'tipLength' : 0.37,
             'interactionPlaneOpacity': 0.22
         }
     }
