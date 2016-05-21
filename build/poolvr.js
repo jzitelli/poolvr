@@ -170,7 +170,7 @@ POOLVR.stroke = ( function () {
 } )();
 
 },{}],3:[function(require,module,exports){
-/* global POOLVR, YAWVRB, CANNON */
+/* global POOLVR, YAWVRB, CANNON, THREE */
 POOLVR.commands = {
     toggleMenu:       function () { POOLVR.toggleMenu(); },
     toggleVRControls: function () { POOLVR.app.toggleVRControls(); },
@@ -276,7 +276,9 @@ POOLVR.parseURIConfig = function () {
     }
     // Leap Motion config:
     POOLVR.config.toolOptions = POOLVR.config.toolOptions || {};
-    POOLVR.config.toolOptions.tipMaterial = POOLVR.tipMaterial;
+    POOLVR.config.toolOptions.useShadowMesh = !POOLVR.config.useShadowMap;
+    POOLVR.config.toolOptions.shadowPlane = POOLVR.config.H_table + 0.001;
+    POOLVR.config.toolOptions.shadowMaterial = POOLVR.shadowMaterial;
 };
 
 
@@ -347,11 +349,10 @@ POOLVR.loadConfig = function (profileName) {
     });
     POOLVR.tipMaterial            = new CANNON.Material();
     POOLVR.tipBallContactMaterial = new CANNON.ContactMaterial(POOLVR.tipMaterial, POOLVR.ballMaterial, {
-        restitution: 0.25,
+        restitution: 0.01,
         friction: 0.13,
         contactEquationRelaxation: 2,
-        frictionEquationRelaxation: 2,
-        contactEquationStiffness: 1e8
+        frictionEquationRelaxation: 2
     });
     world.addMaterial(POOLVR.ballMaterial);
     world.addMaterial(POOLVR.playableSurfaceMaterial);
@@ -366,6 +367,8 @@ POOLVR.loadConfig = function (profileName) {
     world.addContactMaterial(POOLVR.tipBallContactMaterial);
     world.addContactMaterial(POOLVR.railBallContactMaterial);
 } )();
+
+POOLVR.shadowMaterial = new THREE.MeshBasicMaterial({color: 0x002200});
 
 },{}],4:[function(require,module,exports){
 /* global require */
@@ -391,47 +394,15 @@ window.onLoad = function () {
 
     POOLVR.config = POOLVR.loadConfig(POOLVR.profile) || POOLVR.config;
     POOLVR.parseURIConfig();
-    console.log("POOLVR.config =\n" + JSON.stringify(POOLVR.config, undefined, 2));
+
+    console.log("POOLVR.config:");
+    console.log(POOLVR.config);
 
     POOLVR.stage = new YAWVRB.Stage();
 
     POOLVR.objectSelector = new YAWVRB.Utils.ObjectSelector();
 
-    POOLVR.shadowMaterial = new THREE.MeshBasicMaterial({color: 0x002200});
-
     var world = POOLVR.world;
-
-    function setupOpenVRTool() {
-        var toolOptions = {};
-        for (var kwarg in POOLVR.config.toolOptions) {
-            toolOptions[kwarg] = POOLVR.config.toolOptions[kwarg];
-        }
-        toolOptions.toolMass = 2;
-        var openVRTool = YAWVRB.Gamepads.makeTool(YAWVRB.Gamepads.vrGamepads[0], toolOptions);
-        avatar.add(openVRTool.mesh);
-        world.addBody(openVRTool.body);
-        POOLVR.openVRTool = openVRTool;
-    }
-
-    var didA = false;
-    function onGamepadConnected(e) {
-        var gamepad = e.gamepad;
-        if (!gamepad) return;
-        if (/openvr/i.test(gamepad.id)) {
-            if (didA) {
-                YAWVRB.Gamepads.setGamepadCommands(gamepad.index, POOLVR.vrGamepadBCommands);
-            } else {
-                YAWVRB.Gamepads.setGamepadCommands(gamepad.index, POOLVR.vrGamepadACommands);
-                setupOpenVRTool();
-                didA = true;
-            }
-        }
-        else if (/xbox/i.test(gamepad.id) || /xinput/i.test(gamepad.id)) YAWVRB.Gamepads.setGamepadCommands(gamepad.index, POOLVR.gamepadCommands);
-    }
-    YAWVRB.Gamepads.setOnGamepadConnected(onGamepadConnected);
-    for (var i = 0; i < YAWVRB.Gamepads.vrGamepads.length; i++) {
-        onGamepadConnected({gamepad: YAWVRB.Gamepads.vrGamepads[i]});
-    }
 
     if (POOLVR.config.useTextGeomLogger) {
         var fontLoader = new THREE.FontLoader();
@@ -455,6 +426,51 @@ window.onLoad = function () {
 
     POOLVR.synthSpeaker = new YAWVRB.SynthSpeaker({volume: POOLVR.config.synthSpeakerVolume, rate: 0.8, pitch: 0.5});
 
+    function setupOpenVRTool() {
+        var toolOptions = {};
+        for (var kwarg in POOLVR.config.toolOptions) {
+            toolOptions[kwarg] = POOLVR.config.toolOptions[kwarg];
+        }
+        toolOptions.toolMass = 2;
+        toolOptions.tipMaterial = new CANNON.Material();
+        toolOptions.name = "OpenVR tipMaterial";
+        world.addContactMaterial(new CANNON.ContactMaterial(toolOptions.tipMaterial, POOLVR.ballMaterial, {
+            restitution: 0.8,
+            friction: 0.13,
+            contactEquationRelaxation: 2,
+            frictionEquationRelaxation: 2,
+            contactEquationStiffness: 1e8
+        }));
+        console.log('openVRTool options:');
+        console.log(toolOptions);
+        var openVRTool = YAWVRB.Gamepads.makeTool(YAWVRB.Gamepads.vrGamepads[0], toolOptions);
+        avatar.add(openVRTool.mesh);
+        world.addBody(openVRTool.body);
+        POOLVR.openVRTool = openVRTool;
+    }
+
+    var didA = false;
+    function onGamepadConnected(e) {
+        var gamepad = e.gamepad;
+        if (!gamepad) return;
+        if (/openvr/i.test(gamepad.id)) {
+            if (didA) {
+                console.log('OpenVR controller B connected');
+                YAWVRB.Gamepads.setGamepadCommands(gamepad.index, POOLVR.vrGamepadBCommands);
+            } else {
+                console.log('OpenVR controller A connected');
+                YAWVRB.Gamepads.setGamepadCommands(gamepad.index, POOLVR.vrGamepadACommands);
+                setupOpenVRTool();
+                didA = true;
+            }
+        }
+        else if (/xbox/i.test(gamepad.id) || /xinput/i.test(gamepad.id)) YAWVRB.Gamepads.setGamepadCommands(gamepad.index, POOLVR.gamepadCommands);
+    }
+    YAWVRB.Gamepads.setOnGamepadConnected(onGamepadConnected);
+    for (var i = 0; i < YAWVRB.Gamepads.vrGamepads.length; i++) {
+        onGamepadConnected({gamepad: YAWVRB.Gamepads.vrGamepads[i]});
+    }
+
     // TODO: return menu items
     POOLVR.setupMenu();
 
@@ -477,9 +493,6 @@ window.onLoad = function () {
             POOLVR.leapIndicator.innerHTML = 'Leap Motion: websocket disconnected';
             POOLVR.leapIndicator.style['background-color'] = 'rgba(60, 20, 20, 0.4)';
         },
-        useShadowMesh: !POOLVR.config.useShadowMap,
-        shadowMaterial: POOLVR.shadowMaterial,
-        shadowPlane: POOLVR.config.H_table + 0.001,
         tipMaterial: POOLVR.tipMaterial
     }) );
     POOLVR.leapTool = leapTool;
