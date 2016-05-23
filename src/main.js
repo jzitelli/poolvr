@@ -53,21 +53,13 @@ window.onLoad = function () {
 
     POOLVR.synthSpeaker = new YAWVRB.SynthSpeaker({volume: POOLVR.config.synthSpeakerVolume, rate: 0.8, pitch: 0.5});
 
-    function setupOpenVRTool() {
-        var toolOptions = {};
-        for (var kwarg in POOLVR.config.toolOptions) {
-            toolOptions[kwarg] = POOLVR.config.toolOptions[kwarg];
-        }
-        toolOptions.toolMass = 2;
-        toolOptions.tipMaterial = POOLVR.openVRTipMaterial;
-        console.log('openVRTool options:');
-        console.log(toolOptions);
-        var openVRTool = YAWVRB.Gamepads.makeTool(YAWVRB.Gamepads.vrGamepads[0], toolOptions);
-        avatar.add(openVRTool.mesh);
-        world.addBody(openVRTool.body);
-        POOLVR.openVRTool = openVRTool;
-    }
-
+    var openVRTool = YAWVRB.Gamepads.makeTool(YAWVRB.Utils.combineObjects(POOLVR.config.toolOptions, {
+        toolMass: 2,
+        tipMaterial: POOLVR.openVRTipMaterial
+    }));
+    POOLVR.openVRTool = openVRTool;
+    avatar.add(openVRTool.mesh);
+    openVRTool.mesh.visible = false;
     var didA = false;
     function onGamepadConnected(e) {
         var gamepad = e.gamepad;
@@ -79,16 +71,15 @@ window.onLoad = function () {
             } else {
                 console.log('OpenVR controller A connected');
                 YAWVRB.Gamepads.setGamepadCommands(gamepad.index, POOLVR.vrGamepadACommands);
-                setupOpenVRTool();
+                openVRTool.mesh.visible = true;
+                openVRTool.setGamepad(gamepad);
+                world.addBody(openVRTool.body);
                 didA = true;
             }
         }
         else if (/xbox/i.test(gamepad.id) || /xinput/i.test(gamepad.id)) YAWVRB.Gamepads.setGamepadCommands(gamepad.index, POOLVR.gamepadCommands);
     }
     YAWVRB.Gamepads.setOnGamepadConnected(onGamepadConnected);
-    for (var i = 0; i < YAWVRB.Gamepads.vrGamepads.length; i++) {
-        onGamepadConnected({gamepad: YAWVRB.Gamepads.vrGamepads[i]});
-    }
 
     // TODO: return menu items
     POOLVR.setupMenu();

@@ -185,10 +185,11 @@ POOLVR.loadConfig = function (profileName) {
     POOLVR.openVRTipMaterial            = new CANNON.Material();
     POOLVR.openVRTipBallContactMaterial = new CANNON.ContactMaterial(POOLVR.openVRTipMaterial, POOLVR.ballMaterial, {
         restitution: 1,
-        friction: 0.13,
-        contactEquationRelaxation: 2,
-        frictionEquationRelaxation: 2,
-        contactEquationStiffness: 1e8
+        friction: 0.25,
+        contactEquationRelaxation: 1,
+        frictionEquationRelaxation: 1,
+        contactEquationStiffness: 1e8,
+        frictionEquationStiffness: 1e8
     });
 
     world.addMaterial(POOLVR.playableSurfaceMaterial);
