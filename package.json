@@ -47,7 +47,7 @@
     "cannon": "git://github.com/jzitelli/cannon.js.git",
     "three.js": "git://github.com/jzitelli/three.js.git#dev",
     "three.py": "git://github.com/jzitelli/three.py.git#dev",
-    "yawvrb": "git://github.com/jzitelli/yawvrb.git"
+    "yawvrb": "git://github.com/jzitelli/yawvrb.git#dev"
   },
   "devDependencies": {
     "eslint": "latest",
