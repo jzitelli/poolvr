@@ -47,20 +47,21 @@
     "cannon": "git://github.com/jzitelli/cannon.js.git",
     "three.js": "git://github.com/jzitelli/three.js.git#dev",
     "three.py": "git://github.com/jzitelli/three.py.git#dev",
-    "yawvrb": "git://github.com/jzitelli/yawvrb.git#dev"
+    "yawvrb": "../yawvrb/"
   },
   "devDependencies": {
     "eslint": "latest",
     "browserify": "latest",
     "watchify": "latest",
-    "uglify-js": "latest"
+    "uglify-js": "latest",
+    "mkdirp": "latest"
   },
   "scripts": {
     "update_index": "python update_index.py",
     "prepublish": "npm run update_index",
     "lint": "eslint src/*.js",
-    "build": "npm run lint && browserify src/main.js -o build/poolvr.js && echo wrote build/poolvr.js && cat build/poolvr.js | uglifyjs -c > build/poolvr.min.js && echo wrote build/poolvr.min.js",
-    "watch": "npm run build && watchify src/main.js -o build/poolvr.js",
-    "start": "npm run build && python poolvr.py"
+    "build": "npm run lint && mkdirp build && browserify src/main.js -o build/poolvr.js && echo wrote build/poolvr.js && cat build/poolvr.js | uglifyjs -c > build/poolvr.min.js && echo wrote build/poolvr.min.js",
+    "start": "npm run build && python poolvr.py",
+    "watch": "npm run build && watchify src/main.js -o build/poolvr.js"
   }
 }
