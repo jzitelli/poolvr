@@ -158,8 +158,9 @@ POOLVR.loadConfig = function (profileName) {
     });
     POOLVR.playableSurfaceMaterial            = new CANNON.Material();
     POOLVR.ballPlayableSurfaceContactMaterial = new CANNON.ContactMaterial(POOLVR.ballMaterial, POOLVR.playableSurfaceMaterial, {
-        restitution: 0.3,
-        friction: 0.21
+        restitution: 0.24,
+        friction: 0.21,
+        contactEquationStiffness: 7e8
     });
     POOLVR.cushionMaterial            = new CANNON.Material();
     POOLVR.ballCushionContactMaterial = new CANNON.ContactMaterial(POOLVR.ballMaterial, POOLVR.cushionMaterial, {
