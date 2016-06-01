@@ -323,6 +323,11 @@ window.onLoad = function () {
                 // ball-ball collision
                 bodyA.velocity.vsub(bodyB.velocity, relVelocity);
                 POOLVR.playCollisionSound(relVelocity.lengthSquared());
+            } else if (bodyA.material === POOLVR.openVRTipMaterial || bodyB.material === POOLVR.openVRTipMaterial) {
+                if (POOLVR.openVRTool.body.sleepState === CANNON.Body.AWAKE) {
+                    POOLVR.openVRTool.body.sleep();
+                    setTimeout(POOLVR.openVRTool.body.wakeUp, 500);
+                }
             }
         });
 

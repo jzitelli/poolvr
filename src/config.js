@@ -77,7 +77,7 @@ POOLVR.gamepadCommands = {
 POOLVR.vrGamepadACommands = {
     toggleVR: {buttons: [3], commandDown: POOLVR.commands.toggleVR},
     moveLR: {axes: [YAWVRB.Gamepads.AXES.LSX]},
-    moveFB: {axes: [YAWVRB.Gamepads.AXES.LSY]},
+    moveFB: {axes: [YAWVRB.Gamepads.AXES.LSY], flipAxes: true},
     autoPosition: {buttons: [2], commandDown: POOLVR.commands.autoPosition}
 };
 
@@ -104,8 +104,8 @@ POOLVR.parseURIConfig = function () {
     }
     // Leap Motion config:
     POOLVR.config.toolOptions = POOLVR.config.toolOptions || {};
-    POOLVR.config.toolOptions.useShadowMesh = !POOLVR.config.useShadowMap;
-    POOLVR.config.toolOptions.shadowPlane = POOLVR.config.H_table + 0.001;
+    POOLVR.config.toolOptions.useShadowMesh  = !POOLVR.config.useShadowMap;
+    POOLVR.config.toolOptions.shadowPlane    = POOLVR.config.H_table + 0.001;
     POOLVR.config.toolOptions.shadowMaterial = POOLVR.shadowMaterial;
 };
 
@@ -142,11 +142,11 @@ POOLVR.loadConfig = function (profileName) {
     // TODO: load from JSON config
     var world = new CANNON.World();
     world.gravity.set( 0, -POOLVR.config.gravity, 0 );
-    world.defaultContactMaterial.contactEquationStiffness   = 1e7;
+    world.defaultContactMaterial.contactEquationStiffness   = 2e7;
     world.defaultContactMaterial.frictionEquationStiffness  = 2e6;
     world.defaultContactMaterial.contactEquationRelaxation  = 2;
     world.defaultContactMaterial.frictionEquationRelaxation = 3;
-    world.broadphase = new CANNON.SAPBroadphase( world );
+    //world.broadphase = new CANNON.SAPBroadphase( world );
     world.solver.iterations = 10;
     POOLVR.world = world;
 
@@ -188,7 +188,7 @@ POOLVR.loadConfig = function (profileName) {
         friction: 0.25,
         contactEquationRelaxation: 1,
         frictionEquationRelaxation: 1,
-        contactEquationStiffness: 1e8,
+        contactEquationStiffness: 1e9,
         frictionEquationStiffness: 1e8
     });
 
