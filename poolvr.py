@@ -59,8 +59,8 @@ POOLVR = {
         'toolOptions': {
             'host'      : '127.0.0.1',
             'tipShape'  : 'Cylinder',
-            'toolRadius': 0.012,
-            'tipRadius' : 0.012,
+            'toolRadius': 0.010,
+            'tipRadius' : 0.010,
             'toolLength': 0.37,
             'tipLength' : 0.37,
             'interactionPlaneOpacity': 0.22
