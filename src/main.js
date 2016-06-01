@@ -316,6 +316,7 @@ window.onLoad = function () {
         });
 
         var relVelocity = new CANNON.Vec3();
+        var tipCollisionCounter = 0;
         world.addEventListener('beginContact', function (evt) {
             var bodyA = evt.bodyA;
             var bodyB = evt.bodyB;
@@ -323,10 +324,17 @@ window.onLoad = function () {
                 // ball-ball collision
                 bodyA.velocity.vsub(bodyB.velocity, relVelocity);
                 POOLVR.playCollisionSound(relVelocity.lengthSquared());
-            } else if (bodyA.material === POOLVR.openVRTipMaterial || bodyB.material === POOLVR.openVRTipMaterial) {
+            } else if (bodyA.material === POOLVR.openVRTipMaterial && bodyB.material === POOLVR.ballMaterial) {
                 if (POOLVR.openVRTool.body.sleepState === CANNON.Body.AWAKE) {
+                    // stop cue stick - ball collisions for epsilon time duration immediately after contact (stops the balls from "sticking" to the stick):
                     POOLVR.openVRTool.body.sleep();
                     setTimeout(POOLVR.openVRTool.body.wakeUp, 500);
+                    tipCollisionCounter++;
+                    if (tipCollisionCounter === 1) {
+                        POOLVR.synthSpeaker.speak("You moved a ball.  Good job.");
+                    } else if (tipCollisionCounter === 16) {
+                        POOLVR.synthSpeaker.speak("You are doing a great job.");
+                    }
                 }
             }
         });
