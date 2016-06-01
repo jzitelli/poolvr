@@ -1,6 +1,6 @@
 /* global require */
 window.POOLVR = window.POOLVR || {};
-require('./WebVRSound.js');
+require('./sounds.js');
 require('./actions.js');
 require('./config.js');
 require('./menu.js');
