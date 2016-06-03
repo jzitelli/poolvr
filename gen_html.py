@@ -1,9 +1,9 @@
-"""Updates index.html and poolvr.html"""
-
 import json
 from jinja2 import Environment, FileSystemLoader, Markup
-from poolvr import TEMPLATE_FOLDER, WebVRConfig, POOLVR, pool_table
+from poolvr import TEMPLATE_FOLDER, WebVRConfig, POOLVR, pool_table, GIT_REVS
 
+
+OUTPUT = 'dist/poolvr.html'
 
 
 def main():
@@ -17,8 +17,21 @@ var POOLVR = %s;
 var THREEPY_SCENE = %s;
 </script>""" % (json.dumps(WebVRConfig, indent=2),
                 json.dumps(POOLVR, indent=2),
-                json.dumps(pool_table.pool_hall(**POOLVR['config']).export()))))
-    with open('dist/poolvr.html', 'w') as f:
+                json.dumps(pool_table.pool_hall(**POOLVR['config']).export()))),
+   	                                                    version_content=Markup(r"""
+<h2>{2}</h2>
+<table>
+<tr>
+<td>
+<a href="https://github.com/jzitelli/poolvr/commit/{0}">current commit</a>
+</td>
+<td>
+<a href="https://github.com/jzitelli/poolvr/commit/{1}">previous commit</a>
+</td>
+</tr>
+</table>
+""".format(GIT_REVS[0], GIT_REVS[1], POOLVR['version'])))
+    with open(OUTPUT, 'w') as f:
     	f.write(s)
 
 
