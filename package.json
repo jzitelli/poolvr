@@ -15,6 +15,7 @@
     "images/",
     "sounds/",
     "src/",
+    ".eslintrc.json",
     "favicon.ico",
     "gen_html.py",
     "pool_table.py",
