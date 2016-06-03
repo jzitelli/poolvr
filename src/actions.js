@@ -42,7 +42,7 @@ POOLVR.autoPosition = ( function () {
     var nextVector = new THREE.Vector3();
     var UP = THREE.Object3D.DefaultUp;
     var speakCount = 0;
-    return function () {
+    return function (forVive) {
 
         if (POOLVR.synthSpeaker.speaking === false) {
             if (speakCount <= 3) {
@@ -61,18 +61,20 @@ POOLVR.autoPosition = ( function () {
         );
         avatar.quaternion.setFromAxisAngle(UP, heading);
 
-        // nextVector.copy(POOLVR.toolRoot.worldPosition);
-        nextVector.copy(POOLVR.leapTool.toolRoot.position);
+        if (forVive) {
+            // auto-position so that cue ball is 0.5 meters in front of you
+            nextVector.set(0, 0, -0.5);
+        } else {
+            // auto-position so that cue ball is on top of leap controller
+            nextVector.copy(POOLVR.leapTool.toolRoot.position);
+        }
         nextVector.applyQuaternion(avatar.quaternion);
         nextVector.add(avatar.position);
-
         nextVector.sub(POOLVR.ballMeshes[0].position);
         nextVector.y = 0;
         avatar.position.sub(nextVector);
-
         avatar.updateMatrix();
         avatar.updateMatrixWorld();
-
         POOLVR.leapTool.updateToolMapping();
 
     };

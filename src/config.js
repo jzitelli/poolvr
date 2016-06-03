@@ -75,17 +75,17 @@ POOLVR.gamepadCommands = {
 };
 
 POOLVR.vrGamepadACommands = {
-    toggleVR: {buttons: [3], commandDown: POOLVR.commands.toggleVR},
-    toggleFloatMode: {buttons: [0]},
-    moveLR: {axes: [YAWVRB.Gamepads.AXES.LSX]},
-    moveFB: {axes: [YAWVRB.Gamepads.AXES.LSY], flipAxes: true},
-    autoPosition: {buttons: [2], commandDown: POOLVR.commands.autoPosition}
-};
-
-POOLVR.vrGamepadBCommands = {
+    // toggleFloatMode: {buttons: [0]},
+    // moveLR: {axes: [YAWVRB.Gamepads.AXES.LSX]},
+    // moveFB: {axes: [YAWVRB.Gamepads.AXES.LSY], flipAxes: true},
     toolTurnLR: {axes: [YAWVRB.Gamepads.AXES.LSX]},
     toolMoveFB:  {axes: [YAWVRB.Gamepads.AXES.LSY], flipAxes: true},
     toggleToolFloatMode: {buttons: [0]},
+    toggleVR: {buttons: [3], commandDown: POOLVR.commands.toggleVR},
+    autoPosition: {buttons: [2], commandDown: POOLVR.commands.autoPosition.bind(null, true)}
+};
+
+POOLVR.vrGamepadBCommands = {
     resetVRSensor: {buttons: [3], commandDown: POOLVR.commands.resetVRSensor},
     resetTable: {buttons: [2], commandDown: POOLVR.commands.resetTable}
 };
