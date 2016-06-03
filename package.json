@@ -18,7 +18,6 @@
     "src/",
     "favicon.ico",
     "pool_table.py",
-    "poolvr.html",
     "poolvr_template.html",
     "poolvr.css",
     "poolvr.py",
@@ -43,13 +42,14 @@
     "webvr-samples"
   ],
   "dependencies": {
-    "leapjs": "0.6.4",
     "cannon": "git://github.com/jzitelli/cannon.js.git",
+    "leapjs": "0.6.4",
     "three.js": "git://github.com/jzitelli/three.js.git#dev",
     "three.py": "git://github.com/jzitelli/three.py.git#dev",
     "yawvrb": "git://github.com/jzitelli/yawvrb.git#dev"
   },
   "devDependencies": {
+    "gh-pages": "^0.11.0",
     "eslint": "latest",
     "browserify": "latest",
     "watchify": "latest",
@@ -57,11 +57,11 @@
     "mkdirp": "latest"
   },
   "scripts": {
-    "update_index": "python update_index.py",
-    "prepublish": "npm run update_index",
     "lint": "eslint src/*.js",
     "build": "npm run lint && mkdirp build && browserify src/main.js -o build/poolvr.js && echo wrote build/poolvr.js && cat build/poolvr.js | uglifyjs -c > build/poolvr.min.js && echo wrote build/poolvr.min.js",
     "start": "npm run build && python poolvr.py",
-    "watch": "npm run build && watchify src/main.js -o build/poolvr.js"
+    "watch": "npm run build && watchify src/main.js -o build/poolvr.js",
+    "dist": "npm run build && mkdirp dist/build && python gen_html.py && cp build/poolvr.min.js dist/build/poolvr.min.js && cp favicon.ico dist/favicon.ico && cp poolvr.css dist/poolvr.css && cp -r fonts dist/fonts && cp -r images dist/images && cp -r sounds dist/sounds && mkdirp dist/node_modules && cp -r node_modules/cannon dist/node_modules/cannon && cp -r node_modules/three.js dist/node_modules/three.js && cp -r node_modules/three.py dist/node_modules/three.py && cp -r node_modules/leapjs dist/node_modules/leapjs && cp -r node_modules/yawvrb dist/node_modules/yawvrb && cp -r node_modules/webvr-polyfill dist/node_modules/webvr-polyfill",
+    "ghpages": "node ./node_scripts/gh-pages.js"
   }
 }

@@ -1,4 +1,7 @@
 /* global POOLVR */
+
+// TODO: use angular.js or some other MVC framework
+
 POOLVR.setupMenu = function () {
     "use strict";
 
@@ -72,7 +75,7 @@ POOLVR.setupMenu = function () {
 
     // TODO: regular expression format check
     var leapAddressInput = document.getElementById('leapAddress');
-    leapAddressInput.value = POOLVR.config.toolOptions.host || 'localhost';
+    leapAddressInput.value = POOLVR.config.toolOptions.host || '127.0.0.1';
     leapAddressInput.addEventListener('change', onLeapAddressChange, false);
     function onLeapAddressChange() {
         var host = leapAddressInput.value;

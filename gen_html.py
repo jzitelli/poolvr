@@ -18,7 +18,7 @@ var THREEPY_SCENE = %s;
 </script>""" % (json.dumps(WebVRConfig, indent=2),
                 json.dumps(POOLVR, indent=2),
                 json.dumps(pool_table.pool_hall(**POOLVR['config']).export()))))
-    with open('poolvr.html', 'w') as f:
+    with open('dist/poolvr.html', 'w') as f:
     	f.write(s)
 
 
