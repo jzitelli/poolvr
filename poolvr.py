@@ -64,8 +64,7 @@ POOLVR = {
             'tipRadius' : 0.010,
             'toolLength': 0.37,
             'tipLength' : 0.37,
-            'interactionPlaneOpacity': 0.22,
-            'port': 6437 # should be changed to 6438 for https hosting
+            'interactionPlaneOpacity': 0.22
         }
     }
 }

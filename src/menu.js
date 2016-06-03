@@ -75,7 +75,7 @@ POOLVR.setupMenu = function () {
 
     // TODO: regular expression format check
     var leapAddressInput = document.getElementById('leapAddress');
-    leapAddressInput.value = POOLVR.config.toolOptions.host || '127.0.0.1';
+    leapAddressInput.value = POOLVR.config.toolOptions.host || 'localhost';
     leapAddressInput.addEventListener('change', onLeapAddressChange, false);
     function onLeapAddressChange() {
         var host = leapAddressInput.value;

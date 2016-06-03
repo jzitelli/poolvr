@@ -1,5 +1,6 @@
 import json
 from jinja2 import Environment, FileSystemLoader, Markup
+
 from poolvr import TEMPLATE_FOLDER, WebVRConfig, POOLVR, pool_table, GIT_REVS
 
 
@@ -9,7 +10,7 @@ OUTPUT = 'dist/poolvr.html'
 def main():
     env = Environment(loader=FileSystemLoader(TEMPLATE_FOLDER))
     template = env.get_template('poolvr_template.html')
-    POOLVR['config']['toolOptions']['port'] = 6438 # for hosting on gh-pages (https)
+    # POOLVR['config']['toolOptions']['port'] = 6438 # for hosting on gh-pages (https)
     s = template.render(config={'DEBUG': False},
    	                    json_config=Markup(r"""<script>
 var WebVRConfig = %s;
