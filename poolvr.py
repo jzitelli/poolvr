@@ -21,6 +21,8 @@ import pool_table
 STATIC_FOLDER   = os.path.abspath(os.path.split(__file__)[0])
 TEMPLATE_FOLDER = STATIC_FOLDER
 
+PACKAGE = json.loads(open('package.json').read())
+
 app = Flask(__name__,
             static_folder=STATIC_FOLDER,
             static_url_path='',
@@ -43,7 +45,7 @@ WebVRConfig = {
 
 
 POOLVR = {
-    'version': 'v0.1.1',
+    'version': 'v' + PACKAGE['version'],
     'config': {
         'gravity'            : 9.8,
         'useBasicMaterials'  : True,
@@ -57,7 +59,6 @@ POOLVR = {
         'H_ceiling'          : 8 * 12 * 0.0254,
         'synthSpeakerVolume' : 0.4,
         'toolOptions': {
-            'host'      : '127.0.0.1',
             'tipShape'  : 'Cylinder',
             'toolRadius': 0.010,
             'tipRadius' : 0.010,
