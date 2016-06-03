@@ -131,16 +131,9 @@ var THREEPY_SCENE = %s;
                 json.dumps(pool_table.pool_hall(**poolvr_config).export()))),
                            version_content=Markup(r"""
 <h3>v{2}</h3>
-<table>
-<tr>
-<td>
 <a href="https://github.com/jzitelli/poolvr/commit/{0}">current commit</a>
-</td>
-<td>
+<br>
 <a href="https://github.com/jzitelli/poolvr/commit/{1}">previous commit</a>
-</td>
-</tr>
-</table>
 """.format(GIT_REVS[0], GIT_REVS[1], POOLVR['version'])))
 
 

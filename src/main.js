@@ -88,19 +88,19 @@ window.onLoad = function () {
 
     var leapTool = YAWVRB.LeapMotion.makeTool( YAWVRB.Utils.combineObjects(POOLVR.config.toolOptions, {
         onConnect: function () {
-            POOLVR.leapIndicator.innerHTML = 'Leap Motion: websocket connected';
+            POOLVR.leapIndicator.innerHTML = 'connected';
             POOLVR.leapIndicator.style['background-color'] = 'rgba(60, 100, 20, 0.8)';
         },
         onStreamingStarted: function () {
-            POOLVR.leapIndicator.innerHTML = 'Leap Motion: websocket connected, streaming';
+            POOLVR.leapIndicator.innerHTML = 'connected, streaming';
             POOLVR.leapIndicator.style['background-color'] = 'rgba(20, 160, 20, 0.8)';
         },
         onStreamingStopped: function () {
-            POOLVR.leapIndicator.innerHTML = 'Leap Motion: websocket connected, streaming stopped';
+            POOLVR.leapIndicator.innerHTML = 'connected, streaming stopped';
             POOLVR.leapIndicator.style['background-color'] = 'rgba(60, 100, 20, 0.8)';
         },
         onDisconnect: function () {
-            POOLVR.leapIndicator.innerHTML = 'Leap Motion: websocket disconnected';
+            POOLVR.leapIndicator.innerHTML = 'disconnected';
             POOLVR.leapIndicator.style['background-color'] = 'rgba(60, 20, 20, 0.4)';
         },
         tipMaterial: POOLVR.tipMaterial

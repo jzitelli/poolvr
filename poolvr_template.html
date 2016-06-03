@@ -30,10 +30,20 @@
           {{ version_content if version_content else '' }}
         </td>
         <td>
-          <img src="images/keyboardControls.png" width=230>
+          <div class="panel" style="background-color: rgba(90, 90, 100, 0.6)">
+            <h3>Keyboard controls:</h3>
+            <!-- <img src="images/keyboardControls.png" width=210> -->
+          </div>
+          <div class="panel" style="background-color: rgba(90, 100, 90, 0.6)">
+            <h3>XBox controls:</h3>
+            <!-- <img src="images/xboxControls.png" width=210> -->
+          </div>
         </td>
         <td>
-          <img src="images/viveControls.png" width=350>
+          <div class="panel" style="background-color: rgba(100, 90, 90, 0.6)">
+            <h3>Vive controls:</h3>
+            <img src="images/viveControls.png" width=314>
+          </div>
         </td>
       </tr></table>
 
@@ -70,19 +80,10 @@
           Websocket address:
           <input id="leapAddress" type="text" maxlength="18" />
         </label>
-        <div id="leapIndicator">
-          not connected
-        </div>
+        <span id="leapIndicator">
+          disconnected
+        </span>
       </div>
-
-      <h2>
-        <button id='loadProfileButton'>load profile</button>
-        <button id='saveProfileButton'>save profile</button>
-        <label>
-          Profile name:
-          <input id="profileName" type="text" maxlength="26" required/>
-        </label>
-      </h2>
 
       {{ extra_overlay_content if extra_overlay_content else "" }}
 
@@ -96,7 +97,7 @@
     <script src="node_modules/three.js/examples/js/controls/VRControls.js"></script>
     <script src="node_modules/three.js/examples/js/objects/ShadowMesh.js"></script>
 
-    <script src="node_modules/leapjs/leap-0.6.4.js"></script>
+    <script src="node_modules/leapjs/leap-0.6.4.min.js"></script>
 
     <script src="node_modules/webvr-polyfill/build/webvr-polyfill.js"></script>
 

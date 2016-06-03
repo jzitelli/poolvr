@@ -16,38 +16,28 @@ body {
 }
 .panel {
   background-color: rgba(50, 50, 80, 0.75);
-  padding: 1vh;
+  padding: 0.5vh;
   margin: 1vh;
 }
-h1 {
-  font-size: 16pt;
+h1, h2, h3 {
   color: #b5e853;
   margin: 0.5vh;
+}
+h1 {
+  font-size: 17pt;
 }
 h2 {
   font-size: 13pt;
-  color: #b5e853;
-  margin: 0.5vh;
 }
 h3 {
   font-size: 11pt;
-  color: #b5e853;
-  margin: 0.5vh;
-}
-h4 {
-  font-size: 10pt;
-  margin-left: 1vw;
-}
-p {
-  font-size: 9pt;
-  margin-left: 1.2vw;
 }
 label {
   font-size: 9pt;
 }
 button {
   font-family: monospace;
-  font-size: 14pt;
+  font-size: 13pt;
   font-style: bold;
   text-align: center;
   padding: 0.2vh;
@@ -61,16 +51,16 @@ a {
   color: #feb;
   padding: 0.4vh;
 }
-#leapAddress, #profileName {
+#leapAddress {
   margin: 0.2vh;
 }
 #leapIndicator {
-  font-size: 12pt;
+  font-size: 13pt;
   /*position: relative;*/
   /*width: 50%;*/
   text-align: center;
   margin-top: 0.2vh;
-  padding: 0.05em;
+  padding: 0.1em;
   box-sizing: border-box;
   color: #b5e853;
   background-color: rgba(60, 20, 0, 0.6);

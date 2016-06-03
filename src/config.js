@@ -212,3 +212,5 @@ POOLVR.loadConfig = function (profileName) {
 } )();
 
 POOLVR.shadowMaterial = new THREE.MeshBasicMaterial({color: 0x002200});
+
+POOLVR.profile = 'default';

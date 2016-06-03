@@ -85,13 +85,6 @@ POOLVR.setupMenu = function () {
         POOLVR.leapTool.leapController.connect();
     }
 
-    var profileNameInput = document.getElementById('profileName');
-    POOLVR.profile = profileNameInput.value || 'default';
-    profileNameInput.value = POOLVR.profile;
-    profileNameInput.addEventListener('change', function () {
-        POOLVR.profile = profileNameInput.value;
-    }, false);
-
     var vrButton = document.getElementById('vrButton');
     vrButton.addEventListener('click', function () {
         POOLVR.app.toggleVR();
@@ -102,22 +95,6 @@ POOLVR.setupMenu = function () {
     var fsButton = document.getElementById('fsButton');
     fsButton.addEventListener('click', function () {
         POOLVR.app.toggleFullscreen();
-    }, false);
-
-    var saveProfileButton = document.getElementById('saveProfileButton');
-    saveProfileButton.addEventListener('click', function () {
-        POOLVR.saveConfig(POOLVR.profile);
-    }, false);
-
-    var loadProfileButton = document.getElementById('loadProfileButton');
-    loadProfileButton.addEventListener('click', function () {
-        var config = POOLVR.loadConfig(POOLVR.profile);
-        if (config) {
-            console.log('loaded configuration for "%s":', POOLVR.profile);
-            console.log(JSON.stringify(config, undefined, 2));
-            POOLVR.config = config;
-            POOLVR.stage.load(POOLVR.config.stage);
-        }
     }, false);
 
     var vrDisplay = null;
