@@ -11,16 +11,16 @@
   },
   "bugs": "https://github.com/jzitelli/poolvr/issues",
   "files": [
-    "build/",
     "fonts/",
     "images/",
     "sounds/",
     "src/",
     "favicon.ico",
+    "gen_html.py",
     "pool_table.py",
-    "poolvr_template.html",
     "poolvr.css",
     "poolvr.py",
+    "poolvr_template.html",
     "LICENSE",
     "README.md"
   ],
