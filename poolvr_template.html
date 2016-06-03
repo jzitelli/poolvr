@@ -24,58 +24,65 @@
 
     <div id="overlay">
 
-      <h1>poolvr</h1>
-
-      {{ version_content if version_content else '' }}
+      <table><tr>
+        <td>
+          <h1>poolvr</h1>
+          {{ version_content if version_content else '' }}
+        </td>
+        <td>
+          <img src="images/keyboardControls.png" width=230>
+        </td>
+        <td>
+          <img src="images/viveControls.png" width=350>
+        </td>
+      </tr></table>
 
       <h2>
         <button id="vrButton">toggle VR</button>
         <button id="fsButton">toggle fullscreen</button>
       </h2>
 
-      <h2>Configuration:</h2>
+      <div class="panel" id="graphicsPanel">
+      <h3>Graphics:</h3>
+        <label>
+          <input type="checkbox" id="useBasicMaterials"/>
+          EGA mode (max performance)
+        </label>
+        <br>
+        <label>
+          <input type="checkbox" id="useSpotLight"/>
+          Spot light
+        </label>
+        <label>
+          <input type="checkbox" id="usePointLight"/>
+          Point light
+        </label>
+        <br>
+        <label>
+          <input type="checkbox" id="useShadowMap"/>
+          Shadow maps
+        </label>
+      </div>
 
-      <h3>
-        <button id='loadProfileButton'>LOAD PROFILE</button>
-        <button id='saveProfileButton'>SAVE PROFILE</button>
+      <div class="panel" id="leapPanel">
+        <h3>Leap Motion:</h3>
+        <label>
+          Websocket address:
+          <input id="leapAddress" type="text" maxlength="18" />
+        </label>
+        <div id="leapIndicator">
+          not connected
+        </div>
+      </div>
+
+      <h2>
+        <button id='loadProfileButton'>load profile</button>
+        <button id='saveProfileButton'>save profile</button>
         <label>
           Profile name:
           <input id="profileName" type="text" maxlength="26" required/>
         </label>
-      </h3>
-
-      <label>
-        <input type="checkbox" id="useBasicMaterials"/>
-        EGA mode (max performance)
-      </label>
-
-      <br>
-
-      <label>
-        <input type="checkbox" id="useSpotLight"/>
-        Spot light
-      </label>
-      <label>
-        <input type="checkbox" id="usePointLight"/>
-        Point light
-      </label>
-
-      <br>
-
-      <label>
-        <input type="checkbox" id="useShadowMap"/>
-        Shadow maps
-      </label>
-
-      <br>
-
-      <label>
-        Leap websocket address:
-        <input id="leapAddress" type="text" maxlength="18" />
-      </label>
-      <div id="leapIndicator">
-        not connected
-      </div>
+      </h2>
 
       {{ extra_overlay_content if extra_overlay_content else "" }}
 

@@ -130,7 +130,7 @@ var THREEPY_SCENE = %s;
                 json.dumps({'config': poolvr_config}, indent=2),
                 json.dumps(pool_table.pool_hall(**poolvr_config).export()))),
                            version_content=Markup(r"""
-<h2>v{2}</h2>
+<h3>v{2}</h3>
 <table>
 <tr>
 <td>

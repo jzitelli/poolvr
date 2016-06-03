@@ -14,16 +14,25 @@ body {
   color: #ffffff;
   background-color: rgba(20, 20, 50, 0.7);
 }
+.panel {
+  background-color: rgba(50, 50, 80, 0.75);
+  padding: 1vh;
+  margin: 1vh;
+}
 h1 {
   font-size: 16pt;
   color: #b5e853;
+  margin: 0.5vh;
 }
 h2 {
   font-size: 13pt;
   color: #b5e853;
+  margin: 0.5vh;
 }
 h3 {
   font-size: 11pt;
+  color: #b5e853;
+  margin: 0.5vh;
 }
 h4 {
   font-size: 10pt;
