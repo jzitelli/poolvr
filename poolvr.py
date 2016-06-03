@@ -45,7 +45,7 @@ WebVRConfig = {
 
 
 POOLVR = {
-    'version': 'v' + PACKAGE['version'],
+    'version': PACKAGE['version'],
     'config': {
         'gravity'            : 9.8,
         'useBasicMaterials'  : True,
@@ -64,7 +64,8 @@ POOLVR = {
             'tipRadius' : 0.010,
             'toolLength': 0.37,
             'tipLength' : 0.37,
-            'interactionPlaneOpacity': 0.22
+            'interactionPlaneOpacity': 0.22,
+            'port': 6437 # should be changed to 6438 for https hosting
         }
     }
 }
@@ -130,7 +131,7 @@ var THREEPY_SCENE = %s;
                 json.dumps({'config': poolvr_config}, indent=2),
                 json.dumps(pool_table.pool_hall(**poolvr_config).export()))),
                            version_content=Markup(r"""
-<h2>{2}</h2>
+<h2>v{2}</h2>
 <table>
 <tr>
 <td>

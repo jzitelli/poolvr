@@ -8,8 +8,10 @@ OUTPUT = 'dist/poolvr.html'
 
 def main():
     env = Environment(loader=FileSystemLoader(TEMPLATE_FOLDER))
-    s = env.get_template('poolvr_template.html').render(config={'DEBUG': False},
-   	                                                    json_config=Markup(r"""<script>
+    template = env.get_template('poolvr_template.html')
+    POOLVR['config']['toolOptions']['port'] = 6438 # for hosting on gh-pages (https)
+    s = template.render(config={'DEBUG': False},
+   	                    json_config=Markup(r"""<script>
 var WebVRConfig = %s;
 
 var POOLVR = %s;
@@ -18,8 +20,8 @@ var THREEPY_SCENE = %s;
 </script>""" % (json.dumps(WebVRConfig, indent=2),
                 json.dumps(POOLVR, indent=2),
                 json.dumps(pool_table.pool_hall(**POOLVR['config']).export()))),
-   	                                                    version_content=Markup(r"""
-<h2>{2}</h2>
+   	                    version_content=Markup(r"""
+<h2>v{2}</h2>
 <table>
 <tr>
 <td>
