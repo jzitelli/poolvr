@@ -179,13 +179,13 @@ window.onLoad = function () {
         POOLVR.centerSpotLight = centerSpotLight;
         POOLVR.centerSpotLight.visible = POOLVR.config.useSpotLight;
 
-        if (POOLVR.config.usePointLight) {
-            var pointLight = new THREE.PointLight(0xaa8866, 0.8, 40);
-            pointLight.position.set(4, 5, 2.5);
-            scene.add(pointLight);
-            pointLight.updateMatrix();
-            pointLight.updateMatrixWorld();
-        }
+        var pointLight = new THREE.PointLight(0xaa8866, 0.8, 40);
+        pointLight.position.set(4, 5, 2.5);
+        scene.add(pointLight);
+        pointLight.updateMatrix();
+        pointLight.updateMatrixWorld();
+        POOLVR.pointLight = pointLight;
+        POOLVR.pointLight.visible = POOLVR.config.usePointLight;
 
         scene.add(avatar);
         avatar.updateMatrix();
@@ -456,14 +456,6 @@ POOLVR.startTutorial = function () {
     POOLVR.synthSpeaker.speak("Keep the stick within the interaction box when you want to make contact with.  A ball.", function () {
         POOLVR.textGeomLogger.log("KEEP THE STICK WITHIN THE INTERACTION BOX WHEN YOU WANT");
         POOLVR.textGeomLogger.log("TO MAKE CONTACT WITH A BALL...");
-    });
-
-    POOLVR.synthSpeaker.speak("If you are playing in VR, try using the I, J, K, and L keys.  To move the virtual. Leap Motion Controller.  So that it coincides with the controller in your physical environment.", function () {
-        POOLVR.textGeomLogger.log("IF YOU ARE PLAYING IN VR, TRY USING THE");
-        POOLVR.textGeomLogger.log("I / J / K / L / O / . / Y / U KEYS");
-        POOLVR.textGeomLogger.log("TO MOVE THE VIRTUAL LEAP MOTION CONTROLLER");
-        POOLVR.textGeomLogger.log("SO THAT IT COINCIDES WITH THE CONTROLLER");
-        POOLVR.textGeomLogger.log("IN YOUR PHYSICAL ENVIRONMENT.");
     });
 
 };

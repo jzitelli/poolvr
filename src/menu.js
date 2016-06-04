@@ -62,9 +62,7 @@ POOLVR.setupMenu = function () {
     usePointLightInput.addEventListener('change', function () {
         POOLVR.config.usePointLight = usePointLightInput.checked;
         POOLVR.saveConfig(POOLVR.profile);
-        if (window.confirm('This change requires a page reload to take effect - reload now?')) {
-            document.location.reload();
-        }
+        POOLVR.pointLight.visible = POOLVR.config.usePointLight;
     }, false);
 
     useSpotLightInput.addEventListener('change', function () {

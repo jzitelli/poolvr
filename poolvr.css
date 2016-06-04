@@ -19,6 +19,15 @@ body {
   padding: 0.5vh;
   margin: 1vh;
 }
+div {
+  -webkit-user-select: none; /* Chrome/Safari */
+  -moz-user-select: none; /* Firefox */
+  -ms-user-select: none; /* IE10+ */
+
+  /* Rules below not implemented in browsers yet */
+  -o-user-select: none;
+  user-select: none;
+}
 h1, h2, h3 {
   color: #b5e853;
   margin: 0.5vh;
