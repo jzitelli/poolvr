@@ -41,6 +41,7 @@ button {
   font-style: bold;
   text-align: center;
   padding: 0.2vh;
+  margin: 1vh;
   color: #b5e853;
   background-color: rgba(111, 20, 20, 0.6);
   box-sizing: border-box;

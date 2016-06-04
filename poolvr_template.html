@@ -30,19 +30,11 @@
           {{ version_content if version_content else '' }}
         </td>
         <td>
-          <div class="panel" style="background-color: rgba(90, 90, 100, 0.6)">
-            <h3>Keyboard controls:</h3>
-            <!-- <img src="images/keyboardControls.png" width=210> -->
-          </div>
           <div class="panel" style="background-color: rgba(90, 100, 90, 0.6)">
-            <h3>XBox controls:</h3>
-            <!-- <img src="images/xboxControls.png" width=210> -->
-          </div>
-        </td>
-        <td>
-          <div class="panel" style="background-color: rgba(100, 90, 90, 0.6)">
-            <h3>Vive controls:</h3>
-            <img src="images/viveControls.png" width=314>
+            <h3>Controls:</h3>
+            <!-- <img src="images/keyboardControls.png" width=210> -->
+            <img src="images/xboxControls.png" width=300>
+            <img src="images/viveControls.png" width=300>
           </div>
         </td>
       </tr></table>
@@ -52,7 +44,7 @@
         <button id="fsButton">toggle fullscreen</button>
       </h2>
 
-      <div class="panel" id="graphicsPanel">
+      <div class="panel" id="graphicsPanel" style="float: left">
       <h3>Graphics:</h3>
         <label>
           <input type="checkbox" id="useBasicMaterials"/>
@@ -74,7 +66,7 @@
         </label>
       </div>
 
-      <div class="panel" id="leapPanel">
+      <div class="panel" id="leapPanel" style="float: left">
         <h3>Leap Motion:</h3>
         <label>
           Websocket address:
