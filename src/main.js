@@ -60,21 +60,21 @@ window.onLoad = function () {
     POOLVR.openVRTool = openVRTool;
     avatar.add(openVRTool.mesh);
     openVRTool.mesh.visible = false;
-    var didA = false;
+    var gamepadA;
     function onGamepadConnected(e) {
         var gamepad = e.gamepad;
         if (!gamepad) return;
         if (/openvr/i.test(gamepad.id)) {
-            if (didA) {
+            if (gamepadA) {
                 console.log('OpenVR controller B connected');
                 YAWVRB.Gamepads.setGamepadCommands(gamepad.index, POOLVR.vrGamepadBCommands);
             } else {
                 console.log('OpenVR controller A connected');
+                gamepadA = gamepad;
                 YAWVRB.Gamepads.setGamepadCommands(gamepad.index, POOLVR.vrGamepadACommands);
                 openVRTool.mesh.visible = true;
                 openVRTool.setGamepad(gamepad);
                 world.addBody(openVRTool.body);
-                didA = true;
             }
         }
         else if (/xbox/i.test(gamepad.id) || /xinput/i.test(gamepad.id)) YAWVRB.Gamepads.setGamepadCommands(gamepad.index, POOLVR.gamepadCommands);
@@ -324,11 +324,13 @@ window.onLoad = function () {
                 // ball-ball collision
                 bodyA.velocity.vsub(bodyB.velocity, relVelocity);
                 POOLVR.playCollisionSound(relVelocity.lengthSquared());
-            } else if (bodyA.material === POOLVR.openVRTipMaterial && bodyB.material === POOLVR.ballMaterial) {
+            } else if ((bodyA.material === POOLVR.openVRTipMaterial && bodyB.material === POOLVR.ballMaterial) || (bodyB.material === POOLVR.openVRTipMaterial && bodyA.material === POOLVR.ballMaterial)) {
                 if (POOLVR.openVRTool.body.sleepState === CANNON.Body.AWAKE) {
                     // stop cue stick - ball collisions for epsilon time duration immediately after contact (stops the balls from "sticking" to the stick):
+                    console.log('going to sleep');
                     POOLVR.openVRTool.body.sleep();
-                    setTimeout(POOLVR.openVRTool.body.wakeUp, 500);
+                    setTimeout( function () { POOLVR.openVRTool.body.wakeUp(); console.log('waking up'); }, 500);
+                    gamepadA.vibrate(12);
                     tipCollisionCounter++;
                     if (tipCollisionCounter === 1) {
                         POOLVR.synthSpeaker.speak("You moved a ball.  Good job.");
