@@ -298,9 +298,9 @@ window.onLoad = function () {
             } else if (bodyA.material === POOLVR.openVRTipMaterial && bodyB.material === POOLVR.ballMaterial) {
                 if (POOLVR.openVRTool.body.sleepState === CANNON.Body.AWAKE) {
                     // stop cue stick - ball collisions for epsilon time duration immediately after contact (stops the balls from "sticking" to the stick):
-                    console.log('going to sleep');
-                    POOLVR.openVRTool.body.sleep();
-                    setTimeout( function () { POOLVR.openVRTool.body.wakeUp(); console.log('waking up'); }, 500);
+                    // console.log('going to sleep');
+                    // POOLVR.openVRTool.body.sleep();
+                    // setTimeout( function () { POOLVR.openVRTool.body.wakeUp(); console.log('waking up'); }, 500);
                     gamepadA.vibrate(12);
                     tipCollisionCounter++;
                     if (tipCollisionCounter === 1) {
