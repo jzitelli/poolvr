@@ -186,10 +186,10 @@ POOLVR.loadConfig = function (profileName) {
     });
     POOLVR.openVRTipMaterial            = new CANNON.Material();
     POOLVR.openVRTipBallContactMaterial = new CANNON.ContactMaterial(POOLVR.openVRTipMaterial, POOLVR.ballMaterial, {
-        restitution: 0.9,
+        restitution: 0.95,
         friction: 0.15,
-        contactEquationRelaxation: 0.25,
-        frictionEquationRelaxation: 0.25,
+        contactEquationRelaxation: 0.1,
+        frictionEquationRelaxation: 0.1,
         contactEquationStiffness: 1e9,
         frictionEquationStiffness: 1e8
     });
