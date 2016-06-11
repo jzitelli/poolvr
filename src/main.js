@@ -172,6 +172,7 @@ window.onLoad = function () {
                           true,
                           true, true, true, true, true, true, true];
         POOLVR.nextBall = 1;
+        POOLVR.ballShadowMeshes = [];
 
         var floorBody, ceilingBody;
         var basicMaterials = {};
@@ -226,16 +227,14 @@ window.onLoad = function () {
             } );
         };
 
-        var H_table = POOLVR.config.H_table;
         if (!POOLVR.config.useShadowMap) {
-            var ballShadowMeshes = [];
             var ballShadowGeom = new THREE.CircleBufferGeometry(0.5*POOLVR.config.ball_diameter, 16);
             ballShadowGeom.rotateX(-0.5*Math.PI);
             POOLVR.ballMeshes.forEach( function (mesh, ballNum) {
                 var ballShadowMesh = new THREE.Mesh(ballShadowGeom, POOLVR.shadowMaterial);
                 ballShadowMesh.position.copy(mesh.position);
-                ballShadowMesh.position.y = H_table + 0.0004;
-                ballShadowMeshes[ballNum] = ballShadowMesh;
+                ballShadowMesh.position.y = POOLVR.config.H_table + 0.0004;
+                POOLVR.ballShadowMeshes[ballNum] = ballShadowMesh;
                 scene.add(ballShadowMesh);
             } );
         }
@@ -248,8 +247,8 @@ window.onLoad = function () {
                 mesh.quaternion.copy(body.interpolatedQuaternion);
                 mesh.updateMatrix();
                 mesh.updateMatrixWorld();
-                if (!POOLVR.config.useShadowMap) {
-                    var shadowMesh = ballShadowMeshes[i];
+                var shadowMesh = POOLVR.ballShadowMeshes[i];
+                if (shadowMesh) {
                     shadowMesh.position.x = mesh.position.x;
                     shadowMesh.position.z = mesh.position.z;
                     shadowMesh.updateMatrix();
@@ -282,6 +281,10 @@ window.onLoad = function () {
                 } else if (body.bounces === 7) {
                     body.sleep();
                     body.mesh.visible = false;
+                    var shadowMesh = POOLVR.ballShadowMeshes[body.ballNum];
+                    if (shadowMesh) {
+                        shadowMesh.visible = false;
+                    }
                 }
             }
         });
@@ -297,10 +300,6 @@ window.onLoad = function () {
                 POOLVR.playCollisionSound(relVelocity.lengthSquared());
             } else if (bodyA.material === POOLVR.openVRTipMaterial && bodyB.material === POOLVR.ballMaterial) {
                 if (POOLVR.openVRTool.body.sleepState === CANNON.Body.AWAKE) {
-                    // stop cue stick - ball collisions for epsilon time duration immediately after contact (stops the balls from "sticking" to the stick):
-                    // console.log('going to sleep');
-                    // POOLVR.openVRTool.body.sleep();
-                    // setTimeout( function () { POOLVR.openVRTool.body.wakeUp(); console.log('waking up'); }, 500);
                     gamepadA.vibrate(12);
                     tipCollisionCounter++;
                     if (tipCollisionCounter === 1) {
@@ -400,12 +399,14 @@ POOLVR.moveToolRoot = ( function () {
             }
         }
         if ((toolDrive !== 0) || (toolStrafe !== 0) || (toolFloat !== 0) || (rotateToolCW !== 0)) {
-            toolRoot.position.x +=  0.16 * dt * toolStrafe;
-            toolRoot.position.z += -0.16 * dt * toolDrive;
-            toolRoot.position.y +=  0.16 * dt * toolFloat;
             euler.setFromQuaternion(toolRoot.quaternion);
             euler.y -= 0.15 * dt * rotateToolCW;
+            var cosHeading = Math.cos(euler.y),
+                sinHeading = Math.sin(euler.y);
             toolRoot.quaternion.setFromAxisAngle(UP, euler.y);
+            toolRoot.position.x += 0.16 * dt * (toolStrafe * cosHeading + toolDrive * sinHeading);
+            toolRoot.position.z += 0.16 * dt * (-toolDrive * cosHeading + toolStrafe * sinHeading);
+            toolRoot.position.y += 0.16 * dt * toolFloat;
             toolRoot.updateMatrix();
             leapTool.setDeadtime(0);
         }
@@ -436,12 +437,12 @@ POOLVR.startAnimateLoop = function () {
         app      = POOLVR.app,
         world    = POOLVR.world,
         avatar   = POOLVR.app.stage.rootObject,
-        updateTool          = POOLVR.leapTool.updateTool,
-        updateToolPostStep  = POOLVR.leapTool.updateToolPostStep,
-        updateToolMapping   = POOLVR.leapTool.updateToolMapping,
         updateBallsPostStep = POOLVR.updateBallsPostStep,
         moveToolRoot        = POOLVR.moveToolRoot,
-        moveAvatar          = POOLVR.moveAvatar;
+        moveAvatar          = POOLVR.moveAvatar,
+        textGeomLogger = POOLVR.textGeomLogger,
+        leapTool = POOLVR.leapTool,
+        openVRTool = POOLVR.openVRTool;
 
     var lt = 0;
 
@@ -449,25 +450,24 @@ POOLVR.startAnimateLoop = function () {
 
         var dt = (t - lt) * 0.001;
 
-        POOLVR.textGeomLogger.update(t);
+        textGeomLogger.update(t);
 
-        updateTool(dt);
+        leapTool.updateTool(dt);
 
-        if (POOLVR.openVRTool) POOLVR.openVRTool.update(dt);
+        var gamepadValues = YAWVRB.Gamepads.update();
+        openVRTool.update(dt);
 
         app.render();
 
         world.step(Math.min(1/60, dt), dt, 10);
 
-        updateToolPostStep();
+        leapTool.updateToolPostStep();
         updateBallsPostStep();
-
-        var gamepadValues = YAWVRB.Gamepads.update();
 
         moveAvatar(keyboard, gamepadValues, dt);
         moveToolRoot(keyboard, gamepadValues, dt);
         avatar.updateMatrixWorld();
-        updateToolMapping();
+        leapTool.updateToolMapping();
 
         lt = t;
 

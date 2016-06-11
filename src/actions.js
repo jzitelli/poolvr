@@ -28,6 +28,8 @@ POOLVR.resetTable = function () {
         body.bounces = 0;
         POOLVR.onTable[ballNum] = true;
         body.mesh.visible = true;
+        var shadowMesh = POOLVR.ballShadowMeshes[ballNum];
+        if (shadowMesh) shadowMesh.visible = true;
     });
     if (POOLVR.synthSpeaker.speaking === false) {
         POOLVR.synthSpeaker.speak("Table reset.");
