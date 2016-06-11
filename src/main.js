@@ -37,7 +37,6 @@ window.onLoad = function () {
         }
     };
     POOLVR.app = new YAWVRB.App(undefined, appConfig, rendererOptions);
-    var app = POOLVR.app;
 
     POOLVR.leapIndicator = document.getElementById('leapIndicator');
 
@@ -61,7 +60,7 @@ window.onLoad = function () {
         tipMaterial: POOLVR.tipMaterial
     }) );
     leapTool.toolMesh.renderOrder = -1;
-    app.stage.rootObject.add(leapTool.toolRoot);
+    POOLVR.app.stage.rootObject.add(leapTool.toolRoot);
     world.addBody(leapTool.toolBody);
     leapTool.leapController.connect();
     leapTool.toolRoot.name = 'toolRoot';
@@ -89,19 +88,18 @@ window.onLoad = function () {
 
     POOLVR.synthSpeaker = new YAWVRB.SynthSpeaker({volume: POOLVR.config.synthSpeakerVolume, rate: 0.8, pitch: 0.5});
 
-
     if (POOLVR.config.useShadowMap) {
-        app.renderer.shadowMap.enabled = true;
+        POOLVR.app.renderer.shadowMap.enabled = true;
     }
 
-    app.stage.rootObject.add(app.camera);
+    POOLVR.app.stage.rootObject.add(POOLVR.app.camera);
 
     var openVRTool = YAWVRB.Gamepads.makeTool(YAWVRB.Utils.combineObjects(POOLVR.config.toolOptions, {
         toolMass: 2,
         tipMaterial: POOLVR.openVRTipMaterial
     }));
     POOLVR.openVRTool = openVRTool;
-    app.stage.rootObject.add(openVRTool.mesh);
+    POOLVR.app.stage.rootObject.add(openVRTool.mesh);
     openVRTool.mesh.visible = false;
     var gamepadA;
     function onGamepadConnected(e) {
@@ -327,15 +325,12 @@ POOLVR.moveAvatar = ( function () {
         walkSpeed = 0.333,
         floatSpeed = 0.1;
     var euler = new THREE.Euler(0, 0, 0, 'YXZ');
-
     return function (keyboard, gamepadValues, dt) {
         var avatar = POOLVR.app.stage.rootObject;
-
         var floatUp = keyboard.floatUp - keyboard.floatDown;
         var drive = keyboard.driveBack - keyboard.driveForward;
         var strafe = keyboard.strafeRight - keyboard.strafeLeft;
         var heading = -0.8 * dt * (-keyboard.turnLeft + keyboard.turnRight);
-
         for (var i = 0; i < gamepadValues.length; i++) {
             var values = gamepadValues[i];
             if (values.toggleFloatMode) {
@@ -346,9 +341,7 @@ POOLVR.moveAvatar = ( function () {
                 if (values.turnLR) heading += -0.8 * dt * values.turnLR;
             }
         }
-
         floatUp *= floatSpeed;
-
         if (strafe || drive) {
             var len = walkSpeed * Math.min(1, 1 / Math.sqrt(drive * drive + strafe * strafe));
             strafe *= len;
@@ -434,7 +427,7 @@ POOLVR.startTutorial = function () {
 POOLVR.startAnimateLoop = function () {
     "use strict";
     var keyboard = POOLVR.keyboard,
-        app      = POOLVR.app,
+        render      = POOLVR.app.render,
         world    = POOLVR.world,
         avatar   = POOLVR.app.stage.rootObject,
         updateBallsPostStep = POOLVR.updateBallsPostStep,
@@ -457,7 +450,7 @@ POOLVR.startAnimateLoop = function () {
         var gamepadValues = YAWVRB.Gamepads.update();
         openVRTool.update(dt);
 
-        app.render();
+        render();
 
         world.step(Math.min(1/60, dt), dt, 10);
 
