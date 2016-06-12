@@ -331,8 +331,7 @@ window.onLoad = function () {
 
 POOLVR.moveAvatar = ( function () {
     "use strict";
-    var UP = THREE.Object3D.DefaultUp,
-        walkSpeed = 0.333,
+    var walkSpeed = 0.333,
         floatSpeed = 0.1;
     var euler = new THREE.Euler(0, 0, 0, 'YXZ');
     return function (keyboard, gamepadValues, dt) {
@@ -365,7 +364,7 @@ POOLVR.moveAvatar = ( function () {
             euler.y += heading;
             var cosHeading = Math.cos(euler.y),
                 sinHeading = Math.sin(euler.y);
-            avatar.quaternion.setFromAxisAngle(UP, euler.y);
+            avatar.quaternion.setFromEuler(euler);
             avatar.position.x += dt * (strafe * cosHeading + drive * sinHeading);
             avatar.position.z += dt * (drive * cosHeading - strafe * sinHeading);
             avatar.position.y += dt * floatUp;
@@ -376,7 +375,6 @@ POOLVR.moveAvatar = ( function () {
 
 POOLVR.moveToolRoot = ( function () {
     "use strict";
-    var UP = THREE.Object3D.DefaultUp;
     var euler = new THREE.Euler(0, 0, 0, 'YXZ');
     return function (keyboard, gamepadValues, dt) {
         var leapTool = POOLVR.leapTool;
@@ -404,9 +402,9 @@ POOLVR.moveToolRoot = ( function () {
         if ((toolDrive !== 0) || (toolStrafe !== 0) || (toolFloat !== 0) || (rotateToolCW !== 0)) {
             euler.setFromQuaternion(toolRoot.quaternion);
             euler.y -= 0.15 * dt * rotateToolCW;
+            toolRoot.quaternion.setFromEuler(euler);
             var cosHeading = Math.cos(euler.y),
                 sinHeading = Math.sin(euler.y);
-            toolRoot.quaternion.setFromAxisAngle(UP, euler.y);
             toolRoot.position.x += 0.16 * dt * (toolStrafe * cosHeading + toolDrive * sinHeading);
             toolRoot.position.z += 0.16 * dt * (-toolDrive * cosHeading + toolStrafe * sinHeading);
             toolRoot.position.y += 0.16 * dt * toolFloat;
