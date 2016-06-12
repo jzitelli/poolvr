@@ -48,7 +48,7 @@ window.onLoad = function () {
 
     if (POOLVR.config.useShadowMap) {
         POOLVR.app.renderer.shadowMap.enabled = true;
-        // POOLVR.app.renderer.shadowMap.type = THREE.BasicShadowMap;
+        POOLVR.app.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     }
 
     var leapIndicator = document.getElementById('leapIndicator');
@@ -153,6 +153,7 @@ window.onLoad = function () {
         centerSpotLight.castShadow = true;
         centerSpotLight.visible = POOLVR.config.useSpotLight;
         scene.add(centerSpotLight);
+        centerSpotLight.shadow.mapSize.set(1024, 1024);
         centerSpotLight.shadow.camera.matrixAutoUpdate = true;
         centerSpotLight.shadow.camera.near = 1;
         centerSpotLight.shadow.camera.far = 3;
