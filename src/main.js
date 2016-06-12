@@ -34,28 +34,41 @@ window.onLoad = function () {
     var appConfig = {
         onResetVRSensor: function () {
             POOLVR.leapTool.updateToolMapping();
+        },
+        onGotVRDisplay: function (vrDisplay) {
+            console.log('vrDisplay.displayName = ' + vrDisplay.displayName);
+            if (!/vive/i.test(vrDisplay.displayName)) {
+                POOLVR.app.stage.rootObject.position.y = 1.2;
+                POOLVR.app.stage.rootObject.updateMatrix();
+                POOLVR.app.stage.rootObject.updateMatrixWorld();
+            }
         }
     };
     POOLVR.app = new YAWVRB.App(undefined, appConfig, rendererOptions);
 
-    POOLVR.leapIndicator = document.getElementById('leapIndicator');
+    if (POOLVR.config.useShadowMap) {
+        POOLVR.app.renderer.shadowMap.enabled = true;
+        // POOLVR.app.renderer.shadowMap.type = THREE.BasicShadowMap;
+    }
+
+    var leapIndicator = document.getElementById('leapIndicator');
 
     var leapTool = YAWVRB.LeapMotion.makeTool( YAWVRB.Utils.combineObjects(POOLVR.config.toolOptions, {
         onConnect: function () {
-            POOLVR.leapIndicator.innerHTML = 'connected';
-            POOLVR.leapIndicator.style['background-color'] = 'rgba(60, 100, 20, 0.8)';
+            leapIndicator.innerHTML = 'connected';
+            leapIndicator.style['background-color'] = 'rgba(60, 100, 20, 0.8)';
         },
         onStreamingStarted: function () {
-            POOLVR.leapIndicator.innerHTML = 'connected, streaming';
-            POOLVR.leapIndicator.style['background-color'] = 'rgba(20, 160, 20, 0.8)';
+            leapIndicator.innerHTML = 'connected, streaming';
+            leapIndicator.style['background-color'] = 'rgba(20, 160, 20, 0.8)';
         },
         onStreamingStopped: function () {
-            POOLVR.leapIndicator.innerHTML = 'connected, streaming stopped';
-            POOLVR.leapIndicator.style['background-color'] = 'rgba(60, 100, 20, 0.8)';
+            leapIndicator.innerHTML = 'connected, streaming stopped';
+            leapIndicator.style['background-color'] = 'rgba(60, 100, 20, 0.8)';
         },
         onDisconnect: function () {
-            POOLVR.leapIndicator.innerHTML = 'disconnected';
-            POOLVR.leapIndicator.style['background-color'] = 'rgba(60, 20, 20, 0.4)';
+            leapIndicator.innerHTML = 'disconnected';
+            leapIndicator.style['background-color'] = 'rgba(60, 20, 20, 0.4)';
         },
         tipMaterial: POOLVR.tipMaterial
     }) );
@@ -87,10 +100,6 @@ window.onLoad = function () {
     }
 
     POOLVR.synthSpeaker = new YAWVRB.SynthSpeaker({volume: POOLVR.config.synthSpeakerVolume, rate: 0.8, pitch: 0.5});
-
-    if (POOLVR.config.useShadowMap) {
-        POOLVR.app.renderer.shadowMap.enabled = true;
-    }
 
     POOLVR.app.stage.rootObject.add(POOLVR.app.camera);
 
@@ -138,19 +147,19 @@ window.onLoad = function () {
             POOLVR.app.scene.add(POOLVR.openVRTool.shadowMesh);
         }
 
-        var centerSpotLight = new THREE.SpotLight(0xffffee, 1, 8, Math.PI / 2);
+        var centerSpotLight = new THREE.SpotLight(0xffffee, 1, 8, Math.PI / 4);
         centerSpotLight.position.set(0, 3, 0);
+        centerSpotLight.updateMatrix();
         centerSpotLight.castShadow = true;
+        centerSpotLight.visible = POOLVR.config.useSpotLight;
+        scene.add(centerSpotLight);
         centerSpotLight.shadow.camera.matrixAutoUpdate = true;
         centerSpotLight.shadow.camera.near = 1;
         centerSpotLight.shadow.camera.far = 3;
         centerSpotLight.shadow.camera.fov = 80;
-        //centerSpotLight.shadow.radius = 0.5;
-        scene.add(centerSpotLight);
-        centerSpotLight.updateMatrix();
-        centerSpotLight.updateMatrixWorld();
+        centerSpotLight.shadow.camera.updateProjectionMatrix();
+        // centerSpotLight.shadow.radius = 0.5;
         POOLVR.centerSpotLight = centerSpotLight;
-        POOLVR.centerSpotLight.visible = POOLVR.config.useSpotLight;
 
         var pointLight = new THREE.PointLight(0xaa8866, 0.8, 40);
         pointLight.position.set(4, 5, 2.5);
