@@ -37,10 +37,10 @@ window.onLoad = function () {
         },
         onGotVRDisplay: function (vrDisplay) {
             console.log('vrDisplay.displayName = ' + vrDisplay.displayName);
-            if (!/vive/i.test(vrDisplay.displayName)) {
-                POOLVR.app.stage.rootObject.position.y = 1.2;
-                POOLVR.app.stage.rootObject.updateMatrix();
-                POOLVR.app.stage.rootObject.updateMatrixWorld();
+            if (!vrDisplay.stageParameters || !vrDisplay.stageParameters.sittingToStandingTransform) {
+                POOLVR.app.stage.position.y = 1.2;
+                POOLVR.app.stage.updateMatrix();
+                POOLVR.app.stage.updateMatrixWorld();
             }
         }
     };
@@ -73,7 +73,7 @@ window.onLoad = function () {
         tipMaterial: POOLVR.tipMaterial
     }) );
     leapTool.toolMesh.renderOrder = -1;
-    POOLVR.app.stage.rootObject.add(leapTool.toolRoot);
+    POOLVR.app.stage.add(leapTool.toolRoot);
     world.addBody(leapTool.toolBody);
     leapTool.leapController.connect();
     leapTool.toolRoot.name = 'toolRoot';
@@ -86,7 +86,7 @@ window.onLoad = function () {
             var textGeomLoggerMaterial = new THREE.MeshBasicMaterial({color: 0xff3210});
             POOLVR.textGeomLogger = new YAWVRB.TextGeomUtils.TextGeomLogger(textGeomCacher,
                 {material: textGeomLoggerMaterial, nrows: 8, lineHeight: 1.8 * 0.12});
-            POOLVR.app.stage.rootObject.add(POOLVR.textGeomLogger.root);
+            POOLVR.app.stage.add(POOLVR.textGeomLogger.root);
             POOLVR.textGeomLogger.root.position.set(-2.7, 0.88, -3.3);
             POOLVR.textGeomLogger.root.updateMatrix();
         });
@@ -101,14 +101,14 @@ window.onLoad = function () {
 
     POOLVR.synthSpeaker = new YAWVRB.SynthSpeaker({volume: POOLVR.config.synthSpeakerVolume, rate: 0.8, pitch: 0.5});
 
-    POOLVR.app.stage.rootObject.add(POOLVR.app.camera);
+    POOLVR.app.stage.add(POOLVR.app.camera);
 
     var openVRTool = YAWVRB.Gamepads.makeTool(YAWVRB.Utils.combineObjects(POOLVR.config.toolOptions, {
         toolMass: 2,
         tipMaterial: POOLVR.openVRTipMaterial
     }));
     POOLVR.openVRTool = openVRTool;
-    POOLVR.app.stage.rootObject.add(openVRTool.mesh);
+    POOLVR.app.stage.add(openVRTool.mesh);
     openVRTool.mesh.visible = false;
     var gamepadA;
     function onGamepadConnected(e) {
@@ -137,7 +137,7 @@ window.onLoad = function () {
 
         POOLVR.app.scene = scene;
 
-        POOLVR.app.scene.add(POOLVR.app.stage.rootObject);
+        POOLVR.app.scene.add(POOLVR.app.stage);
 
         if (leapTool.toolShadowMesh) {
             POOLVR.app.scene.add(leapTool.toolShadowMesh);
@@ -336,7 +336,7 @@ POOLVR.moveAvatar = ( function () {
         floatSpeed = 0.1;
     var euler = new THREE.Euler(0, 0, 0, 'YXZ');
     return function (keyboard, gamepadValues, dt) {
-        var avatar = POOLVR.app.stage.rootObject;
+        var avatar = POOLVR.app.stage;
         var floatUp = keyboard.floatUp - keyboard.floatDown;
         var drive = keyboard.driveBack - keyboard.driveForward;
         var strafe = keyboard.strafeRight - keyboard.strafeLeft;
@@ -439,7 +439,7 @@ POOLVR.startAnimateLoop = function () {
     var keyboard = POOLVR.keyboard,
         render      = POOLVR.app.render,
         world    = POOLVR.world,
-        avatar   = POOLVR.app.stage.rootObject,
+        avatar   = POOLVR.app.stage,
         updateBallsPostStep = POOLVR.updateBallsPostStep,
         moveToolRoot        = POOLVR.moveToolRoot,
         moveAvatar          = POOLVR.moveAvatar,

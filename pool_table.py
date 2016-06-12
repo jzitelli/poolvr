@@ -221,6 +221,7 @@ def pool_hall(useSkybox=False,
                                                             repeat=[1, 1], wrap=[ClampToEdgeWrapping, ClampToEdgeWrapping])),
                      position=[0, 0, 0],
                      rotation=[-np.pi/2, 0, 0],
+                     receiveShadow=True,
                      userData={'cannonData': {'mass': 0,
                                               'shapes': ['Plane']}})
     scene.add(floorMesh)
@@ -299,7 +300,8 @@ def pool_hall(useSkybox=False,
                         position=[x_positions[i], y_position, z_positions[i]],
                         material=material,
                         userData=ballData,
-                        castShadow=True)
+                        castShadow=True,
+                        receiveShadow=True)
         scene.add(ballMesh)
         if i > 8:
             stripeMesh = Mesh(name="ballStripeMesh %d" % i,

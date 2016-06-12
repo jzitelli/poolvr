@@ -56,7 +56,7 @@ POOLVR.autoPosition = ( function () {
             }
         }
 
-        var avatar = POOLVR.app.stage.rootObject;
+        var avatar = POOLVR.app.stage;
         var heading = Math.atan2(
             -(POOLVR.ballMeshes[POOLVR.nextBall].position.x - POOLVR.ballMeshes[0].position.x),
             -(POOLVR.ballMeshes[POOLVR.nextBall].position.z - POOLVR.ballMeshes[0].position.z)

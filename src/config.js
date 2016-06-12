@@ -75,19 +75,16 @@ POOLVR.gamepadCommands = {
 };
 
 POOLVR.vrGamepadACommands = {
-    // toggleFloatMode: {buttons: [0]},
-    // moveLR: {axes: [YAWVRB.Gamepads.AXES.LSX]},
-    // moveFB: {axes: [YAWVRB.Gamepads.AXES.LSY], flipAxes: true},
     toolTurnLR: {axes: [YAWVRB.Gamepads.AXES.LSX]},
     toolMoveFB:  {axes: [YAWVRB.Gamepads.AXES.LSY], flipAxes: true},
     toggleToolFloatMode: {buttons: [0]},
     toggleVR: {buttons: [3], commandDown: POOLVR.commands.toggleVR},
-    autoPosition: {buttons: [2], commandDown: POOLVR.commands.autoPosition.bind(null, true)}
+    resetTable: {buttons: [2], commandDown: POOLVR.commands.resetTable}
+    //autoPosition: {buttons: [2], commandDown: POOLVR.commands.autoPosition.bind(null, true)}
 };
 
 POOLVR.vrGamepadBCommands = {
-    resetVRSensor: {buttons: [3], commandDown: POOLVR.commands.resetVRSensor},
-    resetTable: {buttons: [2], commandDown: POOLVR.commands.resetTable}
+    resetVRSensor: {buttons: [3], commandDown: POOLVR.commands.resetVRSensor}
 };
 
 
@@ -113,9 +110,6 @@ POOLVR.parseURIConfig = function () {
 
 POOLVR.saveConfig = function (profileName) {
     "use strict";
-    if (POOLVR.stage) {
-        POOLVR.config.stage = POOLVR.stage.save();
-    }
     localStorage.setItem(profileName, JSON.stringify(POOLVR.config, undefined, 2));
     console.log('saved configuration for profile "%s":', profileName);
     console.log(localStorage[profileName]);
