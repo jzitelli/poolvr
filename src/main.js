@@ -375,41 +375,27 @@ POOLVR.moveAvatar = ( function () {
 
 POOLVR.moveToolRoot = ( function () {
     "use strict";
-    var euler = new THREE.Euler(0, 0, 0, 'YXZ');
     return function (keyboard, gamepadValues, dt) {
-        var leapTool = POOLVR.leapTool;
-        var toolRoot = leapTool.toolRoot;
-        var toolDrive = 0;
-        var toolFloat = 0;
-        var toolStrafe = 0;
-        var rotateToolCW = 0;
+        var moveFB = 0, moveRL = 0, moveUD = 0, turnRL = 0;
         if (keyboard) {
-            toolDrive += keyboard.moveToolForwards - keyboard.moveToolBackwards;
-            toolFloat += keyboard.moveToolUp - keyboard.moveToolDown;
-            toolStrafe += keyboard.moveToolRight - keyboard.moveToolLeft;
-            rotateToolCW += keyboard.rotateToolCW - keyboard.rotateToolCCW;
+            moveFB += keyboard.moveToolForwards - keyboard.moveToolBackwards;
+            moveUD += keyboard.moveToolUp - keyboard.moveToolDown;
+            moveRL += keyboard.moveToolRight - keyboard.moveToolLeft;
+            turnRL += keyboard.rotateToolCW - keyboard.rotateToolCCW;
         }
         for (var i = 0; i < gamepadValues.length; i++) {
             var values = gamepadValues[i];
             if (values.toggleToolFloatMode) {
-                if (values.toolMoveFB) toolFloat -= values.toolMoveFB;
-                if (values.toolTurnLR) toolStrafe += values.toolTurnLR;
+                if (values.toolMoveFB) moveUD -= values.toolMoveFB;
+                if (values.toolTurnLR) moveRL += values.toolTurnLR;
             } else {
-                if (values.toolMoveFB) toolDrive -= values.toolMoveFB;
-                if (values.toolTurnLR) rotateToolCW += values.toolTurnLR;
+                if (values.toolMoveFB) moveFB -= values.toolMoveFB;
+                if (values.toolTurnLR) turnRL += values.toolTurnLR;
             }
         }
-        if ((toolDrive !== 0) || (toolStrafe !== 0) || (toolFloat !== 0) || (rotateToolCW !== 0)) {
-            euler.setFromQuaternion(toolRoot.quaternion);
-            euler.y -= 0.15 * dt * rotateToolCW;
-            toolRoot.quaternion.setFromEuler(euler);
-            var cosHeading = Math.cos(euler.y),
-                sinHeading = Math.sin(euler.y);
-            toolRoot.position.x += 0.16 * dt * (toolStrafe * cosHeading + toolDrive * sinHeading);
-            toolRoot.position.z += 0.16 * dt * (-toolDrive * cosHeading + toolStrafe * sinHeading);
-            toolRoot.position.y += 0.16 * dt * toolFloat;
-            toolRoot.updateMatrix();
-            leapTool.setDeadtime(0);
+        if (moveFB || moveRL || moveUD || turnRL) {
+            YAWVRB.Utils.moveObject(POOLVR.leapTool.toolRoot, dt, moveFB, moveRL, moveUD, turnRL, 0);
+            POOLVR.leapTool.setDeadtime(0);
         }
     };
 } )();
@@ -435,12 +421,12 @@ POOLVR.startTutorial = function () {
 POOLVR.startAnimateLoop = function () {
     "use strict";
     var keyboard = POOLVR.keyboard,
-        render      = POOLVR.app.render,
-        world    = POOLVR.world,
-        avatar   = POOLVR.app.stage,
+        render = POOLVR.app.render,
+        world = POOLVR.world,
+        avatar = POOLVR.app.stage,
         updateBallsPostStep = POOLVR.updateBallsPostStep,
-        moveToolRoot        = POOLVR.moveToolRoot,
-        moveAvatar          = POOLVR.moveAvatar,
+        moveToolRoot = POOLVR.moveToolRoot,
+        moveAvatar = POOLVR.moveAvatar,
         textGeomLogger = POOLVR.textGeomLogger,
         leapTool = POOLVR.leapTool,
         openVRTool = POOLVR.openVRTool;
