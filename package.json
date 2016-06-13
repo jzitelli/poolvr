@@ -1,7 +1,7 @@
 {
   "name": "poolvr",
   "description": "Play pool / billiards in WebVR!",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "author": "Jeffrey Zitelli (https://github.com/jzitelli)",
   "license": "MIT",
   "homepage": "https://jzitelli.github.io/poolvr",
@@ -39,8 +39,7 @@
     "Google Cardboard",
     "Oculus Rift",
     "HTC Vive",
-    "webvr-polyfill",
-    "webvr-samples"
+    "webvr-polyfill"
   ],
   "dependencies": {
     "cannon": "git://github.com/jzitelli/cannon.js.git",
@@ -62,7 +61,7 @@
     "build": "npm run lint && mkdirp build && browserify src/main.js -o build/poolvr.js && echo wrote build/poolvr.js && cat build/poolvr.js | uglifyjs -c > build/poolvr.min.js && echo wrote build/poolvr.min.js",
     "start": "npm run build && python poolvr.py",
     "watch": "npm run build && watchify src/main.js -o build/poolvr.js",
-    "dist": "npm run build && mkdirp dist/build && python gen_html.py && cp build/poolvr.min.js dist/build/poolvr.min.js && cp favicon.ico dist/favicon.ico && cp poolvr.css dist/poolvr.css && cp -r fonts dist && cp -r images dist && cp -r sounds dist && mkdirp dist/node_modules && cp -r node_modules/cannon dist/node_modules && cp -r node_modules/three.js dist/node_modules && cp -r node_modules/three.py dist/node_modules && cp -r node_modules/leapjs dist/node_modules && cp -r node_modules/yawvrb dist/node_modules && cp -r node_modules/webvr-polyfill dist/node_modules",
+    "dist": "npm run build && python gen_html.py",
     "ghpages": "node ./node_scripts/gh-pages.js"
   }
 }

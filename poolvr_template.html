@@ -3,10 +3,10 @@
   <head>
     <meta charset="utf-8">
 
-    <meta name="viewport" content="width=device-width, shrink-to-fit=no">
+    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
     <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
     <link rel="shortcut icon" href="favicon.ico">
 
@@ -29,14 +29,16 @@
           <h1>poolvr</h1>
           {{ version_content if version_content else '' }}
         </td>
+<!--
         <td>
           <div class="panel" style="background-color: rgba(90, 100, 90, 0.6)">
             <h3>Controls:</h3>
-            <!-- <img src="images/keyboardControls.png" width=210> -->
+            <img src="images/keyboardControls.png" width=210>
             <img src="images/xboxControls.png" width=300>
             <img src="images/viveControls.png" width=300>
           </div>
         </td>
+ -->
       </tr></table>
 
       <h2>
@@ -81,47 +83,26 @@
 
     </div>
 
+    <script src="node_modules/three.js/build/three.min.js"></script>
+    <script src="node_modules/three.js/examples/js/effects/VREffect.js"></script>
+    <script src="node_modules/three.js/examples/js/controls/VRControls.js"></script>
+    <script src="node_modules/three.js/examples/js/objects/ShadowMesh.js"></script>
+
+    <script src="node_modules/leapjs/leap-0.6.4.min.js"></script>
+
+    <script src="node_modules/webvr-polyfill/build/webvr-polyfill.js"></script>
+
+    <script src="node_modules/cannon/build/cannon.min.js"></script>
+
+    <script src="node_modules/yawvrb/build/yawvrb.js"></script>
+
+    <script src="node_modules/three.py/js/three.py.js"></script>
+    <script src="node_modules/three.py/js/CANNONize.js"></script>
 
 {% if config['DEBUG'] %}
-
-    <script src="node_modules/three.js/build/three.min.js"></script>
-    <script src="node_modules/three.js/examples/js/effects/VREffect.js"></script>
-    <script src="node_modules/three.js/examples/js/controls/VRControls.js"></script>
-    <script src="node_modules/three.js/examples/js/objects/ShadowMesh.js"></script>
-
-    <script src="node_modules/leapjs/leap-0.6.4.min.js"></script>
-
-    <script src="node_modules/webvr-polyfill/build/webvr-polyfill.js"></script>
-
-    <script src="node_modules/cannon/build/cannon.min.js"></script>
-
-    <script src="node_modules/yawvrb/build/yawvrb.js"></script>
-
-    <script src="node_modules/three.py/js/three.py.js"></script>
-    <script src="node_modules/three.py/js/CANNONize.js"></script>
-
     <script src="build/poolvr.js"></script>
-
 {% else %}
-
-    <script src="node_modules/three.js/build/three.min.js"></script>
-    <script src="node_modules/three.js/examples/js/effects/VREffect.js"></script>
-    <script src="node_modules/three.js/examples/js/controls/VRControls.js"></script>
-    <script src="node_modules/three.js/examples/js/objects/ShadowMesh.js"></script>
-
-    <script src="node_modules/leapjs/leap-0.6.4.min.js"></script>
-
-    <script src="node_modules/webvr-polyfill/build/webvr-polyfill.js"></script>
-
-    <script src="node_modules/cannon/build/cannon.min.js"></script>
-
-    <script src="node_modules/yawvrb/build/yawvrb.js"></script>
-
-    <script src="node_modules/three.py/js/three.py.js"></script>
-    <script src="node_modules/three.py/js/CANNONize.js"></script>
-
     <script src="build/poolvr.min.js"></script>
-
 {% endif %}
 
   </body>
