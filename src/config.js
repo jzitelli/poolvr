@@ -55,8 +55,6 @@ POOLVR.keyboard = new YAWVRB.Keyboard(window, POOLVR.keyboardCommands);
 POOLVR.gamepadCommands = {
     turnLR: {axes: [YAWVRB.Gamepads.AXES.LSX]},
     moveFB: {axes: [YAWVRB.Gamepads.AXES.LSY]},
-    moveLR: {axes: [YAWVRB.Gamepads.AXES.RSX]},
-    turnUD: {axes: [YAWVRB.Gamepads.AXES.RSY]},
     toggleFloatMode: {buttons: [YAWVRB.Gamepads.BUTTONS.leftStick]},
     toolTurnLR: {axes: [YAWVRB.Gamepads.AXES.RSX]},
     toolMoveFB:  {axes: [YAWVRB.Gamepads.AXES.RSY]},
@@ -71,7 +69,7 @@ POOLVR.gamepadCommands = {
              commandDown: POOLVR.commands.stroke},
     autoPosition: {buttons: [YAWVRB.Gamepads.BUTTONS.Y],
                    commandDown: POOLVR.commands.autoPosition},
-    toggleMenu: {buttons: [YAWVRB.Gamepads.BUTTONS.start], commandDown: POOLVR.commands.toggleMenu}
+    toggleVR: {buttons: [YAWVRB.Gamepads.BUTTONS.start], commandDown: POOLVR.commands.toggleVR}
 };
 
 POOLVR.vrGamepadACommands = {

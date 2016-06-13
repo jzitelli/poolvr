@@ -221,7 +221,6 @@ def pool_hall(useSkybox=False,
                                                             repeat=[1, 1], wrap=[ClampToEdgeWrapping, ClampToEdgeWrapping])),
                      position=[0, 0, 0],
                      rotation=[-np.pi/2, 0, 0],
-                     receiveShadow=True,
                      userData={'cannonData': {'mass': 0,
                                               'shapes': ['Plane']}})
     scene.add(floorMesh)

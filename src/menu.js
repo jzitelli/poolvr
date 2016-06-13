@@ -42,12 +42,12 @@ POOLVR.setupMenu = function () {
 
     useBasicMaterialsInput.addEventListener('change', function () {
         POOLVR.config.useBasicMaterials = useBasicMaterialsInput.checked;
-        POOLVR.saveConfig(POOLVR.profile);
         if (!POOLVR.config.useBasicMaterials && !(POOLVR.config.useSpotLight || POOLVR.config.usePointLight)) {
             useSpotLightInput.checked = true;
             POOLVR.config.useSpotLight = true;
             POOLVR.centerSpotLight.visible = true;
         }
+        POOLVR.saveConfig(POOLVR.profile);
         POOLVR.switchMaterials(POOLVR.config.useBasicMaterials);
     }, false);
 
@@ -78,6 +78,7 @@ POOLVR.setupMenu = function () {
     function onLeapAddressChange() {
         var host = leapAddressInput.value;
         POOLVR.config.toolOptions.host = host;
+        POOLVR.saveConfig(POOLVR.profile);
         POOLVR.leapTool.leapController.connection.host = host;
         POOLVR.leapTool.leapController.connection.disconnect(true);
         POOLVR.leapTool.leapController.connect();
