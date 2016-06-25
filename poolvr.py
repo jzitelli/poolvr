@@ -57,14 +57,17 @@ POOLVR = {
         'H_table'            : 0.74295,
         'ball_diameter'      : 2.25 * pool_table.INCH2METER,
         'H_ceiling'          : 8 * 12 * 0.0254,
-        'synthSpeakerVolume' : 0.4,
+        'synthSpeakerVolume' : 0.5,
         'toolOptions': {
-            'tipShape'  : 'Cylinder',
-            'toolRadius': 0.010,
-            'tipRadius' : 0.010,
-            'toolLength': 0.37,
-            'tipLength' : 0.37,
-            'interactionPlaneOpacity': 0.22
+            'tipShape'               : 'Cylinder',
+            'numSegments'            : 8,
+            'toolRadius'             : 0.0115,
+            'tipRadius'              : 0.0115,
+            'toolLength'             : 0.37,
+            'tipLength'              : 0.37,
+            'offset'                 : [0, 0, 0.37 / 2],
+            'interactionPlaneOpacity': 0.22,
+            'useImplicitCylinder'    : False
         }
     }
 }
