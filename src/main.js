@@ -55,6 +55,7 @@ window.onLoad = function () {
         onStreamingStarted: function () {
             leapIndicator.innerHTML = 'connected, streaming';
             leapIndicator.style['background-color'] = 'rgba(20, 160, 20, 0.8)';
+            POOLVR.leapTool.toolRoot.visible = true;
         },
         onStreamingStopped: function () {
             leapIndicator.innerHTML = 'connected, streaming stopped';
@@ -63,14 +64,15 @@ window.onLoad = function () {
         onDisconnect: function () {
             leapIndicator.innerHTML = 'disconnected';
             leapIndicator.style['background-color'] = 'rgba(60, 20, 20, 0.4)';
+            POOLVR.leapTool.toolRoot.visible = false;
         },
         tipMaterial: POOLVR.tipMaterial
     }) );
     leapTool.toolMesh.renderOrder = -1;
     POOLVR.app.stage.add(leapTool.toolRoot);
+    leapTool.toolRoot.visible = false;
     world.addBody(leapTool.toolBody);
     leapTool.leapController.connect();
-    leapTool.toolRoot.name = 'toolRoot';
     POOLVR.leapTool = leapTool;
 
     window.addEventListener("beforeunload", function () {
