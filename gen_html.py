@@ -45,9 +45,7 @@ var THREEPY_SCENE = %s;
     shutil.copytree('fonts', os.path.join(OUTPUT_DIR, 'fonts'))
     shutil.copytree('images', os.path.join(OUTPUT_DIR, 'images'))
     shutil.copytree('sounds', os.path.join(OUTPUT_DIR, 'sounds'))
-    # copy dependencies:
-    # os.mkdirs(os.path.join(OUTPUT_DIR, 'node_modules', 'cannon', 'build'))
-    # shutil.copy(os.path.join('node_modules', 'cannon', 'build', 'cannon.min.js'), os.path.join(OUTPUT_DIR, 'node_modules', 'cannon', 'build'))
+    # copy npm dependencies:
     shutil.copytree(os.path.join('node_modules', 'cannon', 'build'), os.path.join(OUTPUT_DIR, 'node_modules', 'cannon', 'build'))
     os.makedirs(os.path.join(OUTPUT_DIR, 'node_modules', 'leapjs'))
     shutil.copy(os.path.join('node_modules', 'leapjs', 'leap-0.6.4.min.js'), os.path.join(OUTPUT_DIR, 'node_modules', 'leapjs'))
