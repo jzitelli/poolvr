@@ -60,6 +60,7 @@ window.onLoad = function () {
         onStreamingStopped: function () {
             leapIndicator.innerHTML = 'connected, streaming stopped';
             leapIndicator.style['background-color'] = 'rgba(60, 100, 20, 0.8)';
+            POOLVR.leapTool.toolRoot.visible = false;
         },
         onDisconnect: function () {
             leapIndicator.innerHTML = 'disconnected';
@@ -184,7 +185,6 @@ window.onLoad = function () {
                     var rotation = (new THREE.Matrix4()).makeRotationY(Math.PI / 2);
                     POOLVR.app.scene.children.forEach( function (child) {
                         if (child !== POOLVR.app.stage) {
-                            console.log(child);
                             child.matrix.multiplyMatrices(rotation, child.matrix);
                             child.matrix.decompose(child.position, child.quaternion, child.scale);
                             child.updateMatrixWorld(true);

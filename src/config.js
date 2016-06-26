@@ -108,7 +108,7 @@ POOLVR.parseURIConfig = function () {
 
 POOLVR.saveConfig = function (profileName) {
     "use strict";
-    localStorage.setItem(profileName, JSON.stringify(POOLVR.config, undefined, 2));
+    localStorage.setItem('POOLVR' + POOLVR.version + '_' + profileName, JSON.stringify(POOLVR.config, undefined, 2));
     console.log('saved configuration for profile "%s":', profileName);
     console.log(localStorage[profileName]);
 };
@@ -116,7 +116,7 @@ POOLVR.saveConfig = function (profileName) {
 
 POOLVR.loadConfig = function (profileName) {
     "use strict";
-    var localStorageConfig = localStorage.getItem(profileName);
+    var localStorageConfig = localStorage.getItem('POOLVR' + POOLVR.version + '_' + profileName);
     var config;
     if (localStorageConfig) {
         config = {};
@@ -140,7 +140,7 @@ POOLVR.loadConfig = function (profileName) {
     world.defaultContactMaterial.contactEquationRelaxation  = 2;
     world.defaultContactMaterial.frictionEquationRelaxation = 3;
     //world.broadphase = new CANNON.SAPBroadphase( world );
-    world.solver.iterations = 10;
+    world.solver.iterations = 15;
     POOLVR.world = world;
 
     POOLVR.ballMaterial            = new CANNON.Material();
@@ -151,7 +151,7 @@ POOLVR.loadConfig = function (profileName) {
     POOLVR.playableSurfaceMaterial            = new CANNON.Material();
     POOLVR.ballPlayableSurfaceContactMaterial = new CANNON.ContactMaterial(POOLVR.ballMaterial, POOLVR.playableSurfaceMaterial, {
         restitution: 0.24,
-        friction: 0.21,
+        friction: 0.16,
         contactEquationStiffness: 7e8
     });
     POOLVR.cushionMaterial            = new CANNON.Material();
@@ -178,12 +178,12 @@ POOLVR.loadConfig = function (profileName) {
     });
     POOLVR.openVRTipMaterial            = new CANNON.Material();
     POOLVR.openVRTipBallContactMaterial = new CANNON.ContactMaterial(POOLVR.openVRTipMaterial, POOLVR.ballMaterial, {
-        restitution: 0.95,
+        restitution: 0.96,
         friction: 0.15,
-        contactEquationRelaxation: 0.1,
-        frictionEquationRelaxation: 0.1,
-        contactEquationStiffness: 1e9,
-        frictionEquationStiffness: 1e8
+        contactEquationRelaxation: 1,
+        frictionEquationRelaxation: 1,
+        contactEquationStiffness: 4e8
+        //frictionEquationStiffness: 1e7
     });
 
     world.addMaterial(POOLVR.playableSurfaceMaterial);

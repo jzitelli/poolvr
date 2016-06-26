@@ -93,6 +93,7 @@ def get_poolvr_config():
     config.update(args)
     return config
 
+
 def get_webvr_config():
     """
     Constructs WebVRConfig dict based on request url parameters.
@@ -130,7 +131,8 @@ var POOLVR = %s;
 
 var THREEPY_SCENE = %s;
 </script>""" % (json.dumps(webvr_config, indent=2),
-                json.dumps({'config': poolvr_config}, indent=2),
+                json.dumps({'version': POOLVR['version'],
+                            'config': poolvr_config}, indent=2),
                 json.dumps(pool_table.pool_hall(**poolvr_config).export()))),
                            version_content=Markup(r"""
 <h3>v{2}</h3>
