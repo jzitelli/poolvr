@@ -206,7 +206,7 @@ POOLVR.parseURIConfig = function () {
 
 POOLVR.saveConfig = function (profileName) {
     "use strict";
-    localStorage.setItem(profileName, JSON.stringify(POOLVR.config, undefined, 2));
+    localStorage.setItem('POOLVR' + POOLVR.version + '_' + profileName, JSON.stringify(POOLVR.config, undefined, 2));
     console.log('saved configuration for profile "%s":', profileName);
     console.log(localStorage[profileName]);
 };
@@ -214,7 +214,7 @@ POOLVR.saveConfig = function (profileName) {
 
 POOLVR.loadConfig = function (profileName) {
     "use strict";
-    var localStorageConfig = localStorage.getItem(profileName);
+    var localStorageConfig = localStorage.getItem('POOLVR' + POOLVR.version + '_' + profileName);
     var config;
     if (localStorageConfig) {
         config = {};
@@ -238,7 +238,7 @@ POOLVR.loadConfig = function (profileName) {
     world.defaultContactMaterial.contactEquationRelaxation  = 2;
     world.defaultContactMaterial.frictionEquationRelaxation = 3;
     //world.broadphase = new CANNON.SAPBroadphase( world );
-    world.solver.iterations = 10;
+    world.solver.iterations = 15;
     POOLVR.world = world;
 
     POOLVR.ballMaterial            = new CANNON.Material();
@@ -249,7 +249,7 @@ POOLVR.loadConfig = function (profileName) {
     POOLVR.playableSurfaceMaterial            = new CANNON.Material();
     POOLVR.ballPlayableSurfaceContactMaterial = new CANNON.ContactMaterial(POOLVR.ballMaterial, POOLVR.playableSurfaceMaterial, {
         restitution: 0.24,
-        friction: 0.21,
+        friction: 0.16,
         contactEquationStiffness: 7e8
     });
     POOLVR.cushionMaterial            = new CANNON.Material();
@@ -276,12 +276,12 @@ POOLVR.loadConfig = function (profileName) {
     });
     POOLVR.openVRTipMaterial            = new CANNON.Material();
     POOLVR.openVRTipBallContactMaterial = new CANNON.ContactMaterial(POOLVR.openVRTipMaterial, POOLVR.ballMaterial, {
-        restitution: 0.95,
+        restitution: 0.96,
         friction: 0.15,
-        contactEquationRelaxation: 0.1,
-        frictionEquationRelaxation: 0.1,
-        contactEquationStiffness: 1e9,
-        frictionEquationStiffness: 1e8
+        contactEquationRelaxation: 1,
+        frictionEquationRelaxation: 1,
+        contactEquationStiffness: 4e8
+        //frictionEquationStiffness: 1e7
     });
 
     world.addMaterial(POOLVR.playableSurfaceMaterial);
@@ -363,22 +363,25 @@ window.onLoad = function () {
         onStreamingStarted: function () {
             leapIndicator.innerHTML = 'connected, streaming';
             leapIndicator.style['background-color'] = 'rgba(20, 160, 20, 0.8)';
+            POOLVR.leapTool.toolRoot.visible = true;
         },
         onStreamingStopped: function () {
             leapIndicator.innerHTML = 'connected, streaming stopped';
             leapIndicator.style['background-color'] = 'rgba(60, 100, 20, 0.8)';
+            POOLVR.leapTool.toolRoot.visible = false;
         },
         onDisconnect: function () {
             leapIndicator.innerHTML = 'disconnected';
             leapIndicator.style['background-color'] = 'rgba(60, 20, 20, 0.4)';
+            POOLVR.leapTool.toolRoot.visible = false;
         },
         tipMaterial: POOLVR.tipMaterial
     }) );
     leapTool.toolMesh.renderOrder = -1;
     POOLVR.app.stage.add(leapTool.toolRoot);
+    leapTool.toolRoot.visible = false;
     world.addBody(leapTool.toolBody);
     leapTool.leapController.connect();
-    leapTool.toolRoot.name = 'toolRoot';
     POOLVR.leapTool = leapTool;
 
     window.addEventListener("beforeunload", function () {
@@ -490,7 +493,6 @@ window.onLoad = function () {
                     var rotation = (new THREE.Matrix4()).makeRotationY(Math.PI / 2);
                     POOLVR.app.scene.children.forEach( function (child) {
                         if (child !== POOLVR.app.stage) {
-                            console.log(child);
                             child.matrix.multiplyMatrices(rotation, child.matrix);
                             child.matrix.decompose(child.position, child.quaternion, child.scale);
                             child.updateMatrixWorld(true);

@@ -1,4 +1,4 @@
-// Thu, 04 Feb 2016 13:00:01 GMT
+// Sat, 25 Jun 2016 16:05:19 GMT
 
 /*
  * Copyright (c) 2015 cannon.js Authors
@@ -95,6 +95,7 @@ module.exports = {
     GridBroadphase :                _dereq_('./collision/GridBroadphase'),
     Heightfield :                   _dereq_('./shapes/Heightfield'),
     HingeConstraint :               _dereq_('./constraints/HingeConstraint'),
+    ImplicitCylinder :              _dereq_('./shapes/ImplicitCylinder'),
     LockConstraint :                _dereq_('./constraints/LockConstraint'),
     Mat3 :                          _dereq_('./math/Mat3'),
     Material :                      _dereq_('./material/Material'),
@@ -125,7 +126,7 @@ module.exports = {
     World :                         _dereq_('./world/World'),
 };
 
-},{"../package.json":1,"./collision/AABB":3,"./collision/ArrayCollisionMatrix":4,"./collision/Broadphase":5,"./collision/GridBroadphase":6,"./collision/NaiveBroadphase":7,"./collision/ObjectCollisionMatrix":8,"./collision/Ray":10,"./collision/RaycastResult":11,"./collision/SAPBroadphase":12,"./constraints/ConeTwistConstraint":13,"./constraints/Constraint":14,"./constraints/DistanceConstraint":15,"./constraints/HingeConstraint":16,"./constraints/LockConstraint":17,"./constraints/PointToPointConstraint":18,"./equations/ContactEquation":20,"./equations/Equation":21,"./equations/FrictionEquation":22,"./equations/RotationalEquation":23,"./equations/RotationalMotorEquation":24,"./material/ContactMaterial":25,"./material/Material":26,"./math/Mat3":28,"./math/Quaternion":29,"./math/Transform":30,"./math/Vec3":31,"./objects/Body":32,"./objects/RaycastVehicle":33,"./objects/RigidVehicle":34,"./objects/SPHSystem":35,"./objects/Spring":36,"./shapes/Box":38,"./shapes/ConvexPolyhedron":39,"./shapes/Cylinder":40,"./shapes/Ellipsoid":41,"./shapes/Heightfield":42,"./shapes/Particle":43,"./shapes/Plane":44,"./shapes/Shape":45,"./shapes/Sphere":46,"./shapes/Trimesh":47,"./solver/GSSolver":48,"./solver/Solver":49,"./solver/SplitSolver":50,"./utils/EventTarget":51,"./utils/Pool":53,"./utils/Vec3Pool":56,"./world/Narrowphase":57,"./world/World":58}],3:[function(_dereq_,module,exports){
+},{"../package.json":1,"./collision/AABB":3,"./collision/ArrayCollisionMatrix":4,"./collision/Broadphase":5,"./collision/GridBroadphase":6,"./collision/NaiveBroadphase":7,"./collision/ObjectCollisionMatrix":8,"./collision/Ray":10,"./collision/RaycastResult":11,"./collision/SAPBroadphase":12,"./constraints/ConeTwistConstraint":13,"./constraints/Constraint":14,"./constraints/DistanceConstraint":15,"./constraints/HingeConstraint":16,"./constraints/LockConstraint":17,"./constraints/PointToPointConstraint":18,"./equations/ContactEquation":20,"./equations/Equation":21,"./equations/FrictionEquation":22,"./equations/RotationalEquation":23,"./equations/RotationalMotorEquation":24,"./material/ContactMaterial":25,"./material/Material":26,"./math/Mat3":28,"./math/Quaternion":29,"./math/Transform":30,"./math/Vec3":31,"./objects/Body":32,"./objects/RaycastVehicle":33,"./objects/RigidVehicle":34,"./objects/SPHSystem":35,"./objects/Spring":36,"./shapes/Box":38,"./shapes/ConvexPolyhedron":39,"./shapes/Cylinder":40,"./shapes/Ellipsoid":41,"./shapes/Heightfield":42,"./shapes/ImplicitCylinder":43,"./shapes/Particle":44,"./shapes/Plane":45,"./shapes/Shape":46,"./shapes/Sphere":47,"./shapes/Trimesh":48,"./solver/GSSolver":49,"./solver/Solver":50,"./solver/SplitSolver":51,"./utils/EventTarget":52,"./utils/Pool":54,"./utils/Vec3Pool":57,"./world/Narrowphase":58,"./world/World":59}],3:[function(_dereq_,module,exports){
 var Vec3 = _dereq_('../math/Vec3');
 var Utils = _dereq_('../utils/Utils');
 
@@ -448,7 +449,7 @@ AABB.prototype.overlapsRay = function(ray){
 
     return true;
 };
-},{"../math/Vec3":31,"../utils/Utils":55}],4:[function(_dereq_,module,exports){
+},{"../math/Vec3":31,"../utils/Utils":56}],4:[function(_dereq_,module,exports){
 module.exports = ArrayCollisionMatrix;
 
 /**
@@ -729,7 +730,7 @@ Broadphase.prototype.aabbQuery = function(world, aabb, result){
     console.warn('.aabbQuery is not implemented in this Broadphase subclass.');
     return [];
 };
-},{"../math/Quaternion":29,"../math/Vec3":31,"../objects/Body":32,"../shapes/Plane":44,"../shapes/Shape":45}],6:[function(_dereq_,module,exports){
+},{"../math/Quaternion":29,"../math/Vec3":31,"../objects/Body":32,"../shapes/Plane":45,"../shapes/Shape":46}],6:[function(_dereq_,module,exports){
 module.exports = GridBroadphase;
 
 var Broadphase = _dereq_('./Broadphase');
@@ -959,7 +960,7 @@ GridBroadphase.prototype.collisionPairs = function(world,pairs1,pairs2){
     this.makePairsUnique(pairs1,pairs2);
 };
 
-},{"../math/Vec3":31,"../shapes/Shape":45,"./Broadphase":5}],7:[function(_dereq_,module,exports){
+},{"../math/Vec3":31,"../shapes/Shape":46,"./Broadphase":5}],7:[function(_dereq_,module,exports){
 module.exports = NaiveBroadphase;
 
 var Broadphase = _dereq_('./Broadphase');
@@ -1209,8 +1210,6 @@ module.exports = Ray;
 var Vec3 = _dereq_('../math/Vec3');
 var Quaternion = _dereq_('../math/Quaternion');
 var Transform = _dereq_('../math/Transform');
-var ConvexPolyhedron = _dereq_('../shapes/ConvexPolyhedron');
-var Box = _dereq_('../shapes/Box');
 var RaycastResult = _dereq_('../collision/RaycastResult');
 var Shape = _dereq_('../shapes/Shape');
 var AABB = _dereq_('../collision/AABB');
@@ -1660,28 +1659,22 @@ Ray.prototype.intersectSphere = function(shape, quat, position, body, reportedSh
 
     } else if(delta === 0){
         // single intersection point
-        from.lerp(to, delta, intersectionPoint);
-
+        from.lerp(to, -b / (2 * a), intersectionPoint);
         intersectionPoint.vsub(position, normal);
         normal.normalize();
-
         this.reportIntersection(normal, intersectionPoint, reportedShape, body, -1);
-
     } else {
         var d1 = (- b - Math.sqrt(delta)) / (2 * a);
         var d2 = (- b + Math.sqrt(delta)) / (2 * a);
-
         if(d1 >= 0 && d1 <= 1){
             from.lerp(to, d1, intersectionPoint);
             intersectionPoint.vsub(position, normal);
             normal.normalize();
             this.reportIntersection(normal, intersectionPoint, reportedShape, body, -1);
         }
-
         if(this.result._shouldStop){
             return;
         }
-
         if(d2 >= 0 && d2 <= 1){
             from.lerp(to, d2, intersectionPoint);
             intersectionPoint.vsub(position, normal);
@@ -1935,11 +1928,8 @@ Ray.prototype.intersectTrimesh = function intersectTrimesh(
 };
 Ray.prototype[Shape.types.TRIMESH] = Ray.prototype.intersectTrimesh;
 
-
 var Ray_intersectEllipsoid_intersectionPoint = new Vec3();
 var Ray_intersectEllipsoid_normal = new Vec3();
-var Ray_intersectEllipsoid_rotabc = new Vec3();
-
 /**
  * @method intersectEllipsoid
  * @private
@@ -1949,15 +1939,14 @@ var Ray_intersectEllipsoid_rotabc = new Vec3();
  * @param  {Body} body
  */
 Ray.prototype.intersectEllipsoid = function(shape, quat, position, body, reportedShape){
-    var from = this.from,
-        to = this.to;
-
-    // something wrong..
-    Ray_intersectEllipsoid_rotabc.set(shape.a, shape.b, shape.c);
-    quat.vmult(Ray_intersectEllipsoid_rotabc, Ray_intersectEllipsoid_rotabc);
-    var a = Ray_intersectEllipsoid_rotabc.x,
-        b = Ray_intersectEllipsoid_rotabc.y,
-        c = Ray_intersectEllipsoid_rotabc.z;
+    var invQuat = quat.inverse();
+    var from = this.from.vsub(position);
+    invQuat.vmult(from, from);
+    var to = this.to.vsub(position);
+    invQuat.vmult(to, to);
+    var a = shape.a,
+        b = shape.b,
+        c = shape.c;
     var aa = a*a,
         bb = b*b,
         cc = c*c;
@@ -1967,60 +1956,197 @@ Ray.prototype.intersectEllipsoid = function(shape, quat, position, body, reporte
     var xcr = from.x - position.x,
         ycr = from.y - position.y,
         zcr = from.z - position.z;
-
     var A = bb*cc*xr*xr + aa*cc*yr*yr + aa*bb*zr*zr;
     var B = 2 * ( bb*cc*xr*xcr + aa*cc*yr*ycr + aa*bb*zr*zcr );
     var C = xcr*xcr + ycr*ycr + zcr*zcr - aa*bb*cc;
     var delta = B*B - 4*A*C;
-
     var intersectionPoint = Ray_intersectEllipsoid_intersectionPoint;
     var normal = Ray_intersectEllipsoid_normal;
-
-    if(delta < 0){
+    if (delta < 0) {
         // No intersection
-        console.log("no intersection point on ellipsoid!!!");
-
-        return;
-
-    } else if(delta === 0){
-        // single intersection point
-        console.log("single intersection point on ellipsoid!!!");
-
+    } else if (delta === 0) {
         from.lerp(to, -B / (2*A), intersectionPoint);
-        intersectionPoint.vsub(position, normal);
+        normal.copy(intersectionPoint);
         normal.x /= a;
         normal.y /= b;
         normal.z /= c;
+        quat.vmult(normal, normal);
         normal.normalize();
-
+        quat.vmult(intersectionPoint, intersectionPoint);
+        intersectionPoint.vadd(position, intersectionPoint);
         this.reportIntersection(normal, intersectionPoint, reportedShape, body, -1);
-
     } else {
-        console.log("double intersection point on ellipsoid!!!");
-
         var d1 = (- B - Math.sqrt(delta)) / (2 * A);
         var d2 = (- B + Math.sqrt(delta)) / (2 * A);
-
-        if(d1 >= 0 && d1 <= 1){
-            from.lerp(to, d1, intersectionPoint);
-            intersectionPoint.vsub(position, normal);
+        var isValid1 = (d1 >= 0 && d1 <= 1);
+        var isValid2 = (d2 >= 0 && d2 <= 1);
+        if (isValid1 && isValid2) {
+            from.lerp(to, Math.min(d1, d2), intersectionPoint);
+            normal.copy(intersectionPoint);
+            normal.x /= a;
+            normal.y /= b;
+            normal.z /= c;
+            quat.vmult(normal, normal);
             normal.normalize();
+            quat.vmult(intersectionPoint, intersectionPoint);
+            intersectionPoint.vadd(position, intersectionPoint);
             this.reportIntersection(normal, intersectionPoint, reportedShape, body, -1);
-        }
-
-        if(this.result._shouldStop){
-            return;
-        }
-
-        if(d2 >= 0 && d2 <= 1){
-            from.lerp(to, d2, intersectionPoint);
-            intersectionPoint.vsub(position, normal);
+            if(this.result._shouldStop){
+                return;
+            }
+            from.lerp(to, Math.max(d1, d2), intersectionPoint);
+            normal.copy(intersectionPoint);
+            normal.x /= a;
+            normal.y /= b;
+            normal.z /= c;
+            quat.vmult(normal, normal);
             normal.normalize();
+            quat.vmult(intersectionPoint, intersectionPoint);
+            intersectionPoint.vadd(position, intersectionPoint);
+            this.reportIntersection(normal, intersectionPoint, reportedShape, body, -1);
+        } else if (isValid1) {
+            from.lerp(to, d1, intersectionPoint);
+            normal.copy(intersectionPoint);
+            normal.x /= a;
+            normal.y /= b;
+            normal.z /= c;
+            quat.vmult(normal, normal);
+            normal.normalize();
+            quat.vmult(intersectionPoint, intersectionPoint);
+            intersectionPoint.vadd(position, intersectionPoint);
+            this.reportIntersection(normal, intersectionPoint, reportedShape, body, -1);
+        } else if (isValid2) {
+            from.lerp(to, d2, intersectionPoint);
+            normal.copy(intersectionPoint);
+            normal.x /= a;
+            normal.y /= b;
+            normal.z /= c;
+            quat.vmult(normal, normal);
+            normal.normalize();
+            quat.vmult(intersectionPoint, intersectionPoint);
+            intersectionPoint.vadd(position, intersectionPoint);
             this.reportIntersection(normal, intersectionPoint, reportedShape, body, -1);
         }
     }
 };
 Ray.prototype[Shape.types.ELLIPSOID] = Ray.prototype.intersectEllipsoid;
+
+
+
+var temp = new Vec3();
+var normal = new Vec3();
+var point = new Vec3();
+/**
+ * @method intersectImplicitCylinder
+ * @private
+ * @param  {Shape} shape
+ * @param  {Quaternion} quat
+ * @param  {Vec3} position
+ * @param  {Body} body
+ */
+Ray.prototype.intersectImplicitCylinder = function (shape, quat, position, body, reportedShape) {
+    var from = this.from,
+        to = this.to;
+    var direction = this._direction;
+    var R = shape.radius,
+        H = shape.height;
+    // determine intersection(s) with bottom/top ends:
+    for (var i = 0; i < 2; i++) {
+        if (i === 0) {
+            normal.set(0, -1, 0);
+            temp.set(0, -0.5*H, 0);
+        } else {
+            normal.set(0, 1, 0);
+            temp.set(0, 0.5*H, 0);
+        }
+        quat.vmult(normal, normal);
+        quat.vmult(temp, temp);
+        temp.vadd(position, temp);
+        var p2from_orthoDist = from.vsub(temp).dot(normal);
+        var p2to_orthoDist = to.vsub(temp).dot(normal);
+        if (p2from_orthoDist >= 0 && p2to_orthoDist < 0) {
+            // ray intersects plane from outside, now determine point of intersection:
+            var n_dot_dir = normal.dot(direction);
+            if (n_dot_dir <= -this.precision) {
+                var rhs = normal.dot(temp); // rhs of plane equation
+                point.copy(direction);
+                point.mult(rhs - normal.dot(from) / n_dot_dir, point);
+                point.vadd(from, point);
+                if (point.distanceSquared(temp) <= R*R) {
+                    this.reportIntersection(normal, point, reportedShape, body, -1);
+                    if (this.result._shouldStop) {
+                        return;
+                    }
+                }
+            }
+        }
+    }
+    // determine intersection(s) with side:
+    var invQuat = quat.inverse();
+    var from_loc = from.vsub(position);
+    invQuat.vmult(from_loc, from_loc);
+    var to_loc = to.vsub(position);
+    invQuat.vmult(to_loc, to_loc);
+    // quadratic coeffs:
+    var A = Math.pow(to_loc.x - from_loc.x, 2) + Math.pow(to_loc.z - from_loc.z, 2);
+    var B = 2 * (from_loc.x * (to_loc.x - from_loc.x) + from_loc.z * (to_loc.z - from_loc.z));
+    var C = Math.pow(from_loc.x, 2) + Math.pow(from_loc.z, 2) - R*R;
+    var discrim = B*B - 4*A*C;
+    if (discrim < 0) {
+        return;
+    } else if (discrim === 0) {
+        from_loc.lerp(to_loc, -B / (2*A), point);
+        normal.set(point.x, 0, point.z);
+        quat.vmult(normal, normal);
+        normal.normalize();
+        quat.vmult(point, point);
+        point.vadd(position, point);
+        this.reportIntersection(normal, point, reportedShape, body, -1);
+    } else {
+        var d1 = (-B - Math.sqrt(discrim)) / (2 * A);
+        var d2 = (-B + Math.sqrt(discrim)) / (2 * A);
+        var isValid1 = (d1 >= 0 && d1 <= 1);
+        var isValid2 = (d2 >= 0 && d2 <= 1);
+        if (isValid1 && isValid2) {
+            from_loc.lerp(to_loc, Math.min(d1, d2), point);
+            normal.set(point.x, 0, point.z);
+            quat.vmult(normal, normal);
+            normal.normalize();
+            quat.vmult(point, point);
+            point.vadd(position, point);
+            this.reportIntersection(normal, point, reportedShape, body, -1);
+            if (this.result._shouldStop) {
+                return;
+            }
+            from_loc.lerp(to_loc, Math.max(d1, d2), point);
+            normal.set(point.x, 0, point.z);
+            quat.vmult(normal, normal);
+            normal.normalize();
+            quat.vmult(point, point);
+            point.vadd(position, point);
+            this.reportIntersection(normal, point, reportedShape, body, -1);
+        } else if (isValid1) {
+            from_loc.lerp(to_loc, d1, point);
+            normal.set(point.x, 0, point.z);
+            quat.vmult(normal, normal);
+            normal.normalize();
+            quat.vmult(point, point);
+            point.vadd(position, point);
+            this.reportIntersection(normal, point, reportedShape, body, -1);
+        } else if (isValid2) {
+            from_loc.lerp(to_loc, d2, point);
+            normal.set(point.x, 0, point.z);
+            quat.vmult(normal, normal);
+            normal.normalize();
+            quat.vmult(point, point);
+            point.vadd(position, point);
+            this.reportIntersection(normal, point, reportedShape, body, -1);
+        }
+    }
+};
+Ray.prototype[Shape.types.IMPLICITCYLINDER] = Ray.prototype.intersectImplicitCylinder;
+
+
 
 /**
  * @method reportIntersection
@@ -2115,7 +2241,7 @@ function distanceFromIntersection(from, direction, position) {
 }
 
 
-},{"../collision/AABB":3,"../collision/RaycastResult":11,"../math/Quaternion":29,"../math/Transform":30,"../math/Vec3":31,"../shapes/Box":38,"../shapes/ConvexPolyhedron":39,"../shapes/Shape":45}],11:[function(_dereq_,module,exports){
+},{"../collision/AABB":3,"../collision/RaycastResult":11,"../math/Quaternion":29,"../math/Transform":30,"../math/Vec3":31,"../shapes/Shape":46}],11:[function(_dereq_,module,exports){
 var Vec3 = _dereq_('../math/Vec3');
 
 module.exports = RaycastResult;
@@ -2562,7 +2688,7 @@ SAPBroadphase.prototype.aabbQuery = function(world, aabb, result){
 
     return result;
 };
-},{"../collision/Broadphase":5,"../shapes/Shape":45}],13:[function(_dereq_,module,exports){
+},{"../collision/Broadphase":5,"../shapes/Shape":46}],13:[function(_dereq_,module,exports){
 module.exports = ConeTwistConstraint;
 
 var Constraint = _dereq_('./Constraint');
@@ -2746,7 +2872,7 @@ Constraint.prototype.disable = function(){
 
 Constraint.idCounter = 0;
 
-},{"../utils/Utils":55}],15:[function(_dereq_,module,exports){
+},{"../utils/Utils":56}],15:[function(_dereq_,module,exports){
 module.exports = DistanceConstraint;
 
 var Constraint = _dereq_('./Constraint');
@@ -3891,7 +4017,7 @@ function ContactMaterial(m1, m2, options){
 
 ContactMaterial.idCounter = 0;
 
-},{"../utils/Utils":55}],26:[function(_dereq_,module,exports){
+},{"../utils/Utils":56}],26:[function(_dereq_,module,exports){
 module.exports = Material;
 
 /**
@@ -6411,7 +6537,7 @@ Body.prototype.integrate = function(dt, quatNormalize, quatNormalizeFast){
     this.updateInertiaWorld();
 };
 
-},{"../collision/AABB":3,"../material/Material":26,"../math/Mat3":28,"../math/Quaternion":29,"../math/Vec3":31,"../shapes/Box":38,"../shapes/Shape":45,"../utils/EventTarget":51}],33:[function(_dereq_,module,exports){
+},{"../collision/AABB":3,"../material/Material":26,"../math/Mat3":28,"../math/Quaternion":29,"../math/Vec3":31,"../shapes/Box":38,"../shapes/Shape":46,"../utils/EventTarget":52}],33:[function(_dereq_,module,exports){
 var Body = _dereq_('./Body');
 var Vec3 = _dereq_('../math/Vec3');
 var Quaternion = _dereq_('../math/Quaternion');
@@ -7337,7 +7463,7 @@ RigidVehicle.prototype.getWheelSpeed = function(wheelIndex){
     return w.dot(worldAxis);
 };
 
-},{"../constraints/HingeConstraint":16,"../math/Vec3":31,"../shapes/Box":38,"../shapes/Sphere":46,"./Body":32}],35:[function(_dereq_,module,exports){
+},{"../constraints/HingeConstraint":16,"../math/Vec3":31,"../shapes/Box":38,"../shapes/Sphere":47,"./Body":32}],35:[function(_dereq_,module,exports){
 module.exports = SPHSystem;
 
 var Shape = _dereq_('../shapes/Shape');
@@ -7552,7 +7678,7 @@ SPHSystem.prototype.nablaw = function(r){
     return nabla;
 };
 
-},{"../material/Material":26,"../math/Quaternion":29,"../math/Vec3":31,"../objects/Body":32,"../shapes/Particle":43,"../shapes/Shape":45}],36:[function(_dereq_,module,exports){
+},{"../material/Material":26,"../math/Quaternion":29,"../math/Vec3":31,"../objects/Body":32,"../shapes/Particle":44,"../shapes/Shape":46}],36:[function(_dereq_,module,exports){
 var Vec3 = _dereq_('../math/Vec3');
 
 module.exports = Spring;
@@ -8030,7 +8156,7 @@ WheelInfo.prototype.updateWheel = function(chassis){
         this.clippedInvContactDotSuspension = 1.0;
     }
 };
-},{"../collision/RaycastResult":11,"../math/Transform":30,"../math/Vec3":31,"../utils/Utils":55}],38:[function(_dereq_,module,exports){
+},{"../collision/RaycastResult":11,"../math/Transform":30,"../math/Vec3":31,"../utils/Utils":56}],38:[function(_dereq_,module,exports){
 module.exports = Box;
 
 var Shape = _dereq_('./Shape');
@@ -8267,7 +8393,7 @@ Box.prototype.calculateWorldAABB = function(pos,quat,min,max){
     // });
 };
 
-},{"../math/Vec3":31,"./ConvexPolyhedron":39,"./Shape":45}],39:[function(_dereq_,module,exports){
+},{"../math/Vec3":31,"./ConvexPolyhedron":39,"./Shape":46}],39:[function(_dereq_,module,exports){
 module.exports = ConvexPolyhedron;
 
 var Shape = _dereq_('./Shape');
@@ -9195,7 +9321,7 @@ ConvexPolyhedron.project = function(hull, axis, pos, quat, result){
     result[1] = min;
 };
 
-},{"../math/Quaternion":29,"../math/Transform":30,"../math/Vec3":31,"./Shape":45}],40:[function(_dereq_,module,exports){
+},{"../math/Quaternion":29,"../math/Transform":30,"../math/Vec3":31,"./Shape":46}],40:[function(_dereq_,module,exports){
 module.exports = Cylinder;
 
 var Shape = _dereq_('./Shape');
@@ -9277,7 +9403,7 @@ function Cylinder( radiusTop, radiusBottom, height , numSegments ) {
 
 Cylinder.prototype = new ConvexPolyhedron();
 
-},{"../math/Quaternion":29,"../math/Vec3":31,"./ConvexPolyhedron":39,"./Shape":45}],41:[function(_dereq_,module,exports){
+},{"../math/Quaternion":29,"../math/Vec3":31,"./ConvexPolyhedron":39,"./Shape":46}],41:[function(_dereq_,module,exports){
 module.exports = Ellipsoid;
 
 var Shape = _dereq_('./Shape');
@@ -9285,6 +9411,9 @@ var Vec3 = _dereq_('../math/Vec3');
 
 /**
  * Ellipsoid shape (reference: https://en.wikipedia.org/wiki/Ellipsoid)
+ *
+ *   (x / a)^2 + (y / b)^2 + (z / c)^2 = 1
+ *
  * @class Ellipsoid
  * @constructor
  * @extends Shape
@@ -9311,8 +9440,8 @@ function Ellipsoid(a, b, c) {
 
     this.type = Shape.types.ELLIPSOID;
 
-    if(this.a < 0 || this.b < 0 || this.c < 0){
-        throw new Error('The Ellipsoid radius cannot be negative.');
+    if(this.a <= 0 || this.b <= 0 || this.c <= 0){
+        throw new Error('The Ellipsoid lengths must be positive.');
     }
 
     this.updateBoundingSphereRadius();
@@ -9322,12 +9451,12 @@ Ellipsoid.prototype.constructor = Ellipsoid;
 
 Ellipsoid.prototype.calculateLocalInertia = function(mass,target){
     target = target || new Vec3();
-    var I_xx = 2.0*mass * this.b * this.c / 5.0;
-    var I_yy = 2.0*mass * this.a * this.c / 5.0;
-    var I_zz = 2.0*mass * this.b * this.a / 5.0;
-    target.x = I_xx;
-    target.y = I_yy;
-    target.z = I_zz;
+    var a = this.a,
+        b = this.b,
+        c = this.c;
+    target.x = mass * (b*b + c*c) / 5.0;
+    target.y = mass * (a*a + c*c) / 5.0;
+    target.z = mass * (a*a + b*b) / 5.0;
     return target;
 };
 
@@ -9340,21 +9469,36 @@ Ellipsoid.prototype.updateBoundingSphereRadius = function(){
 };
 
 var rotatedLengthsTemp = new Vec3();
-Ellipsoid.prototype.calculateWorldAABB = function(pos,quat,min,max){
-    rotatedLengthsTemp.set(this.a, this.b, this.c);
-    quat.vmult(rotatedLengthsTemp, rotatedLengthsTemp);
-    var a = rotatedLengthsTemp.x,
-        b = rotatedLengthsTemp.y,
-        c = rotatedLengthsTemp.z;
-    min.x = pos.x - a;
-    max.x = pos.x + a;
-    min.y = pos.y - b;
-    max.y = pos.y + b;
-    min.z = pos.z - c;
-    max.z = pos.z + c;
+Ellipsoid.prototype.calculateWorldAABB = function(pos,quat,min,max) {
+    /**
+     * Points \vec{x} := [x_1, x_2, x_3]^T on the rotated ellipsoid (ignoring translation for now) satisfy the equation
+     *
+     *   f(\vec{x}) := \vec{x}^T A \vec{x} = f(\vec{x})
+     *               = \vec{x}^T U \Sigma U^T \vec{x} = 1,
+     *
+     * where U is the 3x3 orthogonal rotation matrix (computed from the quaternion),
+     * \Sigma is the diagonal matrix of eigenvalues (1/a^2, 1/b^2, 1/c^2).
+     *
+     * The two points attaining min/max along the (e.g.) x-axis occur where
+     *
+     *   \grad{f}(\vec{x})_2 = 0, \grad{f}(\vec{x})_3 = 0.
+     *
+     * Expression for the gradient:
+     *
+     *   \grad{f}(\vec{x}) = 2 U \Sigma U^T \vec{x}.
+     *
+     * Solving for a given RHS \vec{b}:
+     *
+     *   \grad{f}(\vec{x}) = \vec{b}
+     *      ===>  \vec{x}  = (1/2) U \Sigma^{-1} U^T \vec{b}.
+     *
+     * For \vec{b} := [b_1, 0, 0]^T,
+     *
+     */
+
 };
 
-},{"../math/Vec3":31,"./Shape":45}],42:[function(_dereq_,module,exports){
+},{"../math/Vec3":31,"./Shape":46}],42:[function(_dereq_,module,exports){
 var Shape = _dereq_('./Shape');
 var ConvexPolyhedron = _dereq_('./ConvexPolyhedron');
 var Vec3 = _dereq_('../math/Vec3');
@@ -10039,7 +10183,94 @@ Heightfield.prototype.setHeightsFromImage = function(image, scale){
     this.updateMinValue();
     this.update();
 };
-},{"../math/Vec3":31,"../utils/Utils":55,"./ConvexPolyhedron":39,"./Shape":45}],43:[function(_dereq_,module,exports){
+},{"../math/Vec3":31,"../utils/Utils":56,"./ConvexPolyhedron":39,"./Shape":46}],43:[function(_dereq_,module,exports){
+module.exports = ImplicitCylinder;
+
+var Shape = _dereq_('./Shape');
+var Vec3 = _dereq_('../math/Vec3');
+var Quaternion = _dereq_('../math/Quaternion');
+
+/**
+ * Implicitly-defined cylinder:
+ *
+ *    x^2 + z^2 = R^2,
+ *
+ *    -0.5*H <= y <= 0.5*H
+ *
+ * Note that this does not match the orientation of the existing
+ * (ConvexPolyhedron-based) Cylinder class, which defines the circular
+ * cross-section within the x/y plane.
+ *
+ * @class ImplicitCylinder
+ * @constructor
+ * @author jzitelli / https://github.com/jzitelli
+ * @param {Number} radius
+ * @param {Number} height
+ */
+function ImplicitCylinder( radius, height ) {
+    Shape.call(this);
+    this.type = Shape.types.IMPLICITCYLINDER;
+    this.radius = radius;
+    this.height = height;
+    if (this.radius <= 0){
+        throw new Error('The cylinder radius must be positive.');
+    }
+    if (this.height <= 0) {
+        throw new Error('The cylinder height must be positive.');
+    }
+    this.updateBoundingSphereRadius();
+}
+
+ImplicitCylinder.prototype = new Shape();
+ImplicitCylinder.prototype.constructor = ImplicitCylinder;
+
+ImplicitCylinder.prototype.volume = function() {
+    return Math.PI * this.radius * this.radius * this.height;
+};
+
+ImplicitCylinder.prototype.calculateLocalInertia = function (mass,target) {
+    // see http://scienceworld.wolfram.com/physics/MomentofInertiaCylinder.html
+    target = target || new Vec3();
+    target.x = (1/12) * (mass * this.height * this.height) + (1/4) * (mass * this.radius * this.radius);
+    target.z = target.x;
+    target.y = (1/2) * (mass * this.radius * this.radius);
+    return target;
+};
+
+ImplicitCylinder.prototype.updateBoundingSphereRadius = function () {
+    this.boundingSphereRadius = Math.sqrt(this.radius * this.radius + this.height * this.height / 4);
+};
+
+var euler = new Vec3();
+var temp = new Vec3();
+ImplicitCylinder.prototype.calculateWorldAABB = function (pos, quat, min, max) {
+    // determine AA bounds for the ring x^2 + z^2 = R^2 after rotation:
+    var R = this.radius;
+    quat.toEuler(euler, 'YZX');
+    var psi = euler.x;
+    var phi = euler.z;
+    var cphi = Math.cos(phi),
+        sphi = Math.sin(phi);
+    var cpsi = Math.cos(psi),
+        spsi = Math.sin(psi);
+    max.set(R * Math.abs(cphi),
+            R * Math.sqrt(cpsi*cpsi * sphi*sphi + spsi*spsi),
+            R * Math.sqrt(spsi*spsi * sphi*sphi + cpsi*cpsi));
+    max.negate(min);
+    // now consider translations which place the rings on the top/bottom ends of the cylinder:
+    temp.set(0, 0.5*this.height, 0);
+    quat.vmult(temp, temp);
+    max.set(Math.max(temp.x + max.x, -temp.x + max.x),
+            Math.max(temp.y + max.y, -temp.y + max.y),
+            Math.max(temp.z + max.z, -temp.z + max.z));
+    min.set(Math.min(temp.x + min.x, -temp.x + min.x),
+            Math.min(temp.y + min.y, -temp.y + min.y),
+            Math.min(temp.z + min.z, -temp.z + min.z));
+    max.vadd(pos, max);
+    min.vadd(pos, min);
+};
+
+},{"../math/Quaternion":29,"../math/Vec3":31,"./Shape":46}],44:[function(_dereq_,module,exports){
 module.exports = Particle;
 
 var Shape = _dereq_('./Shape');
@@ -10086,7 +10317,7 @@ Particle.prototype.calculateWorldAABB = function(pos,quat,min,max){
     max.copy(pos);
 };
 
-},{"../math/Vec3":31,"./Shape":45}],44:[function(_dereq_,module,exports){
+},{"../math/Vec3":31,"./Shape":46}],45:[function(_dereq_,module,exports){
 module.exports = Plane;
 
 var Shape = _dereq_('./Shape');
@@ -10149,7 +10380,7 @@ Plane.prototype.calculateWorldAABB = function(pos, quat, min, max){
 Plane.prototype.updateBoundingSphereRadius = function(){
     this.boundingSphereRadius = Number.MAX_VALUE;
 };
-},{"../math/Vec3":31,"./Shape":45}],45:[function(_dereq_,module,exports){
+},{"../math/Vec3":31,"./Shape":46}],46:[function(_dereq_,module,exports){
 module.exports = Shape;
 
 var Shape = _dereq_('./Shape');
@@ -10250,10 +10481,11 @@ Shape.types = {
     PARTICLE:64,
     CYLINDER:128,
     TRIMESH:256,
-    ELLIPSOID:512
+    ELLIPSOID:512,
+    IMPLICITCYLINDER: 1024
 };
 
-},{"../material/Material":26,"../math/Quaternion":29,"../math/Vec3":31,"./Shape":45}],46:[function(_dereq_,module,exports){
+},{"../material/Material":26,"../math/Quaternion":29,"../math/Vec3":31,"./Shape":46}],47:[function(_dereq_,module,exports){
 module.exports = Sphere;
 
 var Shape = _dereq_('./Shape');
@@ -10312,7 +10544,7 @@ Sphere.prototype.calculateWorldAABB = function(pos,quat,min,max){
     }
 };
 
-},{"../math/Vec3":31,"./Shape":45}],47:[function(_dereq_,module,exports){
+},{"../math/Vec3":31,"./Shape":46}],48:[function(_dereq_,module,exports){
 module.exports = Trimesh;
 
 var Shape = _dereq_('./Shape');
@@ -10874,7 +11106,7 @@ Trimesh.createTorus = function (radius, tube, radialSegments, tubularSegments, a
     return new Trimesh(vertices, indices);
 };
 
-},{"../collision/AABB":3,"../math/Quaternion":29,"../math/Transform":30,"../math/Vec3":31,"../utils/Octree":52,"./Shape":45}],48:[function(_dereq_,module,exports){
+},{"../collision/AABB":3,"../math/Quaternion":29,"../math/Transform":30,"../math/Vec3":31,"../utils/Octree":53,"./Shape":46}],49:[function(_dereq_,module,exports){
 module.exports = GSSolver;
 
 var Vec3 = _dereq_('../math/Vec3');
@@ -11016,7 +11248,7 @@ GSSolver.prototype.solve = function(dt,world){
     return iter;
 };
 
-},{"../math/Quaternion":29,"../math/Vec3":31,"./Solver":49}],49:[function(_dereq_,module,exports){
+},{"../math/Quaternion":29,"../math/Vec3":31,"./Solver":50}],50:[function(_dereq_,module,exports){
 module.exports = Solver;
 
 /**
@@ -11077,7 +11309,7 @@ Solver.prototype.removeAllEquations = function(){
 };
 
 
-},{}],50:[function(_dereq_,module,exports){
+},{}],51:[function(_dereq_,module,exports){
 module.exports = SplitSolver;
 
 var Vec3 = _dereq_('../math/Vec3');
@@ -11232,7 +11464,7 @@ SplitSolver.prototype.solve = function(dt,world){
 function sortById(a, b){
     return b.id - a.id;
 }
-},{"../math/Quaternion":29,"../math/Vec3":31,"../objects/Body":32,"./Solver":49}],51:[function(_dereq_,module,exports){
+},{"../math/Quaternion":29,"../math/Vec3":31,"../objects/Body":32,"./Solver":50}],52:[function(_dereq_,module,exports){
 /**
  * Base class for objects that dispatches events.
  * @class EventTarget
@@ -11333,7 +11565,7 @@ EventTarget.prototype = {
     }
 };
 
-},{}],52:[function(_dereq_,module,exports){
+},{}],53:[function(_dereq_,module,exports){
 var AABB = _dereq_('../collision/AABB');
 var Vec3 = _dereq_('../math/Vec3');
 
@@ -11568,7 +11800,7 @@ OctreeNode.prototype.removeEmptyNodes = function() {
     }
 };
 
-},{"../collision/AABB":3,"../math/Vec3":31}],53:[function(_dereq_,module,exports){
+},{"../collision/AABB":3,"../math/Vec3":31}],54:[function(_dereq_,module,exports){
 module.exports = Pool;
 
 /**
@@ -11645,7 +11877,7 @@ Pool.prototype.resize = function (size) {
 };
 
 
-},{}],54:[function(_dereq_,module,exports){
+},{}],55:[function(_dereq_,module,exports){
 module.exports = TupleDictionary;
 
 /**
@@ -11712,7 +11944,7 @@ TupleDictionary.prototype.reset = function() {
     }
 };
 
-},{}],55:[function(_dereq_,module,exports){
+},{}],56:[function(_dereq_,module,exports){
 function Utils(){}
 
 module.exports = Utils;
@@ -11737,7 +11969,7 @@ Utils.defaults = function(options, defaults){
     return options;
 };
 
-},{}],56:[function(_dereq_,module,exports){
+},{}],57:[function(_dereq_,module,exports){
 module.exports = Vec3Pool;
 
 var Vec3 = _dereq_('../math/Vec3');
@@ -11763,7 +11995,7 @@ Vec3Pool.prototype.constructObject = function(){
     return new Vec3();
 };
 
-},{"../math/Vec3":31,"./Pool":53}],57:[function(_dereq_,module,exports){
+},{"../math/Vec3":31,"./Pool":54}],58:[function(_dereq_,module,exports){
 module.exports = Narrowphase;
 
 var AABB = _dereq_('../collision/AABB');
@@ -13693,19 +13925,18 @@ Narrowphase.prototype.planeEllipsoid = function(si,sj,xi,xj,qi,qj,bi,bj,rsi,rsj)
     var r = this.createContactEquation(bi,bj,si,sj,rsi,rsj);
 
     // Contact normal
-    r.nj.set(0,0,1);
-    qi.vmult(r.nj, r.nj);
-    r.nj.negate(r.nj); // body j is the ellipsoid, flip normal
-    r.nj.normalize(); // Needed?
+    r.ni.set(0,0,1);
+    qi.vmult(r.ni, r.ni);
 
     // Vector from ellipsoid center to contact point
-    ellipsoidLengths.set(sj.a, sj.b, sj.c);
-    r.nj.vmul(ellipsoidLengths, r.rj);
+    ellipsoidLengths.set(-sj.a, -sj.b, -sj.c);
+    qj.vmult(ellipsoidLengths, ellipsoidLengths);
+    r.ni.vmul(ellipsoidLengths, r.rj);
 
     // Project down ellipsoid on plane
     xj.vsub(xi, point_on_plane_to_ellipsoid);
-    r.nj.mult(r.nj.dot(point_on_plane_to_ellipsoid), plane_to_ellipsoid_ortho);
-    point_on_plane_to_ellipsoid.vsub(plane_to_ellipsoid_ortho,r.ri); // The ellipsoid position projected to plane
+    r.ni.mult(r.ni.dot(point_on_plane_to_ellipsoid), plane_to_ellipsoid_ortho);
+    point_on_plane_to_ellipsoid.vsub(plane_to_ellipsoid_ortho, r.ri); // The ellipsoid position projected to plane
 
     // if(-point_on_plane_to_ellipsoid.dot(r.nj) <= sj.radius){
 
@@ -13722,7 +13953,102 @@ Narrowphase.prototype.planeEllipsoid = function(si,sj,xi,xj,qi,qj,bi,bj,rsi,rsj)
     // }
 };
 
-},{"../collision/AABB":3,"../collision/Ray":10,"../equations/ContactEquation":20,"../equations/FrictionEquation":22,"../math/Quaternion":29,"../math/Transform":30,"../math/Vec3":31,"../objects/Body":32,"../shapes/ConvexPolyhedron":39,"../shapes/Shape":45,"../solver/Solver":49,"../utils/Vec3Pool":56}],58:[function(_dereq_,module,exports){
+
+var temp = new Vec3();
+/**
+ * @method sphereImplicitCylinder
+ */
+Narrowphase.prototype[Shape.types.SPHERE | Shape.types.IMPLICITCYLINDER] =
+Narrowphase.prototype.sphereImplicitCylinder = function (si, sj, xi, xj, qi, qj, bi, bj, rsi, rsj, justTest) {
+    var H = sj.height;
+    var R = sj.radius;
+    var r = this.createContactEquation(bi,bj,si,sj,rsi,rsj);
+    var ri = r.ri;
+    var rj = r.rj;
+    var ni = r.ni;
+    for (var i = 0; i < 2; i++) {
+        if (i === 0) {
+            // bottom end
+            ni.set(0, 1, 0);
+            temp.set(0, -0.5*H, 0);
+        } else {
+            // top end
+            ni.set(0, -1, 0);
+            temp.set(0, 0.5*H, 0);
+        }
+        qj.vmult(ni, ni);
+        qj.vmult(temp, temp);
+        temp.vadd(xj, temp);
+        // Project down sphere on plane
+        xi.vsub(temp, point_on_plane_to_sphere);
+        ni.mult(ni.dot(point_on_plane_to_sphere), plane_to_sphere_ortho);
+        point_on_plane_to_sphere.vsub(plane_to_sphere_ortho, rj);
+        rj.vadd(temp, rj);
+        var d = -plane_to_sphere_ortho.dot(ni);
+        if (d > 0 && d <= si.radius && rj.distanceSquared(temp) < R*R) {
+            if (justTest) {
+                return true;
+            }
+            // Vector from sphere center to contact point
+            ni.mult(si.radius, ri);
+            // Make it relative to the body
+            ri.vadd(xi, ri);
+            ri.vsub(bi.position, ri);
+            rj.vsub(bj.position, rj);
+            this.result.push(r);
+            this.createFrictionEquationsFromContact(r, this.frictionResult);
+            return;
+        }
+    }
+    // still checking, with no contacts from bottom/top sides
+    temp.set(0, 1, 0);
+    qj.vmult(temp, temp);
+    // project sphere to cylinder axis:
+    var point_on_axis_to_sphere = point_on_plane_to_sphere;
+    xi.vsub(xj, point_on_axis_to_sphere);
+    var axis_to_sphere_paral = temp.mult(temp.dot(point_on_axis_to_sphere));
+    var y_sqrd = axis_to_sphere_paral.dot(axis_to_sphere_paral);
+    if (y_sqrd <= 0.25 * H*H) {
+        var axis_to_sphere_ortho = plane_to_sphere_ortho;
+        point_on_axis_to_sphere.vsub(axis_to_sphere_paral, axis_to_sphere_ortho);
+        if (axis_to_sphere_ortho.dot(axis_to_sphere_ortho) <= Math.pow(R + si.radius, 2)) {
+            if (justTest) {
+                return true;
+            }
+            axis_to_sphere_ortho.normalize();
+            axis_to_sphere_ortho.negate(ni);
+            ni.mult(si.radius, ri);
+            ri.vadd(xi, ri);
+            ri.vsub(bi.position, ri);
+            axis_to_sphere_paral.vadd(axis_to_sphere_ortho.mult(R, rj), rj);
+            rj.vadd(xj, rj);
+            rj.vsub(bj.position, rj);
+            this.result.push(r);
+            this.createFrictionEquationsFromContact(r, this.frictionResult);
+            return;
+        }
+    }
+    if (justTest) {
+        return false;
+    }
+};
+
+
+/**
+ * @method planeImplicitCylinder
+ */
+Narrowphase.prototype[Shape.types.PLANE | Shape.types.IMPLICITCYLINDER] =
+Narrowphase.prototype.planeImplicitCylinder = function (si, sj, xi, xj, qi, qj, bi, bj, rsi, rsj, justTest) {
+    var H = sj.height;
+    var R = sj.radius;
+    var r = this.createContactEquation(bi, bj, si, sj, rsi, rsj);
+    var ri = r.ri;
+    var rj = r.rj;
+    var ni = r.ni;
+    // TODO
+};
+
+},{"../collision/AABB":3,"../collision/Ray":10,"../equations/ContactEquation":20,"../equations/FrictionEquation":22,"../math/Quaternion":29,"../math/Transform":30,"../math/Vec3":31,"../objects/Body":32,"../shapes/ConvexPolyhedron":39,"../shapes/Shape":46,"../solver/Solver":50,"../utils/Vec3Pool":57}],59:[function(_dereq_,module,exports){
 /* global performance */
 
 module.exports = World;
@@ -14756,6 +15082,6 @@ World.prototype.clearForces = function(){
     }
 };
 
-},{"../collision/AABB":3,"../collision/ArrayCollisionMatrix":4,"../collision/NaiveBroadphase":7,"../collision/OverlapKeeper":9,"../collision/Ray":10,"../collision/RaycastResult":11,"../equations/ContactEquation":20,"../equations/FrictionEquation":22,"../material/ContactMaterial":25,"../material/Material":26,"../math/Quaternion":29,"../math/Vec3":31,"../objects/Body":32,"../shapes/Shape":45,"../solver/GSSolver":48,"../utils/EventTarget":51,"../utils/TupleDictionary":54,"./Narrowphase":57}]},{},[2])
+},{"../collision/AABB":3,"../collision/ArrayCollisionMatrix":4,"../collision/NaiveBroadphase":7,"../collision/OverlapKeeper":9,"../collision/Ray":10,"../collision/RaycastResult":11,"../equations/ContactEquation":20,"../equations/FrictionEquation":22,"../material/ContactMaterial":25,"../material/Material":26,"../math/Quaternion":29,"../math/Vec3":31,"../objects/Body":32,"../shapes/Shape":46,"../solver/GSSolver":49,"../utils/EventTarget":52,"../utils/TupleDictionary":55,"./Narrowphase":58}]},{},[2])
 (2)
 });

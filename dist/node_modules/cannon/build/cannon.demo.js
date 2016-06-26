@@ -714,11 +714,12 @@ CANNON.Demo = function(options){
 
     var lastCallTime = 0;
     var resetCallTime = false;
+    var playbackRate = 0.25; // 1;
     function updatePhysics(){
         // Step world
         var timeStep = 1 / settings.stepFrequency;
 
-        var now = performance.now() / 1000;
+        var now = performance.now() / 1000 * playbackRate;
 
         if(!lastCallTime){
             // last call time not saved, cant guess elapsed time. Take a simple step.
@@ -1004,7 +1005,7 @@ CANNON.Demo.prototype.shape2mesh = function(body){
         switch(shape.type){
 
         case CANNON.Shape.types.SPHERE:
-            var sphere_geometry = new THREE.SphereGeometry( shape.radius, 8, 8);
+            var sphere_geometry = new THREE.SphereGeometry( shape.radius, 16, 12);
             mesh = new THREE.Mesh( sphere_geometry, this.currentMaterial );
             break;
 
@@ -1117,6 +1118,13 @@ CANNON.Demo.prototype.shape2mesh = function(body){
             var scaleMat = new THREE.Matrix4().makeScale(1, shape.b / shape.a, shape.c / shape.a);
             ellipsoid_geometry.applyMatrix(scaleMat);
             mesh = new THREE.Mesh( ellipsoid_geometry, this.currentMaterial );
+            break;
+
+        case CANNON.Shape.types.IMPLICITCYLINDER:
+            var impCylGeometry = new THREE.CylinderGeometry(shape.radius, shape.radius, shape.height, 16, 1);
+            impCylGeometry.computeBoundingSphere();
+            impCylGeometry.computeFaceNormals();
+            mesh = new THREE.Mesh(impCylGeometry, this.currentMaterial);
             break;
 
         default:
