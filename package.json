@@ -1,7 +1,7 @@
 {
   "name": "poolvr",
   "description": "Play pool / billiards in WebVR!",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "author": "Jeffrey Zitelli (https://github.com/jzitelli)",
   "license": "MIT",
   "homepage": "https://jzitelli.github.io/poolvr",
@@ -24,22 +24,6 @@
     "poolvr_template.html",
     "LICENSE",
     "README.md"
-  ],
-  "keywords": [
-    "pool",
-    "billiards",
-    "cannon.js",
-    "three.js",
-    "WebGL",
-    "Leap Motion",
-    "VR",
-    "virtual reality",
-    "WebVR",
-    "Primrose",
-    "Google Cardboard",
-    "Oculus Rift",
-    "HTC Vive",
-    "webvr-polyfill"
   ],
   "dependencies": {
     "cannon": "git://github.com/jzitelli/cannon.js.git",
