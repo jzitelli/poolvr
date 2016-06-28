@@ -15,17 +15,17 @@ POOLVR.commands = {
 POOLVR.keyboardCommands = {
     turnLeft:     {buttons: [37]},
     turnRight:    {buttons: [39]},
-    driveForward: {buttons: [87]},
-    driveBack:    {buttons: [83]},
-    strafeLeft:   {buttons: [65]},
-    strafeRight:  {buttons: [68]},
-    floatUp:      {buttons: [69]},
-    floatDown:    {buttons: [67]},
+    moveForward:  {buttons: [87]},
+    moveBackward: {buttons: [83]},
+    moveLeft:     {buttons: [65]},
+    moveRight:    {buttons: [68]},
+    moveUp:       {buttons: [69]},
+    moveDown:     {buttons: [67]},
 
     moveToolUp:        {buttons: [79]},
     moveToolDown:      {buttons: [190]},
-    moveToolForwards:  {buttons: [73]},
-    moveToolBackwards: {buttons: [75]},
+    moveToolForward:   {buttons: [73]},
+    moveToolBackward:  {buttons: [75]},
     moveToolLeft:      {buttons: [74]},
     moveToolRight:     {buttons: [76]},
     rotateToolCW:      {buttons: [85]},
@@ -56,8 +56,8 @@ POOLVR.gamepadCommands = {
     turnLR: {axes: [YAWVRB.Gamepads.AXES.LSX]},
     moveFB: {axes: [YAWVRB.Gamepads.AXES.LSY]},
     toggleFloatMode: {buttons: [YAWVRB.Gamepads.BUTTONS.leftStick]},
-    toolTurnLR: {axes: [YAWVRB.Gamepads.AXES.RSX]},
-    toolMoveFB:  {axes: [YAWVRB.Gamepads.AXES.RSY]},
+    moveToolFB:  {axes: [YAWVRB.Gamepads.AXES.RSY]},
+    turnToolLR: {axes: [YAWVRB.Gamepads.AXES.RSX]},
     toggleToolFloatMode: {buttons: [YAWVRB.Gamepads.BUTTONS.rightStick]},
     resetVRSensor: {buttons: [YAWVRB.Gamepads.BUTTONS.back],
                     commandDown: POOLVR.commands.resetVRSensor},
@@ -73,8 +73,8 @@ POOLVR.gamepadCommands = {
 };
 
 POOLVR.vrGamepadACommands = {
-    toolTurnLR: {axes: [YAWVRB.Gamepads.AXES.LSX]},
-    toolMoveFB:  {axes: [YAWVRB.Gamepads.AXES.LSY], flipAxes: true},
+    moveToolFB:  {axes: [YAWVRB.Gamepads.AXES.LSY], flipAxes: true},
+    turnToolLR: {axes: [YAWVRB.Gamepads.AXES.LSX]},
     toggleToolFloatMode: {buttons: [0]},
     toggleVR: {buttons: [3], commandDown: POOLVR.commands.toggleVR},
     resetTable: {buttons: [2], commandDown: POOLVR.commands.resetTable}
