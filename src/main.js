@@ -103,7 +103,6 @@ window.onLoad = function () {
     POOLVR.synthSpeaker = new YAWVRB.SynthSpeaker({volume: POOLVR.config.synthSpeakerVolume, rate: 0.8, pitch: 0.5});
 
     var openVRTool = YAWVRB.Gamepads.makeTool(YAWVRB.Utils.combineObjects(POOLVR.config.toolOptions, {
-        toolMass: 2,
         tipMaterial: POOLVR.openVRTipMaterial
     }));
     POOLVR.openVRTool = openVRTool;

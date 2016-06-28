@@ -32,15 +32,15 @@ app.debug = True
 
 
 WebVRConfig = {
-    "ENABLE_LEAP_MOTION": False,
-    "LEAP_MOTION_HOST": "127.0.0.1",
-    "FORCE_ENABLE_VR":       False,
-    "K_FILTER":              0.98,
-    "PREDICTION_TIME_S":     0.020,
-    "TOUCH_PANNER_DISABLED": False,
-    "YAW_ONLY":              False,
+    "ENABLE_LEAP_MOTION":               False,
+    "LEAP_MOTION_HOST":                 "192.168.1.200",
+    "FORCE_ENABLE_VR":                  False,
+    "K_FILTER":                         0.98,
+    "PREDICTION_TIME_S":                0.020,
+    "TOUCH_PANNER_DISABLED":            False,
+    "YAW_ONLY":                         False,
     "MOUSE_KEYBOARD_CONTROLS_DISABLED": False,
-    "KEYBOARD_CONTROLS_DISABLED": True
+    "KEYBOARD_CONTROLS_DISABLED":       True
 }
 
 
@@ -54,20 +54,21 @@ POOLVR = {
         'usePointLight'      : False,
         'useTextGeomLogger'  : True,
         'L_table'            : 2.3368,
-        'H_table'            : 0.74295,
+        'H_table'            : 0.77,
         'ball_diameter'      : 2.25 * pool_table.INCH2METER,
         'H_ceiling'          : 8 * 12 * 0.0254,
         'synthSpeakerVolume' : 0.5,
         'toolOptions': {
             'tipShape'               : 'Cylinder',
             'numSegments'            : 8,
-            'toolRadius'             : 0.0115,
-            'tipRadius'              : 0.0115,
+            'toolRadius'             : 0.01, #0.01325 / 2,
+            'tipRadius'              : 0.01, #0.01325 / 2,
             'toolLength'             : 0.37,
             'tipLength'              : 0.37,
+            'toolMass'               : 0.54,
             'offset'                 : [0, 0, 0.37 / 2],
             'interactionPlaneOpacity': 0.22,
-            'useImplicitCylinder'    : False
+            'useImplicitCylinder'    : True
         }
     }
 }
