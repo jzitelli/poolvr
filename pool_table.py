@@ -3,7 +3,7 @@ three.js/Cannon.js pool table definition
 """
 from copy import deepcopy
 
-import numpy as np
+import numpy as npb
 
 import sys
 import os.path
@@ -48,10 +48,28 @@ def pool_table(L_table=2.3368, W_table=None, H_table=0.74295,
 
     poolTable = Object3D(name="poolTable")
 
-    headSpotMaterial = MeshLambertMaterial(name="headSpotMaterial", color=0xcccccc)
+    materials = {}
+
+    headSpotMaterial = MeshPhongMaterial(name="headSpotMaterial", color=0x0055aa, shading=FlatShading)
     surfaceMaterial = MeshPhongMaterial(name="surfaceMaterial", color=0x00aa00, shininess=5, shading=FlatShading)
     cushionMaterial = MeshPhongMaterial(name="cushionMaterial", color=0x028844, shininess=5, shading=FlatShading)
     railMaterial = MeshPhongMaterial(name="railMaterial", color=0xdda400, shininess=10, shading=FlatShading)
+
+    materials['phongMaterials'] = [headSpotMaterial, surfaceMaterial, cushionMaterial, railMaterial]
+
+    headSpotMaterial = MeshLambertMaterial(name="headSpotMaterial", color=0xcccccc, shading=FlatShading)
+    surfaceMaterial = MeshLambertMaterial(name="surfaceMaterial", color=0x00aa00, shading=FlatShading)
+    cushionMaterial = MeshLambertMaterial(name="cushionMaterial", color=0x028844, shading=FlatShading)
+    railMaterial = MeshLambertMaterial(name="railMaterial", color=0xdda400, shading=FlatShading)
+
+    materials['lambertMaterials'] = [headSpotMaterial, surfaceMaterial, cushionMaterial, railMaterial]
+
+    headSpotMaterial = MeshBasicMaterial(name="headSpotMaterial", color=0xcccccc)
+    surfaceMaterial = MeshBasicMaterial(name="surfaceMaterial", color=0x00aa00)
+    cushionMaterial = MeshBasicMaterial(name="cushionMaterial", color=0x028844)
+    railMaterial = MeshBasicMaterial(name="railMaterial", color=0xdda400)
+
+    materials['basicMaterials'] = [headSpotMaterial, surfaceMaterial, cushionMaterial, railMaterial]
 
     thickness = INCH2METER
     playableSurfaceGeom = BoxBufferGeometry(W_playable, thickness, L_playable)
@@ -198,7 +216,7 @@ def pool_table(L_table=2.3368, W_table=None, H_table=0.74295,
                              userData=railData)
     poolTable.add(rightFootRailMesh)
 
-    return poolTable
+    return poolTable, materials
 
 
 
@@ -206,32 +224,39 @@ def pool_hall(useSkybox=False,
               L_table=2.3368,
               H_table=0.74295,
               ball_diameter=2.25*INCH2METER,
+              L_room=3.2,
+              W_room = 3.2,
               url_prefix="",
               **kwargs):
     """
     Defines a three.js scene containing a pool table + billiard balls.
     """
     scene = Scene()
-    L_room, W_room = 3.2, 3.2
-    floorMesh = Mesh(name="floorMesh",
-                     geometry=PlaneBufferGeometry(width=W_room, height=L_room),
-                     material=MeshBasicMaterial(color=0xffffff,
-                                                map=Texture(image=Image(url=url_prefix+"images/texture000.png"),
-                                                            #repeat=[4*L_room, 4*W_room], wrap=[RepeatWrapping, RepeatWrapping])),
-                                                            repeat=[1, 1], wrap=[ClampToEdgeWrapping, ClampToEdgeWrapping])),
-                     position=[0, 0, 0],
-                     rotation=[-np.pi/2, 0, 0],
-                     userData={'cannonData': {'mass': 0,
-                                              'shapes': ['Plane']}})
-    scene.add(floorMesh)
 
     if useSkybox:
         scene.add(Skybox(cube_images=[url_prefix + "images/%s.png" % pos
                                       for pos in ('px', 'nx', 'py', 'ny', 'pz', 'nz')]))
 
-    poolTable = pool_table(L_table=L_table, H_table=H_table, ball_diameter=ball_diameter,
-                           **kwargs)
+    poolTable, materials = pool_table(L_table=L_table, H_table=H_table, ball_diameter=ball_diameter,
+                                      **kwargs)
     scene.add(poolTable)
+
+    floorMaterial = MeshLambertMaterial(name='floorMaterial',
+                                        color=0xffffff,
+                                        map=Texture(image=Image(url=url_prefix+"node_modules/three.js/examples/textures/hardwood2_diffuse.jpg"),
+                                                    repeat=[2*L_room, 2*W_room], wrap=[RepeatWrapping, RepeatWrapping]),
+                                        bumpMap=Texture(image=Image(url=url_prefix+"node_modules/three.js/examples/textures/hardwood2_bump.jpg"),
+                                                        repeat=[2*L_room, 2*W_room], wrap=[RepeatWrapping, RepeatWrapping]))
+
+    floorMesh = Mesh(name="floorMesh",
+                     geometry=PlaneBufferGeometry(width=W_room, height=L_room),
+                     material=floorMaterial,
+                     position=[0, 0, 0],
+                     rotation=[-np.pi/2, 0, 0],
+                     userData={'cannonData': {'mass': 0,
+                                              'shapes': ['Plane']}})
+
+    scene.add(floorMesh)
 
     # balls:
     ball_colors = []
@@ -248,6 +273,7 @@ def pool_hall(useSkybox=False,
 
     num_balls = len(ball_colors)
     ball_radius = ball_diameter / 2
+
     sphere = SphereBufferGeometry(radius=ball_radius,
                                   widthSegments=16,
                                   heightSegments=12)
@@ -257,15 +283,21 @@ def pool_hall(useSkybox=False,
                                       thetaStart=np.pi/3,
                                       thetaLength=np.pi/3)
 
+    # TODO: use InstancedBufferGeometry to model the whole set of balls
+    # TODO: shader profiling/performance modeling tools
     ball_materials = [MeshPhongMaterial(name='ballMaterial %d' % i,
                                         color=color,
                                         shading=SmoothShading)
                       for i, color in enumerate(ball_colors)]
 
+    materials['phongMaterials'] += ball_materials
+    materials['lambertMaterials'] += [MeshLambertMaterial(name=m.name, color=m.color, shading=m.shading) for m in ball_materials]
+    materials['basicMaterials'] += [MeshBasicMaterial(name=m.name, color=m.color) for m in ball_materials]
+
     ballData = {'cannonData': {'mass': 0.17, 'shapes': ['Sphere'],
                                'linearDamping': 0.27, 'angularDamping': 0.34}}
 
-    y_position = H_table + ball_radius + 0.0001 # epsilon distance which the ball will fall from initial position
+    y_position = H_table + ball_radius + 0.0001 # epsilon distance that the ball will fall from initial position
 
     # diagonal line:
     # z_positions = 0.8 * np.linspace(-L_table / 2, L_table / 2, num_balls - 1)
@@ -308,4 +340,4 @@ def pool_hall(useSkybox=False,
                               geometry=stripeGeom)
             ballMesh.add(stripeMesh)
 
-    return scene
+    return scene, materials

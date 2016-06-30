@@ -123,6 +123,7 @@ def poolvr():
     Serves the poolvr app HTML.
     """
     poolvr_config = get_poolvr_config()
+    pool_hall, materials = pool_table.pool_hall(**poolvr_config)
     webvr_config = get_webvr_config()
     return render_template("poolvr_template.html",
                            json_config=Markup(r"""<script>
@@ -133,8 +134,12 @@ var POOLVR = %s;
 var THREEPY_SCENE = %s;
 </script>""" % (json.dumps(webvr_config, indent=2),
                 json.dumps({'version': POOLVR['version'],
-                            'config': poolvr_config}, indent=2),
-                json.dumps(pool_table.pool_hall(**poolvr_config).export()))),
+                            'config': poolvr_config,
+                            'basicMaterials': [m.json() for m in materials['basicMaterials']],
+                            'lambertMaterials': [m.json() for m in materials['lambertMaterials']],
+                            'phongMaterials': [m.json() for m in materials['phongMaterials']]},
+                            indent=2),
+                json.dumps(pool_hall.export()))),
                            version_content=Markup(r"""
 <h3>v{2}</h3>
 <a href="https://github.com/jzitelli/poolvr/commit/{0}">current commit</a>

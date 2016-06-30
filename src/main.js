@@ -1,5 +1,6 @@
 /* global require */
 window.POOLVR = window.POOLVR || {};
+
 require('./sounds.js');
 require('./actions.js');
 require('./config.js');
@@ -22,8 +23,6 @@ window.onLoad = function () {
     console.log("POOLVR.config:");
     console.log(POOLVR.config);
 
-    var world = POOLVR.world;
-
     // TODO: return menu items
     POOLVR.setupMenu();
 
@@ -36,6 +35,7 @@ window.onLoad = function () {
             POOLVR.leapTool.updateToolMapping();
         }
     };
+
     POOLVR.app = new YAWVRB.App(undefined, appConfig, rendererOptions);
 
     if (POOLVR.config.useShadowMap) {
@@ -46,7 +46,6 @@ window.onLoad = function () {
     POOLVR.app.stage.add(POOLVR.app.camera);
 
     var leapIndicator = document.getElementById('leapIndicator');
-
     var leapTool = YAWVRB.LeapMotion.makeTool( YAWVRB.Utils.combineObjects(POOLVR.config.toolOptions, {
         onConnect: function () {
             leapIndicator.innerHTML = 'connected';
@@ -74,10 +73,13 @@ window.onLoad = function () {
         tipMaterial: POOLVR.tipMaterial
     }) );
     leapTool.toolMesh.renderOrder = -1;
+
     POOLVR.app.stage.add(leapTool.toolRoot);
+
     leapTool.toolRoot.visible = false;
-    world.addBody(leapTool.toolBody);
+    POOLVR.world.addBody(leapTool.toolBody);
     leapTool.leapController.connect();
+
     POOLVR.leapTool = leapTool;
 
     window.addEventListener("beforeunload", function () {
@@ -126,7 +128,7 @@ window.onLoad = function () {
                 YAWVRB.Gamepads.setGamepadCommands(gamepad.index, POOLVR.vrGamepadACommands);
                 openVRTool.mesh.visible = true;
                 openVRTool.setGamepad(gamepad);
-                world.addBody(openVRTool.body);
+                POOLVR.world.addBody(openVRTool.body);
             }
         }
         else if (/xbox/i.test(gamepad.id) || /xinput/i.test(gamepad.id)) YAWVRB.Gamepads.setGamepadCommands(gamepad.index, POOLVR.gamepadCommands);
@@ -200,7 +202,7 @@ window.onLoad = function () {
                 }
             }
 
-            THREE.py.CANNONize(scene, world);
+            THREE.py.CANNONize(scene, POOLVR.world);
 
             POOLVR.ballMeshes = [];
             POOLVR.ballBodies = [];
@@ -213,15 +215,32 @@ window.onLoad = function () {
             POOLVR.ballShadowMeshes = [];
 
             var floorBody, ceilingBody;
+
+            var materialLoader = new THREE.MaterialLoader();
+
+            // var basicMaterials = {};
+            // var nonbasicMaterials = {};
             var basicMaterials = {};
+            POOLVR.basicMaterials.forEach( function (json) {
+                var material = materialLoader.parse(json);
+                basicMaterials[json.uuid] = material;
+            } );
+            POOLVR.basicMaterials = basicMaterials;
+
             var nonbasicMaterials = {};
+            POOLVR.phongMaterials.forEach( function (json) {
+                var material = materialLoader.parse(json);
+                nonbasicMaterials[json.uuid] = material;
+            } );
+            POOLVR.nonbasicMaterials = nonbasicMaterials;
+
             scene.traverse(function (node) {
                 if (node instanceof THREE.Mesh) {
-                    if ((node.material instanceof THREE.MeshLambertMaterial || node.material instanceof THREE.MeshPhongMaterial) && (basicMaterials[node.material.uuid] === undefined)) {
-                        var basicMaterial = new THREE.MeshBasicMaterial({color: node.material.color.getHex(), transparent: node.material.transparent, side: node.material.side});
-                        basicMaterials[node.material.uuid] = basicMaterial;
-                        nonbasicMaterials[basicMaterial.uuid] = node.material;
-                    }
+                    // if ((node.material instanceof THREE.MeshLambertMaterial || node.material instanceof THREE.MeshPhongMaterial) && (basicMaterials[node.material.uuid] === undefined)) {
+                    //     var basicMaterial = new THREE.MeshBasicMaterial({color: node.material.color.getHex(), transparent: node.material.transparent, side: node.material.side});
+                    //     basicMaterials[node.material.uuid] = basicMaterial;
+                    //     nonbasicMaterials[basicMaterial.uuid] = node.material;
+                    // }
                     var ballNum;
                     if (node.name.startsWith('ballMesh')) {
                         ballNum = Number(node.name.split(' ')[1]);
@@ -253,7 +272,7 @@ window.onLoad = function () {
             });
 
             POOLVR.switchMaterials = function (useBasicMaterials) {
-                var materials = useBasicMaterials ? basicMaterials : nonbasicMaterials;
+                var materials = useBasicMaterials ? POOLVR.basicMaterials : POOLVR.nonbasicMaterials;
                 POOLVR.app.scene.traverse( function (node) {
                     if (node instanceof THREE.Mesh) {
                         var material = node.material;
@@ -311,7 +330,7 @@ window.onLoad = function () {
 
             var relVelocity = new CANNON.Vec3();
             var tipCollisionCounter = 0;
-            world.addEventListener('beginContact', function (evt) {
+            POOLVR.world.addEventListener('beginContact', function (evt) {
                 var bodyA = evt.bodyA;
                 var bodyB = evt.bodyB;
                 if (bodyA.material === bodyB.material) {
@@ -320,7 +339,7 @@ window.onLoad = function () {
                     POOLVR.playCollisionSound(relVelocity.lengthSquared());
                 } else if (bodyA.material === POOLVR.openVRTipMaterial && bodyB.material === POOLVR.ballMaterial) {
                     if (POOLVR.openVRTool.body.sleepState === CANNON.Body.AWAKE) {
-                        gamepadA.vibrate(12);
+                        if (gamepadA && gamepadA.vibrate) gamepadA.vibrate(12);
                         tipCollisionCounter++;
                         if (tipCollisionCounter === 1) {
                             POOLVR.synthSpeaker.speak("You moved a ball.  Good job.");

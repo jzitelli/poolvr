@@ -86,50 +86,6 @@ POOLVR.vrGamepadBCommands = {
 };
 
 
-POOLVR.parseURIConfig = function () {
-    "use strict";
-    POOLVR.config = POOLVR.config || {};
-    if (POOLVR.config.useBasicMaterials) {
-        POOLVR.config.useSpotLight = false;
-        POOLVR.config.usePointLight = false;
-        POOLVR.config.useShadowMap  = false;
-    } else {
-        POOLVR.config.useSpotLight  = YAWVRB.Utils.URL_PARAMS.useSpotLight  !== undefined ? YAWVRB.Utils.URL_PARAMS.useSpotLight  : (POOLVR.config.useSpotLight || true);
-        POOLVR.config.usePointLight = YAWVRB.Utils.URL_PARAMS.usePointLight !== undefined ? YAWVRB.Utils.URL_PARAMS.usePointLight : POOLVR.config.usePointLight;
-        POOLVR.config.useShadowMap  = YAWVRB.Utils.URL_PARAMS.useShadowMap  !== undefined ? YAWVRB.Utils.URL_PARAMS.useShadowMap  : POOLVR.config.useShadowMap;
-    }
-    // Leap Motion config:
-    POOLVR.config.toolOptions = POOLVR.config.toolOptions || {};
-    POOLVR.config.toolOptions.useShadowMesh  = !POOLVR.config.useShadowMap;
-    POOLVR.config.toolOptions.shadowPlane    = POOLVR.config.H_table + 0.001;
-    POOLVR.config.toolOptions.shadowMaterial = POOLVR.shadowMaterial;
-};
-
-
-POOLVR.saveConfig = function (profileName) {
-    "use strict";
-    localStorage.setItem('POOLVR' + POOLVR.version + '_' + profileName, JSON.stringify(POOLVR.config, undefined, 2));
-    console.log('saved configuration for profile "%s":', profileName);
-    console.log(localStorage[profileName]);
-};
-
-
-POOLVR.loadConfig = function (profileName) {
-    "use strict";
-    var localStorageConfig = localStorage.getItem('POOLVR' + POOLVR.version + '_' + profileName);
-    var config;
-    if (localStorageConfig) {
-        config = {};
-        localStorageConfig = JSON.parse(localStorageConfig);
-        for (var k in localStorageConfig) {
-            config[k] = localStorageConfig[k];
-        }
-        console.log('loaded configuration for profile "%s"',  profileName);
-    }
-    return config;
-};
-
-
 ( function () {
     "use strict";
     // TODO: load from JSON config
