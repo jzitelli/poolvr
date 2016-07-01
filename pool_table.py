@@ -48,28 +48,10 @@ def pool_table(L_table=2.3368, W_table=None, H_table=0.74295,
 
     poolTable = Object3D(name="poolTable")
 
-    materials = {}
-
     headSpotMaterial = MeshPhongMaterial(name="headSpotMaterial", color=0x0055aa, shading=FlatShading)
     surfaceMaterial = MeshPhongMaterial(name="surfaceMaterial", color=0x00aa00, shininess=5, shading=FlatShading)
     cushionMaterial = MeshPhongMaterial(name="cushionMaterial", color=0x028844, shininess=5, shading=FlatShading)
     railMaterial = MeshPhongMaterial(name="railMaterial", color=0xdda400, shininess=10, shading=FlatShading)
-
-    materials['phongMaterials'] = [headSpotMaterial, surfaceMaterial, cushionMaterial, railMaterial]
-
-    headSpotMaterial = MeshLambertMaterial(name="headSpotMaterial", color=0xcccccc, shading=FlatShading)
-    surfaceMaterial = MeshLambertMaterial(name="surfaceMaterial", color=0x00aa00, shading=FlatShading)
-    cushionMaterial = MeshLambertMaterial(name="cushionMaterial", color=0x028844, shading=FlatShading)
-    railMaterial = MeshLambertMaterial(name="railMaterial", color=0xdda400, shading=FlatShading)
-
-    materials['lambertMaterials'] = [headSpotMaterial, surfaceMaterial, cushionMaterial, railMaterial]
-
-    headSpotMaterial = MeshBasicMaterial(name="headSpotMaterial", color=0xcccccc)
-    surfaceMaterial = MeshBasicMaterial(name="surfaceMaterial", color=0x00aa00)
-    cushionMaterial = MeshBasicMaterial(name="cushionMaterial", color=0x028844)
-    railMaterial = MeshBasicMaterial(name="railMaterial", color=0xdda400)
-
-    materials['basicMaterials'] = [headSpotMaterial, surfaceMaterial, cushionMaterial, railMaterial]
 
     thickness = INCH2METER
     playableSurfaceGeom = BoxBufferGeometry(W_playable, thickness, L_playable)
@@ -216,7 +198,7 @@ def pool_table(L_table=2.3368, W_table=None, H_table=0.74295,
                              userData=railData)
     poolTable.add(rightFootRailMesh)
 
-    return poolTable, materials
+    return poolTable
 
 
 
@@ -224,8 +206,8 @@ def pool_hall(useSkybox=False,
               L_table=2.3368,
               H_table=0.74295,
               ball_diameter=2.25*INCH2METER,
-              L_room=3.2,
-              W_room = 3.2,
+              L_room=4,
+              W_room = 4,
               url_prefix="",
               **kwargs):
     """
@@ -237,16 +219,15 @@ def pool_hall(useSkybox=False,
         scene.add(Skybox(cube_images=[url_prefix + "images/%s.png" % pos
                                       for pos in ('px', 'nx', 'py', 'ny', 'pz', 'nz')]))
 
-    poolTable, materials = pool_table(L_table=L_table, H_table=H_table, ball_diameter=ball_diameter,
-                                      **kwargs)
+    poolTable = pool_table(L_table=L_table, H_table=H_table, ball_diameter=ball_diameter, **kwargs)
     scene.add(poolTable)
 
     floorMaterial = MeshLambertMaterial(name='floorMaterial',
                                         color=0xffffff,
                                         map=Texture(image=Image(url=url_prefix+"node_modules/three.js/examples/textures/hardwood2_diffuse.jpg"),
-                                                    repeat=[2*L_room, 2*W_room], wrap=[RepeatWrapping, RepeatWrapping]),
+                                                    repeat=[L_room, W_room], wrap=[RepeatWrapping, RepeatWrapping]),
                                         bumpMap=Texture(image=Image(url=url_prefix+"node_modules/three.js/examples/textures/hardwood2_bump.jpg"),
-                                                        repeat=[2*L_room, 2*W_room], wrap=[RepeatWrapping, RepeatWrapping]))
+                                                        repeat=[L_room, W_room], wrap=[RepeatWrapping, RepeatWrapping]))
 
     floorMesh = Mesh(name="floorMesh",
                      geometry=PlaneBufferGeometry(width=W_room, height=L_room),
@@ -289,10 +270,6 @@ def pool_hall(useSkybox=False,
                                         color=color,
                                         shading=SmoothShading)
                       for i, color in enumerate(ball_colors)]
-
-    materials['phongMaterials'] += ball_materials
-    materials['lambertMaterials'] += [MeshLambertMaterial(name=m.name, color=m.color, shading=m.shading) for m in ball_materials]
-    materials['basicMaterials'] += [MeshBasicMaterial(name=m.name, color=m.color) for m in ball_materials]
 
     ballData = {'cannonData': {'mass': 0.17, 'shapes': ['Sphere'],
                                'linearDamping': 0.27, 'angularDamping': 0.34}}
@@ -340,4 +317,4 @@ def pool_hall(useSkybox=False,
                               geometry=stripeGeom)
             ballMesh.add(stripeMesh)
 
-    return scene, materials
+    return scene

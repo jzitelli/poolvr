@@ -161,4 +161,7 @@ POOLVR.vrGamepadBCommands = {
 
 POOLVR.shadowMaterial = new THREE.MeshBasicMaterial({color: 0x002200});
 
+POOLVR.basicMaterials = {};
+POOLVR.nonBasicMaterials = {};
+
 POOLVR.profile = 'default';

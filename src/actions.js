@@ -43,6 +43,20 @@ POOLVR.loadConfig = function (profileName) {
 };
 
 
+POOLVR.switchMaterials = function (useBasicMaterials) {
+    var materials = useBasicMaterials ? POOLVR.basicMaterials : POOLVR.nonBasicMaterials;
+    POOLVR.app.scene.traverse( function (node) {
+        if (node instanceof THREE.Mesh) {
+            var material = node.material;
+            var uuid = material.uuid;
+            if (materials[uuid]) {
+                node.material = materials[uuid];
+            }
+        }
+    } );
+};
+
+
 POOLVR.selectNextBall = function (inc) {
     "use strict";
     inc = inc || 1;

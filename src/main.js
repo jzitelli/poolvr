@@ -216,31 +216,8 @@ window.onLoad = function () {
 
             var floorBody, ceilingBody;
 
-            var materialLoader = new THREE.MaterialLoader();
-
-            // var basicMaterials = {};
-            // var nonbasicMaterials = {};
-            var basicMaterials = {};
-            POOLVR.basicMaterials.forEach( function (json) {
-                var material = materialLoader.parse(json);
-                basicMaterials[json.uuid] = material;
-            } );
-            POOLVR.basicMaterials = basicMaterials;
-
-            var nonbasicMaterials = {};
-            POOLVR.phongMaterials.forEach( function (json) {
-                var material = materialLoader.parse(json);
-                nonbasicMaterials[json.uuid] = material;
-            } );
-            POOLVR.nonbasicMaterials = nonbasicMaterials;
-
-            scene.traverse(function (node) {
+            scene.traverse( function (node) {
                 if (node instanceof THREE.Mesh) {
-                    // if ((node.material instanceof THREE.MeshLambertMaterial || node.material instanceof THREE.MeshPhongMaterial) && (basicMaterials[node.material.uuid] === undefined)) {
-                    //     var basicMaterial = new THREE.MeshBasicMaterial({color: node.material.color.getHex(), transparent: node.material.transparent, side: node.material.side});
-                    //     basicMaterials[node.material.uuid] = basicMaterial;
-                    //     nonbasicMaterials[basicMaterial.uuid] = node.material;
-                    // }
                     var ballNum;
                     if (node.name.startsWith('ballMesh')) {
                         ballNum = Number(node.name.split(' ')[1]);
@@ -270,19 +247,6 @@ window.onLoad = function () {
                     }
                 }
             });
-
-            POOLVR.switchMaterials = function (useBasicMaterials) {
-                var materials = useBasicMaterials ? POOLVR.basicMaterials : POOLVR.nonbasicMaterials;
-                POOLVR.app.scene.traverse( function (node) {
-                    if (node instanceof THREE.Mesh) {
-                        var material = node.material;
-                        var uuid = material.uuid;
-                        if (materials[uuid]) {
-                            node.material = materials[uuid];
-                        }
-                    }
-                } );
-            };
 
             if (!POOLVR.config.useShadowMap) {
                 var ballShadowGeom = new THREE.CircleBufferGeometry(0.5*POOLVR.config.ball_diameter, 16);
@@ -339,7 +303,7 @@ window.onLoad = function () {
                     POOLVR.playCollisionSound(relVelocity.lengthSquared());
                 } else if (bodyA.material === POOLVR.openVRTipMaterial && bodyB.material === POOLVR.ballMaterial) {
                     if (POOLVR.openVRTool.body.sleepState === CANNON.Body.AWAKE) {
-                        if (gamepadA && gamepadA.vibrate) gamepadA.vibrate(12);
+                        if (gamepadA && gamepadA.vibrate) gamepadA.vibrate(10);
                         tipCollisionCounter++;
                         if (tipCollisionCounter === 1) {
                             POOLVR.synthSpeaker.speak("You moved a ball.  Good job.");
@@ -350,8 +314,20 @@ window.onLoad = function () {
                 }
             });
 
+            scene.traverse( function (node) {
+                if (node instanceof THREE.Mesh) {
+                    if ((node.material instanceof THREE.MeshLambertMaterial || node.material instanceof THREE.MeshPhongMaterial) && (POOLVR.basicMaterials[node.material.uuid] === undefined)) {
+                        var basicMaterial = new THREE.MeshBasicMaterial({color: node.material.color.getHex(), transparent: node.material.transparent, side: node.material.side, map: node.material.map, bumpMap: node.material.bumpMap, normalMap: node.material.normalMap});
+                        POOLVR.basicMaterials[node.material.uuid] = basicMaterial;
+                        POOLVR.nonBasicMaterials[basicMaterial.uuid] = node.material;
+                    }
+                }
+            } );
+
             scene.updateMatrixWorld(true);
+
             POOLVR.leapTool.updateToolMapping();
+
             POOLVR.switchMaterials(POOLVR.config.useBasicMaterials);
             POOLVR.startAnimateLoop();
 
