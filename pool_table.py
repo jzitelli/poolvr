@@ -48,7 +48,7 @@ def pool_table(L_table=2.3368, W_table=None, H_table=0.74295,
 
     poolTable = Object3D(name="poolTable")
 
-    headSpotMaterial = MeshPhongMaterial(name="headSpotMaterial", color=0x0055aa, shading=FlatShading)
+    headSpotMaterial = MeshPhongMaterial(name="headSpotMaterial", color=0x555555, shading=FlatShading)
     surfaceMaterial = MeshPhongMaterial(name="surfaceMaterial", color=0x00aa00, shininess=5, shading=FlatShading)
     cushionMaterial = MeshPhongMaterial(name="cushionMaterial", color=0x028844, shininess=5, shading=FlatShading)
     railMaterial = MeshPhongMaterial(name="railMaterial", color=0xdda400, shininess=10, shading=FlatShading)
@@ -69,7 +69,7 @@ def pool_table(L_table=2.3368, W_table=None, H_table=0.74295,
     headSpotMesh = Mesh(geometry=spotGeom,
                         material=headSpotMaterial,
                         position=[0, H_table + 0.0002, 0.25*L_table],
-                        rotation=[-np.pi/2, 0, 0],
+                        rotation=[-np.pi/2, 0, np.pi/10],
                         receiveShadow=True)
     poolTable.add(headSpotMesh)
 
