@@ -112,9 +112,11 @@ window.onLoad = function () {
         tipMaterial: POOLVR.openVRTipMaterial
     }));
     POOLVR.openVRTool = openVRTool;
-    POOLVR.app.stage.add(openVRTool.mesh);
-    openVRTool.mesh.visible = false;
+    POOLVR.openVRTool.mesh.visible = false;
+    if (POOLVR.openVRTool.shadowMesh) POOLVR.openVRTool.shadowMesh.visible = false;
+    POOLVR.app.stage.add(POOLVR.openVRTool.mesh);
     var gamepadA;
+    YAWVRB.Gamepads.setOnGamepadConnected(onGamepadConnected);
     function onGamepadConnected(e) {
         var gamepad = e.gamepad;
         if (!gamepad) return;
@@ -127,13 +129,19 @@ window.onLoad = function () {
                 gamepadA = gamepad;
                 YAWVRB.Gamepads.setGamepadCommands(gamepad.index, POOLVR.vrGamepadACommands);
                 openVRTool.mesh.visible = true;
+                if (POOLVR.openVRTool.shadowMesh) POOLVR.openVRTool.shadowMesh.visible = true;
                 openVRTool.setGamepad(gamepad);
                 POOLVR.world.addBody(openVRTool.body);
             }
         }
         else if (/xbox/i.test(gamepad.id) || /xinput/i.test(gamepad.id)) YAWVRB.Gamepads.setGamepadCommands(gamepad.index, POOLVR.gamepadCommands);
     }
-    YAWVRB.Gamepads.setOnGamepadConnected(onGamepadConnected);
+    YAWVRB.Gamepads.setOnGamepadDisconnected( function (evt) {
+        if (gamepadA && gamepadA.index === evt.gamepad.index) {
+            POOLVR.openVRTool.mesh.visible = false;
+            if (POOLVR.openVRTool.shadowMesh) POOLVR.openVRTool.shadowMesh.visible = false;
+        }
+    } );
 
     THREE.py.parse(THREEPY_SCENE).then( function (scene) {
 
@@ -168,9 +176,9 @@ window.onLoad = function () {
 
         var pointLight = new THREE.PointLight(0xaa8866, 0.8, 40);
         pointLight.position.set(4, 5, 2.5);
-        scene.add(pointLight);
         pointLight.updateMatrix();
         pointLight.updateMatrixWorld();
+        scene.add(pointLight);
         POOLVR.pointLight = pointLight;
         POOLVR.pointLight.visible = POOLVR.config.usePointLight;
 

@@ -21,9 +21,10 @@ POOLVR.parseURIConfig = function () {
 
 POOLVR.saveConfig = function (profileName) {
     "use strict";
-    localStorage.setItem('POOLVR' + POOLVR.version + '_' + profileName, JSON.stringify(POOLVR.config, undefined, 2));
+    var key = 'POOLVR' + POOLVR.version + '_' + profileName;
+    localStorage.setItem(key, JSON.stringify(POOLVR.config, undefined, 2));
     console.log('saved configuration for profile "%s":', profileName);
-    console.log(localStorage[profileName]);
+    console.log(localStorage[key]);
 };
 
 

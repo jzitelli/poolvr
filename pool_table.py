@@ -48,7 +48,7 @@ def pool_table(L_table=2.3368, W_table=None, H_table=0.74295,
 
     poolTable = Object3D(name="poolTable")
 
-    headSpotMaterial = MeshPhongMaterial(name="headSpotMaterial", color=0x555555, shading=FlatShading)
+    headSpotMaterial = MeshPhongMaterial(name="headSpotMaterial", color=0x777777, shading=FlatShading)
     surfaceMaterial = MeshPhongMaterial(name="surfaceMaterial", color=0x00aa00, shininess=5, shading=FlatShading)
     cushionMaterial = MeshPhongMaterial(name="cushionMaterial", color=0x028844, shininess=5, shading=FlatShading)
     railMaterial = MeshPhongMaterial(name="railMaterial", color=0xdda400, shininess=10, shading=FlatShading)
@@ -222,12 +222,12 @@ def pool_hall(useSkybox=False,
     poolTable = pool_table(L_table=L_table, H_table=H_table, ball_diameter=ball_diameter, **kwargs)
     scene.add(poolTable)
 
-    floorMaterial = MeshLambertMaterial(name='floorMaterial',
-                                        color=0xffffff,
-                                        map=Texture(image=Image(url=url_prefix+"node_modules/three.js/examples/textures/hardwood2_diffuse.jpg"),
-                                                    repeat=[L_room, W_room], wrap=[RepeatWrapping, RepeatWrapping]),
-                                        bumpMap=Texture(image=Image(url=url_prefix+"node_modules/three.js/examples/textures/hardwood2_bump.jpg"),
-                                                        repeat=[L_room, W_room], wrap=[RepeatWrapping, RepeatWrapping]))
+    floorMaterial = MeshPhongMaterial(name='floorMaterial',
+                                      color=0xffffff,
+                                      map=Texture(image=Image(url=url_prefix+"node_modules/three.js/examples/textures/hardwood2_diffuse.jpg"),
+                                                  repeat=[L_room, W_room], wrap=[RepeatWrapping, RepeatWrapping]),
+                                      bumpMap=Texture(image=Image(url=url_prefix+"node_modules/three.js/examples/textures/hardwood2_bump.jpg"),
+                                                      repeat=[L_room, W_room], wrap=[RepeatWrapping, RepeatWrapping]), bumpScale=0.06)
 
     floorMesh = Mesh(name="floorMesh",
                      geometry=PlaneBufferGeometry(width=W_room, height=L_room),
