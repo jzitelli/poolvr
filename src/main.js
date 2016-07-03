@@ -34,6 +34,7 @@ window.onLoad = function () {
         canvas: document.getElementById('webgl-canvas'),
         antialias: (YAWVRB.Utils.URL_PARAMS.antialias !== undefined ? YAWVRB.Utils.URL_PARAMS.antialias : POOLVR.config.antialias) || !YAWVRB.Utils.isMobile()
     };
+
     var appConfig = {
         onResetVRSensor: function () {
             POOLVR.leapTool.updateToolMapping();
@@ -337,12 +338,10 @@ window.onLoad = function () {
                     var viveDiffuseMap = loader.load('onepointfive_texture.png');
                     var viveSpecularMap = loader.load('onepointfive_spec.png');
                     var controller = object.children[ 0 ];
-                    // controller.material.color.setHex(0x444444);
                     controller.material.map = viveDiffuseMap;
                     controller.material.specularMap = viveSpecularMap;
                     var controllerMesh = object.clone();
                     POOLVR.openVRTool.mesh.add(controllerMesh);
-
                     setTimeout( function () {
                         POOLVR.openVRTool.mesh.remove(controllerMesh);
                     }, 14000);
