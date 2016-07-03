@@ -58,6 +58,8 @@ POOLVR = {
         'ball_diameter'      : 2.25 * pool_table.INCH2METER,
         'H_ceiling'          : 8 * 12 * 0.0254,
         'synthSpeakerVolume' : 0.5,
+        'synthSpeakerRate'   : 0.7,
+        'synthSpeakerPitch'  : 0.5,
         'toolOptions': {
             'tipShape'               : 'Cylinder',
             'numSegments'            : 8,

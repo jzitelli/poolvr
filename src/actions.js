@@ -103,8 +103,7 @@ POOLVR.autoPosition = ( function () {
     var nextVector = new THREE.Vector3();
     var UP = THREE.Object3D.DefaultUp;
     var speakCount = 0;
-    return function (forVive) {
-
+    return function () {
         if (POOLVR.synthSpeaker.speaking === false) {
             if (speakCount <= 3) {
                 POOLVR.synthSpeaker.speak("You are being auto-positioned.");
@@ -114,21 +113,14 @@ POOLVR.autoPosition = ( function () {
                 speakCount++;
             }
         }
-
         var avatar = POOLVR.app.stage;
         var heading = Math.atan2(
             -(POOLVR.ballMeshes[POOLVR.nextBall].position.x - POOLVR.ballMeshes[0].position.x),
             -(POOLVR.ballMeshes[POOLVR.nextBall].position.z - POOLVR.ballMeshes[0].position.z)
         );
         avatar.quaternion.setFromAxisAngle(UP, heading);
-
-        if (forVive) {
-            // auto-position so that cue ball is 0.5 meters in front of you
-            nextVector.set(0, 0, -0.5);
-        } else {
-            // auto-position so that cue ball is on top of leap controller
-            nextVector.copy(POOLVR.leapTool.toolRoot.position);
-        }
+        // auto-position so that cue ball is on top of leap controller
+        nextVector.copy(POOLVR.leapTool.toolRoot.position);
         nextVector.applyQuaternion(avatar.quaternion);
         nextVector.add(avatar.position);
         nextVector.sub(POOLVR.ballMeshes[0].position);
@@ -137,7 +129,6 @@ POOLVR.autoPosition = ( function () {
         avatar.updateMatrix();
         avatar.updateMatrixWorld();
         POOLVR.leapTool.updateToolMapping();
-
     };
 } )();
 
@@ -152,3 +143,78 @@ POOLVR.stroke = ( function () {
         body.velocity.copy(velocity);
     };
 } )();
+
+
+POOLVR.moveStage = ( function () {
+    "use strict";
+    return function (keyboard, gamepadValues, dt) {
+        var stage = POOLVR.app.stage;
+        var moveFB = 0, moveRL = 0, moveUD = 0, turnRL = 0;
+        if (keyboard) {
+            moveFB += keyboard.moveForward - keyboard.moveBackward;
+            moveUD += keyboard.moveUp - keyboard.moveDown;
+            moveRL += keyboard.moveRight - keyboard.moveLeft;
+            turnRL += keyboard.turnRight - keyboard.turnLeft;
+        }
+        for (var i = 0; i < gamepadValues.length; i++) {
+            var values = gamepadValues[i];
+            if (values.toggleFloatMode) {
+                if (values.moveFB) moveUD -= values.moveFB;
+                if (values.turnLR) moveRL += values.turnLR;
+            } else {
+                if (values.moveFB) moveFB -= values.moveFB;
+                if (values.turnLR) turnRL += values.turnLR;
+            }
+        }
+        if (moveFB || moveRL || moveUD || turnRL) {
+            YAWVRB.Utils.moveObject(stage, dt, moveFB, moveRL, moveUD, turnRL, 0);
+        }
+    };
+} )();
+
+
+POOLVR.moveToolRoot = ( function () {
+    "use strict";
+    return function (keyboard, gamepadValues, dt) {
+        var moveFB = 0, moveRL = 0, moveUD = 0, turnRL = 0;
+        if (keyboard) {
+            moveFB += keyboard.moveToolForward - keyboard.moveToolBackward;
+            moveUD += keyboard.moveToolUp - keyboard.moveToolDown;
+            moveRL += keyboard.moveToolRight - keyboard.moveToolLeft;
+            turnRL += keyboard.rotateToolCW - keyboard.rotateToolCCW;
+        }
+        for (var i = 0; i < gamepadValues.length; i++) {
+            var values = gamepadValues[i];
+            if (values.toggleToolFloatMode) {
+                if (values.moveToolFB) moveUD -= values.moveToolFB;
+                if (values.turnToolLR) moveRL += values.turnToolLR;
+            } else {
+                if (values.moveToolFB) moveFB -= values.moveToolFB;
+                if (values.turnToolLR) turnRL += values.turnToolLR;
+            }
+        }
+        if (moveFB || moveRL || moveUD || turnRL) {
+            YAWVRB.Utils.moveObject(POOLVR.leapTool.toolRoot, dt, moveFB, moveRL, moveUD, turnRL, 0);
+            POOLVR.leapTool.setDeadtime(0);
+        }
+    };
+} )();
+
+
+POOLVR.startTutorial = function () {
+    "use strict";
+    POOLVR.synthSpeaker.speak("Hello.  Welcome. To. Pool-ver.", function () {
+        POOLVR.textGeomLogger.log("HELLO.  WELCOME TO POOLVR.");
+    });
+
+    POOLVR.synthSpeaker.speak("Please wave a stick-like object in front of your Leap Motion controller.", function () {
+        POOLVR.textGeomLogger.log("PLEASE WAVE A STICK-LIKE OBJECT IN FRONT OF YOUR");
+        POOLVR.textGeomLogger.log("LEAP MOTION CONTROLLER.");
+    });
+
+    POOLVR.synthSpeaker.speak("Keep the stick within the interaction box when you want to make contact with.  A ball.", function () {
+        POOLVR.textGeomLogger.log("KEEP THE STICK WITHIN THE INTERACTION BOX WHEN YOU WANT");
+        POOLVR.textGeomLogger.log("TO MAKE CONTACT WITH A BALL...");
+    });
+
+};
