@@ -165,6 +165,7 @@ POOLVR.moveStage = ( function () {
                 if (values.moveFB) moveFB -= values.moveFB;
                 if (values.turnLR) turnRL += values.turnLR;
             }
+            if (values.moveRL) moveRL += values.moveRL;
         }
         if (moveFB || moveRL || moveUD || turnRL) {
             YAWVRB.Utils.moveObject(stage, dt, moveFB, moveRL, moveUD, turnRL, 0);

@@ -139,7 +139,7 @@ var POOLVR = %s;
 var THREEPY_SCENE = %s;
 </script>""" % (json.dumps(webvr_config, indent=2),
                 json.dumps(poolvr_config, indent=2),
-                json.dumps(pool_table.pool_hall(**POOLVR['config']).export()))),
+                json.dumps(pool_table.pool_hall(**poolvr_config['config']).export()))),
                            version_content=Markup(r"""
 <h3>v{2}</h3>
 <table>
@@ -152,7 +152,7 @@ var THREEPY_SCENE = %s;
 </td>
 </tr>
 </table>
-""".format(GIT_REVS[0], GIT_REVS[1], POOLVR['version'])))
+""".format(GIT_REVS[0], GIT_REVS[1], poolvr_config['version'])))
 
 
 @app.route('/')
@@ -162,7 +162,6 @@ def poolvr():
     """
     webvr_config = get_webvr_config()
     poolvr_config = get_poolvr_config()
-    pool_hall = pool_table.pool_hall(**poolvr_config)
     return render_poolvr_template(webvr_config=webvr_config, poolvr_config=poolvr_config)
 
 

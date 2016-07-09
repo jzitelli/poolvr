@@ -135,8 +135,11 @@ window.onLoad = function () {
                 POOLVR.openVRTool.setGamepad(gamepad);
                 POOLVR.world.addBody(POOLVR.openVRTool.body);
             }
+        } else if (/xbox/i.test(gamepad.id) || /xinput/i.test(gamepad.id)) {
+            YAWVRB.Gamepads.setGamepadCommands(gamepad.index, POOLVR.xboxGamepadCommands);
+        } else if (/3232/i.test(gamepad.id) || /b629/i.test(gamepad.id)) {
+            YAWVRB.Gamepads.setGamepadCommands(gamepad.index, POOLVR.destekGamepadCommands);
         }
-        else if (/xbox/i.test(gamepad.id) || /xinput/i.test(gamepad.id)) YAWVRB.Gamepads.setGamepadCommands(gamepad.index, POOLVR.gamepadCommands);
     }
     YAWVRB.Gamepads.setOnGamepadDisconnected( function (evt) {
         if (gamepadA && gamepadA.index === evt.gamepad.index) {
@@ -363,7 +366,7 @@ POOLVR.startAnimateLoop = function () {
     POOLVR.app.scene.traverse( function (node) {
         if (node instanceof THREE.Mesh) {
             if ((node.material instanceof THREE.MeshLambertMaterial || node.material instanceof THREE.MeshPhongMaterial) && (POOLVR.basicMaterials[node.material.uuid] === undefined)) {
-                var basicMaterial = new THREE.MeshBasicMaterial({color: node.material.color.getHex(), transparent: node.material.transparent, side: node.material.side, map: node.material.map, bumpMap: node.material.bumpMap, normalMap: node.material.normalMap});
+                var basicMaterial = new THREE.MeshBasicMaterial({color: node.material.color.getHex(), transparent: node.material.transparent, side: node.material.side, map: node.material.map});
                 POOLVR.basicMaterials[node.material.uuid] = basicMaterial;
                 POOLVR.nonBasicMaterials[basicMaterial.uuid] = node.material;
             }

@@ -52,7 +52,7 @@ POOLVR.keyboardCommands = {
 
 POOLVR.keyboard = new YAWVRB.Keyboard(window, POOLVR.keyboardCommands);
 
-POOLVR.gamepadCommands = {
+POOLVR.xboxGamepadCommands = {
     turnLR: {axes: [YAWVRB.Gamepads.AXES.LSX]},
     moveFB: {axes: [YAWVRB.Gamepads.AXES.LSY]},
     toggleFloatMode: {buttons: [YAWVRB.Gamepads.BUTTONS.leftStick]},
@@ -85,6 +85,11 @@ POOLVR.vrGamepadBCommands = {
     resetVRSensor: {buttons: [3], commandDown: POOLVR.commands.resetVRSensor}
 };
 
+POOLVR.destekGamepadCommands = {
+    moveFB: {axes: [0]},
+    moveRL: {axes: [1], flipAxes: true},
+    autoPosition: {buttons: [0], commandDown: POOLVR.commands.autoPosition}
+};
 
 ( function () {
     "use strict";
