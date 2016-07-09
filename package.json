@@ -15,6 +15,7 @@
     "leapjs": "0.6.4",
     "three.js": "git://github.com/jzitelli/three.js.git#dev",
     "three.py": "git://github.com/jzitelli/three.py.git#dev",
+    "webvr-polyfill": "git://github.com/jzitelli/webvr-polyfill.git",
     "yawvrb": "git://github.com/jzitelli/yawvrb.git#dev"
   },
   "devDependencies": {
@@ -30,7 +31,6 @@
     "sounds/",
     "src/",
     ".eslintrc.json",
-    "dist.py",
     "favicon.ico",
     "pool_table.py",
     "poolvr.css",
