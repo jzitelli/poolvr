@@ -732,10 +732,10 @@ window.onLoad = function () {
             if (isVive) {
 
                 var loader = new THREE.OBJLoader();
-                loader.setPath( '/node_modules/three.js/examples/models/obj/vive-controller/' );
+                loader.setPath( 'node_modules/three.js/examples/models/obj/vive-controller/' );
                 loader.load( 'vr_controller_vive_1_5.obj', function ( object ) {
                     var loader = new THREE.TextureLoader();
-                    loader.setPath('/node_modules/three.js/examples/models/obj/vive-controller/');
+                    loader.setPath('node_modules/three.js/examples/models/obj/vive-controller/');
                     var viveDiffuseMap = loader.load('onepointfive_texture.png');
                     var viveSpecularMap = loader.load('onepointfive_spec.png');
                     var controller = object.children[ 0 ];
