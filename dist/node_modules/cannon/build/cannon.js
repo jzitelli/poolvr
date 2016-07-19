@@ -1,4 +1,4 @@
-// Tue, 28 Jun 2016 02:57:35 GMT
+// Thu, 14 Jul 2016 01:39:49 GMT
 
 /*
  * Copyright (c) 2015 cannon.js Authors
@@ -9425,6 +9425,7 @@ var Mat3 = _dereq_('../math/Mat3');
  */
 function Ellipsoid(a, b, c) {
     Shape.call(this);
+    this.type = Shape.types.ELLIPSOID;
 
     /**
      * @property {Number} a
@@ -9439,14 +9440,16 @@ function Ellipsoid(a, b, c) {
      */
     this.c = c !== undefined ? Number(c) : 1.0;
 
-    this.type = Shape.types.ELLIPSOID;
-
     if(this.a <= 0 || this.b <= 0 || this.c <= 0){
         throw new Error('The Ellipsoid lengths must be positive.');
     }
 
+    this._R = new Vec3(this.a, this.b, this.c);
+    this._R2 = this._R.vmul(this._R);
+    
     this.updateBoundingSphereRadius();
 }
+
 Ellipsoid.prototype = new Shape();
 Ellipsoid.prototype.constructor = Ellipsoid;
 
@@ -9468,6 +9471,11 @@ Ellipsoid.prototype.volume = function(){
 Ellipsoid.prototype.updateBoundingSphereRadius = function(){
     this.boundingSphereRadius = Math.max(this.a, this.b, this.c);
 };
+
+var U = new Mat3();
+var u0 = new Vec3();
+var u1 = new Vec3();
+var u2 = new Vec3();
 
 Ellipsoid.prototype.calculateWorldAABB = function(pos,quat,min,max) {
     /**
@@ -9513,33 +9521,23 @@ Ellipsoid.prototype.calculateWorldAABB = function(pos,quat,min,max) {
      *
      *   x_i = (+/-) (R_j)^2 U_kj U_ij / [(R_m)^2 (U_km)^2]^(1/2).
      */
-     var R = new Vec3(this.a, this.b, this.c);
-     var R2 = R.vmul(R);
-     var U = (new Mat3()).setRotationFromQuaternion(quat);
-     var e = U.elements;
-     var u0 = new Vec3(e[0], e[1], e[2]);
-     var u1 = new Vec3(e[3], e[4], e[5]);
-     var u2 = new Vec3(e[6], e[7], e[8]);
-     var u02 = u0.vmul(u0);
-     var u12 = u1.vmul(u1);
-     var u22 = u2.vmul(u2);
-     var bInverse = [Math.sqrt(R2.dot(u02)), Math.sqrt(R2.dot(u12)), Math.sqrt(R2.dot(u22))];
-     R2 = R2.toArray();
-     u02 = u02.toArray();
-     u12 = u12.toArray();
-     u22 = u22.toArray();
-     var x = 0;
-     var y = 0;
-     var z = 0;
-     for (var j = 0; j < 3; j++) {
-         x += R2[j] * u02[j] / bInverse[0];
-         y += R2[j] * u12[j] / bInverse[1];
-         z += R2[j] * u22[j] / bInverse[2];
-     }
-     max.set(x, y, z);
-     min.set(-x, -y, -z);
-     max.vadd(pos, max);
-     min.vadd(pos, min);
+    
+    U.setRotationFromQuaternion(quat);
+    var e = U.elements;
+    u0.set(e[0]*e[0], e[1]*e[1], e[2]*e[2]);
+    u1.set(e[3]*e[3], e[4]*e[4], e[5]*e[5]);
+    u2.set(e[6]*e[6], e[7]*e[7], e[8]*e[8]);
+    var R2 = this._R2;
+    var x0 = R2.dot(u0);
+    var x1 = R2.dot(u1);
+    var x2 = R2.dot(u2);
+    x0 /= Math.sqrt(R2.dot(u0));
+    x1 /= Math.sqrt(R2.dot(u1));
+    x2 /= Math.sqrt(R2.dot(u2));
+    max.set(x0, x1, x2);
+    max.negate(min);
+    max.vadd(pos, max);
+    min.vadd(pos, min);
 };
 
 },{"../math/Mat3":28,"../math/Vec3":31,"./Shape":46}],42:[function(_dereq_,module,exports){
@@ -13832,7 +13830,8 @@ Narrowphase.prototype.sphereHeightfield = function (
         iMaxY = Math.ceil((localSpherePos.y + radius) / w) + 1;
 
     // Bail out if we are out of the terrain
-    if(iMaxX < 0 || iMaxY < 0 || iMinX > data.length || iMaxY > data[0].length){
+    // changed per https://github.com/schteppe/cannon.js/pull/265:
+    if(iMaxX < 0 || iMaxY < 0 || iMinX > data.length || iMinY > data[0].length){
         return;
     }
 
@@ -13902,12 +13901,55 @@ Narrowphase.prototype.sphereHeightfield = function (
 };
 
 
+var i2j = new Vec3();
+var nj  = new Vec3();
+var sumNormals = new Vec3();
+
 /**
  * @method sphereEllipsoid
  */
 Narrowphase.prototype[Shape.types.SPHERE | Shape.types.ELLIPSOID] =
 Narrowphase.prototype.sphereEllipsoid = function(si,sj,xi,xj,qi,qj,bi,bj,rsi,rsj, justTest) {
-    // TODO
+    /*
+     * At most one contact, generated according to the heuristic:
+     *
+     *   || \vec{n_i} + \vec{n_j} || < \epsilon.
+     *
+     */
+    var r = this.createContactEquation(bi, bj, si, sj, rsi, rsj);
+    var ri = r.ri,
+        rj = r.rj,
+        ni = r.ni;
+
+    var eps_sqrd = Math.pow(0.01, 2);
+    var max_iters = 8;
+
+    // initial guess (satisfying the case where the ellipsoid is spherical):
+    var iter = 0;
+    xj.vsub(xi, i2j);
+    ni.copy(i2j);
+    ni.normalize();
+    // determine contact point and normal on the ellipsoid:
+    var j2i_loc = Transform.vectorToLocalFrame(undefined, qj, i2j);
+    j2i_loc.negate();
+    sj._R.vmul(j2i_loc, nj);
+    var s = Math.sqrt(i2j.norm2() / j2i_loc.dot(nj));
+    qj.vmult(nj, nj);
+    nj.normalize();
+    nj.mult(s, rj);
+    ni.vadd(nj, sumNormals);
+
+    while (sumNormals.dot(sumNormals) > eps_sqrd) {
+        // find closest intersection of the ellipsoid tangent with the sphere:
+
+    }
+
+    if (sumNormals.dot(sumNormals) <= eps_sqrd) {
+        // verify contact:
+
+    } else {
+        if (justTest) return false;
+    }
 };
 
 
@@ -13921,7 +13963,6 @@ Narrowphase.prototype.planeEllipsoid = function(si,sj,xi,xj,qi,qj,bi,bj,rsi,rsj,
 
 
 var y_cyl = new Vec3();
-var i2j = new Vec3();
 var paral = new Vec3();
 var ortho = new Vec3();
 /**
@@ -13934,7 +13975,7 @@ Narrowphase.prototype.sphereImplicitCylinder = function (si, sj, xi, xj, qi, qj,
     var r, ri, rj, ni;
     xj.vsub(xi, i2j);
 
-    // project into cylindrical basis:
+    // project into cylinder's local basis:
     qj.vmult(Vec3.UNIT_Y, y_cyl);
     var sparal = -y_cyl.dot(i2j);
     var lparal = Math.abs(sparal);

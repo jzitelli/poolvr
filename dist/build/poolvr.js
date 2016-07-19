@@ -1,5 +1,64 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-/* global POOLVR, THREE */
+/* global POOLVR, THREE, YAWVRB */
+POOLVR.parseURIConfig = function () {
+    "use strict";
+    POOLVR.config = POOLVR.config || {};
+    if (POOLVR.config.useBasicMaterials) {
+        POOLVR.config.useSpotLight = false;
+        POOLVR.config.usePointLight = false;
+        POOLVR.config.useShadowMap  = false;
+    } else {
+        POOLVR.config.useSpotLight  = YAWVRB.Utils.URL_PARAMS.useSpotLight  !== undefined ? YAWVRB.Utils.URL_PARAMS.useSpotLight  : (POOLVR.config.useSpotLight || true);
+        POOLVR.config.usePointLight = YAWVRB.Utils.URL_PARAMS.usePointLight !== undefined ? YAWVRB.Utils.URL_PARAMS.usePointLight : POOLVR.config.usePointLight;
+        POOLVR.config.useShadowMap  = YAWVRB.Utils.URL_PARAMS.useShadowMap  !== undefined ? YAWVRB.Utils.URL_PARAMS.useShadowMap  : POOLVR.config.useShadowMap;
+    }
+    // Leap Motion config:
+    POOLVR.config.toolOptions = POOLVR.config.toolOptions || {};
+    POOLVR.config.toolOptions.useShadowMesh  = !POOLVR.config.useShadowMap;
+    POOLVR.config.toolOptions.shadowPlane    = POOLVR.config.H_table + 0.001;
+    POOLVR.config.toolOptions.shadowMaterial = POOLVR.shadowMaterial;
+};
+
+
+POOLVR.saveConfig = function (profileName) {
+    "use strict";
+    var key = 'POOLVR' + POOLVR.version + '_' + profileName;
+    localStorage.setItem(key, JSON.stringify(POOLVR.config, undefined, 2));
+    console.log('saved configuration for profile "%s":', profileName);
+    console.log(localStorage[key]);
+};
+
+
+POOLVR.loadConfig = function (profileName) {
+    "use strict";
+    var localStorageConfig = localStorage.getItem('POOLVR' + POOLVR.version + '_' + profileName);
+    var config;
+    if (localStorageConfig) {
+        config = {};
+        localStorageConfig = JSON.parse(localStorageConfig);
+        for (var k in localStorageConfig) {
+            config[k] = localStorageConfig[k];
+        }
+        console.log('loaded configuration for profile "%s"',  profileName);
+    }
+    return config;
+};
+
+
+POOLVR.switchMaterials = function (useBasicMaterials) {
+    var materials = useBasicMaterials ? POOLVR.basicMaterials : POOLVR.nonBasicMaterials;
+    POOLVR.app.scene.traverse( function (node) {
+        if (node instanceof THREE.Mesh) {
+            var material = node.material;
+            var uuid = material.uuid;
+            if (materials[uuid]) {
+                node.material = materials[uuid];
+            }
+        }
+    } );
+};
+
+
 POOLVR.selectNextBall = function (inc) {
     "use strict";
     inc = inc || 1;
@@ -45,8 +104,7 @@ POOLVR.autoPosition = ( function () {
     var nextVector = new THREE.Vector3();
     var UP = THREE.Object3D.DefaultUp;
     var speakCount = 0;
-    return function (forVive) {
-
+    return function () {
         if (POOLVR.synthSpeaker.speaking === false) {
             if (speakCount <= 3) {
                 POOLVR.synthSpeaker.speak("You are being auto-positioned.");
@@ -56,21 +114,14 @@ POOLVR.autoPosition = ( function () {
                 speakCount++;
             }
         }
-
         var avatar = POOLVR.app.stage;
         var heading = Math.atan2(
             -(POOLVR.ballMeshes[POOLVR.nextBall].position.x - POOLVR.ballMeshes[0].position.x),
             -(POOLVR.ballMeshes[POOLVR.nextBall].position.z - POOLVR.ballMeshes[0].position.z)
         );
         avatar.quaternion.setFromAxisAngle(UP, heading);
-
-        if (forVive) {
-            // auto-position so that cue ball is 0.5 meters in front of you
-            nextVector.set(0, 0, -0.5);
-        } else {
-            // auto-position so that cue ball is on top of leap controller
-            nextVector.copy(POOLVR.leapTool.toolRoot.position);
-        }
+        // auto-position so that cue ball is on top of leap controller
+        nextVector.copy(POOLVR.leapTool.toolRoot.position);
         nextVector.applyQuaternion(avatar.quaternion);
         nextVector.add(avatar.position);
         nextVector.sub(POOLVR.ballMeshes[0].position);
@@ -79,7 +130,6 @@ POOLVR.autoPosition = ( function () {
         avatar.updateMatrix();
         avatar.updateMatrixWorld();
         POOLVR.leapTool.updateToolMapping();
-
     };
 } )();
 
@@ -94,6 +144,82 @@ POOLVR.stroke = ( function () {
         body.velocity.copy(velocity);
     };
 } )();
+
+
+POOLVR.moveStage = ( function () {
+    "use strict";
+    return function (keyboard, gamepadValues, dt) {
+        var stage = POOLVR.app.stage;
+        var moveFB = 0, moveRL = 0, moveUD = 0, turnRL = 0;
+        if (keyboard) {
+            moveFB += keyboard.moveForward - keyboard.moveBackward;
+            moveUD += keyboard.moveUp - keyboard.moveDown;
+            moveRL += keyboard.moveRight - keyboard.moveLeft;
+            turnRL += keyboard.turnRight - keyboard.turnLeft;
+        }
+        for (var i = 0; i < gamepadValues.length; i++) {
+            var values = gamepadValues[i];
+            if (values.toggleFloatMode) {
+                if (values.moveFB) moveUD -= values.moveFB;
+                if (values.turnLR) moveRL += values.turnLR;
+            } else {
+                if (values.moveFB) moveFB -= values.moveFB;
+                if (values.turnLR) turnRL += values.turnLR;
+            }
+            if (values.moveRL) moveRL += values.moveRL;
+        }
+        if (moveFB || moveRL || moveUD || turnRL) {
+            YAWVRB.Utils.moveObject(stage, dt, moveFB, moveRL, moveUD, turnRL, 0);
+        }
+    };
+} )();
+
+
+POOLVR.moveToolRoot = ( function () {
+    "use strict";
+    return function (keyboard, gamepadValues, dt) {
+        var moveFB = 0, moveRL = 0, moveUD = 0, turnRL = 0;
+        if (keyboard) {
+            moveFB += keyboard.moveToolForward - keyboard.moveToolBackward;
+            moveUD += keyboard.moveToolUp - keyboard.moveToolDown;
+            moveRL += keyboard.moveToolRight - keyboard.moveToolLeft;
+            turnRL += keyboard.rotateToolCW - keyboard.rotateToolCCW;
+        }
+        for (var i = 0; i < gamepadValues.length; i++) {
+            var values = gamepadValues[i];
+            if (values.toggleToolFloatMode) {
+                if (values.moveToolFB) moveUD -= values.moveToolFB;
+                if (values.turnToolLR) moveRL += values.turnToolLR;
+            } else {
+                if (values.moveToolFB) moveFB -= values.moveToolFB;
+                if (values.turnToolLR) turnRL += values.turnToolLR;
+            }
+        }
+        if (moveFB || moveRL || moveUD || turnRL) {
+            YAWVRB.Utils.moveObject(POOLVR.leapTool.toolRoot, dt, moveFB, moveRL, moveUD, turnRL, 0);
+            POOLVR.leapTool.setDeadtime(0);
+        }
+    };
+} )();
+
+
+POOLVR.startTutorial = function () {
+    "use strict";
+    POOLVR.synthSpeaker.speak("Hello.  Welcome. To. Pool-ver.", function () {
+        POOLVR.textGeomLogger.log("HELLO.  WELCOME TO POOLVR.");
+    });
+
+    POOLVR.synthSpeaker.speak("Please wave a stick-like object in front of your Leap Motion controller.", function () {
+        POOLVR.textGeomLogger.log("PLEASE WAVE A STICK-LIKE OBJECT IN FRONT OF YOUR");
+        POOLVR.textGeomLogger.log("LEAP MOTION CONTROLLER.");
+    });
+
+    POOLVR.synthSpeaker.speak("Keep the stick within the interaction box when you want to make contact with.  A ball.", function () {
+        POOLVR.textGeomLogger.log("KEEP THE STICK WITHIN THE INTERACTION BOX WHEN YOU WANT");
+        POOLVR.textGeomLogger.log("TO MAKE CONTACT WITH A BALL...");
+    });
+
+};
 
 },{}],2:[function(require,module,exports){
 /* global POOLVR, YAWVRB, CANNON, THREE */
@@ -113,17 +239,17 @@ POOLVR.commands = {
 POOLVR.keyboardCommands = {
     turnLeft:     {buttons: [37]},
     turnRight:    {buttons: [39]},
-    driveForward: {buttons: [87]},
-    driveBack:    {buttons: [83]},
-    strafeLeft:   {buttons: [65]},
-    strafeRight:  {buttons: [68]},
-    floatUp:      {buttons: [69]},
-    floatDown:    {buttons: [67]},
+    moveForward:  {buttons: [87]},
+    moveBackward: {buttons: [83]},
+    moveLeft:     {buttons: [65]},
+    moveRight:    {buttons: [68]},
+    moveUp:       {buttons: [69]},
+    moveDown:     {buttons: [67]},
 
     moveToolUp:        {buttons: [79]},
     moveToolDown:      {buttons: [190]},
-    moveToolForwards:  {buttons: [73]},
-    moveToolBackwards: {buttons: [75]},
+    moveToolForward:   {buttons: [73]},
+    moveToolBackward:  {buttons: [75]},
     moveToolLeft:      {buttons: [74]},
     moveToolRight:     {buttons: [76]},
     rotateToolCW:      {buttons: [85]},
@@ -150,12 +276,12 @@ POOLVR.keyboardCommands = {
 
 POOLVR.keyboard = new YAWVRB.Keyboard(window, POOLVR.keyboardCommands);
 
-POOLVR.gamepadCommands = {
+POOLVR.xboxGamepadCommands = {
     turnLR: {axes: [YAWVRB.Gamepads.AXES.LSX]},
     moveFB: {axes: [YAWVRB.Gamepads.AXES.LSY]},
     toggleFloatMode: {buttons: [YAWVRB.Gamepads.BUTTONS.leftStick]},
-    toolTurnLR: {axes: [YAWVRB.Gamepads.AXES.RSX]},
-    toolMoveFB:  {axes: [YAWVRB.Gamepads.AXES.RSY]},
+    moveToolFB:  {axes: [YAWVRB.Gamepads.AXES.RSY]},
+    turnToolLR: {axes: [YAWVRB.Gamepads.AXES.RSX]},
     toggleToolFloatMode: {buttons: [YAWVRB.Gamepads.BUTTONS.rightStick]},
     resetVRSensor: {buttons: [YAWVRB.Gamepads.BUTTONS.back],
                     commandDown: POOLVR.commands.resetVRSensor},
@@ -171,8 +297,8 @@ POOLVR.gamepadCommands = {
 };
 
 POOLVR.vrGamepadACommands = {
-    toolTurnLR: {axes: [YAWVRB.Gamepads.AXES.LSX]},
-    toolMoveFB:  {axes: [YAWVRB.Gamepads.AXES.LSY], flipAxes: true},
+    moveToolFB:  {axes: [YAWVRB.Gamepads.AXES.LSY], flipAxes: true},
+    turnToolLR: {axes: [YAWVRB.Gamepads.AXES.LSX]},
     toggleToolFloatMode: {buttons: [0]},
     toggleVR: {buttons: [3], commandDown: POOLVR.commands.toggleVR},
     resetTable: {buttons: [2], commandDown: POOLVR.commands.resetTable}
@@ -183,50 +309,11 @@ POOLVR.vrGamepadBCommands = {
     resetVRSensor: {buttons: [3], commandDown: POOLVR.commands.resetVRSensor}
 };
 
-
-POOLVR.parseURIConfig = function () {
-    "use strict";
-    POOLVR.config = POOLVR.config || {};
-    if (POOLVR.config.useBasicMaterials) {
-        POOLVR.config.useSpotLight = false;
-        POOLVR.config.usePointLight = false;
-        POOLVR.config.useShadowMap  = false;
-    } else {
-        POOLVR.config.useSpotLight  = YAWVRB.Utils.URL_PARAMS.useSpotLight  !== undefined ? YAWVRB.Utils.URL_PARAMS.useSpotLight  : (POOLVR.config.useSpotLight || true);
-        POOLVR.config.usePointLight = YAWVRB.Utils.URL_PARAMS.usePointLight !== undefined ? YAWVRB.Utils.URL_PARAMS.usePointLight : POOLVR.config.usePointLight;
-        POOLVR.config.useShadowMap  = YAWVRB.Utils.URL_PARAMS.useShadowMap  !== undefined ? YAWVRB.Utils.URL_PARAMS.useShadowMap  : POOLVR.config.useShadowMap;
-    }
-    // Leap Motion config:
-    POOLVR.config.toolOptions = POOLVR.config.toolOptions || {};
-    POOLVR.config.toolOptions.useShadowMesh  = !POOLVR.config.useShadowMap;
-    POOLVR.config.toolOptions.shadowPlane    = POOLVR.config.H_table + 0.001;
-    POOLVR.config.toolOptions.shadowMaterial = POOLVR.shadowMaterial;
+POOLVR.destekGamepadCommands = {
+    moveFB: {axes: [0]},
+    moveRL: {axes: [1], flipAxes: true},
+    autoPosition: {buttons: [0], commandDown: POOLVR.commands.autoPosition}
 };
-
-
-POOLVR.saveConfig = function (profileName) {
-    "use strict";
-    localStorage.setItem('POOLVR' + POOLVR.version + '_' + profileName, JSON.stringify(POOLVR.config, undefined, 2));
-    console.log('saved configuration for profile "%s":', profileName);
-    console.log(localStorage[profileName]);
-};
-
-
-POOLVR.loadConfig = function (profileName) {
-    "use strict";
-    var localStorageConfig = localStorage.getItem('POOLVR' + POOLVR.version + '_' + profileName);
-    var config;
-    if (localStorageConfig) {
-        config = {};
-        localStorageConfig = JSON.parse(localStorageConfig);
-        for (var k in localStorageConfig) {
-            config[k] = localStorageConfig[k];
-        }
-        console.log('loaded configuration for profile "%s"',  profileName);
-    }
-    return config;
-};
-
 
 ( function () {
     "use strict";
@@ -303,11 +390,15 @@ POOLVR.loadConfig = function (profileName) {
 
 POOLVR.shadowMaterial = new THREE.MeshBasicMaterial({color: 0x002200});
 
+POOLVR.basicMaterials = {};
+POOLVR.nonBasicMaterials = {};
+
 POOLVR.profile = 'default';
 
 },{}],3:[function(require,module,exports){
 /* global require */
 window.POOLVR = window.POOLVR || {};
+
 require('./sounds.js');
 require('./actions.js');
 require('./config.js');
@@ -316,6 +407,7 @@ require('./menu.js');
 /* global POOLVR, THREE, YAWVRB, CANNON, THREEPY_SCENE */
 window.onLoad = function () {
     "use strict";
+    const INCH2METERS = 0.0254;
 
     if (YAWVRB.Utils.URL_PARAMS.clearLocalStorage) {
         console.log('clearing localStorage...');
@@ -324,13 +416,14 @@ window.onLoad = function () {
 
     THREE.Object3D.DefaultMatrixAutoUpdate = false;
 
-    POOLVR.config = POOLVR.loadConfig(POOLVR.profile) || POOLVR.config;
+    var loadedConfig = POOLVR.loadConfig(POOLVR.profile);
+    POOLVR.config = loadedConfig || POOLVR.config;
     POOLVR.parseURIConfig();
 
     console.log("POOLVR.config:");
     console.log(POOLVR.config);
 
-    var world = POOLVR.world;
+    POOLVR.synthSpeaker = new YAWVRB.SynthSpeaker({volume: POOLVR.config.synthSpeakerVolume || 0.6, rate: POOLVR.config.synthSpeakerRate || 0.75, pitch: POOLVR.config.synthSpeakerPitch || 0.5});
 
     // TODO: return menu items
     POOLVR.setupMenu();
@@ -339,54 +432,21 @@ window.onLoad = function () {
         canvas: document.getElementById('webgl-canvas'),
         antialias: (YAWVRB.Utils.URL_PARAMS.antialias !== undefined ? YAWVRB.Utils.URL_PARAMS.antialias : POOLVR.config.antialias) || !YAWVRB.Utils.isMobile()
     };
+
     var appConfig = {
         onResetVRSensor: function () {
             POOLVR.leapTool.updateToolMapping();
         }
     };
+
     POOLVR.app = new YAWVRB.App(undefined, appConfig, rendererOptions);
+
+    POOLVR.app.stage.add(POOLVR.app.camera);
 
     if (POOLVR.config.useShadowMap) {
         POOLVR.app.renderer.shadowMap.enabled = true;
         POOLVR.app.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     }
-
-    POOLVR.app.stage.add(POOLVR.app.camera);
-
-    var leapIndicator = document.getElementById('leapIndicator');
-
-    var leapTool = YAWVRB.LeapMotion.makeTool( YAWVRB.Utils.combineObjects(POOLVR.config.toolOptions, {
-        onConnect: function () {
-            leapIndicator.innerHTML = 'connected';
-            leapIndicator.style['background-color'] = 'rgba(60, 100, 20, 0.8)';
-        },
-        onStreamingStarted: function () {
-            leapIndicator.innerHTML = 'connected, streaming';
-            leapIndicator.style['background-color'] = 'rgba(20, 160, 20, 0.8)';
-            POOLVR.leapTool.toolRoot.visible = true;
-        },
-        onStreamingStopped: function () {
-            leapIndicator.innerHTML = 'connected, streaming stopped';
-            leapIndicator.style['background-color'] = 'rgba(60, 100, 20, 0.8)';
-            POOLVR.leapTool.toolRoot.visible = false;
-        },
-        onDisconnect: function () {
-            leapIndicator.innerHTML = 'disconnected';
-            leapIndicator.style['background-color'] = 'rgba(60, 20, 20, 0.4)';
-            POOLVR.leapTool.toolRoot.visible = false;
-        },
-        tipMaterial: POOLVR.tipMaterial
-    }) );
-    leapTool.toolMesh.renderOrder = -1;
-    POOLVR.app.stage.add(leapTool.toolRoot);
-    leapTool.toolRoot.visible = false;
-    world.addBody(leapTool.toolBody);
-    leapTool.leapController.connect();
-    POOLVR.leapTool = leapTool;
-
-    window.addEventListener("beforeunload", function () {
-        leapTool.leapController.disconnect();
-    }, false);
 
     if (POOLVR.config.useTextGeomLogger) {
         var fontLoader = new THREE.FontLoader();
@@ -408,15 +468,55 @@ window.onLoad = function () {
         };
     }
 
-    POOLVR.synthSpeaker = new YAWVRB.SynthSpeaker({volume: POOLVR.config.synthSpeakerVolume, rate: 0.8, pitch: 0.5});
+    if (!loadedConfig) {
+        POOLVR.synthSpeaker.speak("Hello. Welcome. To. Pool-ver.");
+    }
 
-    var openVRTool = YAWVRB.Gamepads.makeTool(YAWVRB.Utils.combineObjects(POOLVR.config.toolOptions, {
+    var leapIndicator = document.getElementById('leapIndicator');
+    POOLVR.leapTool = YAWVRB.LeapMotion.makeTool( YAWVRB.Utils.combineObjects(POOLVR.config.toolOptions, {
+        onConnect: function () {
+            leapIndicator.innerHTML = 'connected';
+            leapIndicator.style['background-color'] = 'rgba(60, 100, 20, 0.8)';
+            POOLVR.app.stage.add(POOLVR.leapTool.toolRoot);
+            POOLVR.world.addBody(POOLVR.leapTool.toolBody);
+        },
+        onStreamingStarted: function () {
+            leapIndicator.innerHTML = 'connected, streaming';
+            leapIndicator.style['background-color'] = 'rgba(20, 160, 20, 0.8)';
+            POOLVR.leapTool.toolRoot.visible = true;
+            POOLVR.app.vrControls.update();
+            POOLVR.leapTool.toolRoot.position.y = POOLVR.app.camera.position.y - 2*INCH2METERS;
+            POOLVR.leapTool.toolRoot.updateMatrix();
+            POOLVR.leapTool.toolRoot.updateMatrixWorld();
+        },
+        onStreamingStopped: function () {
+            leapIndicator.innerHTML = 'connected, streaming stopped';
+            leapIndicator.style['background-color'] = 'rgba(60, 100, 20, 0.8)';
+            POOLVR.leapTool.toolRoot.visible = false;
+        },
+        onDisconnect: function () {
+            leapIndicator.innerHTML = 'disconnected';
+            leapIndicator.style['background-color'] = 'rgba(60, 20, 20, 0.4)';
+            POOLVR.leapTool.toolRoot.visible = false;
+        },
+        tipMaterial: POOLVR.tipMaterial
+    }) );
+    POOLVR.leapTool.toolMesh.renderOrder = -1;
+    POOLVR.leapTool.toolRoot.visible = false;
+    POOLVR.leapTool.leapController.connect();
+
+    window.addEventListener("beforeunload", function () {
+        POOLVR.leapTool.leapController.disconnect();
+    }, false);
+
+    POOLVR.openVRTool = YAWVRB.Gamepads.makeTool(YAWVRB.Utils.combineObjects(POOLVR.config.toolOptions, {
         tipMaterial: POOLVR.openVRTipMaterial
     }));
-    POOLVR.openVRTool = openVRTool;
-    POOLVR.app.stage.add(openVRTool.mesh);
-    openVRTool.mesh.visible = false;
+    POOLVR.openVRTool.mesh.visible = false;
+    if (POOLVR.openVRTool.shadowMesh) POOLVR.openVRTool.shadowMesh.visible = false;
+    POOLVR.app.stage.add(POOLVR.openVRTool.mesh);
     var gamepadA;
+    YAWVRB.Gamepads.setOnGamepadConnected(onGamepadConnected);
     function onGamepadConnected(e) {
         var gamepad = e.gamepad;
         if (!gamepad) return;
@@ -428,14 +528,23 @@ window.onLoad = function () {
                 console.log('OpenVR controller A connected');
                 gamepadA = gamepad;
                 YAWVRB.Gamepads.setGamepadCommands(gamepad.index, POOLVR.vrGamepadACommands);
-                openVRTool.mesh.visible = true;
-                openVRTool.setGamepad(gamepad);
-                world.addBody(openVRTool.body);
+                POOLVR.openVRTool.mesh.visible = true;
+                if (POOLVR.openVRTool.shadowMesh) POOLVR.openVRTool.shadowMesh.visible = true;
+                POOLVR.openVRTool.setGamepad(gamepad);
+                POOLVR.world.addBody(POOLVR.openVRTool.body);
             }
+        } else if (/xbox/i.test(gamepad.id) || /xinput/i.test(gamepad.id)) {
+            YAWVRB.Gamepads.setGamepadCommands(gamepad.index, POOLVR.xboxGamepadCommands);
+        } else if (/3232/i.test(gamepad.id) || /b629/i.test(gamepad.id)) {
+            YAWVRB.Gamepads.setGamepadCommands(gamepad.index, POOLVR.destekGamepadCommands);
         }
-        else if (/xbox/i.test(gamepad.id) || /xinput/i.test(gamepad.id)) YAWVRB.Gamepads.setGamepadCommands(gamepad.index, POOLVR.gamepadCommands);
     }
-    YAWVRB.Gamepads.setOnGamepadConnected(onGamepadConnected);
+    YAWVRB.Gamepads.setOnGamepadDisconnected( function (evt) {
+        if (gamepadA && gamepadA.index === evt.gamepad.index) {
+            POOLVR.openVRTool.mesh.visible = false;
+            if (POOLVR.openVRTool.shadowMesh) POOLVR.openVRTool.shadowMesh.visible = false;
+        }
+    } );
 
     THREE.py.parse(THREEPY_SCENE).then( function (scene) {
 
@@ -445,8 +554,8 @@ window.onLoad = function () {
 
         POOLVR.app.scene.add(POOLVR.app.stage);
 
-        if (leapTool.toolShadowMesh) {
-            POOLVR.app.scene.add(leapTool.toolShadowMesh);
+        if (POOLVR.leapTool.toolShadowMesh) {
+            POOLVR.app.scene.add(POOLVR.leapTool.toolShadowMesh);
         }
 
         if (POOLVR.openVRTool && POOLVR.openVRTool.shadowMesh) {
@@ -470,20 +579,24 @@ window.onLoad = function () {
 
         var pointLight = new THREE.PointLight(0xaa8866, 0.8, 40);
         pointLight.position.set(4, 5, 2.5);
-        scene.add(pointLight);
         pointLight.updateMatrix();
         pointLight.updateMatrixWorld();
+        scene.add(pointLight);
         POOLVR.pointLight = pointLight;
         POOLVR.pointLight.visible = POOLVR.config.usePointLight;
 
         navigator.getVRDisplays().then( function (vrDisplays) {
-
             var vrDisplay = vrDisplays[0];
-            console.log('vrDisplay.displayName = ' + vrDisplay.displayName);
+            var isVive = /vive/i.test(vrDisplay.displayName);
             if (!(vrDisplay.stageParameters && vrDisplay.stageParameters.sittingToStandingTransform)) {
-                POOLVR.app.stage.position.y = 1.0;
+                POOLVR.app.vrControls.update();
+                POOLVR.leapTool.toolRoot.position.y = POOLVR.app.camera.position.y - 2*INCH2METERS;
+                POOLVR.leapTool.toolRoot.updateMatrix();
+                POOLVR.app.stage.position.y = 45.5 * INCH2METERS;
+                POOLVR.app.stage.position.z = 0.5 * POOLVR.config.L_table + 12 * INCH2METERS;
                 POOLVR.app.stage.updateMatrix();
                 POOLVR.app.stage.updateMatrixWorld();
+                // POOLVR.app.vrControls.standing = false;
             } else {
                 var sizeX = vrDisplay.stageParameters.sizeX;
                 var sizeZ = vrDisplay.stageParameters.sizeZ;
@@ -500,7 +613,7 @@ window.onLoad = function () {
                 }
             }
 
-            THREE.py.CANNONize(scene, world);
+            THREE.py.CANNONize(scene, POOLVR.world);
 
             POOLVR.ballMeshes = [];
             POOLVR.ballBodies = [];
@@ -513,15 +626,9 @@ window.onLoad = function () {
             POOLVR.ballShadowMeshes = [];
 
             var floorBody, ceilingBody;
-            var basicMaterials = {};
-            var nonbasicMaterials = {};
-            scene.traverse(function (node) {
+
+            scene.traverse( function (node) {
                 if (node instanceof THREE.Mesh) {
-                    if ((node.material instanceof THREE.MeshLambertMaterial || node.material instanceof THREE.MeshPhongMaterial) && (basicMaterials[node.material.uuid] === undefined)) {
-                        var basicMaterial = new THREE.MeshBasicMaterial({color: node.material.color.getHex(), transparent: node.material.transparent, side: node.material.side});
-                        basicMaterials[node.material.uuid] = basicMaterial;
-                        nonbasicMaterials[basicMaterial.uuid] = node.material;
-                    }
                     var ballNum;
                     if (node.name.startsWith('ballMesh')) {
                         ballNum = Number(node.name.split(' ')[1]);
@@ -551,19 +658,6 @@ window.onLoad = function () {
                     }
                 }
             });
-
-            POOLVR.switchMaterials = function (useBasicMaterials) {
-                var materials = useBasicMaterials ? basicMaterials : nonbasicMaterials;
-                POOLVR.app.scene.traverse( function (node) {
-                    if (node instanceof THREE.Mesh) {
-                        var material = node.material;
-                        var uuid = material.uuid;
-                        if (materials[uuid]) {
-                            node.material = materials[uuid];
-                        }
-                    }
-                } );
-            };
 
             if (!POOLVR.config.useShadowMap) {
                 var ballShadowGeom = new THREE.CircleBufferGeometry(0.5*POOLVR.config.ball_diameter, 16);
@@ -611,7 +705,7 @@ window.onLoad = function () {
 
             var relVelocity = new CANNON.Vec3();
             var tipCollisionCounter = 0;
-            world.addEventListener('beginContact', function (evt) {
+            POOLVR.world.addEventListener('beginContact', function (evt) {
                 var bodyA = evt.bodyA;
                 var bodyB = evt.bodyB;
                 if (bodyA.material === bodyB.material) {
@@ -620,7 +714,7 @@ window.onLoad = function () {
                     POOLVR.playCollisionSound(relVelocity.lengthSquared());
                 } else if (bodyA.material === POOLVR.openVRTipMaterial && bodyB.material === POOLVR.ballMaterial) {
                     if (POOLVR.openVRTool.body.sleepState === CANNON.Body.AWAKE) {
-                        gamepadA.vibrate(12);
+                        if (gamepadA && gamepadA.vibrate) gamepadA.vibrate(10);
                         tipCollisionCounter++;
                         if (tipCollisionCounter === 1) {
                             POOLVR.synthSpeaker.speak("You moved a ball.  Good job.");
@@ -632,131 +726,78 @@ window.onLoad = function () {
             });
 
             scene.updateMatrixWorld(true);
-            POOLVR.leapTool.updateToolMapping();
-            POOLVR.switchMaterials(POOLVR.config.useBasicMaterials);
-            POOLVR.startAnimateLoop();
 
+            POOLVR.leapTool.updateToolMapping();
+
+            if (isVive) {
+
+                var loader = new THREE.OBJLoader();
+                loader.setPath( '/node_modules/three.js/examples/models/obj/vive-controller/' );
+                loader.load( 'vr_controller_vive_1_5.obj', function ( object ) {
+                    var loader = new THREE.TextureLoader();
+                    loader.setPath('/node_modules/three.js/examples/models/obj/vive-controller/');
+                    var viveDiffuseMap = loader.load('onepointfive_texture.png');
+                    var viveSpecularMap = loader.load('onepointfive_spec.png');
+                    var controller = object.children[ 0 ];
+                    controller.material.map = viveDiffuseMap;
+                    controller.material.specularMap = viveSpecularMap;
+                    var controllerMesh = object.clone();
+                    POOLVR.openVRTool.mesh.add(controllerMesh);
+                    setTimeout( function () {
+                        POOLVR.openVRTool.mesh.remove(controllerMesh);
+                    }, 14000);
+                    POOLVR.startAnimateLoop();
+                } );
+
+            } else {
+
+                POOLVR.startAnimateLoop();
+
+            }
         } );
     } );
 };
 
-POOLVR.updateBallsPostStep = function () {
-    "use strict";
-    for (var i = 0; i < POOLVR.ballMeshes.length; i++) {
-        var mesh = POOLVR.ballMeshes[i];
-        var body = POOLVR.ballBodies[i];
-        mesh.position.copy(body.interpolatedPosition);
-        mesh.quaternion.copy(body.interpolatedQuaternion);
-        mesh.updateMatrix();
-        mesh.updateMatrixWorld();
-        var shadowMesh = POOLVR.ballShadowMeshes[i];
-        if (shadowMesh) {
-            shadowMesh.position.x = mesh.position.x;
-            shadowMesh.position.z = mesh.position.z;
-            shadowMesh.updateMatrix();
-            shadowMesh.updateMatrixWorld();
-        }
-    }
-};
-
-POOLVR.moveAvatar = ( function () {
-    "use strict";
-    var walkSpeed = 0.333,
-        floatSpeed = 0.1;
-    var euler = new THREE.Euler(0, 0, 0, 'YXZ');
-    return function (keyboard, gamepadValues, dt) {
-        var avatar = POOLVR.app.stage;
-        var floatUp = keyboard.floatUp - keyboard.floatDown;
-        var drive = keyboard.driveBack - keyboard.driveForward;
-        var strafe = keyboard.strafeRight - keyboard.strafeLeft;
-        var heading = -0.8 * dt * (-keyboard.turnLeft + keyboard.turnRight);
-        for (var i = 0; i < gamepadValues.length; i++) {
-            var values = gamepadValues[i];
-            if (values.toggleFloatMode) {
-                if (values.moveFB) floatUp -= values.moveFB;
-                if (values.turnLR) strafe += values.turnLR;
-            } else {
-                if (values.moveFB) drive += values.moveFB;
-                if (values.turnLR) heading += -0.8 * dt * values.turnLR;
-            }
-        }
-        floatUp *= floatSpeed;
-        if (strafe || drive) {
-            var len = walkSpeed * Math.min(1, 1 / Math.sqrt(drive * drive + strafe * strafe));
-            strafe *= len;
-            drive *= len;
-        } else {
-            strafe = 0;
-            drive = 0;
-        }
-        if (floatUp !== 0 || strafe !== 0 || heading !== 0 || drive !== 0) {
-            euler.setFromQuaternion(avatar.quaternion);
-            euler.y += heading;
-            var cosHeading = Math.cos(euler.y),
-                sinHeading = Math.sin(euler.y);
-            avatar.quaternion.setFromEuler(euler);
-            avatar.position.x += dt * (strafe * cosHeading + drive * sinHeading);
-            avatar.position.z += dt * (drive * cosHeading - strafe * sinHeading);
-            avatar.position.y += dt * floatUp;
-            avatar.updateMatrix();
-        }
-    };
-} )();
-
-POOLVR.moveToolRoot = ( function () {
-    "use strict";
-    return function (keyboard, gamepadValues, dt) {
-        var moveFB = 0, moveRL = 0, moveUD = 0, turnRL = 0;
-        if (keyboard) {
-            moveFB += keyboard.moveToolForwards - keyboard.moveToolBackwards;
-            moveUD += keyboard.moveToolUp - keyboard.moveToolDown;
-            moveRL += keyboard.moveToolRight - keyboard.moveToolLeft;
-            turnRL += keyboard.rotateToolCW - keyboard.rotateToolCCW;
-        }
-        for (var i = 0; i < gamepadValues.length; i++) {
-            var values = gamepadValues[i];
-            if (values.toggleToolFloatMode) {
-                if (values.toolMoveFB) moveUD -= values.toolMoveFB;
-                if (values.toolTurnLR) moveRL += values.toolTurnLR;
-            } else {
-                if (values.toolMoveFB) moveFB -= values.toolMoveFB;
-                if (values.toolTurnLR) turnRL += values.toolTurnLR;
-            }
-        }
-        if (moveFB || moveRL || moveUD || turnRL) {
-            YAWVRB.Utils.moveObject(POOLVR.leapTool.toolRoot, dt, moveFB, moveRL, moveUD, turnRL, 0);
-            POOLVR.leapTool.setDeadtime(0);
-        }
-    };
-} )();
-
-POOLVR.startTutorial = function () {
-    "use strict";
-    POOLVR.synthSpeaker.speak("Hello.  Welcome. To. Pool-ver.", function () {
-        POOLVR.textGeomLogger.log("HELLO.  WELCOME TO POOLVR.");
-    });
-
-    POOLVR.synthSpeaker.speak("Please wave a stick-like object in front of your Leap Motion controller.", function () {
-        POOLVR.textGeomLogger.log("PLEASE WAVE A STICK-LIKE OBJECT IN FRONT OF YOUR");
-        POOLVR.textGeomLogger.log("LEAP MOTION CONTROLLER.");
-    });
-
-    POOLVR.synthSpeaker.speak("Keep the stick within the interaction box when you want to make contact with.  A ball.", function () {
-        POOLVR.textGeomLogger.log("KEEP THE STICK WITHIN THE INTERACTION BOX WHEN YOU WANT");
-        POOLVR.textGeomLogger.log("TO MAKE CONTACT WITH A BALL...");
-    });
-
-};
 
 POOLVR.startAnimateLoop = function () {
     "use strict";
+    POOLVR.app.scene.traverse( function (node) {
+        if (node instanceof THREE.Mesh) {
+            if ((node.material instanceof THREE.MeshLambertMaterial || node.material instanceof THREE.MeshPhongMaterial) && (POOLVR.basicMaterials[node.material.uuid] === undefined)) {
+                var basicMaterial = new THREE.MeshBasicMaterial({color: node.material.color.getHex(), transparent: node.material.transparent, side: node.material.side, map: node.material.map});
+                POOLVR.basicMaterials[node.material.uuid] = basicMaterial;
+                POOLVR.nonBasicMaterials[basicMaterial.uuid] = node.material;
+            }
+        }
+    } );
+
+    POOLVR.switchMaterials(POOLVR.config.useBasicMaterials);
+
+    function updateBallsPostStep() {
+        "use strict";
+        for (var i = 0; i < POOLVR.ballMeshes.length; i++) {
+            var mesh = POOLVR.ballMeshes[i];
+            var body = POOLVR.ballBodies[i];
+            mesh.position.copy(body.interpolatedPosition);
+            mesh.quaternion.copy(body.interpolatedQuaternion);
+            mesh.updateMatrix();
+            mesh.updateMatrixWorld();
+            var shadowMesh = POOLVR.ballShadowMeshes[i];
+            if (shadowMesh) {
+                shadowMesh.position.x = mesh.position.x;
+                shadowMesh.position.z = mesh.position.z;
+                shadowMesh.updateMatrix();
+                shadowMesh.updateMatrixWorld();
+            }
+        }
+    }
+
     var keyboard = POOLVR.keyboard,
         render = POOLVR.app.render,
         world = POOLVR.world,
-        avatar = POOLVR.app.stage,
-        updateBallsPostStep = POOLVR.updateBallsPostStep,
+        stage = POOLVR.app.stage,
         moveToolRoot = POOLVR.moveToolRoot,
-        moveAvatar = POOLVR.moveAvatar,
+        moveStage = POOLVR.moveStage,
         textGeomLogger = POOLVR.textGeomLogger,
         leapTool = POOLVR.leapTool,
         openVRTool = POOLVR.openVRTool;
@@ -781,9 +822,9 @@ POOLVR.startAnimateLoop = function () {
         leapTool.updateToolPostStep();
         updateBallsPostStep();
 
-        moveAvatar(keyboard, gamepadValues, dt);
+        moveStage(keyboard, gamepadValues, dt);
+        stage.updateMatrixWorld();
         moveToolRoot(keyboard, gamepadValues, dt);
-        avatar.updateMatrixWorld();
         leapTool.updateToolMapping();
 
         lt = t;
