@@ -3,7 +3,7 @@ three.js/Cannon.js pool table definition
 """
 from copy import deepcopy
 
-import numpy as npb
+import numpy as np
 
 import sys
 import os.path
