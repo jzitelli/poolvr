@@ -5,17 +5,11 @@ from copy import deepcopy
 
 import numpy as np
 
-import sys
-import os.path
-
-# TODO: avoid import side-effecting sys.path!
-THREEPY_DIR = os.path.join(os.path.split(__file__)[0], 'node_modules', 'three.py')
-sys.path.append(THREEPY_DIR)
 from three import *
+
 
 INCH2METER = 0.0254
 FT2METER = INCH2METER / 12
-
 
 
 def pool_table(L_table=2.3368, W_table=None, H_table=0.74295,
@@ -224,9 +218,9 @@ def pool_hall(useSkybox=False,
 
     floorMaterial = MeshPhongMaterial(name='floorMaterial',
                                       color=0xffffff,
-                                      map=Texture(image=Image(url=url_prefix+"node_modules/three.js/examples/textures/hardwood2_diffuse.jpg"),
+                                      map=Texture(image=Image(url=url_prefix+"node_modules/three/examples/textures/hardwood2_diffuse.jpg"),
                                                   repeat=[L_room, W_room], wrap=[RepeatWrapping, RepeatWrapping]),
-                                      bumpMap=Texture(image=Image(url=url_prefix+"node_modules/three.js/examples/textures/hardwood2_bump.jpg"),
+                                      bumpMap=Texture(image=Image(url=url_prefix+"node_modules/three/examples/textures/hardwood2_bump.jpg"),
                                                       repeat=[L_room, W_room], wrap=[RepeatWrapping, RepeatWrapping]), bumpScale=0.06)
 
     floorMesh = Mesh(name="floorMesh",
