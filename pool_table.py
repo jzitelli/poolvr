@@ -196,8 +196,7 @@ def pool_table(L_table=2.3368, W_table=None, H_table=0.74295,
 
 
 
-def pool_hall(useSkybox=False,
-              L_table=2.3368,
+def pool_hall(L_table=2.3368,
               H_table=0.74295,
               ball_diameter=2.25*INCH2METER,
               L_room=4,
@@ -205,13 +204,9 @@ def pool_hall(useSkybox=False,
               url_prefix="",
               **kwargs):
     """
-    Defines a three.js scene containing a pool table + billiard balls.
+    Defines a three.js scene containing a pool table.
     """
     scene = Scene()
-
-    if useSkybox:
-        scene.add(Skybox(cube_images=[url_prefix + "images/%s.png" % pos
-                                      for pos in ('px', 'nx', 'py', 'ny', 'pz', 'nz')]))
 
     poolTable = pool_table(L_table=L_table, H_table=H_table, ball_diameter=ball_diameter, **kwargs)
     scene.add(poolTable)
@@ -232,83 +227,5 @@ def pool_hall(useSkybox=False,
                                               'shapes': ['Plane']}})
 
     scene.add(floorMesh)
-
-    # balls:
-    ball_colors = []
-    ball_colors.append(0xddddde); white  = ball_colors[-1]
-    ball_colors.append(0xeeee00); yellow = ball_colors[-1]
-    ball_colors.append(0x0000ee); blue   = ball_colors[-1]
-    ball_colors.append(0xee0000); red    = ball_colors[-1]
-    ball_colors.append(0xee00ee); purple = ball_colors[-1]
-    ball_colors.append(0xee7700); orange = ball_colors[-1]
-    ball_colors.append(0x00ee00); green  = ball_colors[-1]
-    ball_colors.append(0xbb2244); maroon = ball_colors[-1]
-    ball_colors.append(0x111111); black  = ball_colors[-1]
-    ball_colors = ball_colors + ball_colors[1:-1]
-
-    num_balls = len(ball_colors)
-    ball_radius = ball_diameter / 2
-
-    sphere = SphereBufferGeometry(radius=ball_radius,
-                                  widthSegments=16,
-                                  heightSegments=12)
-    stripeGeom = SphereBufferGeometry(radius=1.012*ball_radius,
-                                      widthSegments=16,
-                                      heightSegments=8,
-                                      thetaStart=np.pi/3,
-                                      thetaLength=np.pi/3)
-
-    # TODO: use InstancedBufferGeometry to model the whole set of balls
-    # TODO: shader profiling/performance modeling tools
-    ball_materials = [MeshPhongMaterial(name='ballMaterial %d' % i,
-                                        color=color,
-                                        shading=SmoothShading)
-                      for i, color in enumerate(ball_colors)]
-
-    ballData = {'cannonData': {'mass': 0.17, 'shapes': ['Sphere'],
-                               'linearDamping': 0.27, 'angularDamping': 0.34}}
-
-    y_position = H_table + ball_radius + 0.0001 # epsilon distance that the ball will fall from initial position
-
-    # diagonal line:
-    # z_positions = 0.8 * np.linspace(-L_table / 2, L_table / 2, num_balls - 1)
-    # x_positions = 0.5 * z_positions
-    # x_positions = [0] + list(x_positions)
-    # z_positions = [L_table / 4] + list(z_positions)
-
-    # triangle racked:
-    d = 0.04*ball_radius # separation between racked balls
-    side_length = 4 * (ball_diameter + d)
-    x_positions = np.concatenate([np.linspace(0,                        0.5 * side_length,                         5),
-                                  np.linspace(-0.5*(ball_diameter + d), 0.5 * side_length - (ball_diameter + d),   4),
-                                  np.linspace(-(ball_diameter + d),     0.5 * side_length - 2*(ball_diameter + d), 3),
-                                  np.linspace(-1.5*(ball_diameter + d), 0.5 * side_length - 3*(ball_diameter + d), 2),
-                                  np.array([  -2*(ball_diameter + d)])])
-    z_positions = np.concatenate([np.linspace(0,                                    np.sqrt(3)/2 * side_length, 5),
-                                  np.linspace(0.5*np.sqrt(3) * (ball_diameter + d), np.sqrt(3)/2 * side_length, 4),
-                                  np.linspace(np.sqrt(3) * (ball_diameter + d),     np.sqrt(3)/2 * side_length, 3),
-                                  np.linspace(1.5*np.sqrt(3) * (ball_diameter + d), np.sqrt(3)/2 * side_length, 2),
-                                  np.array([  np.sqrt(3)/2 * side_length])])
-    z_positions *= -1
-    z_positions -= L_table / 8
-
-    # cue ball at head spot:
-    x_positions = [0] + list(x_positions)
-    z_positions = [L_table / 4] + list(z_positions)
-
-    for i, material in enumerate(ball_materials[:9] + 7*[ball_materials[0]]):
-        ballMesh = Mesh(name="ballMesh %d" % i,
-                        geometry=sphere,
-                        position=[x_positions[i], y_position, z_positions[i]],
-                        material=material,
-                        userData=ballData,
-                        castShadow=True,
-                        receiveShadow=True)
-        scene.add(ballMesh)
-        if i > 8:
-            stripeMesh = Mesh(name="ballStripeMesh %d" % i,
-                              material=ball_materials[i-8],
-                              geometry=stripeGeom)
-            ballMesh.add(stripeMesh)
 
     return scene
