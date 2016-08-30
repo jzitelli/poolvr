@@ -1,3 +1,4 @@
+/* global THREE */
 THREE.py = ( function () {
     "use strict";
 
@@ -22,7 +23,7 @@ THREE.py = ( function () {
             } ));
 
             manager.onLoad = onLoadA;
-
+            manager.onError = function () { reject(); };
             var waitForLoad = false;
 
             // set texture values for shader material uniforms:

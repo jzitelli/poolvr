@@ -708,13 +708,13 @@ window.onLoad = function () {
             POOLVR.world.addEventListener('beginContact', function (evt) {
                 var bodyA = evt.bodyA;
                 var bodyB = evt.bodyB;
+                bodyA.velocity.vsub(bodyB.velocity, relVelocity);
                 if (bodyA.material === bodyB.material) {
                     // ball-ball collision
-                    bodyA.velocity.vsub(bodyB.velocity, relVelocity);
                     POOLVR.playCollisionSound(relVelocity.lengthSquared());
                 } else if (bodyA.material === POOLVR.openVRTipMaterial && bodyB.material === POOLVR.ballMaterial) {
                     if (POOLVR.openVRTool.body.sleepState === CANNON.Body.AWAKE) {
-                        if (gamepadA && gamepadA.vibrate) gamepadA.vibrate(10);
+                        if (gamepadA && "haptics" in gamepadA && gamepadA.haptics.length > 0) gamepadA.haptics[0].vibrate(relVelocity.lengthSquared() / 10, 10);
                         tipCollisionCounter++;
                         if (tipCollisionCounter === 1) {
                             POOLVR.synthSpeaker.speak("You moved a ball.  Good job.");
@@ -732,10 +732,10 @@ window.onLoad = function () {
             if (isVive) {
 
                 var loader = new THREE.OBJLoader();
-                loader.setPath( 'node_modules/three.js/examples/models/obj/vive-controller/' );
+                loader.setPath( 'node_modules/three/examples/models/obj/vive-controller/' );
                 loader.load( 'vr_controller_vive_1_5.obj', function ( object ) {
                     var loader = new THREE.TextureLoader();
-                    loader.setPath('node_modules/three.js/examples/models/obj/vive-controller/');
+                    loader.setPath('node_modules/three/examples/models/obj/vive-controller/');
                     var viveDiffuseMap = loader.load('onepointfive_texture.png');
                     var viveSpecularMap = loader.load('onepointfive_spec.png');
                     var controller = object.children[ 0 ];
