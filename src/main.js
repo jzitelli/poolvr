@@ -190,6 +190,7 @@ window.onLoad = function () {
         var stripeGeom = new THREE.SphereBufferGeometry(1.012 * ballRadius, 16, 8, 0, 2*Math.PI, Math.PI / 3, Math.PI / 3);
         ballMaterials.forEach( function (material, i) {
             var ballMesh = new THREE.Mesh(ballGeom, material);
+            ballMesh.castShadow = true;
             ballMesh.name = 'ballMesh ' + i;
             ballMesh.position.set(xPositions[i], POOLVR.config.H_table + ballRadius + 0.0001, zPositions[i]);
             ballMesh.updateMatrix();
