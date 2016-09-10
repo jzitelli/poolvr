@@ -316,7 +316,7 @@ window.onLoad = function () {
                     POOLVR.playCollisionSound(relVelocity.lengthSquared());
                 } else if (bodyA.material === POOLVR.openVRTipMaterial && bodyB.material === POOLVR.ballMaterial) {
                     if (POOLVR.openVRTool.body.sleepState === CANNON.Body.AWAKE) {
-                        if (gamepadA && "haptics" in gamepadA && gamepadA.haptics.length > 0) gamepadA.haptics[0].vibrate(relVelocity.lengthSquared() / 10, 10);
+                        if (gamepadA && "haptics" in gamepadA && gamepadA.haptics.length > 0) gamepadA.haptics[0].vibrate(relVelocity.lengthSquared() / 8, 11);
                         tipCollisionCounter++;
                         if (tipCollisionCounter === 1) {
                             POOLVR.synthSpeaker.speak("You moved a ball.  Good job.");
