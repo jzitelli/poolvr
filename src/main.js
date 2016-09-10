@@ -150,6 +150,67 @@ window.onLoad = function () {
 
     THREE.py.parse(THREEPY_SCENE).then( function (scene) {
 
+        // add balls:
+        var ballColors = [0xddddde,  // white
+                          0xeeee00,  // yellow
+                          0x0000ee,  // blue
+                          0xee0000,  // red
+                          0xee00ee,  // purple
+                          0xee7700,  // orange
+                          0x00ee00,  // green
+                          0xbb2244,  // maroon
+                          0x111111]; // black
+        var ballMaterials = ballColors.map( function (color) { return new THREE.MeshPhongMaterial({color: color}); } );
+        function linspace(a, b, n) {
+            var r = [];
+            for (var i = 0; i < n; i++) {
+                r.push(i * (b - a) / (n - 1) + a);
+            }
+            return r;
+        }
+        var ballDiameter = POOLVR.config.ball_diameter;
+        var ballRadius = ballDiameter / 2;
+        var d = 0.04 * ballRadius;
+        var rackSideLength = 4 * (ballDiameter + d);
+        var xPositions = [0];
+        Array.prototype.push.apply(xPositions, linspace(0,                         0.5 * rackSideLength,                          5));
+        Array.prototype.push.apply(xPositions, linspace(-0.5 * (ballDiameter + d), 0.5 * rackSideLength - 1 * (ballDiameter + d), 4));
+        Array.prototype.push.apply(xPositions, linspace(-1.0 * (ballDiameter + d), 0.5 * rackSideLength - 2 * (ballDiameter + d), 3));
+        Array.prototype.push.apply(xPositions, linspace(-1.5 * (ballDiameter + d), 0.5 * rackSideLength - 3 * (ballDiameter + d), 2));
+        xPositions.push(-2 * (ballDiameter + d));
+        var zPositions = [0];
+        Array.prototype.push.apply(zPositions, linspace(0,                                       0.5 * Math.sqrt(3) * rackSideLength, 5));
+        Array.prototype.push.apply(zPositions, linspace(0.5 * Math.sqrt(3) * (ballDiameter + d), 0.5 * Math.sqrt(3) * rackSideLength, 4));
+        Array.prototype.push.apply(zPositions, linspace(1.0 * Math.sqrt(3) * (ballDiameter + d), 0.5 * Math.sqrt(3) * rackSideLength, 3));
+        Array.prototype.push.apply(zPositions, linspace(1.5 * Math.sqrt(3) * (ballDiameter + d), 0.5 * Math.sqrt(3) * rackSideLength, 2));
+        zPositions.push(0.5 * Math.sqrt(3) * rackSideLength);
+        zPositions = zPositions.map( function (z) { return -z - POOLVR.config.L_table / 8; } );
+        zPositions[0] = POOLVR.config.L_table / 4;
+        var ballGeom = new THREE.SphereBufferGeometry(ballRadius, 16, 12);
+        var stripeGeom = new THREE.SphereBufferGeometry(1.012 * ballRadius, 16, 8, 0, 2*Math.PI, Math.PI / 3, Math.PI / 3);
+        ballMaterials.forEach( function (material, i) {
+            var ballMesh = new THREE.Mesh(ballGeom, material);
+            ballMesh.name = 'ballMesh ' + i;
+            ballMesh.position.set(xPositions[i], POOLVR.config.H_table + ballRadius + 0.0001, zPositions[i]);
+            ballMesh.updateMatrix();
+            ballMesh.updateMatrixWorld();
+            ballMesh.userData = {cannonData: {mass: 0.17, shapes: ['Sphere'], linearDamping: 0.27, angularDamping: 0.34}};
+            scene.add(ballMesh);
+        } );
+        ballMaterials.slice(1, -1).forEach( function (material, i) {
+            i = i + ballMaterials.length;
+            var ballMesh = new THREE.Mesh(ballGeom, ballMaterials[0]);
+            ballMesh.name = 'ballMesh ' + i;
+            var stripeMesh = new THREE.Mesh(stripeGeom, material);
+            stripeMesh.name = 'ballStripeMesh ' + i;
+            ballMesh.add(stripeMesh);
+            ballMesh.position.set(xPositions[i], POOLVR.config.H_table + ballRadius + 0.0001, zPositions[i]);
+            ballMesh.updateMatrix();
+            ballMesh.updateMatrixWorld();
+            ballMesh.userData = {cannonData: {mass: 0.17, shapes: ['Sphere'], linearDamping: 0.27, angularDamping: 0.34}};
+            scene.add(ballMesh);
+        } );
+
         scene.autoUpdate = false;
 
         POOLVR.app.scene = scene;
@@ -227,8 +288,9 @@ window.onLoad = function () {
             POOLVR.nextBall = 1;
             POOLVR.ballShadowMeshes = [];
 
-            var floorBody, ceilingBody;
-
+            var floorBody, ceilingBody, floorMesh;
+            var cushionMeshes = [];
+            var railMeshes = [];
             scene.traverse( function (node) {
                 if (node instanceof THREE.Mesh) {
                     var ballNum;
@@ -246,10 +308,12 @@ window.onLoad = function () {
                     }
                     else if (node.name.endsWith('CushionMesh')) {
                         node.body.material = POOLVR.cushionMaterial;
+                        cushionMeshes.push(node);
                     }
                     else if (node.name === 'floorMesh') {
                         floorBody = node.body;
                         floorBody.material = POOLVR.floorMaterial;
+                        floorMesh = node;
                     }
                     else if (node.name === 'ceilingMesh') {
                         ceilingBody = node.body;
@@ -257,9 +321,19 @@ window.onLoad = function () {
                     }
                     else if (node.name.endsWith('RailMesh')) {
                         node.body.material = POOLVR.railMaterial;
+                        railMeshes.push(node);
                     }
                 }
             });
+
+            for (var i = 1; i < cushionMeshes.length; i++) {
+                cushionMeshes[0].geometry.merge(cushionMeshes[i].geometry);
+                scene.remove(cushionMeshes[i]);
+            }
+            for (i = 1; i < railMeshes.length; i++) {
+                railMeshes[0].geometry.merge(railMeshes[i].geometry);
+                scene.remove(railMeshes[i]);
+            }
 
             if (!POOLVR.config.useShadowMap) {
                 var ballShadowGeom = new THREE.CircleBufferGeometry(0.5*POOLVR.config.ball_diameter, 16);
@@ -353,6 +427,12 @@ window.onLoad = function () {
 
             } else {
 
+                if (YAWVRB.Utils.isMobile()) {
+
+                    scene.remove(floorMesh);
+
+                }
+
                 POOLVR.startAnimateLoop();
 
             }
@@ -404,9 +484,20 @@ POOLVR.startAnimateLoop = function () {
         leapTool = POOLVR.leapTool,
         openVRTool = POOLVR.openVRTool;
 
+    /* global Stats */
+    if (YAWVRB.Utils.URL_PARAMS.stats) {
+        var stats = new Stats();
+        stats.showPanel( 0 ); // 0: fps, 1: ms, 2: mb, 3+: custom
+        document.body.appendChild( stats.dom );
+    } else {
+        stats = {begin: function () {}, end: function () {}};
+    }
+
     var lt = 0;
 
     function animate(t) {
+
+        stats.begin();
 
         var dt = (t - lt) * 0.001;
 
@@ -430,6 +521,8 @@ POOLVR.startAnimateLoop = function () {
         leapTool.updateToolMapping();
 
         lt = t;
+
+        stats.end();
 
         requestAnimationFrame(animate);
 
