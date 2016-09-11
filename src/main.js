@@ -201,6 +201,7 @@ window.onLoad = function () {
         ballMaterials.slice(1, -1).forEach( function (material, i) {
             i = i + ballMaterials.length;
             var ballMesh = new THREE.Mesh(ballGeom, ballMaterials[0]);
+            ballMesh.castShadow = true;
             ballMesh.name = 'ballMesh ' + i;
             var stripeMesh = new THREE.Mesh(stripeGeom, material);
             stripeMesh.name = 'ballStripeMesh ' + i;
