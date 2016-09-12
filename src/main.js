@@ -39,7 +39,8 @@ window.onLoad = function () {
 
     var rendererOptions = {
         canvas: document.getElementById('webgl-canvas'),
-        antialias: (Utils.URL_PARAMS.antialias !== undefined ? Utils.URL_PARAMS.antialias : POOLVR.config.antialias) || !Utils.isMobile()
+        antialias: (Utils.URL_PARAMS.antialias !== undefined ? Utils.URL_PARAMS.antialias : POOLVR.config.antialias) || !Utils.isMobile(),
+        alpha: false
     };
 
     var appConfig = {

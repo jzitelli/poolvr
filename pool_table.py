@@ -199,8 +199,8 @@ def pool_table(L_table=2.3368, W_table=None, H_table=0.74295,
 def pool_hall(L_table=2.3368,
               H_table=0.74295,
               ball_diameter=2.25*INCH2METER,
-              L_room=4,
-              W_room = 4,
+              L_room=6,
+              W_room=6,
               url_prefix="",
               **kwargs):
     """
@@ -211,12 +211,15 @@ def pool_hall(L_table=2.3368,
     poolTable = pool_table(L_table=L_table, H_table=H_table, ball_diameter=ball_diameter, **kwargs)
     scene.add(poolTable)
 
-    floorMaterial = MeshPhongMaterial(name='floorMaterial',
-                                      color=0xffffff,
-                                      map=Texture(image=Image(url=url_prefix+"node_modules/three/examples/textures/hardwood2_diffuse.jpg"),
-                                                  repeat=[L_room, W_room], wrap=[RepeatWrapping, RepeatWrapping]),
-                                      bumpMap=Texture(image=Image(url=url_prefix+"node_modules/three/examples/textures/hardwood2_bump.jpg"),
-                                                      repeat=[L_room, W_room], wrap=[RepeatWrapping, RepeatWrapping]), bumpScale=0.06)
+    # floorMaterial = MeshPhongMaterial(name='floorMaterial',
+    #                                   color=0xffffff,
+    #                                   map=Texture(image=Image(url=url_prefix+"node_modules/three/examples/textures/hardwood2_diffuse.jpg"),
+    #                                               repeat=[L_room, W_room], wrap=[RepeatWrapping, RepeatWrapping]),
+    #                                   bumpMap=Texture(image=Image(url=url_prefix+"node_modules/three/examples/textures/hardwood2_bump.jpg"),
+    #                                                   repeat=[L_room, W_room], wrap=[RepeatWrapping, RepeatWrapping]), bumpScale=0.06)
+
+    floorMaterial = MeshBasicMaterial(name='floorMaterial',
+                                      color=0x002200)
 
     floorMesh = Mesh(name="floorMesh",
                      geometry=PlaneBufferGeometry(width=W_room, height=L_room),
