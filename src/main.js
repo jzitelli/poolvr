@@ -1,17 +1,24 @@
-/* global require */
 window.POOLVR = window.POOLVR || {};
+
+/* global App, Gamepads, LeapMotion, SynthSpeaker, TextGeomUtils, Utils */
+window.App = require('./App.js');
+window.Gamepads = require('./Gamepads.js');
+window.LeapMotion = require('./LeapMotion.js');
+window.SynthSpeaker = require('./SynthSpeaker.js');
+window.TextGeomUtils = require('./TextGeomUtils.js');
+window.Utils = require('./Utils.js');
 
 require('./sounds.js');
 require('./actions.js');
 require('./config.js');
 require('./menu.js');
 
-/* global POOLVR, THREE, YAWVRB, CANNON, THREEPY_SCENE */
+/* global POOLVR, THREE, CANNON, THREEPY_SCENE */
 window.onLoad = function () {
     "use strict";
     const INCH2METERS = 0.0254;
 
-    if (YAWVRB.Utils.URL_PARAMS.clearLocalStorage) {
+    if (Utils.URL_PARAMS.clearLocalStorage) {
         console.log('clearing localStorage...');
         localStorage.clear();
     }
@@ -25,14 +32,14 @@ window.onLoad = function () {
     console.log("POOLVR.config:");
     console.log(POOLVR.config);
 
-    POOLVR.synthSpeaker = new YAWVRB.SynthSpeaker({volume: POOLVR.config.synthSpeakerVolume || 0.6, rate: POOLVR.config.synthSpeakerRate || 0.75, pitch: POOLVR.config.synthSpeakerPitch || 0.5});
+    POOLVR.synthSpeaker = new SynthSpeaker({volume: POOLVR.config.synthSpeakerVolume || 0.6, rate: POOLVR.config.synthSpeakerRate || 0.75, pitch: POOLVR.config.synthSpeakerPitch || 0.5});
 
     // TODO: return menu items
     POOLVR.setupMenu();
 
     var rendererOptions = {
         canvas: document.getElementById('webgl-canvas'),
-        antialias: (YAWVRB.Utils.URL_PARAMS.antialias !== undefined ? YAWVRB.Utils.URL_PARAMS.antialias : POOLVR.config.antialias) || !YAWVRB.Utils.isMobile()
+        antialias: (Utils.URL_PARAMS.antialias !== undefined ? Utils.URL_PARAMS.antialias : POOLVR.config.antialias) || !Utils.isMobile()
     };
 
     var appConfig = {
@@ -41,7 +48,7 @@ window.onLoad = function () {
         }
     };
 
-    POOLVR.app = new YAWVRB.App(undefined, appConfig, rendererOptions);
+    POOLVR.app = new App(undefined, appConfig, rendererOptions);
 
     POOLVR.app.stage.add(POOLVR.app.camera);
 
@@ -53,9 +60,9 @@ window.onLoad = function () {
     if (POOLVR.config.useTextGeomLogger) {
         var fontLoader = new THREE.FontLoader();
         fontLoader.load('fonts/Anonymous Pro_Regular.js', function (font) {
-            var textGeomCacher = new YAWVRB.TextGeomUtils.TextGeomCacher(font, {size: 0.12, curveSegments: 2});
+            var textGeomCacher = new TextGeomUtils.TextGeomCacher(font, {size: 0.12, curveSegments: 2});
             var textGeomLoggerMaterial = new THREE.MeshBasicMaterial({color: 0xff3210});
-            POOLVR.textGeomLogger = new YAWVRB.TextGeomUtils.TextGeomLogger(textGeomCacher,
+            POOLVR.textGeomLogger = new TextGeomUtils.TextGeomLogger(textGeomCacher,
                 {material: textGeomLoggerMaterial, nrows: 8, lineHeight: 1.8 * 0.12});
             POOLVR.app.stage.add(POOLVR.textGeomLogger.root);
             POOLVR.textGeomLogger.root.position.set(-2.7, 0.88, -3.3);
@@ -75,7 +82,7 @@ window.onLoad = function () {
     }
 
     var leapIndicator = document.getElementById('leapIndicator');
-    POOLVR.leapTool = YAWVRB.LeapMotion.makeTool( YAWVRB.Utils.combineObjects(POOLVR.config.toolOptions, {
+    POOLVR.leapTool = LeapMotion.makeTool( Utils.combineObjects(POOLVR.config.toolOptions, {
         onConnect: function () {
             leapIndicator.innerHTML = 'connected';
             leapIndicator.style['background-color'] = 'rgba(60, 100, 20, 0.8)';
@@ -111,37 +118,37 @@ window.onLoad = function () {
         POOLVR.leapTool.leapController.disconnect();
     }, false);
 
-    POOLVR.openVRTool = YAWVRB.Gamepads.makeTool(YAWVRB.Utils.combineObjects(POOLVR.config.toolOptions, {
+    POOLVR.openVRTool = Gamepads.makeTool(Utils.combineObjects(POOLVR.config.toolOptions, {
         tipMaterial: POOLVR.openVRTipMaterial
     }));
     POOLVR.openVRTool.mesh.visible = false;
     if (POOLVR.openVRTool.shadowMesh) POOLVR.openVRTool.shadowMesh.visible = false;
     POOLVR.app.stage.add(POOLVR.openVRTool.mesh);
     var gamepadA;
-    YAWVRB.Gamepads.setOnGamepadConnected(onGamepadConnected);
+    Gamepads.setOnGamepadConnected(onGamepadConnected);
     function onGamepadConnected(e) {
         var gamepad = e.gamepad;
         if (!gamepad) return;
         if (/openvr/i.test(gamepad.id)) {
             if (gamepadA) {
                 console.log('OpenVR controller B connected');
-                YAWVRB.Gamepads.setGamepadCommands(gamepad.index, POOLVR.vrGamepadBCommands);
+                Gamepads.setGamepadCommands(gamepad.index, POOLVR.vrGamepadBCommands);
             } else {
                 console.log('OpenVR controller A connected');
                 gamepadA = gamepad;
-                YAWVRB.Gamepads.setGamepadCommands(gamepad.index, POOLVR.vrGamepadACommands);
+                Gamepads.setGamepadCommands(gamepad.index, POOLVR.vrGamepadACommands);
                 POOLVR.openVRTool.mesh.visible = true;
                 if (POOLVR.openVRTool.shadowMesh) POOLVR.openVRTool.shadowMesh.visible = true;
                 POOLVR.openVRTool.setGamepad(gamepad);
                 POOLVR.world.addBody(POOLVR.openVRTool.body);
             }
         } else if (/xbox/i.test(gamepad.id) || /xinput/i.test(gamepad.id)) {
-            YAWVRB.Gamepads.setGamepadCommands(gamepad.index, POOLVR.xboxGamepadCommands);
+            Gamepads.setGamepadCommands(gamepad.index, POOLVR.xboxGamepadCommands);
         } else if (/3232/i.test(gamepad.id) || /b629/i.test(gamepad.id)) {
-            YAWVRB.Gamepads.setGamepadCommands(gamepad.index, POOLVR.destekGamepadCommands);
+            Gamepads.setGamepadCommands(gamepad.index, POOLVR.destekGamepadCommands);
         }
     }
-    YAWVRB.Gamepads.setOnGamepadDisconnected( function (evt) {
+    Gamepads.setOnGamepadDisconnected( function (evt) {
         if (gamepadA && gamepadA.index === evt.gamepad.index) {
             POOLVR.openVRTool.mesh.visible = false;
             if (POOLVR.openVRTool.shadowMesh) POOLVR.openVRTool.shadowMesh.visible = false;
@@ -429,7 +436,7 @@ window.onLoad = function () {
 
             } else {
 
-                if (YAWVRB.Utils.isMobile()) {
+                if (Utils.isMobile()) {
 
                     scene.remove(floorMesh);
 
@@ -487,7 +494,7 @@ POOLVR.startAnimateLoop = function () {
         openVRTool = POOLVR.openVRTool;
 
     /* global Stats */
-    if (YAWVRB.Utils.URL_PARAMS.stats) {
+    if (Utils.URL_PARAMS.stats) {
         var stats = new Stats();
         stats.showPanel( 0 ); // 0: fps, 1: ms, 2: mb, 3+: custom
         document.body.appendChild( stats.dom );
@@ -507,7 +514,7 @@ POOLVR.startAnimateLoop = function () {
 
         leapTool.updateTool(dt);
 
-        var gamepadValues = YAWVRB.Gamepads.update();
+        var gamepadValues = Gamepads.update();
         openVRTool.update(dt);
 
         render();

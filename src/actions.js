@@ -1,4 +1,4 @@
-/* global POOLVR, THREE, YAWVRB */
+/* global POOLVR, THREE, Utils */
 POOLVR.parseURIConfig = function () {
     "use strict";
     POOLVR.config = POOLVR.config || {};
@@ -7,9 +7,9 @@ POOLVR.parseURIConfig = function () {
         POOLVR.config.usePointLight = false;
         POOLVR.config.useShadowMap  = false;
     } else {
-        POOLVR.config.useSpotLight  = YAWVRB.Utils.URL_PARAMS.useSpotLight  !== undefined ? YAWVRB.Utils.URL_PARAMS.useSpotLight  : (POOLVR.config.useSpotLight || true);
-        POOLVR.config.usePointLight = YAWVRB.Utils.URL_PARAMS.usePointLight !== undefined ? YAWVRB.Utils.URL_PARAMS.usePointLight : POOLVR.config.usePointLight;
-        POOLVR.config.useShadowMap  = YAWVRB.Utils.URL_PARAMS.useShadowMap  !== undefined ? YAWVRB.Utils.URL_PARAMS.useShadowMap  : POOLVR.config.useShadowMap;
+        POOLVR.config.useSpotLight  = Utils.URL_PARAMS.useSpotLight  !== undefined ? Utils.URL_PARAMS.useSpotLight  : (POOLVR.config.useSpotLight || true);
+        POOLVR.config.usePointLight = Utils.URL_PARAMS.usePointLight !== undefined ? Utils.URL_PARAMS.usePointLight : POOLVR.config.usePointLight;
+        POOLVR.config.useShadowMap  = Utils.URL_PARAMS.useShadowMap  !== undefined ? Utils.URL_PARAMS.useShadowMap  : POOLVR.config.useShadowMap;
     }
     // Leap Motion config:
     POOLVR.config.toolOptions = POOLVR.config.toolOptions || {};
@@ -168,7 +168,7 @@ POOLVR.moveStage = ( function () {
             if (values.moveRL) moveRL += values.moveRL;
         }
         if (moveFB || moveRL || moveUD || turnRL) {
-            YAWVRB.Utils.moveObject(stage, dt, moveFB, moveRL, moveUD, turnRL, 0);
+            Utils.moveObject(stage, dt, moveFB, moveRL, moveUD, turnRL, 0);
         }
     };
 } )();
@@ -195,7 +195,7 @@ POOLVR.moveToolRoot = ( function () {
             }
         }
         if (moveFB || moveRL || moveUD || turnRL) {
-            YAWVRB.Utils.moveObject(POOLVR.leapTool.toolRoot, dt, moveFB, moveRL, moveUD, turnRL, 0);
+            Utils.moveObject(POOLVR.leapTool.toolRoot, dt, moveFB, moveRL, moveUD, turnRL, 0);
             POOLVR.leapTool.setDeadtime(0);
         }
     };

@@ -1,4 +1,8 @@
-/* global POOLVR, YAWVRB, CANNON, THREE */
+/* global Gamepads, Keyboard */
+window.Gamepads = require('./Gamepads.js');
+window.Keyboard = require('./Keyboard.js');
+
+/* global POOLVR, CANNON, THREE */
 POOLVR.commands = {
     toggleMenu:       function () { POOLVR.toggleMenu(); },
     toggleVRControls: function () { POOLVR.app.toggleVRControls(); },
@@ -31,9 +35,9 @@ POOLVR.keyboardCommands = {
     rotateToolCW:      {buttons: [85]},
     rotateToolCCW:     {buttons: [89]},
 
-    toggleVR: {buttons: [YAWVRB.Keyboard.KEYCODES.NUMBER9],
+    toggleVR: {buttons: [Keyboard.KEYCODES.NUMBER9],
                commandDown: POOLVR.commands.toggleVR},
-    toggleWireframe: {buttons: [YAWVRB.Keyboard.KEYCODES.B],
+    toggleWireframe: {buttons: [Keyboard.KEYCODES.B],
                       commandDown: POOLVR.commands.toggleWireframe},
     resetVRSensor: {buttons: [90],
                     commandDown: POOLVR.commands.resetVRSensor},
@@ -45,36 +49,36 @@ POOLVR.keyboardCommands = {
                      commandDown: POOLVR.commands.selectNextBall},
     selectPrevBall: {buttons: [109],
                      commandDown: POOLVR.commands.selectPrevBall},
-    stroke: {buttons: [YAWVRB.Keyboard.KEYCODES.SPACEBAR],
+    stroke: {buttons: [Keyboard.KEYCODES.SPACEBAR],
              commandDown: POOLVR.commands.stroke},
-    toggleMenu: {buttons: [YAWVRB.Keyboard.KEYCODES.M], commandDown: POOLVR.commands.toggleMenu}
+    toggleMenu: {buttons: [Keyboard.KEYCODES.M], commandDown: POOLVR.commands.toggleMenu}
 };
 
-POOLVR.keyboard = new YAWVRB.Keyboard(window, POOLVR.keyboardCommands);
+POOLVR.keyboard = new Keyboard(window, POOLVR.keyboardCommands);
 
 POOLVR.xboxGamepadCommands = {
-    turnLR: {axes: [YAWVRB.Gamepads.AXES.LSX]},
-    moveFB: {axes: [YAWVRB.Gamepads.AXES.LSY]},
-    toggleFloatMode: {buttons: [YAWVRB.Gamepads.BUTTONS.leftStick]},
-    moveToolFB:  {axes: [YAWVRB.Gamepads.AXES.RSY]},
-    turnToolLR: {axes: [YAWVRB.Gamepads.AXES.RSX]},
-    toggleToolFloatMode: {buttons: [YAWVRB.Gamepads.BUTTONS.rightStick]},
-    resetVRSensor: {buttons: [YAWVRB.Gamepads.BUTTONS.back],
+    turnLR: {axes: [Gamepads.AXES.LSX]},
+    moveFB: {axes: [Gamepads.AXES.LSY]},
+    toggleFloatMode: {buttons: [Gamepads.BUTTONS.leftStick]},
+    moveToolFB:  {axes: [Gamepads.AXES.RSY]},
+    turnToolLR: {axes: [Gamepads.AXES.RSX]},
+    toggleToolFloatMode: {buttons: [Gamepads.BUTTONS.rightStick]},
+    resetVRSensor: {buttons: [Gamepads.BUTTONS.back],
                     commandDown: POOLVR.commands.resetVRSensor},
-    selectNextBall: {buttons: [YAWVRB.Gamepads.BUTTONS.rightBumper],
+    selectNextBall: {buttons: [Gamepads.BUTTONS.rightBumper],
                      commandDown: POOLVR.commands.selectNextBall},
-    selectPrevBall: {buttons: [YAWVRB.Gamepads.BUTTONS.leftBumper],
+    selectPrevBall: {buttons: [Gamepads.BUTTONS.leftBumper],
                      commandDown: POOLVR.commands.selectPrevBall},
-    stroke: {buttons: [YAWVRB.Gamepads.BUTTONS.X],
+    stroke: {buttons: [Gamepads.BUTTONS.X],
              commandDown: POOLVR.commands.stroke},
-    autoPosition: {buttons: [YAWVRB.Gamepads.BUTTONS.Y],
+    autoPosition: {buttons: [Gamepads.BUTTONS.Y],
                    commandDown: POOLVR.commands.autoPosition},
-    toggleVR: {buttons: [YAWVRB.Gamepads.BUTTONS.start], commandDown: POOLVR.commands.toggleVR}
+    toggleVR: {buttons: [Gamepads.BUTTONS.start], commandDown: POOLVR.commands.toggleVR}
 };
 
 POOLVR.vrGamepadACommands = {
-    moveToolFB:  {axes: [YAWVRB.Gamepads.AXES.LSY], flipAxes: true},
-    turnToolLR: {axes: [YAWVRB.Gamepads.AXES.LSX]},
+    moveToolFB:  {axes: [Gamepads.AXES.LSY], flipAxes: true},
+    turnToolLR: {axes: [Gamepads.AXES.LSX]},
     toggleToolFloatMode: {buttons: [0]},
     toggleVR: {buttons: [3], commandDown: POOLVR.commands.toggleVR},
     resetTable: {buttons: [2], commandDown: POOLVR.commands.resetTable}

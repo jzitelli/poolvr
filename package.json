@@ -16,8 +16,7 @@
     "stats.js": "^0.16.0",
     "three": "git://github.com/jzitelli/three.js.git#dev",
     "three.py": "git://github.com/jzitelli/three.py.git#dev",
-    "webvr-polyfill": "git://github.com/jzitelli/webvr-polyfill.git",
-    "yawvrb": "git://github.com/jzitelli/yawvrb.git#dev"
+    "webvr-polyfill": "git://github.com/jzitelli/webvr-polyfill.git"
   },
   "devDependencies": {
     "eslint": "^3.2.2",
