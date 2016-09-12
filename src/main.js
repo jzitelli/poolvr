@@ -58,26 +58,6 @@ window.onLoad = function () {
         POOLVR.app.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     }
 
-    if (POOLVR.config.useTextGeomLogger) {
-        var fontLoader = new THREE.FontLoader();
-        fontLoader.load('fonts/Anonymous Pro_Regular.js', function (font) {
-            var textGeomCacher = new TextGeomUtils.TextGeomCacher(font, {size: 0.12, curveSegments: 2});
-            var textGeomLoggerMaterial = new THREE.MeshBasicMaterial({color: 0xff3210});
-            POOLVR.textGeomLogger = new TextGeomUtils.TextGeomLogger(textGeomCacher,
-                {material: textGeomLoggerMaterial, nrows: 8, lineHeight: 1.8 * 0.12});
-            POOLVR.app.stage.add(POOLVR.textGeomLogger.root);
-            POOLVR.textGeomLogger.root.position.set(-2.7, 0.88, -3.3);
-            POOLVR.textGeomLogger.root.updateMatrix();
-        });
-    } else {
-        POOLVR.textGeomLogger = {
-            root: new THREE.Object3D(),
-            log: function (msg) { console.log(msg); },
-            update: function () {},
-            clear: function () {}
-        };
-    }
-
     if (!loadedConfig) {
         POOLVR.synthSpeaker.speak("Hello. Welcome. To. Pool-ver.");
     }
@@ -490,9 +470,28 @@ POOLVR.startAnimateLoop = function () {
         stage = POOLVR.app.stage,
         moveToolRoot = POOLVR.moveToolRoot,
         moveStage = POOLVR.moveStage,
-        textGeomLogger = POOLVR.textGeomLogger,
         leapTool = POOLVR.leapTool,
         openVRTool = POOLVR.openVRTool;
+
+    if (POOLVR.config.useTextGeomLogger) {
+        var fontLoader = new THREE.FontLoader();
+        fontLoader.load('fonts/Anonymous Pro_Regular.js', function (font) {
+            var textGeomCacher = new TextGeomUtils.TextGeomCacher(font, {size: 0.12, curveSegments: 2});
+            var textGeomLoggerMaterial = new THREE.MeshBasicMaterial({color: 0xff3210});
+            POOLVR.textGeomLogger = new TextGeomUtils.TextGeomLogger(textGeomCacher,
+                {material: textGeomLoggerMaterial, nrows: 8, lineHeight: 1.8 * 0.12});
+            POOLVR.app.stage.add(POOLVR.textGeomLogger.root);
+            POOLVR.textGeomLogger.root.position.set(-2.7, 0.88, -3.3);
+            POOLVR.textGeomLogger.root.updateMatrix();
+        });
+    } else {
+        POOLVR.textGeomLogger = {
+            root: new THREE.Object3D(),
+            log: function (msg) { console.log(msg); },
+            update: function () {},
+            clear: function () {}
+        };
+    }
 
     /* global Stats */
     if (Utils.URL_PARAMS.stats) {
@@ -511,7 +510,7 @@ POOLVR.startAnimateLoop = function () {
 
         var dt = (t - lt) * 0.001;
 
-        textGeomLogger.update(t);
+        if (POOLVR.textGeomLogger) POOLVR.textGeomLogger.update(t);
 
         leapTool.updateTool(dt);
 
