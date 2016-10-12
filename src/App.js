@@ -40,8 +40,6 @@ module.exports = function (scene, config, rendererOptions) {
     this.vrControls = new THREE.VRControls(this.camera, function(error) { throw new Error(error); });
     this.vrControlsEnabled = true;
 
-    this.useImmediatePose = false;
-
     this.stage = new THREE.Object3D();
     this.stage.matrixAutoUpdate = false;
 
@@ -50,7 +48,7 @@ module.exports = function (scene, config, rendererOptions) {
     // public methods:
 
     this.render = function () {
-        if (this.vrControlsEnabled) this.vrControls.update(this.useImmediatePose);
+        if (this.vrControlsEnabled) this.vrControls.update();
         this.vrEffect.render(this.scene, this.camera);
     }.bind(this);
 
@@ -62,15 +60,6 @@ module.exports = function (scene, config, rendererOptions) {
             this.camera.updateMatrixWorld();
         } else {
             this.vrControlsEnabled = true;
-        }
-    }.bind(this);
-
-    this.toggleUseImmediatePose = function () {
-        if (this.useImmediatePose) {
-            this.useImmediatePose = false;
-        } else {
-            this.useImmediatePose = true;
-            console.log('using immediate pose');
         }
     }.bind(this);
 
