@@ -68,7 +68,7 @@ module.exports = ( function () {
         var worldScale = new THREE.Vector3();
         var lastPosition = new THREE.Vector3();
         function update(dt) {
-            if (vrGamepad && vrGamepad.pose) {
+            if (vrGamepad && vrGamepad.pose && vrGamepad.pose.position) {
                 toolMesh.position.fromArray(vrGamepad.pose.position);
                 toolMesh.quaternion.fromArray(vrGamepad.pose.orientation);
                 toolMesh.updateMatrix();

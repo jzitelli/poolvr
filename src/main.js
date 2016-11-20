@@ -399,8 +399,49 @@ window.onLoad = function () {
 
             POOLVR.leapTool.updateToolMapping();
 
-            if (isVive) {
+            scene.traverse( function (node) {
+                if (node instanceof THREE.Mesh) {
+                    if ((node.material instanceof THREE.MeshLambertMaterial || node.material instanceof THREE.MeshPhongMaterial) && (POOLVR.basicMaterials[node.material.uuid] === undefined)) {
+                        var basicMaterial = new THREE.MeshBasicMaterial({color: node.material.color.getHex(), transparent: node.material.transparent, side: node.material.side, map: node.material.map});
+                        POOLVR.basicMaterials[node.material.uuid] = basicMaterial;
+                        POOLVR.nonBasicMaterials[basicMaterial.uuid] = node.material;
+                    }
+                }
+            } );
 
+            POOLVR.switchMaterials(POOLVR.config.useBasicMaterials);
+
+            if (POOLVR.config.useTextGeomLogger) {
+                var fontLoader = new THREE.FontLoader();
+                fontLoader.load('fonts/Anonymous Pro_Regular.js', function (font) {
+                    var textGeomCacher = new TextGeomUtils.TextGeomCacher(font, {size: 0.12, curveSegments: 2});
+                    var textGeomLoggerMaterial = new THREE.MeshBasicMaterial({color: 0xff3210});
+                    POOLVR.textGeomLogger = new TextGeomUtils.TextGeomLogger(textGeomCacher,
+                        {material: textGeomLoggerMaterial, nrows: 8, lineHeight: 1.8 * 0.12});
+                    POOLVR.app.stage.add(POOLVR.textGeomLogger.root);
+                    POOLVR.textGeomLogger.root.position.set(-2.7, 0.88, -3.3);
+                    POOLVR.textGeomLogger.root.updateMatrix();
+                });
+            } else {
+                POOLVR.textGeomLogger = {
+                    root: new THREE.Object3D(),
+                    log: function (msg) { console.log(msg); },
+                    update: function () {},
+                    clear: function () {}
+                };
+            }
+
+            /* global Stats */
+            if (Utils.URL_PARAMS.stats) {
+                var stats = new Stats();
+                stats.showPanel( 0 ); // 0: fps, 1: ms, 2: mb, 3+: custom
+                document.body.appendChild( stats.dom );
+            } else {
+                stats = {begin: function () {}, end: function () {}};
+            }
+            POOLVR.stats = stats;
+
+            if (isVive) {
                 var loader = new THREE.OBJLoader();
                 loader.setPath( 'node_modules/three/examples/models/obj/vive-controller/' );
                 loader.load( 'vr_controller_vive_1_5.obj', function ( object ) {
@@ -418,39 +459,33 @@ window.onLoad = function () {
                     }, 14000);
                     POOLVR.startAnimateLoop();
                 } );
-
             } else {
-
                 if (Utils.isMobile()) {
-
                     scene.remove(floorMesh);
-
                 }
-
                 POOLVR.startAnimateLoop();
-
             }
+
         } );
     } );
+
 };
 
 
 POOLVR.startAnimateLoop = function () {
     "use strict";
-    POOLVR.app.scene.traverse( function (node) {
-        if (node instanceof THREE.Mesh) {
-            if ((node.material instanceof THREE.MeshLambertMaterial || node.material instanceof THREE.MeshPhongMaterial) && (POOLVR.basicMaterials[node.material.uuid] === undefined)) {
-                var basicMaterial = new THREE.MeshBasicMaterial({color: node.material.color.getHex(), transparent: node.material.transparent, side: node.material.side, map: node.material.map});
-                POOLVR.basicMaterials[node.material.uuid] = basicMaterial;
-                POOLVR.nonBasicMaterials[basicMaterial.uuid] = node.material;
-            }
-        }
-    } );
 
-    POOLVR.switchMaterials(POOLVR.config.useBasicMaterials);
+    var keyboard = POOLVR.keyboard,
+        render = POOLVR.app.render,
+        world = POOLVR.world,
+        stage = POOLVR.app.stage,
+        moveToolRoot = POOLVR.moveToolRoot,
+        moveStage = POOLVR.moveStage,
+        leapTool = POOLVR.leapTool,
+        openVRTool = POOLVR.openVRTool,
+        stats = POOLVR.stats;
 
     function updateBallsPostStep() {
-        "use strict";
         for (var i = 0; i < POOLVR.ballMeshes.length; i++) {
             var mesh = POOLVR.ballMeshes[i];
             var body = POOLVR.ballBodies[i];
@@ -468,51 +503,15 @@ POOLVR.startAnimateLoop = function () {
         }
     }
 
-    var keyboard = POOLVR.keyboard,
-        render = POOLVR.app.render,
-        world = POOLVR.world,
-        stage = POOLVR.app.stage,
-        moveToolRoot = POOLVR.moveToolRoot,
-        moveStage = POOLVR.moveStage,
-        leapTool = POOLVR.leapTool,
-        openVRTool = POOLVR.openVRTool;
-
-    if (POOLVR.config.useTextGeomLogger) {
-        var fontLoader = new THREE.FontLoader();
-        fontLoader.load('fonts/Anonymous Pro_Regular.js', function (font) {
-            var textGeomCacher = new TextGeomUtils.TextGeomCacher(font, {size: 0.12, curveSegments: 2});
-            var textGeomLoggerMaterial = new THREE.MeshBasicMaterial({color: 0xff3210});
-            POOLVR.textGeomLogger = new TextGeomUtils.TextGeomLogger(textGeomCacher,
-                {material: textGeomLoggerMaterial, nrows: 8, lineHeight: 1.8 * 0.12});
-            POOLVR.app.stage.add(POOLVR.textGeomLogger.root);
-            POOLVR.textGeomLogger.root.position.set(-2.7, 0.88, -3.3);
-            POOLVR.textGeomLogger.root.updateMatrix();
-        });
-    } else {
-        POOLVR.textGeomLogger = {
-            root: new THREE.Object3D(),
-            log: function (msg) { console.log(msg); },
-            update: function () {},
-            clear: function () {}
-        };
-    }
-
-    /* global Stats */
-    if (Utils.URL_PARAMS.stats) {
-        var stats = new Stats();
-        stats.showPanel( 0 ); // 0: fps, 1: ms, 2: mb, 3+: custom
-        document.body.appendChild( stats.dom );
-    } else {
-        stats = {begin: function () {}, end: function () {}};
-    }
-
-    var lt = 0;
+    var lt = window.performance.now();
 
     function animate(t) {
 
         stats.begin();
 
-        var dt = (t - lt) * 0.001;
+        t = window.performance.now();
+        var dt = (t - POOLVR.lt) * 0.001;
+        lt = t;
 
         if (POOLVR.textGeomLogger) POOLVR.textGeomLogger.update(t);
 
@@ -521,26 +520,29 @@ POOLVR.startAnimateLoop = function () {
         var gamepadValues = Gamepads.update();
         openVRTool.update(dt);
 
-        render();
-
         world.step(Math.min(1/60, dt), dt, 10);
 
         leapTool.updateToolPostStep();
         updateBallsPostStep();
+
+        render();
 
         moveStage(keyboard, gamepadValues, dt);
         stage.updateMatrixWorld();
         moveToolRoot(keyboard, gamepadValues, dt);
         leapTool.updateToolMapping();
 
-        lt = t;
-
         stats.end();
 
-        POOLVR.app.vrEffect.requestAnimationFrame(animate);
+        if (POOLVR.app.vrDisplay.isPresenting) {
+            POOLVR.requestID = POOLVR.app.vrEffect.requestAnimationFrame(animate);
+        } else {
+            POOLVR.requestID = window.requestAnimationFrame(animate);
+        }
 
     }
 
-    POOLVR.app.vrEffect.requestAnimationFrame(animate);
+    POOLVR.animate = animate;
+    POOLVR.requestID = window.requestAnimationFrame(animate);
 
 };

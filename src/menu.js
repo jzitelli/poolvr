@@ -86,9 +86,18 @@ POOLVR.setupMenu = function () {
 
     var vrButton = document.getElementById('vrButton');
     vrButton.addEventListener('click', function () {
-        POOLVR.app.toggleVR();
+        if (!POOLVR.app.vrDisplay.isPresenting) {
+            window.cancelAnimationFrame(POOLVR.requestID);
+            POOLVR.app.vrEffect.requestPresent().then( function () {
+                POOLVR.app.vrEffect.requestAnimationFrame(POOLVR.animate);
+            } );
+        } else {
+            POOLVR.app.vrEffect.cancelAnimationFrame(POOLVR.requestID);
+            POOLVR.app.vrEffect.exitPresent().then( function () {
+                window.requestAnimationFrame(POOLVR.animate);
+            } );
+        }
         vrButton.blur();
-        overlay.style.display = 'none';
     }, false);
 
     var fsButton = document.getElementById('fsButton');
