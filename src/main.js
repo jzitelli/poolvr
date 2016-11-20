@@ -88,9 +88,9 @@ window.onLoad = function () {
             leapIndicator.innerHTML = 'disconnected';
             leapIndicator.style['background-color'] = 'rgba(60, 20, 20, 0.4)';
             POOLVR.leapTool.toolRoot.visible = false;
-        },
-        tipMaterial: POOLVR.tipMaterial
+        }
     }) );
+    POOLVR.leapTool.toolBody.material = POOLVR.tipMaterial;
     POOLVR.leapTool.toolMesh.renderOrder = -1;
     POOLVR.leapTool.toolRoot.visible = false;
     POOLVR.leapTool.leapController.connect();
@@ -380,7 +380,11 @@ window.onLoad = function () {
                     POOLVR.playCollisionSound(relVelocity.lengthSquared());
                 } else if (bodyA.material === POOLVR.openVRTipMaterial && bodyB.material === POOLVR.ballMaterial) {
                     if (POOLVR.openVRTool.body.sleepState === CANNON.Body.AWAKE) {
-                        if (gamepadA && "haptics" in gamepadA && gamepadA.haptics.length > 0) gamepadA.haptics[0].vibrate(relVelocity.lengthSquared() / 8, 11);
+                        if (gamepadA && "haptics" in gamepadA && gamepadA.haptics.length > 0) {
+                            gamepadA.haptics[0].vibrate(relVelocity.lengthSquared() / 8, 11);
+                        } else if (gamepadA && "hapticActuators" in gamepadA && gamepadA.hapticActuators.length > 0) {
+                            gamepadA.hapticActuators[0].pulse(relVelocity.lengthSquared() / 8, 11);
+                        }
                         tipCollisionCounter++;
                         if (tipCollisionCounter === 1) {
                             POOLVR.synthSpeaker.speak("You moved a ball.  Good job.");
@@ -533,10 +537,10 @@ POOLVR.startAnimateLoop = function () {
 
         stats.end();
 
-        requestAnimationFrame(animate);
+        POOLVR.app.vrEffect.requestAnimationFrame(animate);
 
     }
 
-    requestAnimationFrame(animate);
+    POOLVR.app.vrEffect.requestAnimationFrame(animate);
 
 };

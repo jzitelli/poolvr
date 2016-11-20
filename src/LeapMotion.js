@@ -134,8 +134,6 @@ module.exports = ( function () {
         }
 
         var toolBody = new CANNON.Body({mass: options.toolMass, type: CANNON.Body.KINEMATIC});
-        // TODO: rename, avoid confusion b/t cannon and three materials
-        toolBody.material = options.tipMaterial || new CANNON.Material();
 
         var tipMesh = null;
         if (options.tipShape === 'Sphere') {

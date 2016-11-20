@@ -80,7 +80,7 @@ POOLVR.vrGamepadACommands = {
     moveToolFB:  {axes: [Gamepads.AXES.LSY], flipAxes: true},
     turnToolLR: {axes: [Gamepads.AXES.LSX]},
     toggleToolFloatMode: {buttons: [0]},
-    toggleVR: {buttons: [3], commandDown: POOLVR.commands.toggleVR},
+    //toggleVR: {buttons: [3], commandDown: POOLVR.commands.toggleVR},
     resetTable: {buttons: [2], commandDown: POOLVR.commands.resetTable}
     //autoPosition: {buttons: [2], commandDown: POOLVR.commands.autoPosition.bind(null, true)}
 };
