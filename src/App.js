@@ -162,19 +162,6 @@ module.exports = function (scene, config, rendererOptions) {
         console.error('WebVR API is not supported');
     }
 
-    this.toggleVR = function () {
-        var vrDisplay = this.vrDisplay;
-        if (vrDisplay && !vrDisplay.isPresenting && vrDisplay.capabilities.canPresent) {
-            this.vrEffect.requestPresent();
-        } else if (vrDisplay && vrDisplay.isPresenting) {
-            this.vrEffect.exitPresent().then( function () {
-                console.log('exited VR presentation');
-            } );
-        } else {
-            console.error('there is no capable VRDisplay available');
-        }
-    }.bind(this);
-
     // resize, fullscreen/VR listener functions and other useful functions:
 
     var onResize = function () {

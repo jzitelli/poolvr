@@ -77,10 +77,7 @@ module.exports = ( function () {
             this.root.updateMatrixWorld(true);
         }.bind(this);
 
-        var lt = 0;
-        this.update = function (t) {
-            var dt = 0.001 * (t - lt);
-            lt = t;
+        this.update = function (dt) {
             var numChildren = this.root.children.length;
             if (numChildren === 0) return;
             var lastLineObject = this.root.children[numChildren-1];
