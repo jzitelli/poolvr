@@ -72,12 +72,24 @@ def pool_table(L_table=2.3368, W_table=None, H_table=0.74295,
 
     sqrt2 = np.sqrt(2)
 
+    # headCushionGeom = HexaBufferGeometry(vertices=np.array([
+    #     # bottom quad:
+    #     [[-0.5*W_playable + 0.4*W_cushion,       0,                   0.5*W_cushion],
+    #      [ 0.5*W_playable - 0.4*W_cushion,       0,                   0.5*W_cushion],
+    #      [ 0.5*W_playable - 1.2*sqrt2*W_cushion, H_cushion - H_nose, -0.5*W_cushion + W_nose],
+    #      [-0.5*W_playable + 1.2*sqrt2*W_cushion, H_cushion - H_nose, -0.5*W_cushion + W_nose]],
+    #     # top quad:
+    #     [[-0.5*W_playable + 0.4*W_cushion,       H_rail,     0.5*W_cushion],
+    #      [ 0.5*W_playable - 0.4*W_cushion,       H_rail,     0.5*W_cushion],
+    #      [ 0.5*W_playable - 1.2*sqrt2*W_cushion, H_cushion, -0.5*W_cushion],
+    #      [-0.5*W_playable + 1.2*sqrt2*W_cushion, H_cushion, -0.5*W_cushion]]]))
+
     headCushionGeom = HexaBufferGeometry(vertices=np.array([
         # bottom quad:
-        [[-0.5*W_playable + 0.4*W_cushion,       0,                   0.5*W_cushion],
-         [ 0.5*W_playable - 0.4*W_cushion,       0,                   0.5*W_cushion],
-         [ 0.5*W_playable - 1.2*sqrt2*W_cushion, H_cushion - H_nose, -0.5*W_cushion + W_nose],
-         [-0.5*W_playable + 1.2*sqrt2*W_cushion, H_cushion - H_nose, -0.5*W_cushion + W_nose]],
+        [[-0.5*W_playable + 0.4*W_cushion,       0.0,                   0.5*W_cushion],
+         [ 0.5*W_playable - 0.4*W_cushion,       0.0,                   0.5*W_cushion],
+         [ 0.5*W_playable - 1.2*sqrt2*W_cushion, 0.0, -0.5*W_cushion + W_nose],
+         [-0.5*W_playable + 1.2*sqrt2*W_cushion, 0.0, -0.5*W_cushion + W_nose]],
         # top quad:
         [[-0.5*W_playable + 0.4*W_cushion,       H_rail,     0.5*W_cushion],
          [ 0.5*W_playable - 0.4*W_cushion,       H_rail,     0.5*W_cushion],
@@ -92,8 +104,7 @@ def pool_table(L_table=2.3368, W_table=None, H_table=0.74295,
     leftHeadCushionGeom.vertices[0, 3, 0] = -0.5*W_playable + 0.6*sqrt2*W_cushion
     leftHeadCushionGeom.vertices[1, 3, 0] = leftHeadCushionGeom.vertices[0, 3, 0]
 
-    cushionData = {'cannonData': {'mass': 0, 'shapes': ['ConvexPolyhedron']}}
-
+    cushionData = {'cannonData': {'mass': 0, 'shapes': ['ConvexPolyhedron'], 'faces': HexaBufferGeometry.faces}}
     headCushionMesh = Mesh(name='headCushionMesh',
                            geometry=headCushionGeom,
                            material=cushionMaterial,
