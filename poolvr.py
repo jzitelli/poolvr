@@ -193,8 +193,6 @@ def make_dist():
     shutil.copytree(os.path.join('node_modules', 'three.py', 'js'), os.path.join(DIST_OUTPUT_DIR, 'node_modules', 'three.py', 'js'))
     os.makedirs(os.path.join(DIST_OUTPUT_DIR, 'node_modules', 'webvr-polyfill', 'build'))
     shutil.copy(os.path.join('node_modules', 'webvr-polyfill', 'build', 'webvr-polyfill.js'), os.path.join(DIST_OUTPUT_DIR, 'node_modules', 'webvr-polyfill', 'build'))
-    os.makedirs(os.path.join(DIST_OUTPUT_DIR, 'node_modules', 'yawvrb', 'build'))
-    shutil.copy(os.path.join('node_modules', 'yawvrb', 'build', 'yawvrb.js'), os.path.join(DIST_OUTPUT_DIR, 'node_modules', 'yawvrb', 'build'))
 
 
 
