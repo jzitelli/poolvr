@@ -320,10 +320,10 @@ window.onLoad = function () {
             //     cushionMeshes[0].geometry.merge(cushionMeshes[i].geometry);
             //     scene.remove(cushionMeshes[i]);
             // }
-            for (var i = 1; i < railMeshes.length; i++) {
-                railMeshes[0].geometry.merge(railMeshes[i].geometry);
-                scene.remove(railMeshes[i]);
-            }
+            // for (var i = 1; i < railMeshes.length; i++) {
+            //     railMeshes[0].geometry.merge(railMeshes[i].geometry);
+            //     scene.remove(railMeshes[i]);
+            // }
 
             if (!POOLVR.config.useShadowMap) {
                 var ballShadowGeom = new THREE.CircleBufferGeometry(0.5*POOLVR.config.ball_diameter, 16);
