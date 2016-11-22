@@ -316,11 +316,11 @@ window.onLoad = function () {
                 }
             });
 
-            for (var i = 1; i < cushionMeshes.length; i++) {
-                cushionMeshes[0].geometry.merge(cushionMeshes[i].geometry);
-                scene.remove(cushionMeshes[i]);
-            }
-            for (i = 1; i < railMeshes.length; i++) {
+            // for (var i = 1; i < cushionMeshes.length; i++) {
+            //     cushionMeshes[0].geometry.merge(cushionMeshes[i].geometry);
+            //     scene.remove(cushionMeshes[i]);
+            // }
+            for (var i = 1; i < railMeshes.length; i++) {
                 railMeshes[0].geometry.merge(railMeshes[i].geometry);
                 scene.remove(railMeshes[i]);
             }

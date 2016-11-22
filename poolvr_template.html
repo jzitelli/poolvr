@@ -16,6 +16,43 @@
 
 {{ json_config }}
 
+    <script id="vshader" type="x-shader/x-vertex">
+      precision highp float;
+      uniform mat4 modelViewMatrix;
+      uniform mat4 projectionMatrix;
+
+      attribute vec3 position;
+      attribute vec2 uv;
+      attribute vec3 translate;
+
+      varying vec2 vUv;
+
+      void main() {
+
+        vec4 mvPosition = modelViewMatrix * vec4( translate, 1.0 );
+        vec3 z = normalize(-mvPosition.xyz);
+        vec3 x = normalize(vec3(z.z, 0.0, -z.x));
+        vec3 y = cross(z, x);
+        mvPosition.xyz += position.x * x + position.y * y + position.z * z;
+        vUv = uv;
+        gl_Position = projectionMatrix * mvPosition;
+
+      }
+    </script>
+    <script id="fshader" type="x-shader/x-fragment">
+      precision highp float;
+
+      uniform sampler2D map;
+
+      varying vec2 vUv;
+
+      void main() {
+        vec4 diffuseColor = texture2D( map, vUv );
+        gl_FragColor = diffuseColor;
+        if ( diffuseColor.w < 0.5 ) discard;
+      }
+    </script>
+
   </head>
 
   <body onload="onLoad()">

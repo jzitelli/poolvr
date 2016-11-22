@@ -12,7 +12,7 @@ INCH2METER = 0.0254
 FT2METER = INCH2METER / 12
 
 
-def pool_table(L_table=2.3368, W_table=None, H_table=0.74295,
+def pool_table(L_table=2.3368, W_table=None, H_table=0.77,
                L_playable=None, W_playable=None,
                ball_diameter=2.25*INCH2METER,
                W_cushion=2*INCH2METER, H_cushion=None, W_rail=None,
@@ -84,10 +84,11 @@ def pool_table(L_table=2.3368, W_table=None, H_table=0.74295,
     #      [ 0.5*W_playable - 1.2*sqrt2*W_cushion, H_cushion, -0.5*W_cushion],
     #      [-0.5*W_playable + 1.2*sqrt2*W_cushion, H_cushion, -0.5*W_cushion]]]))
 
-    headCushionGeom = HexaBufferGeometry(vertices=np.array([
+    headCushionGeom = HexaBufferGeometry(name="headCushionGeom",
+                                         vertices=np.array([
         # bottom quad:
-        [[-0.5*W_playable + 0.4*W_cushion,       0.0,                   0.5*W_cushion],
-         [ 0.5*W_playable - 0.4*W_cushion,       0.0,                   0.5*W_cushion],
+        [[-0.5*W_playable + 0.4*W_cushion,       0.0,           0.5*W_cushion],
+         [ 0.5*W_playable - 0.4*W_cushion,       0.0,           0.5*W_cushion],
          [ 0.5*W_playable - 1.2*sqrt2*W_cushion, 0.0, -0.5*W_cushion + W_nose],
          [-0.5*W_playable + 1.2*sqrt2*W_cushion, 0.0, -0.5*W_cushion + W_nose]],
         # top quad:
@@ -96,11 +97,13 @@ def pool_table(L_table=2.3368, W_table=None, H_table=0.74295,
          [ 0.5*W_playable - 1.2*sqrt2*W_cushion, H_cushion, -0.5*W_cushion],
          [-0.5*W_playable + 1.2*sqrt2*W_cushion, H_cushion, -0.5*W_cushion]]]))
 
-    rightHeadCushionGeom = HexaBufferGeometry(vertices=headCushionGeom.vertices.copy())
+    rightHeadCushionGeom = HexaBufferGeometry(name="rightHeadCushionGeom",
+                                              vertices=headCushionGeom.vertices.copy())
     rightHeadCushionGeom.vertices[0, 2, 0] = 0.5*W_playable - 0.6*sqrt2*W_cushion
     rightHeadCushionGeom.vertices[1, 2, 0] = rightHeadCushionGeom.vertices[0, 2, 0]
 
-    leftHeadCushionGeom = HexaBufferGeometry(vertices=headCushionGeom.vertices.copy())
+    leftHeadCushionGeom = HexaBufferGeometry(name="leftHeadCushionGeom",
+                                             vertices=headCushionGeom.vertices.copy())
     leftHeadCushionGeom.vertices[0, 3, 0] = -0.5*W_playable + 0.6*sqrt2*W_cushion
     leftHeadCushionGeom.vertices[1, 3, 0] = leftHeadCushionGeom.vertices[0, 3, 0]
 
