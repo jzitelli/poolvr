@@ -16,52 +16,89 @@
 
 <script>
 var WebVRConfig = {
-  "KEYBOARD_CONTROLS_DISABLED": true,
-  "PREDICTION_TIME_S": 0.02,
-  "K_FILTER": 0.98,
   "MOUSE_KEYBOARD_CONTROLS_DISABLED": false,
+  "KEYBOARD_CONTROLS_DISABLED": true,
+  "K_FILTER": 0.98,
+  "YAW_ONLY": false,
   "LEAP_MOTION_HOST": "192.168.1.200",
   "ENABLE_LEAP_MOTION": false,
-  "FORCE_ENABLE_VR": false,
-  "YAW_ONLY": false,
-  "TOUCH_PANNER_DISABLED": false
+  "PREDICTION_TIME_S": 0.02,
+  "TOUCH_PANNER_DISABLED": false,
+  "FORCE_ENABLE_VR": false
 };
 
 var POOLVR = {
+  "version": "0.2.6",
   "config": {
-    "useSpotLight": true,
-    "H_ceiling": 2.4383999999999997,
+    "L_table": 2.3368,
+    "synthSpeakerVolume": 0.5,
+    "useTextGeomLogger": true,
+    "gravity": 9.8,
+    "H_table": 0.77,
+    "useShadowMap": false,
     "toolOptions": {
-      "numSegments": 8,
       "tipShape": "Cylinder",
-      "toolLength": 0.37,
+      "numSegments": 8,
+      "tipLength": 0.37,
       "tipRadius": 0.01,
-      "toolMass": 0.54,
-      "toolRadius": 0.01,
       "interactionPlaneOpacity": 0.22,
-      "useImplicitCylinder": true,
+      "toolLength": 0.37,
       "offset": [
         0,
         0,
         0.185
       ],
-      "tipLength": 0.37
+      "toolRadius": 0.01,
+      "useImplicitCylinder": true,
+      "toolMass": 0.54
     },
-    "gravity": 9.8,
-    "H_table": 0.77,
-    "useShadowMap": false,
+    "H_ceiling": 2.4383999999999997,
+    "ball_diameter": 0.05715,
     "useBasicMaterials": true,
-    "synthSpeakerVolume": 0.5,
-    "useTextGeomLogger": true,
-    "L_table": 2.3368,
-    "usePointLight": false,
-    "ball_diameter": 0.05715
-  },
-  "version": "0.2.6"
+    "useSpotLight": true,
+    "usePointLight": false
+  }
 };
 
-var THREEPY_SCENE = {"metadata": {"type": "Object", "generator": "three.py", "version": 4.4}, "images": [], "materials": [{"type": "MeshBasicMaterial", "name": "floorMaterial", "uuid": "1d44ecaa-a787-48c1-8bec-a8cb211d9fad", "color": 8704}, {"color": 7829367, "type": "MeshPhongMaterial", "name": "headSpotMaterial", "uuid": "57792a74-5a59-4b7d-a2f8-3f55d44ff62f", "shading": 1}, {"name": "surfaceMaterial", "shininess": 5, "color": 43520, "type": "MeshPhongMaterial", "uuid": "29844ec2-307e-44e7-908d-42a654d95cde", "shading": 1}, {"name": "cushionMaterial", "shininess": 5, "color": 165956, "type": "MeshPhongMaterial", "uuid": "858b07df-2191-4587-8e34-866913f4ef68", "shading": 1}, {"name": "railMaterial", "shininess": 10, "color": 14525440, "type": "MeshPhongMaterial", "uuid": "e621923f-3876-4bbc-bf45-39fa554f1c4e", "shading": 1}], "object": {"position": [0.0, 0.0, 0.0], "name": "unnamed Scene 0", "scale": [1.0, 1.0, 1.0], "children": [{"position": [0.0, 0.0, 0.0], "name": "poolTable", "scale": [1.0, 1.0, 1.0], "children": [{"userData": {"cannonData": {"shapes": ["Box"], "mass": 0}}, "position": [0.0, 0.7573, 0.0], "name": "playableSurfaceMesh", "children": [], "type": "Mesh", "geometry": "3cf0558c-6967-4696-8cc7-9cf1760e4cc7", "uuid": "a248d1b8-91ea-433c-911a-43dd40c92844", "scale": [1.0, 1.0, 1.0], "rotation": [0.0, 0.0, 0.0], "receiveShadow": true, "material": "29844ec2-307e-44e7-908d-42a654d95cde"}, {"position": [0.0, 0.7702, 0.5842], "name": "unnamed Mesh 0", "children": [], "type": "Mesh", "geometry": "0df4707c-eab8-4fe1-956a-553a2b313207", "uuid": "a5505658-18bd-4598-bd53-cd9393129bb1", "scale": [1.0, 1.0, 1.0], "rotation": [-1.5707963267948966, 0.0, 0.3141592653589793], "receiveShadow": true, "material": "57792a74-5a59-4b7d-a2f8-3f55d44ff62f"}, {"userData": {"cannonData": {"shapes": ["ConvexPolyhedron"], "mass": 0}}, "position": [0.0, 0.77, 1.143], "name": "headCushionMesh", "children": [], "type": "Mesh", "geometry": "5c94aaec-c758-4e36-99f8-feb92767c5a5", "uuid": "792b0d9e-9a67-4cff-a375-67db88ce3fdf", "scale": [1.0, 1.0, 1.0], "rotation": [0.0, 0.0, 0.0], "receiveShadow": true, "material": "858b07df-2191-4587-8e34-866913f4ef68"}, {"userData": {"cannonData": {"shapes": ["ConvexPolyhedron"], "mass": 0}}, "position": [0.0, 0.77, -1.143], "name": "footCushionMesh", "children": [], "type": "Mesh", "geometry": "5c94aaec-c758-4e36-99f8-feb92767c5a5", "uuid": "bcd28001-d3c5-45eb-b771-b5f73c37dd66", "scale": [1.0, 1.0, 1.0], "rotation": [0.0, 3.141592653589793, 0.0], "receiveShadow": true, "material": "858b07df-2191-4587-8e34-866913f4ef68"}, {"userData": {"cannonData": {"shapes": ["ConvexPolyhedron"], "mass": 0}}, "position": [-0.5588000000000001, 0.77, 0.5842], "name": "leftHeadCushionMesh", "children": [], "type": "Mesh", "geometry": "ec5207ee-13be-4827-b43c-3f6bf6ced37b", "uuid": "35902dac-1279-4e7c-bdef-f4cd4f0c99d0", "scale": [1.0, 1.0, 1.0], "rotation": [0.0, -1.5707963267948966, 0.0], "receiveShadow": true, "material": "858b07df-2191-4587-8e34-866913f4ef68"}, {"userData": {"cannonData": {"shapes": ["ConvexPolyhedron"], "mass": 0}}, "position": [-0.5588000000000001, 0.77, -0.5842], "name": "leftFootCushionMesh", "children": [], "type": "Mesh", "geometry": "22d1f83f-d030-4c60-bc7c-d972d457d90d", "uuid": "993113a5-b2f3-4e19-9ca6-2c6c2e146e94", "scale": [1.0, 1.0, 1.0], "rotation": [0.0, -1.5707963267948966, 0.0], "receiveShadow": true, "material": "858b07df-2191-4587-8e34-866913f4ef68"}, {"userData": {"cannonData": {"shapes": ["ConvexPolyhedron"], "mass": 0}}, "position": [0.5588000000000001, 0.77, 0.5842], "name": "rightHeadCushionMesh", "children": [], "type": "Mesh", "geometry": "22d1f83f-d030-4c60-bc7c-d972d457d90d", "uuid": "da585c52-779f-4df8-aa59-1344e6501cef", "scale": [1.0, 1.0, 1.0], "rotation": [0.0, 1.5707963267948966, 0.0], "receiveShadow": true, "material": "858b07df-2191-4587-8e34-866913f4ef68"}, {"userData": {"cannonData": {"shapes": ["ConvexPolyhedron"], "mass": 0}}, "position": [0.5588000000000001, 0.77, -0.5842], "name": "rightFootCushionMesh", "children": [], "type": "Mesh", "geometry": "ec5207ee-13be-4827-b43c-3f6bf6ced37b", "uuid": "720726bf-ca32-4c78-9a22-782d112838a1", "scale": [1.0, 1.0, 1.0], "rotation": [0.0, 1.5707963267948966, 0.0], "receiveShadow": true, "material": "858b07df-2191-4587-8e34-866913f4ef68"}, {"userData": {"cannonData": {"shapes": ["Box"], "mass": 0}}, "position": [0.0, 0.79268140625, 1.2065000000000001], "name": "headRailMesh", "children": [], "type": "Mesh", "geometry": "c6bd514e-c3a7-474a-91de-d225e42e7938", "uuid": "e1a9b8fb-00a4-4cc2-bd8a-21e0f7da29fe", "scale": [1.0, 1.0, 1.0], "rotation": [0.0, 0.0, 0.0], "receiveShadow": true, "material": "e621923f-3876-4bbc-bf45-39fa554f1c4e"}, {"userData": {"cannonData": {"shapes": ["Box"], "mass": 0}}, "position": [0.0, 0.79268140625, -1.2065000000000001], "name": "footRailMesh", "children": [], "type": "Mesh", "geometry": "c6bd514e-c3a7-474a-91de-d225e42e7938", "uuid": "7b675836-b24b-4002-ae56-6a3596db51ef", "scale": [1.0, 1.0, 1.0], "rotation": [0.0, 3.141592653589793, 0.0], "receiveShadow": true, "material": "e621923f-3876-4bbc-bf45-39fa554f1c4e"}, {"userData": {"cannonData": {"shapes": ["Box"], "mass": 0}}, "position": [-0.6223000000000001, 0.79268140625, 0.5842], "name": "leftHeadRailMesh", "children": [], "type": "Mesh", "geometry": "c6bd514e-c3a7-474a-91de-d225e42e7938", "uuid": "080d758a-a238-4896-8534-7e43a6fdddc0", "scale": [1.0, 1.0, 1.0], "rotation": [0.0, 1.5707963267948966, 0.0], "receiveShadow": true, "material": "e621923f-3876-4bbc-bf45-39fa554f1c4e"}, {"userData": {"cannonData": {"shapes": ["Box"], "mass": 0}}, "position": [0.6223000000000001, 0.79268140625, 0.5842], "name": "rightHeadRailMesh", "children": [], "type": "Mesh", "geometry": "c6bd514e-c3a7-474a-91de-d225e42e7938", "uuid": "2a05ecd1-1bac-4c66-9520-7507c9a46fee", "scale": [1.0, 1.0, 1.0], "rotation": [0.0, 1.5707963267948966, 0.0], "receiveShadow": true, "material": "e621923f-3876-4bbc-bf45-39fa554f1c4e"}, {"userData": {"cannonData": {"shapes": ["Box"], "mass": 0}}, "position": [-0.6223000000000001, 0.79268140625, -0.5842], "name": "leftFootRailMesh", "children": [], "type": "Mesh", "geometry": "c6bd514e-c3a7-474a-91de-d225e42e7938", "uuid": "8271deb7-5dc4-4de4-907c-8d954ea41555", "scale": [1.0, 1.0, 1.0], "rotation": [0.0, 1.5707963267948966, 0.0], "receiveShadow": true, "material": "e621923f-3876-4bbc-bf45-39fa554f1c4e"}, {"userData": {"cannonData": {"shapes": ["Box"], "mass": 0}}, "position": [0.6223000000000001, 0.79268140625, -0.5842], "name": "rightFootRailMesh", "children": [], "type": "Mesh", "geometry": "c6bd514e-c3a7-474a-91de-d225e42e7938", "uuid": "87a0e2d2-8bef-454f-9b11-313d54d70097", "scale": [1.0, 1.0, 1.0], "rotation": [0.0, 1.5707963267948966, 0.0], "receiveShadow": true, "material": "e621923f-3876-4bbc-bf45-39fa554f1c4e"}], "rotation": [0.0, 0.0, 0.0], "type": "Object3D", "uuid": "6c807eb5-2ad2-4e8e-b28b-ec51cfb69db2"}, {"userData": {"cannonData": {"shapes": ["Plane"], "mass": 0}}, "position": [0.0, 0.0, 0.0], "name": "floorMesh", "children": [], "type": "Mesh", "geometry": "9a6fd16b-94ce-4c6e-b1ef-2379a7bf4efb", "uuid": "79d25545-e073-4e8a-b6d6-bb81c0874179", "scale": [1.0, 1.0, 1.0], "rotation": [-1.5707963267948966, 0.0, 0.0], "material": "1d44ecaa-a787-48c1-8bec-a8cb211d9fad"}], "rotation": [0.0, 0.0, 0.0], "type": "Scene", "uuid": "dbd3708e-5238-4863-9328-b9af0549e065"}, "geometries": [{"type": "BufferGeometry", "name": "unnamed HexaBufferGeometry 0", "uuid": "5c94aaec-c758-4e36-99f8-feb92767c5a5", "data": {"index": {"itemSize": 1, "type": "Uint16Array", "array": [3, 2, 1, 3, 1, 0, 4, 5, 6, 4, 6, 7, 0, 1, 5, 0, 5, 4, 1, 2, 6, 1, 6, 5, 2, 3, 7, 2, 7, 6, 7, 3, 0, 7, 0, 4]}, "attributes": {"position": {"itemSize": 3, "type": "Float32Array", "array": [-0.5130800000000001, 0.0, 0.0254, 0.5130800000000001, 0.0, 0.0254, 0.44718954123773624, 0.018145125, -0.02286, -0.44718954123773624, 0.018145125, -0.02286, -0.5130800000000001, 0.0453628125, 0.0254, 0.5130800000000001, 0.0453628125, 0.0254, 0.44718954123773624, 0.03629025, -0.0254, -0.44718954123773624, 0.03629025, -0.0254]}}}}, {"type": "BufferGeometry", "name": "unnamed HexaBufferGeometry 2", "uuid": "ec5207ee-13be-4827-b43c-3f6bf6ced37b", "data": {"index": {"itemSize": 1, "type": "Uint16Array", "array": [3, 2, 1, 3, 1, 0, 4, 5, 6, 4, 6, 7, 0, 1, 5, 0, 5, 4, 1, 2, 6, 1, 6, 5, 2, 3, 7, 2, 7, 6, 7, 3, 0, 7, 0, 4]}, "attributes": {"position": {"itemSize": 3, "type": "Float32Array", "array": [-0.5130800000000001, 0.0, 0.0254, 0.5130800000000001, 0.0, 0.0254, 0.44718954123773624, 0.018145125, -0.02286, -0.49029477061886817, 0.018145125, -0.02286, -0.5130800000000001, 0.0453628125, 0.0254, 0.5130800000000001, 0.0453628125, 0.0254, 0.44718954123773624, 0.03629025, -0.0254, -0.49029477061886817, 0.03629025, -0.0254]}}}}, {"radius": 0.0200025, "type": "CircleBufferGeometry", "segments": 5, "name": "spotGeom", "uuid": "0df4707c-eab8-4fe1-956a-553a2b313207"}, {"width": 1.0668000000000002, "height": 0.0254, "name": "unnamed BoxBufferGeometry 0", "depthSegments": 1, "type": "BoxBufferGeometry", "uuid": "3cf0558c-6967-4696-8cc7-9cf1760e4cc7", "heightSegments": 1, "widthSegments": 1, "depth": 2.2352000000000003}, {"type": "BufferGeometry", "name": "unnamed HexaBufferGeometry 1", "uuid": "22d1f83f-d030-4c60-bc7c-d972d457d90d", "data": {"index": {"itemSize": 1, "type": "Uint16Array", "array": [3, 2, 1, 3, 1, 0, 4, 5, 6, 4, 6, 7, 0, 1, 5, 0, 5, 4, 1, 2, 6, 1, 6, 5, 2, 3, 7, 2, 7, 6, 7, 3, 0, 7, 0, 4]}, "attributes": {"position": {"itemSize": 3, "type": "Float32Array", "array": [-0.5130800000000001, 0.0, 0.0254, 0.5130800000000001, 0.0, 0.0254, 0.49029477061886817, 0.018145125, -0.02286, -0.44718954123773624, 0.018145125, -0.02286, -0.5130800000000001, 0.0453628125, 0.0254, 0.5130800000000001, 0.0453628125, 0.0254, 0.49029477061886817, 0.03629025, -0.0254, -0.44718954123773624, 0.03629025, -0.0254]}}}}, {"width": 6, "height": 6, "name": "unnamed PlaneBufferGeometry 0", "heightSegments": 1, "widthSegments": 1, "type": "PlaneBufferGeometry", "uuid": "9a6fd16b-94ce-4c6e-b1ef-2379a7bf4efb"}, {"width": 1.0261600000000002, "height": 0.0453628125, "name": "unnamed BoxBufferGeometry 1", "depthSegments": 1, "type": "BoxBufferGeometry", "uuid": "c6bd514e-c3a7-474a-91de-d225e42e7938", "heightSegments": 1, "widthSegments": 1, "depth": 0.07619999999999999}], "textures": []};
+var THREEPY_SCENE = {"metadata": {"type": "Object", "generator": "three.py", "version": 4.4}, "images": [], "object": {"type": "Scene", "position": [0.0, 0.0, 0.0], "children": [{"type": "Object3D", "position": [0.0, 0.0, 0.0], "children": [{"type": "Mesh", "position": [0.0, 0.7573, 0.0], "children": [], "rotation": [0.0, 0.0, 0.0], "name": "playableSurfaceMesh", "uuid": "e0e7ebb7-adc1-4ce3-9f3b-891789743200", "material": "33f8bc23-c118-4453-8d7f-d1814c4732f7", "userData": {"cannonData": {"mass": 0, "shapes": ["Box"]}}, "geometry": "d0e84f2f-5971-42d0-b471-4b95c506ab7e", "scale": [1.0, 1.0, 1.0], "receiveShadow": true}, {"type": "Mesh", "position": [0.0, 0.7702, 0.5842], "children": [], "rotation": [-1.5707963267948966, 0.0, 0.3141592653589793], "name": "unnamed Mesh 0", "uuid": "c634f4cd-ec32-4a52-95f4-18de7efa3f7d", "material": "939a8af2-ca74-4cec-8e88-7e1cba788613", "geometry": "062a8b4a-0a2f-43fb-b655-47d8bff2a570", "scale": [1.0, 1.0, 1.0], "receiveShadow": true}, {"type": "Mesh", "position": [0.0, 0.77, 1.143], "children": [], "rotation": [0.0, 0.0, 0.0], "name": "headCushionMesh", "uuid": "7f8a017e-59ae-4a4a-ba9c-c0176b378bd2", "material": "8b682946-c297-40aa-b4b7-7b26a666222b", "userData": {"cannonData": {"mass": 0, "faces": [[3, 2, 1, 0], [4, 5, 6, 7], [0, 1, 5, 4], [1, 2, 6, 5], [2, 3, 7, 6], [7, 3, 0, 4]], "shapes": ["ConvexPolyhedron"]}}, "geometry": "15ac560d-7d42-4af6-87dd-783158bc95f8", "scale": [1.0, 1.0, 1.0], "receiveShadow": true}, {"type": "Mesh", "position": [0.0, 0.77, -1.143], "children": [], "rotation": [0.0, 3.141592653589793, 0.0], "name": "footCushionMesh", "uuid": "13103f50-5710-4b7b-8762-56c9058c78fd", "material": "8b682946-c297-40aa-b4b7-7b26a666222b", "userData": {"cannonData": {"mass": 0, "faces": [[3, 2, 1, 0], [4, 5, 6, 7], [0, 1, 5, 4], [1, 2, 6, 5], [2, 3, 7, 6], [7, 3, 0, 4]], "shapes": ["ConvexPolyhedron"]}}, "geometry": "15ac560d-7d42-4af6-87dd-783158bc95f8", "scale": [1.0, 1.0, 1.0], "receiveShadow": true}, {"type": "Mesh", "position": [-0.5588000000000001, 0.77, 0.5842], "children": [], "rotation": [0.0, -1.5707963267948966, 0.0], "name": "leftHeadCushionMesh", "uuid": "631a74bf-b189-44a8-b509-e17456eb7dbb", "material": "8b682946-c297-40aa-b4b7-7b26a666222b", "userData": {"cannonData": {"mass": 0, "faces": [[3, 2, 1, 0], [4, 5, 6, 7], [0, 1, 5, 4], [1, 2, 6, 5], [2, 3, 7, 6], [7, 3, 0, 4]], "shapes": ["ConvexPolyhedron"]}}, "geometry": "f7f465ae-e31a-4311-bdc0-5eab6dce219d", "scale": [1.0, 1.0, 1.0], "receiveShadow": true}, {"type": "Mesh", "position": [-0.5588000000000001, 0.77, -0.5842], "children": [], "rotation": [0.0, -1.5707963267948966, 0.0], "name": "leftFootCushionMesh", "uuid": "12a3b0f0-0db4-4c1e-aaa0-e4554f4781b6", "material": "8b682946-c297-40aa-b4b7-7b26a666222b", "userData": {"cannonData": {"mass": 0, "faces": [[3, 2, 1, 0], [4, 5, 6, 7], [0, 1, 5, 4], [1, 2, 6, 5], [2, 3, 7, 6], [7, 3, 0, 4]], "shapes": ["ConvexPolyhedron"]}}, "geometry": "723ad624-820c-44f6-af62-27f7de35a61f", "scale": [1.0, 1.0, 1.0], "receiveShadow": true}, {"type": "Mesh", "position": [0.5588000000000001, 0.77, 0.5842], "children": [], "rotation": [0.0, 1.5707963267948966, 0.0], "name": "rightHeadCushionMesh", "uuid": "d481011d-0fa9-4ee7-936c-171470b6dad7", "material": "8b682946-c297-40aa-b4b7-7b26a666222b", "userData": {"cannonData": {"mass": 0, "faces": [[3, 2, 1, 0], [4, 5, 6, 7], [0, 1, 5, 4], [1, 2, 6, 5], [2, 3, 7, 6], [7, 3, 0, 4]], "shapes": ["ConvexPolyhedron"]}}, "geometry": "723ad624-820c-44f6-af62-27f7de35a61f", "scale": [1.0, 1.0, 1.0], "receiveShadow": true}, {"type": "Mesh", "position": [0.5588000000000001, 0.77, -0.5842], "children": [], "rotation": [0.0, 1.5707963267948966, 0.0], "name": "rightFootCushionMesh", "uuid": "4365393b-c896-41d1-ab0e-52b94a3a76e6", "material": "8b682946-c297-40aa-b4b7-7b26a666222b", "userData": {"cannonData": {"mass": 0, "faces": [[3, 2, 1, 0], [4, 5, 6, 7], [0, 1, 5, 4], [1, 2, 6, 5], [2, 3, 7, 6], [7, 3, 0, 4]], "shapes": ["ConvexPolyhedron"]}}, "geometry": "f7f465ae-e31a-4311-bdc0-5eab6dce219d", "scale": [1.0, 1.0, 1.0], "receiveShadow": true}, {"type": "Mesh", "position": [0.0, 0.79268140625, 1.2065000000000001], "children": [], "rotation": [0.0, 0.0, 0.0], "name": "headRailMesh", "uuid": "5571677e-9b69-4f6b-a941-8b3ebccf6e0a", "material": "24655c48-1f92-41a8-bea3-d32ac605c82f", "userData": {"cannonData": {"mass": 0, "shapes": ["Box"]}}, "geometry": "b96da5e2-2b4b-4644-b756-4f6d340cdea6", "scale": [1.0, 1.0, 1.0], "receiveShadow": true}, {"type": "Mesh", "position": [0.0, 0.79268140625, -1.2065000000000001], "children": [], "rotation": [0.0, 3.141592653589793, 0.0], "name": "footRailMesh", "uuid": "758a2a54-2be2-42ff-bd67-83bb6480fa1b", "material": "24655c48-1f92-41a8-bea3-d32ac605c82f", "userData": {"cannonData": {"mass": 0, "shapes": ["Box"]}}, "geometry": "b96da5e2-2b4b-4644-b756-4f6d340cdea6", "scale": [1.0, 1.0, 1.0], "receiveShadow": true}, {"type": "Mesh", "position": [-0.6223000000000001, 0.79268140625, 0.5842], "children": [], "rotation": [0.0, 1.5707963267948966, 0.0], "name": "leftHeadRailMesh", "uuid": "dead62e7-b92a-4c93-ad8f-22327977e0f8", "material": "24655c48-1f92-41a8-bea3-d32ac605c82f", "userData": {"cannonData": {"mass": 0, "shapes": ["Box"]}}, "geometry": "b96da5e2-2b4b-4644-b756-4f6d340cdea6", "scale": [1.0, 1.0, 1.0], "receiveShadow": true}, {"type": "Mesh", "position": [0.6223000000000001, 0.79268140625, 0.5842], "children": [], "rotation": [0.0, 1.5707963267948966, 0.0], "name": "rightHeadRailMesh", "uuid": "829d9a44-2487-4c6e-8d85-0340611cce84", "material": "24655c48-1f92-41a8-bea3-d32ac605c82f", "userData": {"cannonData": {"mass": 0, "shapes": ["Box"]}}, "geometry": "b96da5e2-2b4b-4644-b756-4f6d340cdea6", "scale": [1.0, 1.0, 1.0], "receiveShadow": true}, {"type": "Mesh", "position": [-0.6223000000000001, 0.79268140625, -0.5842], "children": [], "rotation": [0.0, 1.5707963267948966, 0.0], "name": "leftFootRailMesh", "uuid": "a6931537-a6c8-4c2a-b068-054dae1aec00", "material": "24655c48-1f92-41a8-bea3-d32ac605c82f", "userData": {"cannonData": {"mass": 0, "shapes": ["Box"]}}, "geometry": "b96da5e2-2b4b-4644-b756-4f6d340cdea6", "scale": [1.0, 1.0, 1.0], "receiveShadow": true}, {"type": "Mesh", "position": [0.6223000000000001, 0.79268140625, -0.5842], "children": [], "rotation": [0.0, 1.5707963267948966, 0.0], "name": "rightFootRailMesh", "uuid": "5fa0f24a-25ef-406f-bbdd-709747d27b06", "material": "24655c48-1f92-41a8-bea3-d32ac605c82f", "userData": {"cannonData": {"mass": 0, "shapes": ["Box"]}}, "geometry": "b96da5e2-2b4b-4644-b756-4f6d340cdea6", "scale": [1.0, 1.0, 1.0], "receiveShadow": true}], "rotation": [0.0, 0.0, 0.0], "name": "poolTable", "scale": [1.0, 1.0, 1.0], "uuid": "dff42900-ede0-40da-95d9-6d6f3cba9a7a"}, {"type": "Mesh", "position": [0.0, 0.0, 0.0], "children": [], "rotation": [-1.5707963267948966, 0.0, 0.0], "name": "floorMesh", "uuid": "39c42081-21fe-4ebd-a798-940e3f5faec0", "material": "23bff90f-29b7-41db-b538-dedcae9a80d4", "userData": {"cannonData": {"mass": 0, "shapes": ["Plane"]}}, "geometry": "b2f1dac9-0d08-4a39-9ffb-e4eb174e798e", "scale": [1.0, 1.0, 1.0]}], "rotation": [0.0, 0.0, 0.0], "name": "unnamed Scene 0", "scale": [1.0, 1.0, 1.0], "uuid": "887af12b-f8da-45b4-8a3d-3ec0fd2b3064"}, "materials": [{"type": "MeshPhongMaterial", "color": 43520, "shading": 1, "shininess": 5, "name": "surfaceMaterial", "uuid": "33f8bc23-c118-4453-8d7f-d1814c4732f7"}, {"type": "MeshBasicMaterial", "name": "floorMaterial", "uuid": "23bff90f-29b7-41db-b538-dedcae9a80d4", "color": 8704}, {"type": "MeshPhongMaterial", "color": 165956, "shading": 1, "shininess": 5, "name": "cushionMaterial", "uuid": "8b682946-c297-40aa-b4b7-7b26a666222b"}, {"type": "MeshPhongMaterial", "name": "headSpotMaterial", "shading": 1, "uuid": "939a8af2-ca74-4cec-8e88-7e1cba788613", "color": 7829367}, {"type": "MeshPhongMaterial", "color": 14525440, "shading": 1, "shininess": 10, "name": "railMaterial", "uuid": "24655c48-1f92-41a8-bea3-d32ac605c82f"}], "textures": [], "geometries": [{"type": "BufferGeometry", "name": "headCushionGeom", "data": {"attributes": {"position": {"type": "Float32Array", "array": [-0.5130800000000001, 0.0, 0.0254, 0.5130800000000001, 0.0, 0.0254, 0.44718954123773624, 0.0, -0.02286, -0.44718954123773624, 0.0, -0.02286, -0.5130800000000001, 0.0453628125, 0.0254, 0.5130800000000001, 0.0453628125, 0.0254, 0.44718954123773624, 0.03629025, -0.0254, -0.44718954123773624, 0.03629025, -0.0254], "itemSize": 3}}, "index": {"type": "Uint16Array", "array": [3, 2, 1, 3, 1, 0, 4, 5, 6, 4, 6, 7, 0, 1, 5, 0, 5, 4, 1, 2, 6, 1, 6, 5, 2, 3, 7, 2, 7, 6, 7, 3, 0, 7, 0, 4], "itemSize": 1}}, "uuid": "15ac560d-7d42-4af6-87dd-783158bc95f8"}, {"type": "PlaneBufferGeometry", "height": 6, "width": 6, "widthSegments": 1, "name": "unnamed PlaneBufferGeometry 0", "uuid": "b2f1dac9-0d08-4a39-9ffb-e4eb174e798e", "heightSegments": 1}, {"type": "BufferGeometry", "name": "rightHeadCushionGeom", "data": {"attributes": {"position": {"type": "Float32Array", "array": [-0.5130800000000001, 0.0, 0.0254, 0.5130800000000001, 0.0, 0.0254, 0.49029477061886817, 0.0, -0.02286, -0.44718954123773624, 0.0, -0.02286, -0.5130800000000001, 0.0453628125, 0.0254, 0.5130800000000001, 0.0453628125, 0.0254, 0.49029477061886817, 0.03629025, -0.0254, -0.44718954123773624, 0.03629025, -0.0254], "itemSize": 3}}, "index": {"type": "Uint16Array", "array": [3, 2, 1, 3, 1, 0, 4, 5, 6, 4, 6, 7, 0, 1, 5, 0, 5, 4, 1, 2, 6, 1, 6, 5, 2, 3, 7, 2, 7, 6, 7, 3, 0, 7, 0, 4], "itemSize": 1}}, "uuid": "723ad624-820c-44f6-af62-27f7de35a61f"}, {"type": "BufferGeometry", "name": "leftHeadCushionGeom", "data": {"attributes": {"position": {"type": "Float32Array", "array": [-0.5130800000000001, 0.0, 0.0254, 0.5130800000000001, 0.0, 0.0254, 0.44718954123773624, 0.0, -0.02286, -0.49029477061886817, 0.0, -0.02286, -0.5130800000000001, 0.0453628125, 0.0254, 0.5130800000000001, 0.0453628125, 0.0254, 0.44718954123773624, 0.03629025, -0.0254, -0.49029477061886817, 0.03629025, -0.0254], "itemSize": 3}}, "index": {"type": "Uint16Array", "array": [3, 2, 1, 3, 1, 0, 4, 5, 6, 4, 6, 7, 0, 1, 5, 0, 5, 4, 1, 2, 6, 1, 6, 5, 2, 3, 7, 2, 7, 6, 7, 3, 0, 7, 0, 4], "itemSize": 1}}, "uuid": "f7f465ae-e31a-4311-bdc0-5eab6dce219d"}, {"type": "BoxBufferGeometry", "height": 0.0453628125, "widthSegments": 1, "name": "unnamed BoxBufferGeometry 1", "depthSegments": 1, "depth": 0.07619999999999999, "width": 1.0261600000000002, "heightSegments": 1, "uuid": "b96da5e2-2b4b-4644-b756-4f6d340cdea6"}, {"type": "BoxBufferGeometry", "height": 0.0254, "widthSegments": 1, "name": "unnamed BoxBufferGeometry 0", "depthSegments": 1, "depth": 2.2352000000000003, "width": 1.0668000000000002, "heightSegments": 1, "uuid": "d0e84f2f-5971-42d0-b471-4b95c506ab7e"}, {"type": "CircleBufferGeometry", "name": "spotGeom", "uuid": "062a8b4a-0a2f-43fb-b655-47d8bff2a570", "radius": 0.0200025, "segments": 5}]};
 </script>
+
+    <script id="vshader" type="x-shader/x-vertex">
+      precision highp float;
+      uniform mat4 modelViewMatrix;
+      uniform mat4 projectionMatrix;
+
+      attribute vec3 position;
+      attribute vec2 uv;
+      attribute vec3 translate;
+
+      varying vec2 vUv;
+
+      void main() {
+
+        vec4 mvPosition = modelViewMatrix * vec4( translate, 1.0 );
+        vec3 z = normalize(-mvPosition.xyz);
+        vec3 x = normalize(vec3(z.z, 0.0, -z.x));
+        vec3 y = cross(z, x);
+        mvPosition.xyz += position.x * x + position.y * y + position.z * z;
+        vUv = uv;
+        gl_Position = projectionMatrix * mvPosition;
+
+      }
+    </script>
+    <script id="fshader" type="x-shader/x-fragment">
+      precision highp float;
+
+      uniform sampler2D map;
+
+      varying vec2 vUv;
+
+      void main() {
+        vec4 diffuseColor = texture2D( map, vUv );
+        gl_FragColor = diffuseColor;
+        if ( diffuseColor.w < 0.5 ) discard;
+      }
+    </script>
 
   </head>
 
@@ -79,10 +116,10 @@ var THREEPY_SCENE = {"metadata": {"type": "Object", "generator": "three.py", "ve
 <table>
 <tr>
 <td>
-<a href="https://github.com/jzitelli/poolvr/commit/a2a9678564442b4630e03dcaf6f236100cb99ad7">current commit</a>
+<a href="https://github.com/jzitelli/poolvr/commit/1aeb06ba48c263986062703e779d5316852f9c2c">current commit</a>
 </td>
 <td>
-<a href="https://github.com/jzitelli/poolvr/commit/6bc14f1f77649d84a8dcc82dd0b82adb29eb14cb">previous commit</a>
+<a href="https://github.com/jzitelli/poolvr/commit/9fdd50a4c3b364b8324e7fec1f96d919b90ba42c">previous commit</a>
 </td>
 </tr>
 </table>

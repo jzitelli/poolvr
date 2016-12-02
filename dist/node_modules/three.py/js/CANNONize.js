@@ -62,10 +62,14 @@ THREE.py.CANNONize = function (obj, world) {
                             for (i = 0; i < array.length; i += 3) {
                                 points.push(new CANNON.Vec3(array[i], array[i+1], array[i+2]));
                             }
-                            array = node.geometry.index.array;
-                            for (i = 0; i < array.length; i += 3) {
-                                face = [array[i], array[i+1], array[i+2]];
-                                faces.push(face);
+                            if (cannonData.faces) {
+                                Array.prototype.push.apply(faces, cannonData.faces);
+                            } else {
+                                array = node.geometry.index.array;
+                                for (i = 0; i < array.length; i += 3) {
+                                    face = [array[i], array[i+1], array[i+2]];
+                                    faces.push(face);
+                                }
                             }
                         } else if (node.geometry instanceof THREE.Geometry) {
                             // TODO

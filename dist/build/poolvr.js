@@ -1634,7 +1634,7 @@ POOLVR.stroke = ( function () {
     "use strict";
     var velocity = new THREE.Vector3();
     return function () {
-        velocity.set(0, 0, -3.5);
+        velocity.set(0, 0, -3.9);
         velocity.applyQuaternion(POOLVR.leapTool.worldQuaternion);
         var body = POOLVR.ballBodies[0];
         body.velocity.copy(velocity);
@@ -2214,14 +2214,14 @@ window.onLoad = function () {
                 }
             });
 
-            for (var i = 1; i < cushionMeshes.length; i++) {
-                cushionMeshes[0].geometry.merge(cushionMeshes[i].geometry);
-                scene.remove(cushionMeshes[i]);
-            }
-            for (i = 1; i < railMeshes.length; i++) {
-                railMeshes[0].geometry.merge(railMeshes[i].geometry);
-                scene.remove(railMeshes[i]);
-            }
+            // for (var i = 1; i < cushionMeshes.length; i++) {
+            //     cushionMeshes[0].geometry.merge(cushionMeshes[i].geometry);
+            //     scene.remove(cushionMeshes[i]);
+            // }
+            // for (var i = 1; i < railMeshes.length; i++) {
+            //     railMeshes[0].geometry.merge(railMeshes[i].geometry);
+            //     scene.remove(railMeshes[i]);
+            // }
 
             if (!POOLVR.config.useShadowMap) {
                 var ballShadowGeom = new THREE.CircleBufferGeometry(0.5*POOLVR.config.ball_diameter, 16);
