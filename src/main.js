@@ -238,6 +238,14 @@ window.onLoad = function () {
         POOLVR.pointLight = pointLight;
         POOLVR.pointLight.visible = POOLVR.config.usePointLight;
 
+        var floorMesh = new THREE.Mesh(new THREE.PlaneBufferGeometry(1, 1), new THREE.MeshBasicMaterial({color: 0x002200}));
+        floorMesh.name = 'floorMesh';
+        floorMesh.rotation.x = -0.5 * Math.PI;
+        floorMesh.updateMatrix();
+        floorMesh.userData = {cannonData: {mass: 0, shapes: ['Plane']}};
+        scene.add(floorMesh);
+        POOLVR.floorMesh = floorMesh;
+
         navigator.getVRDisplays().then( function (vrDisplays) {
             var vrDisplay = vrDisplays[0];
             var isVive = /vive/i.test(vrDisplay.displayName);
@@ -253,6 +261,9 @@ window.onLoad = function () {
             } else {
                 var sizeX = vrDisplay.stageParameters.sizeX;
                 var sizeZ = vrDisplay.stageParameters.sizeZ;
+                POOLVR.floorMesh.scale.x = sizeX;
+                POOLVR.floorMesh.scale.y = sizeZ;
+                POOLVR.floorMesh.updateMatrix();
                 // rotate the room if it better fits the stage / play area:
                 if (sizeX && sizeZ && sizeX > sizeZ) {
                     var rotation = (new THREE.Matrix4()).makeRotationY(Math.PI / 2);
@@ -489,11 +500,16 @@ POOLVR.startAnimateLoop = function () {
 
         stats.begin();
 
+        if (POOLVR.app.vrDisplay.isPresenting) {
+            POOLVR.requestID = POOLVR.app.vrEffect.requestAnimationFrame(animate);
+        } else {
+            POOLVR.requestID = window.requestAnimationFrame(animate);
+        }
+        render();
+
         t = window.performance.now();
         var dt = (t - lt) * 0.001;
         lt = t;
-
-        if (POOLVR.textGeomLogger) POOLVR.textGeomLogger.update(dt);
 
         leapTool.updateTool(dt);
 
@@ -505,7 +521,7 @@ POOLVR.startAnimateLoop = function () {
         leapTool.updateToolPostStep();
         updateBallsPostStep();
 
-        render();
+        if (POOLVR.textGeomLogger) POOLVR.textGeomLogger.update(dt);
 
         moveStage(keyboard, gamepadValues, dt);
         stage.updateMatrixWorld();
@@ -513,12 +529,6 @@ POOLVR.startAnimateLoop = function () {
         leapTool.updateToolMapping();
 
         stats.end();
-
-        if (POOLVR.app.vrDisplay.isPresenting) {
-            POOLVR.requestID = POOLVR.app.vrEffect.requestAnimationFrame(animate);
-        } else {
-            POOLVR.requestID = window.requestAnimationFrame(animate);
-        }
 
     }
 

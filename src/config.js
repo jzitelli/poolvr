@@ -110,7 +110,7 @@ POOLVR.destekGamepadCommands = {
 
     POOLVR.ballMaterial            = new CANNON.Material();
     POOLVR.ballBallContactMaterial = new CANNON.ContactMaterial(POOLVR.ballMaterial, POOLVR.ballMaterial, {
-        restitution: 0.92,
+        restitution: 0.93,
         friction: 0.14
     });
     POOLVR.playableSurfaceMaterial            = new CANNON.Material();
@@ -144,10 +144,10 @@ POOLVR.destekGamepadCommands = {
     POOLVR.openVRTipMaterial            = new CANNON.Material();
     POOLVR.openVRTipBallContactMaterial = new CANNON.ContactMaterial(POOLVR.openVRTipMaterial, POOLVR.ballMaterial, {
         restitution: 0.95,
-        friction: 0.25,
-        contactEquationRelaxation: 1,
-        frictionEquationRelaxation: 1,
-        contactEquationStiffness: 4e8
+        friction: 0.65,
+        contactEquationRelaxation: 2,
+        frictionEquationRelaxation: 2,
+        contactEquationStiffness: 1e9
         //frictionEquationStiffness: 1e7
     });
 
