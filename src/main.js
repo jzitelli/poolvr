@@ -18,10 +18,10 @@ window.onLoad = function () {
     "use strict";
     const INCH2METERS = 0.0254;
 
-    if (Utils.URL_PARAMS.clearLocalStorage) {
+    // if (Utils.URL_PARAMS.clearLocalStorage) {
         console.log('clearing localStorage...');
         localStorage.clear();
-    }
+    // }
 
     THREE.Object3D.DefaultMatrixAutoUpdate = false;
 
@@ -67,7 +67,6 @@ window.onLoad = function () {
         onConnect: function () {
             leapIndicator.innerHTML = 'connected';
             leapIndicator.style['background-color'] = 'rgba(60, 100, 20, 0.8)';
-            POOLVR.app.stage.add(POOLVR.leapTool.toolRoot);
             POOLVR.world.addBody(POOLVR.leapTool.toolBody);
         },
         onStreamingStarted: function () {
@@ -90,6 +89,7 @@ window.onLoad = function () {
             POOLVR.leapTool.toolRoot.visible = false;
         }
     }) );
+    POOLVR.app.stage.add(POOLVR.leapTool.toolRoot);
     POOLVR.leapTool.toolBody.material = POOLVR.tipMaterial;
     POOLVR.leapTool.toolMesh.renderOrder = -1;
     POOLVR.leapTool.toolRoot.visible = false;
