@@ -29,7 +29,6 @@ window.onLoad = function () {
     POOLVR.config = loadedConfig || POOLVR.config;
     POOLVR.parseURIConfig();
 
-    console.log("POOLVR.config:");
     console.log(POOLVR.config);
 
     POOLVR.synthSpeaker = new SynthSpeaker({volume: POOLVR.config.synthSpeakerVolume || 0.6, rate: POOLVR.config.synthSpeakerRate || 0.75, pitch: POOLVR.config.synthSpeakerPitch || 0.5});

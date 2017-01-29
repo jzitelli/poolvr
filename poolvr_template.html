@@ -16,43 +16,6 @@
 
 {{ json_config }}
 
-    <script id="vshader" type="x-shader/x-vertex">
-      precision highp float;
-      uniform mat4 modelViewMatrix;
-      uniform mat4 projectionMatrix;
-
-      attribute vec3 position;
-      attribute vec2 uv;
-      attribute vec3 translate;
-
-      varying vec2 vUv;
-
-      void main() {
-
-        vec4 mvPosition = modelViewMatrix * vec4( translate, 1.0 );
-        vec3 z = normalize(-mvPosition.xyz);
-        vec3 x = normalize(vec3(z.z, 0.0, -z.x));
-        vec3 y = cross(z, x);
-        mvPosition.xyz += position.x * x + position.y * y + position.z * z;
-        vUv = uv;
-        gl_Position = projectionMatrix * mvPosition;
-
-      }
-    </script>
-    <script id="fshader" type="x-shader/x-fragment">
-      precision highp float;
-
-      uniform sampler2D map;
-
-      varying vec2 vUv;
-
-      void main() {
-        vec4 diffuseColor = texture2D( map, vUv );
-        gl_FragColor = diffuseColor;
-        if ( diffuseColor.w < 0.5 ) discard;
-      }
-    </script>
-
   </head>
 
   <body onload="onLoad()">
@@ -73,7 +36,7 @@
         <button id="fsButton">toggle fullscreen</button>
       </h2>
 
-      <div class="panel" id="graphicsPanel" style="float: left">
+      <div class="panel" id="graphicsPanel">
       <h3>Graphics:</h3>
         <label>
           <input type="checkbox" id="useBasicMaterials"/>
@@ -95,20 +58,19 @@
         </label>
       </div>
 
-      <div class="panel" id="leapPanel" style="float: left">
-        <h3>Leap Motion:</h3>
+      <div class="panel" id="leapPanel">
+        <table><tr><td><h3>Leap Motion:</h3></td><td><span id="leapIndicator">disconnected</span></td></tr></table>
         <label>
           Websocket address:
           <input id="leapAddress" type="text" maxlength="18" />
         </label>
-        <span id="leapIndicator">
-          disconnected
-        </span>
       </div>
 
       {{ extra_overlay_content if extra_overlay_content else "" }}
 
     </div>
+
+
 
 {% if config['DEBUG'] %}
     <script src="node_modules/three/build/three.js"></script>
@@ -136,6 +98,8 @@
 {% else %}
     <script src="build/poolvr.min.js"></script>
 {% endif %}
+
+
 
   </body>
 

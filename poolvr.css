@@ -7,57 +7,83 @@ body {
 }
 #overlay {
   position: absolute;
+
+/*
   left: 10px;
   top: 10px;
-  margin: 0.1vh;
-  padding: 0.1vh;
+*/
+  left: 37vw;
+  right: 37vw;
+  top: 2.5vh;
+  margin: 7vh;
+
+/*
+  left: auto;
+  top: auto;
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: auto;
+  margin-bottom: auto;
+  width: 0.8vh;
+  height: 0.8vh;
+*/
+
+  padding: 2vh;
   color: #ffffff;
-  background-color: rgba(20, 20, 50, 0.7);
+  background-color: rgba(20, 20, 50, 0.9);
 }
 .panel {
-  background-color: rgba(50, 50, 80, 0.75);
-  padding: 0.5vh;
+  background-color: rgba(70, 50, 80, 0.5);
+  box-sizing: border-box;
+  padding-left: 1em;
+  padding-right: 1em;
+  padding-top: 0.5em;
+  padding-bottom: 0.5em;
   margin: 1vh;
-}
+/*
+  margin-left: 1.25em;
+  margin-right: 1.25em;
+  margin-top: 1vh;
+  margin-bottom: 1vh;
+*/}
 div {
   -webkit-user-select: none; /* Chrome/Safari */
   -moz-user-select: none; /* Firefox */
   -ms-user-select: none; /* IE10+ */
-
   /* Rules below not implemented in browsers yet */
   -o-user-select: none;
   user-select: none;
 }
 h1, h2, h3 {
   color: #b5e853;
-  margin: 0.5vh;
+  /*margin: 0.7vh;*/
 }
 h1 {
-  font-size: 17pt;
+  font-size: 18pt;
 }
 h2 {
   font-size: 13pt;
 }
 h3 {
-  font-size: 11pt;
+  font-size: 12pt;
 }
 label {
   font-size: 9pt;
 }
 button {
   font-family: monospace;
-  font-size: 13pt;
+  font-size: 12pt;
   font-style: bold;
   text-align: center;
   padding: 0.2vh;
   margin: 1vh;
   color: #b5e853;
-  background-color: rgba(111, 20, 20, 0.6);
+  background-color: rgba(150, 40, 40, 0.6);
   box-sizing: border-box;
 }
 a {
   font-family: monospace;
-  font-size: 11pt;
+  font-size: 9pt;
   color: #feb;
   padding: 0.4vh;
 }
@@ -65,12 +91,12 @@ a {
   margin: 0.2vh;
 }
 #leapIndicator {
-  font-size: 13pt;
+  font-size: 10pt;
   /*position: relative;*/
   /*width: 50%;*/
   text-align: center;
-  margin-top: 0.2vh;
-  padding: 0.1em;
+  margin-top: 0.1vh;
+  padding: 0.25em;
   box-sizing: border-box;
   color: #b5e853;
   background-color: rgba(60, 20, 0, 0.6);

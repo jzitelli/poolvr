@@ -3,30 +3,36 @@ Flask application for serving poolvr.
 """
 import os
 import logging
-_logger = logging.getLogger(__name__)
 import json
 import os
 import shutil
 import sys
 import subprocess
 from copy import deepcopy
-
 from flask import Flask, render_template, request, Markup
 from jinja2 import Environment, FileSystemLoader
+
 
 import pool_table
 
 
-completed_proc = subprocess.run(['git', 'rev-list', '--max-count=4', 'HEAD'], stdout=subprocess.PIPE, check=True, universal_newlines=True)
-GIT_REVS = []
-for line in completed_proc.stdout.splitlines():
-    GIT_REVS.append(line)
+_logger = logging.getLogger(__name__)
 
-
-STATIC_FOLDER   = os.path.abspath(os.path.split(__file__)[0])
-TEMPLATE_FOLDER = STATIC_FOLDER
 
 PACKAGE = json.loads(open('package.json').read())
+STATIC_FOLDER   = os.path.abspath(os.path.split(__file__)[0])
+TEMPLATE_FOLDER = STATIC_FOLDER
+DIST_OUTPUT_DIR = 'dist'
+
+
+GIT_REVS = []
+try:
+    completed_proc = subprocess.run(['git', 'rev-list', '--max-count=4', 'HEAD'], stdout=subprocess.PIPE, check=True, universal_newlines=True)
+    for line in completed_proc.stdout.splitlines():
+        GIT_REVS.append(line)
+except Exception as err:
+    _logger.warn('could not obtain git info:\n%s' % err)
+
 
 app = Flask(__name__,
             static_folder=STATIC_FOLDER,
@@ -44,7 +50,7 @@ WebVRConfig = {
     "LEAP_MOTION_HOST":                 "192.168.1.200",
     "FORCE_ENABLE_VR":                  False,
     "K_FILTER":                         0.98,
-    "PREDICTION_TIME_S":                0.020,
+    "PREDICTION_TIME_S":                0.010,
     "TOUCH_PANNER_DISABLED":            False,
     "YAW_ONLY":                         False,
     "MOUSE_KEYBOARD_CONTROLS_DISABLED": False,
@@ -69,8 +75,8 @@ POOLVR = {
         'toolOptions': {
             'tipShape'               : 'Cylinder',
             'numSegments'            : 8,
-            'toolRadius'             : 0.01, #0.01325 / 2,
-            'tipRadius'              : 0.01, #0.01325 / 2,
+            'toolRadius'             : 0.009, #0.01325 / 2,
+            'tipRadius'              : 0.009, #0.01325 / 2,
             'toolLength'             : 0.37,
             'tipLength'              : 0.37,
             'toolMass'               : 0.54,
@@ -133,9 +139,7 @@ def render_poolvr_template(webvr_config=None, poolvr_config=None):
     return template.render(config={'DEBUG': app.debug},
                            json_config=Markup(r"""<script>
 var WebVRConfig = %s;
-
 var POOLVR = %s;
-
 var THREEPY_SCENE = %s;
 </script>""" % (json.dumps(webvr_config, indent=2),
                 json.dumps(poolvr_config, indent=2),
@@ -152,7 +156,7 @@ var THREEPY_SCENE = %s;
 </td>
 </tr>
 </table>
-""".format(GIT_REVS[0], GIT_REVS[1], poolvr_config['version'])))
+""".format(GIT_REVS[0], GIT_REVS[1], poolvr_config['version'])) if GIT_REVS else None)
 
 
 @app.route('/')
@@ -164,8 +168,6 @@ def poolvr():
     poolvr_config = get_poolvr_config()
     return render_poolvr_template(webvr_config=webvr_config, poolvr_config=poolvr_config)
 
-
-DIST_OUTPUT_DIR = 'dist'
 
 def make_dist():
     shutil.rmtree(DIST_OUTPUT_DIR, ignore_errors=True)
@@ -205,10 +207,8 @@ def make_dist():
 
 
 def main():
-    _logger.info("app.config =\n%s" % '\n'.join(['%s: %s' % (k, str(v))
-                                                 for k, v in sorted(app.config.items(),
-                                                                    key=lambda i: i[0])]))
     _logger.info("""
+
            ***********
            p o o l v r
     *************************
@@ -220,7 +220,11 @@ def main():
     *************************
            p o o l v r
            ***********
+
 """.format(POOLVR['version']))
+    _logger.info("app.config =\n%s" % '\n'.join(['%s: %s' % (k, str(v))
+                                                 for k, v in sorted(app.config.items(),
+                                                                    key=lambda i: i[0])]))
     app.run(host='0.0.0.0', port=5000)
 
 
