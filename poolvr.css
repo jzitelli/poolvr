@@ -7,36 +7,22 @@ body {
 }
 #overlay {
   position: absolute;
-/*
-  left: 10px;
-  top: 10px;
-*/
-  left: 32vw;
-  right: 32vw;
-  top: 9vh;
-  bottom: 9vh;
-  margin: 7vh;
-/*
-  left: auto;
-  top: auto;
-  margin-left: auto;
-  margin-right: auto;
-  margin-top: auto;
-  margin-bottom: auto;
-  width: 0.8vh;
-  height: 0.8vh;
-*/
-  padding: 2vh;
+  left: 33vw;
+  right: 33vw;
+  top: 12vh;
+  bottom: 12vh;
+  margin: 4vh;
+  padding: 5vh;
   color: #ffffff;
   background-color: rgba(20, 20, 50, 0.9);
 }
 .panel {
   background-color: rgba(70, 50, 80, 0.5);
-  box-sizing: border-box;
+  /*box-sizing: border-box;*/
   padding-left: 1em;
   padding-right: 1em;
-  padding-top: 0.5em;
-  padding-bottom: 0.5em;
+  padding-top: 1em;
+  padding-bottom: 1em;
   margin: 4vh;
 /*
   margin-left: 1.25em;
@@ -54,9 +40,9 @@ div {
 }
 h1, h2, h3 {
   color: #b5e853;
-  /*margin: 0.7vh;*/
 }
 h1 {
+  margin-top: 3vh;
   font-size: 18pt;
 }
 h2 {
@@ -73,8 +59,11 @@ button {
   font-size: 12pt;
   font-style: bold;
   text-align: center;
-  padding: 0.2vh;
-  margin: 1vh;
+  padding: 1vh;
+  margin-top: 0.5vh;
+  margin-bottom: 0.5vh;
+  margin-left: 4vh;
+  margin-right: 4vh;
   color: #b5e853;
   background-color: rgba(150, 40, 40, 0.6);
   box-sizing: border-box;
@@ -83,15 +72,13 @@ a {
   font-family: monospace;
   font-size: 9pt;
   color: #feb;
-  padding: 0.4vh;
+  padding: 0.5vh;
 }
 #leapAddress {
   margin: 0.2vh;
 }
 #leapIndicator {
   font-size: 10pt;
-  /*position: relative;*/
-  /*width: 50%;*/
   text-align: center;
   margin-top: 0.1vh;
   padding: 0.25em;
