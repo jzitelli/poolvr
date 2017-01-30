@@ -8,12 +8,12 @@ body {
 #overlay {
   position: absolute;
   /*width: 85%;*/
-  left: 3vw;
+  left: 2.25vw;
 /*
   right: 2vw;
 */
-  top: 3vw;
-  bottom: 3vw;
+  top: 2.25vw;
+  /*bottom: 3vw;*/
   margin: 1vh;
   padding: 1vh;
   color: #ffffff;

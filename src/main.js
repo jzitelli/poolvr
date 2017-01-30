@@ -235,10 +235,18 @@ window.onLoad = function () {
         var floorMesh = new THREE.Mesh(new THREE.PlaneBufferGeometry(1, 1), new THREE.MeshBasicMaterial({color: 0x002200}));
         floorMesh.name = 'floorMesh';
         floorMesh.rotation.x = -0.5 * Math.PI;
+        floorMesh.scale.x = floorMesh.scale.y = 3.5;
         floorMesh.updateMatrix();
         floorMesh.userData = {cannonData: {mass: 0, shapes: ['Plane']}};
         scene.add(floorMesh);
         POOLVR.floorMesh = floorMesh;
+
+        var cubeTextureLoader = new THREE.CubeTextureLoader();
+        cubeTextureLoader.load(['px', 'nx', 'py', 'ny', 'pz', 'nz'].map( function (fn) { return '/images/' + fn + '.png'; }), function(texture) {
+            console.log('...loaded cubemap');
+            texture.format = THREE.RGBFormat;
+            POOLVR.app.scene.background = texture;
+        });
 
         navigator.getVRDisplays().then( function (vrDisplays) {
             var vrDisplay = vrDisplays[0];
