@@ -7,16 +7,15 @@ body {
 }
 #overlay {
   position: absolute;
-
 /*
   left: 10px;
   top: 10px;
 */
-  left: 37vw;
-  right: 37vw;
-  top: 2.5vh;
+  left: 32vw;
+  right: 32vw;
+  top: 9vh;
+  bottom: 9vh;
   margin: 7vh;
-
 /*
   left: auto;
   top: auto;
@@ -27,7 +26,6 @@ body {
   width: 0.8vh;
   height: 0.8vh;
 */
-
   padding: 2vh;
   color: #ffffff;
   background-color: rgba(20, 20, 50, 0.9);
@@ -39,7 +37,7 @@ body {
   padding-right: 1em;
   padding-top: 0.5em;
   padding-bottom: 0.5em;
-  margin: 1vh;
+  margin: 4vh;
 /*
   margin-left: 1.25em;
   margin-right: 1.25em;
