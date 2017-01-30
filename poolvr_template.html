@@ -24,16 +24,17 @@
 
     <div id="overlay">
 
-      <table><tr>
+<!--       <table><tr>
         <td>
-          <h1>poolvr</h1>
+ -->          <h1>poolvr</h1>
           {{ version_content if version_content else '' }}
-        </td>
+<!--         </td>
       </tr></table>
-
+ -->
+ <hr>
+ <div style="display: inline">
       <button id="vrButton">toggle VR</button>
       <button id="fsButton">toggle fullscreen</button>
-
       <div class="panel" id="graphicsPanel">
       <h3>Graphics:</h3>
         <label>
@@ -57,7 +58,10 @@
       </div>
 
       <div class="panel" id="leapPanel">
-        <table><tr><td><h3>Leap Motion:</h3></td><td><span id="leapIndicator">disconnected</span></td></tr></table>
+        <h3>Leap Motion:<span id="leapIndicator">disconnected</span></h3>
+        <!-- <table> -->
+          <!-- <tr><td><h3>Leap Motion:</h3></td><td><span id="leapIndicator">disconnected</span></td></tr> -->
+        <!-- </table> -->
         <label>
           Websocket address:
           <input id="leapAddress" type="text" maxlength="18" />
@@ -65,6 +69,7 @@
       </div>
 
       {{ extra_overlay_content if extra_overlay_content else "" }}
+</div>
 
     </div>
 

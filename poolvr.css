@@ -7,12 +7,15 @@ body {
 }
 #overlay {
   position: absolute;
-  left: 33vw;
-  right: 33vw;
-  top: 12vh;
-  bottom: 12vh;
-  margin: 4vh;
-  padding: 5vh;
+  /*width: 85%;*/
+  left: 3vw;
+/*
+  right: 2vw;
+*/
+  top: 3vw;
+  bottom: 3vw;
+  margin: 1vh;
+  padding: 1vh;
   color: #ffffff;
   background-color: rgba(20, 20, 50, 0.9);
 }
@@ -21,10 +24,13 @@ body {
   /*box-sizing: border-box;*/
   padding-left: 1em;
   padding-right: 1em;
-  padding-top: 1em;
+  padding-top: 0.5em;
   padding-bottom: 1em;
-  margin: 4vh;
-/*
+  margin: 2vh;
+/*  display: flex;
+  align-content: center;
+  justify-content: center;
+*//*
   margin-left: 1.25em;
   margin-right: 1.25em;
   margin-top: 1vh;
@@ -42,7 +48,7 @@ h1, h2, h3 {
   color: #b5e853;
 }
 h1 {
-  margin-top: 3vh;
+  margin-top: 2vh;
   font-size: 18pt;
 }
 h2 {
@@ -60,10 +66,10 @@ button {
   font-style: bold;
   text-align: center;
   padding: 1vh;
-  margin-top: 0.5vh;
+  margin-top: 2vh;
   margin-bottom: 0.5vh;
-  margin-left: 4vh;
-  margin-right: 4vh;
+  margin-left: 5vh;
+  margin-right: 5vh;
   color: #b5e853;
   background-color: rgba(150, 40, 40, 0.6);
   box-sizing: border-box;
@@ -80,11 +86,14 @@ a {
 #leapIndicator {
   font-size: 10pt;
   text-align: center;
-  margin-top: 0.1vh;
-  padding: 0.25em;
+  /*margin-top: 0.1vh;*/
+  margin-left: 2em;
+  padding: 0.5em;
   box-sizing: border-box;
   color: #b5e853;
   background-color: rgba(60, 20, 0, 0.6);
+/*  align-content: center;
+  justify-content: center;*/
 }
 #webgl-canvas {
   position: fixed;
