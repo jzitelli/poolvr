@@ -2,78 +2,47 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-
     <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
+    <title>poolvr {{version}}</title>
     <link rel="shortcut icon" href="favicon.ico">
-
-    <title>poolvr</title>
-
     <link rel="stylesheet" href="poolvr.css">
 
 {{ json_config }}
 
   </head>
 
-  <body onload="onLoad()">
+  <body onload="POOLVR.onLoad()">
 
     <canvas id="webgl-canvas"></canvas>
 
     <div id="overlay">
+      <h1>poolvr {{ version if version else '' }}</h1>{{version_content if version_content else ''}}
+      <hr>
 
-<!--       <table><tr>
-        <td>
- -->          <h1>poolvr</h1>
-          {{ version_content if version_content else '' }}
-<!--         </td>
-      </tr></table>
- -->
- <hr>
- <div style="display: inline">
-      <button id="vrButton">toggle VR</button>
-      <button id="fsButton">toggle fullscreen</button>
-      <div class="panel" id="graphicsPanel">
-      <h3>Graphics:</h3>
-        <label>
-          <input type="checkbox" id="useBasicMaterials"/>
-          EGA mode (max performance)
-        </label>
-        <br>
-        <label>
-          <input type="checkbox" id="useSpotLight"/>
-          Spot light
-        </label>
-        <label>
-          <input type="checkbox" id="usePointLight"/>
-          Point light
-        </label>
-        <br>
-        <label>
-          <input type="checkbox" id="useShadowMap"/>
-          Shadow maps
-        </label>
-      </div>
+      <div style="display: inline">
+        <button id="vrButton">toggle VR</button>
+        <button id="fsButton">toggle fullscreen</button>
 
-      <div class="panel" id="leapPanel">
-        <h3>Leap Motion:<span id="leapIndicator">disconnected</span></h3>
-        <!-- <table> -->
-          <!-- <tr><td><h3>Leap Motion:</h3></td><td><span id="leapIndicator">disconnected</span></td></tr> -->
-        <!-- </table> -->
-        <label>
-          Websocket address:
-          <input id="leapAddress" type="text" maxlength="18" />
-        </label>
-      </div>
+        <div class="panel" id="graphicsPanel">
+          <h3>Graphics:</h3>
+          <label><input type="checkbox" id="useBasicMaterials"/>EGA mode (max performance)</label>
+          <br>
+          <label><input type="checkbox" id="useSpotLight"/>Spot light</label>
+          <label><input type="checkbox" id="usePointLight"/>Point light</label>
+          <br>
+          <label><input type="checkbox" id="useShadowMap"/>Shadow maps</label>
+        </div>
 
-      {{ extra_overlay_content if extra_overlay_content else "" }}
-</div>
-
+        <div class="panel" id="leapPanel">
+          <h3>Leap Motion:<span id="leapIndicator">disconnected</span></h3>
+          <label>Websocket address:<input id="leapAddress" type="text" maxlength="18"/></label>
+        </div>
+      </div>{{ extra_overlay_content if extra_overlay_content else "" }}
     </div>
-
-
 
 {% if config['DEBUG'] %}
     <script src="node_modules/three/build/three.js"></script>
@@ -102,8 +71,5 @@
     <script src="build/poolvr.min.js"></script>
 {% endif %}
 
-
-
   </body>
-
 </html>

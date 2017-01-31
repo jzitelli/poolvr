@@ -14,7 +14,7 @@ require('./config.js');
 require('./menu.js');
 
 /* global POOLVR, THREE, CANNON, THREEPY_SCENE */
-window.onLoad = function () {
+POOLVR.onLoad = function () {
     "use strict";
     const INCH2METERS = 0.0254;
 

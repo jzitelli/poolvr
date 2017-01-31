@@ -1,23 +1,39 @@
-body {
-  background-color: #010101;
-  margin: 0;
-  padding: 0;
-  overflow: hidden;
-  font-family: "Anonymous Pro Regular", Monaco, "Bitstream Vera Sans Mono", "Lucida Console", Terminal, monospace;
-}
 #overlay {
   position: absolute;
-  /*width: 85%;*/
   left: 2.25vw;
-/*
-  right: 2vw;
-*/
   top: 2.25vw;
+  /*width: 85%;*/
+  /*right: 2vw;*/
   /*bottom: 3vw;*/
   margin: 1vh;
-  padding: 1vh;
+  padding: 0.75vh;
   color: #ffffff;
   background-color: rgba(20, 20, 50, 0.9);
+}
+#leapAddress {
+  margin: 0.2vh;
+}
+#leapIndicator {
+  font-size: 10pt;
+  text-align: center;
+  /*margin-top: 0.1vh;*/
+  margin-left: 2em;
+  padding: 0.5em;
+  box-sizing: border-box;
+  color: #b5e853;
+  background-color: rgba(60, 20, 0, 0.6);
+/*  align-content: center;
+  justify-content: center;*/
+}
+#webgl-canvas {
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  padding: 0;
+  margin: 0;
+  border: 0;
 }
 .panel {
   background-color: rgba(70, 50, 80, 0.5);
@@ -27,15 +43,14 @@ body {
   padding-top: 0.5em;
   padding-bottom: 1em;
   margin: 2vh;
-/*  display: flex;
-  align-content: center;
-  justify-content: center;
-*//*
-  margin-left: 1.25em;
-  margin-right: 1.25em;
-  margin-top: 1vh;
-  margin-bottom: 1vh;
-*/}
+}
+body {
+  background-color: #010101;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  font-family: "Anonymous Pro Regular", Monaco, "Bitstream Vera Sans Mono", "Lucida Console", Terminal, monospace;
+}
 div {
   -webkit-user-select: none; /* Chrome/Safari */
   -moz-user-select: none; /* Firefox */
@@ -79,29 +94,4 @@ a {
   font-size: 9pt;
   color: #feb;
   padding: 0.5vh;
-}
-#leapAddress {
-  margin: 0.2vh;
-}
-#leapIndicator {
-  font-size: 10pt;
-  text-align: center;
-  /*margin-top: 0.1vh;*/
-  margin-left: 2em;
-  padding: 0.5em;
-  box-sizing: border-box;
-  color: #b5e853;
-  background-color: rgba(60, 20, 0, 0.6);
-/*  align-content: center;
-  justify-content: center;*/
-}
-#webgl-canvas {
-  position: fixed;
-  width: 100%;
-  height: 100%;
-  top: 0;
-  left: 0;
-  padding: 0;
-  margin: 0;
-  border: 0;
 }

@@ -144,19 +144,19 @@ var THREEPY_SCENE = %s;
 </script>""" % (json.dumps(webvr_config, indent=2),
                 json.dumps(poolvr_config, indent=2),
                 json.dumps(pool_table.pool_hall(**poolvr_config['config']).export()))),
+                           version=poolvr_config['version'],
                            version_content=Markup(r"""
-<h3>v{2}</h3>
 <table>
 <tr>
 <td>
-<a href="https://github.com/jzitelli/poolvr/commit/{0}">current commit</a>
+<a href="https://github.com/jzitelli/poolvr/commit/{0}">current commit ({3})</a>
 </td>
 <td>
-<a href="https://github.com/jzitelli/poolvr/commit/{1}">previous commit</a>
+<a href="https://github.com/jzitelli/poolvr/commit/{1}">previous commit ({4})</a>
 </td>
 </tr>
 </table>
-""".format(GIT_REVS[0], GIT_REVS[1], poolvr_config['version'])) if GIT_REVS else None)
+""".format(GIT_REVS[0], GIT_REVS[1], poolvr_config['version'], '%s...' % GIT_REVS[0][:6], '%s...' % GIT_REVS[1][:6])) if GIT_REVS else None)
 
 
 @app.route('/')
@@ -222,7 +222,7 @@ def main():
            ***********
 
 """.format(POOLVR['version']))
-    _logger.info("app.config =\n%s" % '\n'.join(['%s: %s' % (k, str(v))
+    _logger.info("app.config =\n%s" % '\n'.join(['  %s: %s' % (k, str(v))
                                                  for k, v in sorted(app.config.items(),
                                                                     key=lambda i: i[0])]))
     app.run(host='0.0.0.0', port=5000)
