@@ -1,6 +1,7 @@
 #overlay {
   position: absolute;
-  left: 2.25vw;
+  left: 2.5vw;
+  right: 64.5vw;
   top: 2.25vw;
   /*width: 85%;*/
   /*right: 2vw;*/
@@ -42,7 +43,10 @@
   padding-right: 1em;
   padding-top: 0.5em;
   padding-bottom: 1em;
-  margin: 2vh;
+  margin: 2.5vh;
+/*  margin-left, margin-right: 40vh;
+  margin-top, margin-bottom: 19vh;
+*/  text-align: right;
 }
 body {
   background-color: #010101;
@@ -67,10 +71,10 @@ h1 {
   font-size: 18pt;
 }
 h2 {
-  font-size: 13pt;
+  font-size: 14pt;
 }
 h3 {
-  font-size: 12pt;
+  font-size: 11pt;
 }
 label {
   font-size: 9pt;
@@ -80,7 +84,7 @@ button {
   font-size: 12pt;
   font-style: bold;
   text-align: center;
-  padding: 1vh;
+  padding: 0.6vh;
   margin-top: 2vh;
   margin-bottom: 0.5vh;
   margin-left: 5vh;
@@ -91,7 +95,7 @@ button {
 }
 a {
   font-family: monospace;
-  font-size: 9pt;
+  font-size: 10pt;
   color: #feb;
   padding: 0.5vh;
 }

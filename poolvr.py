@@ -231,6 +231,7 @@ def main():
 
 
 if __name__ == "__main__":
+    import argparse
     logging.basicConfig(level=(logging.DEBUG if app.debug else logging.INFO),
                         format="%(asctime)s %(levelname)s %(name)s %(funcName)s %(lineno)d:  %(message)s")
     if len(sys.argv) == 2 and sys.argv[1] == 'dist':
