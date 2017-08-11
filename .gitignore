@@ -5,6 +5,13 @@ node_modules
 __pycache__
 *.pyc
 
+poolvr.sublime-workspace
+poolvr.sublime-project
+
+.idea
+
 Thumbs.db
+
+\#*
 
 **~
