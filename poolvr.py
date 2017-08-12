@@ -17,7 +17,6 @@ import pool_table
 
 _logger = logging.getLogger(__name__)
 
-
 PACKAGE = json.loads(open('package.json').read())
 STATIC_FOLDER   = os.path.abspath(os.path.split(__file__)[0])
 TEMPLATE_FOLDER = STATIC_FOLDER
@@ -85,12 +84,6 @@ POOLVR = {
         }
     }
 }
-
-
-import json
-with open('poolvr.json', 'w') as f:
-    f.write(json.dumps(POOLVR))
-
 
 
 def get_webvr_config():
@@ -174,6 +167,41 @@ def poolvr():
     return render_poolvr_template(webvr_config=webvr_config, poolvr_config=poolvr_config)
 
 
+def main():
+    werkzeug_logger = logging.getLogger('werkzeug')
+    werkzeug_logger.setLevel(logging.WARNING)
+    # werkzeug_logger.disabled = True
+    _logger.info("""
+
+           ***********
+           p o o l v r
+    *************************
+              {0}
+ *******************************
+ STARTING FLASK APP!!!!!!!!!!!!!
+ *******************************
+              {0}
+    *************************
+           p o o l v r
+           ***********
+
+""".format(POOLVR['version']))
+    PORT = 5000
+    # _logger.debug("app.config =\n%s" % '\n'.join(['  %s: %s' % (k, str(v))
+    #                                               for k, v in sorted(app.config.items(),
+    #                                                                  key=lambda i: i[0])]))
+    _logger.info("""
+
+
+        GO TO:
+
+            http://127.0.0.1:%d
+
+
+""" % PORT)
+    app.run(host='0.0.0.0', port=PORT)
+
+
 def make_dist():
     shutil.rmtree(DIST_OUTPUT_DIR, ignore_errors=True)
     shutil.copytree('build', os.path.join(DIST_OUTPUT_DIR, 'build'))
@@ -208,30 +236,6 @@ def make_dist():
     shutil.copy(os.path.join('node_modules', 'stats.js', 'build', 'stats.min.js'), os.path.join(DIST_OUTPUT_DIR, 'node_modules', 'stats.js', 'build'))
     os.makedirs(os.path.join(DIST_OUTPUT_DIR, 'node_modules', 'webvr-polyfill', 'build'))
     shutil.copy(os.path.join('node_modules', 'webvr-polyfill', 'build', 'webvr-polyfill.js'), os.path.join(DIST_OUTPUT_DIR, 'node_modules', 'webvr-polyfill', 'build'))
-
-
-
-def main():
-    _logger.info("""
-
-           ***********
-           p o o l v r
-    *************************
-              {0}
- *******************************
- STARTING FLASK APP!!!!!!!!!!!!!
- *******************************
-              {0}
-    *************************
-           p o o l v r
-           ***********
-
-""".format(POOLVR['version']))
-    _logger.info("app.config =\n%s" % '\n'.join(['  %s: %s' % (k, str(v))
-                                                 for k, v in sorted(app.config.items(),
-                                                                    key=lambda i: i[0])]))
-    app.run(host='0.0.0.0', port=5000)
-
 
 
 
