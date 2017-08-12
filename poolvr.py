@@ -5,7 +5,6 @@ import os
 import logging
 import json
 import shutil
-import sys
 import subprocess
 from copy import deepcopy
 from flask import Flask, request, Markup
@@ -16,11 +15,11 @@ import pool_table
 
 
 _logger = logging.getLogger(__name__)
-
+_here = os.path.dirname(os.path.abspath(__file__))
 PACKAGE = json.loads(open('package.json').read())
-STATIC_FOLDER   = os.path.abspath(os.path.split(__file__)[0])
+STATIC_FOLDER   = _here
 TEMPLATE_FOLDER = STATIC_FOLDER
-DIST_OUTPUT_DIR = 'dist'
+DIST_OUTPUT_DIR = os.path.join(_here, 'dist')
 
 
 GIT_REVS = []
@@ -37,15 +36,14 @@ app = Flask(__name__,
             static_url_path='',
             template_folder=TEMPLATE_FOLDER)
 
-app.debug = True
 
 env = Environment(loader=FileSystemLoader(TEMPLATE_FOLDER))
 template = env.get_template('poolvr_template.html')
 
 
 WebVRConfig = {
-    "ENABLE_LEAP_MOTION":               False,
-    "LEAP_MOTION_HOST":                 "192.168.1.200",
+    #"ENABLE_LEAP_MOTION":               False,
+    #"LEAP_MOTION_HOST":                 "192.168.1.200",
     "FORCE_ENABLE_VR":                  False,
     "K_FILTER":                         0.98,
     "PREDICTION_TIME_S":                0.010,
@@ -68,8 +66,7 @@ POOLVR = {
         'L_table'            : 2.3368,
         'H_table'            : 0.77,
         'ball_diameter'      : 2.25 * pool_table.INCH2METER,
-        'H_ceiling'          : 8 * 12 * 0.0254,
-        'synthSpeakerVolume' : 0.5,
+        'soundVolume'        : 0.0,
         'toolOptions': {
             'tipShape'               : 'Cylinder',
             'numSegments'            : 8,
@@ -149,6 +146,8 @@ var THREEPY_SCENE = %s;
 <td>
 <a href="https://github.com/jzitelli/poolvr/commit/{0}">current commit ({3})</a>
 </td>
+</tr>
+<tr>
 <td>
 <a href="https://github.com/jzitelli/poolvr/commit/{1}">previous commit ({4})</a>
 </td>
@@ -172,6 +171,7 @@ def main():
     werkzeug_logger.setLevel(logging.WARNING)
     # werkzeug_logger.disabled = True
     _logger.info("""
+
 
            ***********
            p o o l v r
@@ -203,9 +203,11 @@ def main():
 
 
 def make_dist():
+    _logger.info('building distributable version, output directory: "%s"...', DIST_OUTPUT_DIR)
     shutil.rmtree(DIST_OUTPUT_DIR, ignore_errors=True)
     shutil.copytree('build', os.path.join(DIST_OUTPUT_DIR, 'build'))
-    with open(os.path.join(DIST_OUTPUT_DIR, 'poolvr.html'), 'w') as f:
+    html_path = os.path.join(DIST_OUTPUT_DIR, 'poolvr.html')
+    with open(html_path, 'w') as f:
         f.write(render_poolvr_template())
     # copy resources:
     shutil.copy('poolvr.css', DIST_OUTPUT_DIR)
@@ -240,9 +242,23 @@ def make_dist():
 
 
 if __name__ == "__main__":
-    logging.basicConfig(level=(logging.DEBUG if app.debug else logging.INFO),
-                        format="%(asctime)s %(levelname)s %(name)s %(funcName)s %(lineno)d:  %(message)s")
-    if len(sys.argv) == 2 and sys.argv[1] == 'dist':
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--release', help='release (non-debug) mode', action='store_true')
+    parser.add_argument('-v', '--verbose', help='enable verbose logging to stdout', action='store_true')
+    parser.add_argument('--dist', help='build distributable version', action='store_true')
+
+    args = parser.parse_args()
+
+    if args.verbose:
+        logging.basicConfig(level=(logging.DEBUG if app.debug else logging.INFO),
+                            format="%(asctime)s %(levelname)s %(name)s %(funcName)s %(lineno)d:  %(message)s")
+
+    app.debug = True
+    if args.release:
+        app.debug = False
+
+    if args.dist:
         make_dist()
     else:
         main()

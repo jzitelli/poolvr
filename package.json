@@ -42,7 +42,7 @@
   "scripts": {
     "lint": "eslint src/*.js",
     "build": "mkdirp build && browserify src/main.js -o build/poolvr.js && echo wrote build/poolvr.js && cat build/poolvr.js | uglifyjs -c > build/poolvr.min.js && echo wrote build/poolvr.min.js",
-    "start": "npm run build && python poolvr.py",
+    "start": "npm run build && python poolvr.py --verbose",
     "watch": "npm run build && watchify src/main.js -o build/poolvr.js",
     "dist": "npm run build && python poolvr.py dist"
   }

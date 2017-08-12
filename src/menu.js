@@ -29,10 +29,10 @@ POOLVR.setupMenu = function () {
     }
 
     var soundInput = document.getElementById('sound');
-    soundInput.checked = false;
+    soundInput.checked = POOLVR.config.soundVolume > 0;
 
     var volumeInput = document.getElementById('volume');
-    volumeInput.value = volumeInput.min;
+    volumeInput.value = POOLVR.config.soundVolume;
 
     var useBasicMaterialsInput = document.getElementById('useBasicMaterials');
     useBasicMaterialsInput.checked = POOLVR.config.useBasicMaterials;
@@ -91,10 +91,15 @@ POOLVR.setupMenu = function () {
     }
 
     var vrButton = document.getElementById('vrButton');
+    var _firstTime = true;
     vrButton.addEventListener('click', function () {
         if (!POOLVR.app.vrDisplay.isPresenting) {
             window.cancelAnimationFrame(POOLVR.requestID);
             POOLVR.app.vrEffect.requestPresent().then( function () {
+                if (_firstTime) {
+                    _firstTime = false;
+                    POOLVR.synthSpeaker.speak("Hello. Welcome. To. Pool-ver.");
+                }
                 POOLVR.app.vrEffect.requestAnimationFrame(POOLVR.animate);
             } );
         } else {

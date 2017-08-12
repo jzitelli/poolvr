@@ -52,7 +52,9 @@ module.exports = ( function() {
             }
             this.utterance.text = text;
             this.speaking = true;
-            speechSynthesis.speak(this.utterance);
+            if (POOLVR.config.soundVolume > 0) {
+                speechSynthesis.speak(this.utterance);
+            }
         }
     };
 

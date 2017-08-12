@@ -34,11 +34,16 @@ POOLVR.onLoad = function () {
 
     console.log(POOLVR.config);
 
-    POOLVR.synthSpeaker = new SynthSpeaker({volume: POOLVR.config.synthSpeakerVolume || 0.6, rate: POOLVR.config.synthSpeakerRate || 0.75, pitch: POOLVR.config.synthSpeakerPitch || 0.5});
+    POOLVR.setupMenu();
+
+    POOLVR.synthSpeaker = new SynthSpeaker({
+        volume: POOLVR.config.soundVolume || 0.0,
+        rate: POOLVR.config.synthSpeakerRate || 0.75,
+        pitch: POOLVR.config.synthSpeakerPitch || 0.5
+    });
     if (!loadedConfig) {
         POOLVR.synthSpeaker.speak("Hello. Welcome. To. Pool-ver.");
     }
-    POOLVR.setupMenu();
 
     var appConfig = {
         onResetVRSensor: function () {

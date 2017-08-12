@@ -9,7 +9,9 @@ POOLVR.playCollisionSound = (function () {
         ballBallBuffer = buffer;
     });
     var playCollisionSound = function (v) {
-        Audio.playBuffer(ballBallBuffer, Math.min(1, v / 10));
+        if (POOLVR.config.soundVolume) {
+            Audio.playBuffer(ballBallBuffer, POOLVR.config.soundVolume * Math.min(1, v / 10));
+        }
     };
     return playCollisionSound;
 })();
@@ -22,7 +24,9 @@ POOLVR.playPocketedSound = (function () {
         ballPocketedBuffer = buffer;
     });
     var playPocketedSound = function () {
-        Audio.playBuffer(ballPocketedBuffer, 0.5);
+        if (POOLVR.config.soundVolume) {
+            Audio.playBuffer(ballPocketedBuffer, POOLVR.config.soundVolume * 0.5);
+        }
     };
     return playPocketedSound;
 })();

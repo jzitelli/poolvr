@@ -1,25 +1,27 @@
 #overlay {
   position: absolute;
-  left: 2.5vw;
-  right: 64.5vw;
+  left: 1.25vw;
+  right: 75vw;
   top: 2.25vw;
   /*width: 85%;*/
   /*right: 2vw;*/
   /*bottom: 3vw;*/
-  margin: 1vh;
+  margin: 1vw;
   padding: 0.75vh;
   color: #ffffff;
   background-color: rgba(20, 20, 50, 0.9);
 }
 #leapAddress {
-  margin: 0.2vh;
+  font-family: monospace;
+  font-size: 9pt;
+  margin-top: 2vh;
 }
 #leapIndicator {
-  font-size: 10pt;
+  font-size: 9pt;
   text-align: center;
-  /*margin-top: 0.1vh;*/
-  margin-left: 2em;
-  padding: 0.5em;
+  margin-left: 0.4em;
+  margin-bottom: 0.75vh;
+  padding: 1vh;
   box-sizing: border-box;
   color: #b5e853;
   background-color: rgba(60, 20, 0, 0.6);
@@ -36,14 +38,20 @@
   margin: 0;
   border: 0;
 }
+#sound {
+  margin-left: 5vh;
+}
+#volume {
+  width: 15%;
+}
 .panel {
   background-color: rgba(70, 50, 80, 0.5);
   /*box-sizing: border-box;*/
-  padding-left: 1em;
-  padding-right: 1em;
-  padding-top: 0.5em;
-  padding-bottom: 1em;
-  margin: 2.5vh;
+  padding-left: 1.0em;
+  padding-right: 1.0em;
+  padding-top: 0.75em;
+  padding-bottom: 0.75em;
+  margin: 1.25vh;
 /*  margin-left, margin-right: 40vh;
   margin-top, margin-bottom: 19vh;
 */  text-align: right;
@@ -84,11 +92,11 @@ button {
   font-size: 12pt;
   font-style: bold;
   text-align: center;
-  padding: 0.6vh;
+  padding: 0.5vh;
   margin-top: 2vh;
-  margin-bottom: 0.5vh;
-  margin-left: 5vh;
-  margin-right: 5vh;
+  margin-bottom: 1.5vh;
+  margin-left: 1vh;
+  margin-right: 0.75vh;
   color: #b5e853;
   background-color: rgba(150, 40, 40, 0.6);
   box-sizing: border-box;
@@ -96,6 +104,6 @@ button {
 a {
   font-family: monospace;
   font-size: 10pt;
-  color: #feb;
+  color: #bef;
   padding: 0.5vh;
 }
