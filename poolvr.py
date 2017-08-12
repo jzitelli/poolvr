@@ -4,12 +4,11 @@ Flask application for serving poolvr.
 import os
 import logging
 import json
-import os
 import shutil
 import sys
 import subprocess
 from copy import deepcopy
-from flask import Flask, render_template, request, Markup
+from flask import Flask, request, Markup
 from jinja2 import Environment, FileSystemLoader
 
 
@@ -88,6 +87,12 @@ POOLVR = {
 }
 
 
+import json
+with open('poolvr.json', 'w') as f:
+    f.write(json.dumps(POOLVR))
+
+
+
 def get_webvr_config():
     """
     Constructs WebVRConfig dict based on request url parameters.
@@ -104,7 +109,7 @@ def get_webvr_config():
             try:
                 args[k] = float(v)
             except Exception as err:
-                pass
+                _logger.warning(err)
     config.update(args)
     return config
 
@@ -125,7 +130,7 @@ def get_poolvr_config():
             try:
                 args[k] = float(v)
             except Exception as err:
-                pass
+                _logger.warning(err)
     config.update(args)
     return {'config': config,
             'version': POOLVR['version']}
@@ -231,7 +236,6 @@ def main():
 
 
 if __name__ == "__main__":
-    import argparse
     logging.basicConfig(level=(logging.DEBUG if app.debug else logging.INFO),
                         format="%(asctime)s %(levelname)s %(name)s %(funcName)s %(lineno)d:  %(message)s")
     if len(sys.argv) == 2 and sys.argv[1] == 'dist':

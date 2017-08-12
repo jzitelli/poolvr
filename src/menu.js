@@ -28,6 +28,12 @@ POOLVR.setupMenu = function () {
         inputs[i].addEventListener('blur', onBlur, false);
     }
 
+    var soundInput = document.getElementById('sound');
+    soundInput.checked = false;
+
+    var volumeInput = document.getElementById('volume');
+    volumeInput.value = volumeInput.min;
+
     var useBasicMaterialsInput = document.getElementById('useBasicMaterials');
     useBasicMaterialsInput.checked = POOLVR.config.useBasicMaterials;
 
