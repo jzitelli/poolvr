@@ -1,7 +1,7 @@
 #overlay {
   position: absolute;
   left: 1.25vw;
-  right: 75vw;
+  right: 78vw;
   top: 2.25vw;
   /*width: 85%;*/
   /*right: 2vw;*/
@@ -39,10 +39,10 @@
   border: 0;
 }
 #sound {
-  margin-left: 5vh;
+  margin-left: 3vh;
 }
 #volume {
-  width: 15%;
+  width: 30%;
 }
 .panel {
   background-color: rgba(70, 50, 80, 0.5);
@@ -75,7 +75,8 @@ h1, h2, h3 {
   color: #b5e853;
 }
 h1 {
-  margin-top: 2vh;
+  margin-left: 1.75vh;
+  margin-top: 1.75vh;
   font-size: 18pt;
 }
 h2 {
@@ -92,10 +93,10 @@ button {
   font-size: 12pt;
   font-style: bold;
   text-align: center;
-  padding: 0.5vh;
-  margin-top: 2vh;
-  margin-bottom: 1.5vh;
-  margin-left: 1vh;
+  padding: 0.75vh;
+  margin-top: 1.75vh;
+  margin-bottom: 1.0vh;
+  margin-left: 1.5vh;
   margin-right: 0.75vh;
   color: #b5e853;
   background-color: rgba(150, 40, 40, 0.6);
@@ -103,7 +104,13 @@ button {
 }
 a {
   font-family: monospace;
-  font-size: 10pt;
+  font-size: 9pt;
   color: #bef;
-  padding: 0.5vh;
+  padding: 0.25vh;
+  margin-left: 1.25vh;
+}
+hr {
+    margin-top: 1.75vh;
+    margin-bottom: 1.75vh;
+    width: 92%;
 }

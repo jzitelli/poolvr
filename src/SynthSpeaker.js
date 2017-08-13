@@ -2,7 +2,7 @@ module.exports = ( function() {
     "use strict";
     function SynthSpeaker(options) {
         options = options || {};
-        this.volume = options.volume || 1;
+        this.volume = (options.volume === undefined ? 1 : options.volume);
         this.rate   = options.rate || 1;
         this.pitch  = options.pitch || 1;
 
@@ -51,8 +51,9 @@ module.exports = ( function() {
                 onBegin();
             }
             this.utterance.text = text;
+            this.utterance.volume = this.volume;
             this.speaking = true;
-            if (POOLVR.config.soundVolume > 0) {
+            if (this.utterance.volume > 0) {
                 speechSynthesis.speak(this.utterance);
             }
         }

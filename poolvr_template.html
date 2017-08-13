@@ -7,9 +7,10 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
-    <title>poolvr {{version}}</title>
     <link rel="shortcut icon" href="favicon.ico">
     <link rel="stylesheet" href="poolvr.css">
+
+    <title>poolvr {{version}}</title>
 
 {{ json_config }}
 
@@ -20,15 +21,28 @@
     <canvas id="webgl-canvas"></canvas>
 
     <div id="overlay">
+
       <h1>poolvr {{ version if version else '' }}</h1>{{version_content if version_content else ''}}
+
+      <div style="display: inline">
+
+        <button id="vrButton"><b>toggle VR</b></button>
+
+        <button id="fsButton"><b>toggle fullscreen</b></button>
+
+      </div>
+
       <hr>
 
       <div style="display: inline">
-        <button id="vrButton">toggle VR</button>
+<!--
+         <button id="vrButton">toggle VR</button>
         <button id="fsButton">toggle fullscreen</button>
         <br>
+ -->
         <label><input type="checkbox" id="sound"/>Sound</label>
-        <label><input type="range" id="volume" min="0.0", max="1.0" step="0.05"/>vol.</label>
+
+        <label><input type="range" id="volume" min="0.0", max="1.0" step="any"/>vol.</label>
 
         <div class="panel" id="graphicsPanel">
           <h3>Graphics:</h3>
@@ -46,7 +60,9 @@
           <br>
           <label>Websocket address:<input id="leapAddress" type="text" maxlength="18"/></label>
         </div>
-      </div>{{ extra_overlay_content if extra_overlay_content else "" }}
+
+      </div>
+{{ extra_overlay_content if extra_overlay_content else "" }}
     </div>
 
 {% if config['DEBUG'] %}

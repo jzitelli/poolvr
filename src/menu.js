@@ -18,6 +18,7 @@ POOLVR.setupMenu = function () {
     function onFocus() {
         POOLVR.keyboard.enabled = false;
     }
+
     function onBlur() {
         POOLVR.keyboard.enabled = true;
     }
@@ -33,6 +34,30 @@ POOLVR.setupMenu = function () {
 
     var volumeInput = document.getElementById('volume');
     volumeInput.value = POOLVR.config.soundVolume;
+
+    volumeInput.addEventListener('change', function () {
+        POOLVR.config.soundVolume = volumeInput.value;
+        console.log('volume set to', POOLVR.config.soundVolume);
+        POOLVR.synthSpeaker.volume = POOLVR.config.soundVolume;
+        if (POOLVR.config.soundVolume > 0.0) {
+            soundInput.checked = true;
+        } else {
+            soundInput.checked = false;
+        }
+    });
+
+    soundInput.addEventListener('change', function () {
+        if (soundInput.checked) {
+            console.log('sound enabled');
+            POOLVR.config.soundVolume = 0.25;
+            POOLVR.synthSpeaker.volume = 0.25;
+        } else {
+            console.log('sound disabled');
+            POOLVR.config.soundVolume = 0.0;
+            POOLVR.synthSpeaker.volume = 0.0;
+        }
+        volumeInput.value = POOLVR.config.soundVolume;
+    });
 
     var useBasicMaterialsInput = document.getElementById('useBasicMaterials');
     useBasicMaterialsInput.checked = POOLVR.config.useBasicMaterials;

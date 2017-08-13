@@ -18,10 +18,10 @@ POOLVR.onLoad = function () {
     "use strict";
     const INCH2METERS = 0.0254;
 
-    // if (Utils.URL_PARAMS.clearLocalStorage) {
+    if (Utils.URL_PARAMS.clearLocalStorage) {
         console.log('clearing localStorage...');
         localStorage.clear();
-    // }
+    }
 
     THREE.Object3D.DefaultMatrixAutoUpdate = false;
 
@@ -41,9 +41,9 @@ POOLVR.onLoad = function () {
         rate: POOLVR.config.synthSpeakerRate || 0.75,
         pitch: POOLVR.config.synthSpeakerPitch || 0.5
     });
-    if (!loadedConfig) {
-        POOLVR.synthSpeaker.speak("Hello. Welcome. To. Pool-ver.");
-    }
+    // if (!loadedConfig) {
+    //     POOLVR.synthSpeaker.speak("Hello. Welcome. To. Pool-ver.");
+    // }
 
     var appConfig = {
         onResetVRSensor: function () {

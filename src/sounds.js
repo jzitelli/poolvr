@@ -24,7 +24,7 @@ POOLVR.playPocketedSound = (function () {
         ballPocketedBuffer = buffer;
     });
     var playPocketedSound = function () {
-        if (POOLVR.config.soundVolume) {
+        if (POOLVR.config.soundVolume > 0.0) {
             Audio.playBuffer(ballPocketedBuffer, POOLVR.config.soundVolume * 0.5);
         }
     };
