@@ -118,6 +118,8 @@ POOLVR.onLoad = function () {
                 Gamepads.setGamepadCommands(gamepad.index, POOLVR.vrGamepadBCommands);
             } else {
                 console.log('OpenVR controller A connected');
+                POOLVR.vrGamepadIndicator.textContent = gamepad.id + ' available';
+                POOLVR.vrGamepadIndicator.style['background-color'] = 'rgba(20, 160, 20, 0.8)';
                 gamepadA = gamepad;
                 Gamepads.setGamepadCommands(gamepad.index, POOLVR.vrGamepadACommands);
                 POOLVR.openVRTool.mesh.visible = true;

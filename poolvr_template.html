@@ -40,25 +40,35 @@
         <button id="fsButton">toggle fullscreen</button>
         <br>
  -->
-        <label><input type="checkbox" id="sound"/>Sound</label>
+        <div class="panel" id="soundPanel">
+            <h3>Sound:</h3>
+            <label><input type="checkbox" id="sound"/>enabled</label>
+            <label><input type="range" id="volume" min="0.0", max="1.0" step="any"/>vol.</label>
+        </div>
 
-        <label><input type="range" id="volume" min="0.0", max="1.0" step="any"/>vol.</label>
+        <div class="panel" id="vrPanel">
+            <h3>VR:</h3>
+            <span id="vrDisplayIndicator">VR display is not available</span>
+            <br>
+            <br>
+            <span id="vrGamepadIndicator">VR gamepad is not available</span>
+        </div>
 
         <div class="panel" id="graphicsPanel">
-          <h3>Graphics:</h3>
-          <label><input type="checkbox" id="useBasicMaterials"/>EGA mode (max performance)</label>
-          <br>
-          <label><input type="checkbox" id="useSpotLight"/>Spot light</label>
-          <label><input type="checkbox" id="usePointLight"/>Point light</label>
-          <br>
-          <label><input type="checkbox" id="useShadowMap"/>Shadow maps</label>
+            <h3>Graphics:</h3>
+            <label><input type="checkbox" id="useBasicMaterials"/>EGA mode (max performance)</label>
+            <br>
+            <label><input type="checkbox" id="useSpotLight"/>Spot light</label>
+            <label><input type="checkbox" id="usePointLight"/>Point light</label>
+            <br>
+            <label><input type="checkbox" id="useShadowMap"/>Shadow maps</label>
         </div>
 
         <div class="panel" id="leapPanel">
-          <h3>Leap Motion:</h3>
-          <span id="leapIndicator">disconnected</span>
-          <br>
-          <label>Websocket address:<input id="leapAddress" type="text" maxlength="18"/></label>
+            <h3>Leap Motion:</h3>
+            <span id="leapIndicator">disconnected</span>
+            <br>
+            <label>Websocket address:<input id="leapAddress" type="text" maxlength="18"/></label>
         </div>
 
       </div>

@@ -1,7 +1,7 @@
 #overlay {
   position: absolute;
   left: 1.25vw;
-  right: 78vw;
+  right: 77vw;
   top: 2.25vw;
   /*width: 85%;*/
   /*right: 2vw;*/
@@ -28,6 +28,21 @@
 /*  align-content: center;
   justify-content: center;*/
 }
+#vrDisplayIndicator, #vrGamepadIndicator {
+  font-size: 9pt;
+  text-align: center;
+  margin-left: 0.4em;
+  margin-bottom: 10vh;
+  padding: 0.75vh;
+  box-sizing: border-box;
+  color: #b5e853;
+  background-color: rgba(60, 20, 0, 0.6);
+/*  margin-left: 0.4em;
+  margin: 2vh;/*-bottom: 0.75vh;*/
+  /*align-content: center;
+  justify-content: center;*/
+}
+
 #webgl-canvas {
   position: fixed;
   width: 100%;
@@ -49,13 +64,16 @@
   /*box-sizing: border-box;*/
   padding-left: 1.0em;
   padding-right: 1.0em;
-  padding-top: 0.75em;
-  padding-bottom: 0.75em;
+  padding-top: 0.25vh;
+  padding-bottom: 1.5vh;
   margin: 1.25vh;
 /*  margin-left, margin-right: 40vh;
   margin-top, margin-bottom: 19vh;
 */  text-align: right;
 }
+/*br {
+    padding-top, padding-bottom, margin-top, margin-bottom: 2vh;
+}*/
 body {
   background-color: #010101;
   margin: 0;
@@ -76,7 +94,7 @@ h1, h2, h3 {
 }
 h1 {
   margin-left: 1.75vh;
-  margin-top: 1.75vh;
+  margin-top: 0.75vh;
   font-size: 18pt;
 }
 h2 {

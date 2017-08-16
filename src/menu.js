@@ -59,6 +59,10 @@ POOLVR.setupMenu = function () {
         volumeInput.value = POOLVR.config.soundVolume;
     });
 
+    POOLVR.vrDisplayIndicator = document.getElementById('vrDisplayIndicator');
+
+    POOLVR.vrGamepadIndicator = document.getElementById('vrGamepadIndicator');
+
     var useBasicMaterialsInput = document.getElementById('useBasicMaterials');
     useBasicMaterialsInput.checked = POOLVR.config.useBasicMaterials;
 
@@ -164,6 +168,11 @@ POOLVR.setupMenu = function () {
 
                 vrButton.style.display = 'none';
                 vrButton.disabled = true;
+
+            } else {
+
+                POOLVR.vrDisplayIndicator.textContent = vrDisplay.displayName + ' available';
+                POOLVR.vrDisplayIndicator.style['background-color'] = 'rgba(20, 160, 20, 0.8)';
 
             }
 

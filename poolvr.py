@@ -11,7 +11,6 @@ from flask import Flask, request, Markup
 from jinja2 import Environment, FileSystemLoader
 
 
-import pool_table
 
 
 _logger = logging.getLogger(__name__)
@@ -42,8 +41,6 @@ template = env.get_template('poolvr_template.html')
 
 
 WebVRConfig = {
-    #"ENABLE_LEAP_MOTION":               False,
-    #"LEAP_MOTION_HOST":                 "192.168.1.200",
     "FORCE_ENABLE_VR":                  False,
     "K_FILTER":                         0.98,
     "PREDICTION_TIME_S":                0.010,
@@ -54,10 +51,13 @@ WebVRConfig = {
 }
 
 
+INCH2METER = 0.0254
+
+
 POOLVR = {
     'version': PACKAGE['version'],
     'config': {
-        'gravity'            : 9.8,
+        'gravity'            : 9.81,
         'useBasicMaterials'  : True,
         'useShadowMap'       : False,
         'useSpotLight'       : True,
@@ -65,7 +65,7 @@ POOLVR = {
         'useTextGeomLogger'  : True,
         'L_table'            : 2.3368,
         'H_table'            : 0.77,
-        'ball_diameter'      : 2.25 * pool_table.INCH2METER,
+        'ball_diameter'      : 2.25 * INCH2METER,
         'soundVolume'        : 0.0,
         'toolOptions': {
             'tipShape'               : 'Cylinder',
@@ -127,6 +127,7 @@ def get_poolvr_config():
 
 
 def render_poolvr_template(webvr_config=None, poolvr_config=None):
+    import pool_table
     if webvr_config is None:
         webvr_config = WebVRConfig
     if poolvr_config is None:
