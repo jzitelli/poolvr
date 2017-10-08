@@ -79,6 +79,7 @@ POOLVR.setupMenu = function () {
         POOLVR.config.useBasicMaterials = useBasicMaterialsInput.checked;
         if (!POOLVR.config.useBasicMaterials && !(POOLVR.config.useSpotLight || POOLVR.config.usePointLight)) {
             useSpotLightInput.checked = true;
+            // useShadowMapInput.checked = false;
             POOLVR.config.useSpotLight = true;
             POOLVR.centerSpotLight.visible = true;
         }

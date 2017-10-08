@@ -539,6 +539,8 @@ POOLVR.startAnimateLoop = function () {
         stats.end();
     }
 
+    console.log('starting animation loop...');
+
     POOLVR.requestID = window.requestAnimationFrame(animate);
 
 };
