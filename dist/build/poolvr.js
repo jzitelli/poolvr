@@ -1162,7 +1162,7 @@ module.exports = ( function() {
     "use strict";
     function SynthSpeaker(options) {
         options = options || {};
-        this.volume = options.volume || 1;
+        this.volume = (options.volume === undefined ? 1 : options.volume);
         this.rate   = options.rate || 1;
         this.pitch  = options.pitch || 1;
 
@@ -1211,8 +1211,11 @@ module.exports = ( function() {
                 onBegin();
             }
             this.utterance.text = text;
+            this.utterance.volume = this.volume;
             this.speaking = true;
-            speechSynthesis.speak(this.utterance);
+            if (this.utterance.volume > 0) {
+                speechSynthesis.speak(this.utterance);
+            }
         }
     };
 
@@ -1916,10 +1919,10 @@ POOLVR.onLoad = function () {
     "use strict";
     const INCH2METERS = 0.0254;
 
-    // if (Utils.URL_PARAMS.clearLocalStorage) {
+    if (Utils.URL_PARAMS.clearLocalStorage) {
         console.log('clearing localStorage...');
         localStorage.clear();
-    // }
+    }
 
     THREE.Object3D.DefaultMatrixAutoUpdate = false;
 
@@ -1932,11 +1935,16 @@ POOLVR.onLoad = function () {
 
     console.log(POOLVR.config);
 
-    POOLVR.synthSpeaker = new SynthSpeaker({volume: POOLVR.config.synthSpeakerVolume || 0.6, rate: POOLVR.config.synthSpeakerRate || 0.75, pitch: POOLVR.config.synthSpeakerPitch || 0.5});
-    if (!loadedConfig) {
-        POOLVR.synthSpeaker.speak("Hello. Welcome. To. Pool-ver.");
-    }
     POOLVR.setupMenu();
+
+    POOLVR.synthSpeaker = new SynthSpeaker({
+        volume: POOLVR.config.soundVolume || 0.0,
+        rate: POOLVR.config.synthSpeakerRate || 0.75,
+        pitch: POOLVR.config.synthSpeakerPitch || 0.5
+    });
+    // if (!loadedConfig) {
+    //     POOLVR.synthSpeaker.speak("Hello. Welcome. To. Pool-ver.");
+    // }
 
     var appConfig = {
         onResetVRSensor: function () {
@@ -2011,6 +2019,8 @@ POOLVR.onLoad = function () {
                 Gamepads.setGamepadCommands(gamepad.index, POOLVR.vrGamepadBCommands);
             } else {
                 console.log('OpenVR controller A connected');
+                POOLVR.vrGamepadIndicator.textContent = gamepad.id + ' available';
+                POOLVR.vrGamepadIndicator.style['background-color'] = 'rgba(20, 160, 20, 0.8)';
                 gamepadA = gamepad;
                 Gamepads.setGamepadCommands(gamepad.index, POOLVR.vrGamepadACommands);
                 POOLVR.openVRTool.mesh.visible = true;
@@ -2430,6 +2440,8 @@ POOLVR.startAnimateLoop = function () {
         stats.end();
     }
 
+    console.log('starting animation loop...');
+
     POOLVR.requestID = window.requestAnimationFrame(animate);
 
 };
@@ -2455,6 +2467,7 @@ POOLVR.setupMenu = function () {
     function onFocus() {
         POOLVR.keyboard.enabled = false;
     }
+
     function onBlur() {
         POOLVR.keyboard.enabled = true;
     }
@@ -2464,6 +2477,40 @@ POOLVR.setupMenu = function () {
         inputs[i].addEventListener('focus', onFocus, false);
         inputs[i].addEventListener('blur', onBlur, false);
     }
+
+    var soundInput = document.getElementById('sound');
+    soundInput.checked = POOLVR.config.soundVolume > 0;
+
+    var volumeInput = document.getElementById('volume');
+    volumeInput.value = POOLVR.config.soundVolume;
+
+    volumeInput.addEventListener('change', function () {
+        POOLVR.config.soundVolume = volumeInput.value;
+        console.log('volume set to', POOLVR.config.soundVolume);
+        POOLVR.synthSpeaker.volume = POOLVR.config.soundVolume;
+        if (POOLVR.config.soundVolume > 0.0) {
+            soundInput.checked = true;
+        } else {
+            soundInput.checked = false;
+        }
+    });
+
+    soundInput.addEventListener('change', function () {
+        if (soundInput.checked) {
+            console.log('sound enabled');
+            POOLVR.config.soundVolume = 0.25;
+            POOLVR.synthSpeaker.volume = 0.25;
+        } else {
+            console.log('sound disabled');
+            POOLVR.config.soundVolume = 0.0;
+            POOLVR.synthSpeaker.volume = 0.0;
+        }
+        volumeInput.value = POOLVR.config.soundVolume;
+    });
+
+    POOLVR.vrDisplayIndicator = document.getElementById('vrDisplayIndicator');
+
+    POOLVR.vrGamepadIndicator = document.getElementById('vrGamepadIndicator');
 
     var useBasicMaterialsInput = document.getElementById('useBasicMaterials');
     useBasicMaterialsInput.checked = POOLVR.config.useBasicMaterials;
@@ -2481,6 +2528,7 @@ POOLVR.setupMenu = function () {
         POOLVR.config.useBasicMaterials = useBasicMaterialsInput.checked;
         if (!POOLVR.config.useBasicMaterials && !(POOLVR.config.useSpotLight || POOLVR.config.usePointLight)) {
             useSpotLightInput.checked = true;
+            // useShadowMapInput.checked = false;
             POOLVR.config.useSpotLight = true;
             POOLVR.centerSpotLight.visible = true;
         }
@@ -2522,10 +2570,15 @@ POOLVR.setupMenu = function () {
     }
 
     var vrButton = document.getElementById('vrButton');
+    var _firstTime = true;
     vrButton.addEventListener('click', function () {
         if (!POOLVR.app.vrDisplay.isPresenting) {
             window.cancelAnimationFrame(POOLVR.requestID);
             POOLVR.app.vrEffect.requestPresent().then( function () {
+                if (_firstTime) {
+                    _firstTime = false;
+                    POOLVR.synthSpeaker.speak("Hello. Welcome. To. Pool-ver.");
+                }
                 POOLVR.app.vrEffect.requestAnimationFrame(POOLVR.animate);
             } );
         } else {
@@ -2566,6 +2619,11 @@ POOLVR.setupMenu = function () {
                 vrButton.style.display = 'none';
                 vrButton.disabled = true;
 
+            } else {
+
+                POOLVR.vrDisplayIndicator.textContent = vrDisplay.displayName + ' available';
+                POOLVR.vrDisplayIndicator.style['background-color'] = 'rgba(20, 160, 20, 0.8)';
+
             }
 
         } ).catch( function (err) {
@@ -2590,7 +2648,9 @@ POOLVR.playCollisionSound = (function () {
         ballBallBuffer = buffer;
     });
     var playCollisionSound = function (v) {
-        Audio.playBuffer(ballBallBuffer, Math.min(1, v / 10));
+        if (POOLVR.config.soundVolume) {
+            Audio.playBuffer(ballBallBuffer, POOLVR.config.soundVolume * Math.min(1, v / 10));
+        }
     };
     return playCollisionSound;
 })();
@@ -2603,7 +2663,9 @@ POOLVR.playPocketedSound = (function () {
         ballPocketedBuffer = buffer;
     });
     var playPocketedSound = function () {
-        Audio.playBuffer(ballPocketedBuffer, 0.5);
+        if (POOLVR.config.soundVolume > 0.0) {
+            Audio.playBuffer(ballPocketedBuffer, POOLVR.config.soundVolume * 0.5);
+        }
     };
     return playPocketedSound;
 })();
