@@ -104,15 +104,6 @@ POOLVR.autoPosition = ( function () {
     var UP = THREE.Object3D.DefaultUp;
     var speakCount = 0;
     return function () {
-        if (POOLVR.synthSpeaker.speaking === false) {
-            if (speakCount <= 3) {
-                POOLVR.synthSpeaker.speak("You are being auto-positioned.");
-                if (speakCount === 3) {
-                    POOLVR.synthSpeaker.speak("I will stop saying that now.");
-                }
-                speakCount++;
-            }
-        }
         var avatar = POOLVR.app.stage;
         var heading = Math.atan2(
             -(POOLVR.ballMeshes[POOLVR.nextBall].position.x - POOLVR.ballMeshes[0].position.x),
