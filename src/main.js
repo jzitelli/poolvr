@@ -442,7 +442,6 @@ POOLVR.startAnimateLoop = function () {
         render = POOLVR.app.render,
         world = POOLVR.world,
         stage = POOLVR.app.stage,
-        moveToolRoot = POOLVR.moveToolRoot,
         moveStage = POOLVR.moveStage,
         openVRTool = POOLVR.openVRTool;
 
@@ -484,7 +483,6 @@ POOLVR.startAnimateLoop = function () {
         render();
         moveStage(keyboard, gamepadValues, dt);
         stage.updateMatrixWorld();
-        moveToolRoot(keyboard, gamepadValues, dt);
         stats.end();
     }
 

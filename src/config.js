@@ -26,15 +26,6 @@ POOLVR.keyboardCommands = {
     moveUp:       {buttons: [69]},
     moveDown:     {buttons: [67]},
 
-    moveToolUp:        {buttons: [79]},
-    moveToolDown:      {buttons: [190]},
-    moveToolForward:   {buttons: [73]},
-    moveToolBackward:  {buttons: [75]},
-    moveToolLeft:      {buttons: [74]},
-    moveToolRight:     {buttons: [76]},
-    rotateToolCW:      {buttons: [85]},
-    rotateToolCCW:     {buttons: [89]},
-
     toggleVR: {buttons: [Keyboard.KEYCODES.NUMBER9],
                commandDown: POOLVR.commands.toggleVR},
     toggleWireframe: {buttons: [Keyboard.KEYCODES.B],
@@ -60,9 +51,6 @@ POOLVR.xboxGamepadCommands = {
     turnLR: {axes: [Gamepads.AXES.LSX]},
     moveFB: {axes: [Gamepads.AXES.LSY]},
     toggleFloatMode: {buttons: [Gamepads.BUTTONS.leftStick]},
-    moveToolFB:  {axes: [Gamepads.AXES.RSY]},
-    turnToolLR: {axes: [Gamepads.AXES.RSX]},
-    toggleToolFloatMode: {buttons: [Gamepads.BUTTONS.rightStick]},
     resetVRSensor: {buttons: [Gamepads.BUTTONS.back],
                     commandDown: POOLVR.commands.resetVRSensor},
     selectNextBall: {buttons: [Gamepads.BUTTONS.rightBumper],
@@ -77,9 +65,6 @@ POOLVR.xboxGamepadCommands = {
 };
 
 POOLVR.vrGamepadACommands = {
-    moveToolFB:  {axes: [Gamepads.AXES.LSY], flipAxes: true},
-    turnToolLR: {axes: [Gamepads.AXES.LSX]},
-    toggleToolFloatMode: {buttons: [0]},
     //toggleVR: {buttons: [3], commandDown: POOLVR.commands.toggleVR},
     resetTable: {buttons: [2], commandDown: POOLVR.commands.resetTable}
     //autoPosition: {buttons: [2], commandDown: POOLVR.commands.autoPosition.bind(null, true)}

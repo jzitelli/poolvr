@@ -153,30 +153,6 @@ POOLVR.moveStage = ( function () {
 } )();
 
 
-POOLVR.moveToolRoot = ( function () {
-    "use strict";
-    return function (keyboard, gamepadValues, dt) {
-        var moveFB = 0, moveRL = 0, moveUD = 0, turnRL = 0;
-        if (keyboard) {
-            moveFB += keyboard.moveToolForward - keyboard.moveToolBackward;
-            moveUD += keyboard.moveToolUp - keyboard.moveToolDown;
-            moveRL += keyboard.moveToolRight - keyboard.moveToolLeft;
-            turnRL += keyboard.rotateToolCW - keyboard.rotateToolCCW;
-        }
-        for (var i = 0; i < gamepadValues.length; i++) {
-            var values = gamepadValues[i];
-            if (values.toggleToolFloatMode) {
-                if (values.moveToolFB) moveUD -= values.moveToolFB;
-                if (values.turnToolLR) moveRL += values.turnToolLR;
-            } else {
-                if (values.moveToolFB) moveFB -= values.moveToolFB;
-                if (values.turnToolLR) turnRL += values.turnToolLR;
-            }
-        }
-    };
-} )();
-
-
 POOLVR.startTutorial = function () {
     "use strict";
     POOLVR.synthSpeaker.speak("Hello.  Welcome. To. Pool-ver.", function () {
