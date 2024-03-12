@@ -1,9 +1,8 @@
 window.POOLVR = window.POOLVR || {};
 
-/* global App, Gamepads, LeapMotion, SynthSpeaker, TextGeomUtils, Utils */
+/* global App, Gamepads, SynthSpeaker, TextGeomUtils, Utils */
 window.App = require('./App.js');
 window.Gamepads = require('./Gamepads.js');
-window.LeapMotion = require('./LeapMotion.js');
 window.SynthSpeaker = require('./SynthSpeaker.js');
 window.TextGeomUtils = require('./TextGeomUtils.js');
 window.Utils = require('./Utils.js');
@@ -46,9 +45,7 @@ POOLVR.onLoad = function () {
     // }
 
     var appConfig = {
-        onResetVRSensor: function () {
-            POOLVR.leapTool.updateToolMapping();
-        }
+        onResetVRSensor: function () {}
     };
     var rendererOptions = {
         canvas: document.getElementById('webgl-canvas'),
@@ -63,43 +60,6 @@ POOLVR.onLoad = function () {
         POOLVR.app.renderer.shadowMap.enabled = true;
         POOLVR.app.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     }
-
-    var leapIndicator = document.getElementById('leapIndicator');
-    POOLVR.leapTool = LeapMotion.makeTool( Utils.combineObjects(POOLVR.config.toolOptions, {
-        onConnect: function () {
-            leapIndicator.innerHTML = 'connected';
-            leapIndicator.style['background-color'] = 'rgba(60, 100, 20, 0.8)';
-            POOLVR.world.addBody(POOLVR.leapTool.toolBody);
-        },
-        onStreamingStarted: function () {
-            leapIndicator.innerHTML = 'connected, streaming';
-            leapIndicator.style['background-color'] = 'rgba(20, 160, 20, 0.8)';
-            POOLVR.leapTool.toolRoot.visible = true;
-            POOLVR.app.vrControls.update();
-            POOLVR.leapTool.toolRoot.position.y = POOLVR.app.camera.position.y - 2*INCH2METERS;
-            POOLVR.leapTool.toolRoot.updateMatrix();
-            POOLVR.leapTool.toolRoot.updateMatrixWorld();
-        },
-        onStreamingStopped: function () {
-            leapIndicator.innerHTML = 'connected, streaming stopped';
-            leapIndicator.style['background-color'] = 'rgba(60, 100, 20, 0.8)';
-            POOLVR.leapTool.toolRoot.visible = false;
-        },
-        onDisconnect: function () {
-            leapIndicator.innerHTML = 'disconnected';
-            leapIndicator.style['background-color'] = 'rgba(60, 20, 20, 0.4)';
-            POOLVR.leapTool.toolRoot.visible = false;
-        }
-    }) );
-    POOLVR.app.stage.add(POOLVR.leapTool.toolRoot);
-    POOLVR.leapTool.toolBody.material = POOLVR.tipMaterial;
-    POOLVR.leapTool.toolMesh.renderOrder = -1;
-    POOLVR.leapTool.toolRoot.visible = false;
-    POOLVR.leapTool.leapController.connect();
-
-    window.addEventListener("beforeunload", function () {
-        POOLVR.leapTool.leapController.disconnect();
-    }, false);
 
     POOLVR.openVRTool = Gamepads.makeTool(Utils.combineObjects(POOLVR.config.toolOptions, {
         tipMaterial: POOLVR.openVRTipMaterial
@@ -209,9 +169,6 @@ POOLVR.onLoad = function () {
             scene.add(ballMesh);
         } );
 
-        if (POOLVR.leapTool.toolShadowMesh) {
-            POOLVR.app.scene.add(POOLVR.leapTool.toolShadowMesh);
-        }
         if (POOLVR.openVRTool && POOLVR.openVRTool.shadowMesh) {
             POOLVR.app.scene.add(POOLVR.openVRTool.shadowMesh);
         }
@@ -260,8 +217,6 @@ POOLVR.onLoad = function () {
             var isVive = /vive/i.test(vrDisplay.displayName);
             if (!(vrDisplay.stageParameters && vrDisplay.stageParameters.sittingToStandingTransform)) {
                 POOLVR.app.vrControls.update();
-                POOLVR.leapTool.toolRoot.position.y = POOLVR.app.camera.position.y - 2*INCH2METERS;
-                POOLVR.leapTool.toolRoot.updateMatrix();
                 POOLVR.app.stage.position.y = 45.5 * INCH2METERS;
                 POOLVR.app.stage.position.z = 0.5 * POOLVR.config.L_table + 12 * INCH2METERS;
                 POOLVR.app.stage.updateMatrix();
@@ -408,8 +363,6 @@ POOLVR.onLoad = function () {
 
             scene.updateMatrixWorld(true);
 
-            POOLVR.leapTool.updateToolMapping();
-
             if (POOLVR.config.useTextGeomLogger) {
                 var fontLoader = new THREE.FontLoader();
                 fontLoader.load('fonts/Anonymous Pro_Regular.js', function (font) {
@@ -491,7 +444,6 @@ POOLVR.startAnimateLoop = function () {
         stage = POOLVR.app.stage,
         moveToolRoot = POOLVR.moveToolRoot,
         moveStage = POOLVR.moveStage,
-        leapTool = POOLVR.leapTool,
         openVRTool = POOLVR.openVRTool;
 
     function updateBallsPostStep() {
@@ -521,7 +473,6 @@ POOLVR.startAnimateLoop = function () {
         var dt = (t - lt) * 0.001;
         lt = t;
         if (POOLVR.textGeomLogger) POOLVR.textGeomLogger.update(dt);
-        leapTool.updateTool(dt);
         if (POOLVR.app.vrDisplay.isPresenting)
             POOLVR.requestID = POOLVR.app.vrEffect.requestAnimationFrame(animate);
         else
@@ -529,13 +480,11 @@ POOLVR.startAnimateLoop = function () {
         var gamepadValues = Gamepads.update();
         openVRTool.update(dt);
         world.step(Math.min(1/60, dt), dt, 10);
-        leapTool.updateToolPostStep();
         updateBallsPostStep();
         render();
         moveStage(keyboard, gamepadValues, dt);
         stage.updateMatrixWorld();
         moveToolRoot(keyboard, gamepadValues, dt);
-        leapTool.updateToolMapping();
         stats.end();
     }
 

@@ -107,19 +107,6 @@ POOLVR.setupMenu = function () {
         POOLVR.centerSpotLight.visible = POOLVR.config.useSpotLight;
     }, false);
 
-    // TODO: regular expression format check
-    var leapAddressInput = document.getElementById('leapAddress');
-    leapAddressInput.value = POOLVR.config.toolOptions.host || 'localhost';
-    leapAddressInput.addEventListener('change', onLeapAddressChange, false);
-    function onLeapAddressChange() {
-        var host = leapAddressInput.value;
-        POOLVR.config.toolOptions.host = host;
-        POOLVR.saveConfig(POOLVR.profile);
-        POOLVR.leapTool.leapController.connection.host = host;
-        POOLVR.leapTool.leapController.connection.disconnect(true);
-        POOLVR.leapTool.leapController.connect();
-    }
-
     var vrButton = document.getElementById('vrButton');
     var _firstTime = true;
     vrButton.addEventListener('click', function () {

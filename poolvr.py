@@ -218,8 +218,6 @@ def make_dist():
     shutil.copytree('sounds', os.path.join(DIST_OUTPUT_DIR, 'sounds'))
     # copy npm dependencies:
     shutil.copytree(os.path.join('node_modules', 'cannon', 'build'), os.path.join(DIST_OUTPUT_DIR, 'node_modules', 'cannon', 'build'))
-    os.makedirs(os.path.join(DIST_OUTPUT_DIR, 'node_modules', 'leapjs'))
-    shutil.copy(os.path.join('node_modules', 'leapjs', 'leap-0.6.4.min.js'), os.path.join(DIST_OUTPUT_DIR, 'node_modules', 'leapjs'))
     os.makedirs(os.path.join(DIST_OUTPUT_DIR, 'node_modules', 'three', 'build'))
     shutil.copy(os.path.join('node_modules', 'three', 'build', 'three.js'), os.path.join(DIST_OUTPUT_DIR, 'node_modules', 'three', 'build'))
     shutil.copy(os.path.join('node_modules', 'three', 'build', 'three.min.js'), os.path.join(DIST_OUTPUT_DIR, 'node_modules', 'three', 'build'))

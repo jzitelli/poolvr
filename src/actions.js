@@ -11,7 +11,6 @@ POOLVR.parseURIConfig = function () {
         POOLVR.config.usePointLight = Utils.URL_PARAMS.usePointLight !== undefined ? Utils.URL_PARAMS.usePointLight : POOLVR.config.usePointLight;
         POOLVR.config.useShadowMap  = Utils.URL_PARAMS.useShadowMap  !== undefined ? Utils.URL_PARAMS.useShadowMap  : POOLVR.config.useShadowMap;
     }
-    // Leap Motion config:
     POOLVR.config.toolOptions = POOLVR.config.toolOptions || {};
     POOLVR.config.toolOptions.useShadowMesh  = !POOLVR.config.useShadowMap;
     POOLVR.config.toolOptions.shadowPlane    = POOLVR.config.H_table + 0.001;
@@ -110,16 +109,6 @@ POOLVR.autoPosition = ( function () {
             -(POOLVR.ballMeshes[POOLVR.nextBall].position.z - POOLVR.ballMeshes[0].position.z)
         );
         avatar.quaternion.setFromAxisAngle(UP, heading);
-        // auto-position so that cue ball is on top of leap controller
-        nextVector.copy(POOLVR.leapTool.toolRoot.position);
-        nextVector.applyQuaternion(avatar.quaternion);
-        nextVector.add(avatar.position);
-        nextVector.sub(POOLVR.ballMeshes[0].position);
-        nextVector.y = 0;
-        avatar.position.sub(nextVector);
-        avatar.updateMatrix();
-        avatar.updateMatrixWorld();
-        POOLVR.leapTool.updateToolMapping();
     };
 } )();
 
@@ -129,7 +118,6 @@ POOLVR.stroke = ( function () {
     var velocity = new THREE.Vector3();
     return function () {
         velocity.set(0, 0, -3.9);
-        velocity.applyQuaternion(POOLVR.leapTool.worldQuaternion);
         var body = POOLVR.ballBodies[0];
         body.velocity.copy(velocity);
     };
@@ -185,10 +173,6 @@ POOLVR.moveToolRoot = ( function () {
                 if (values.turnToolLR) turnRL += values.turnToolLR;
             }
         }
-        if (moveFB || moveRL || moveUD || turnRL) {
-            Utils.moveObject(POOLVR.leapTool.toolRoot, dt, moveFB, moveRL, moveUD, turnRL, 0);
-            POOLVR.leapTool.setDeadtime(0);
-        }
     };
 } )();
 
@@ -197,11 +181,6 @@ POOLVR.startTutorial = function () {
     "use strict";
     POOLVR.synthSpeaker.speak("Hello.  Welcome. To. Pool-ver.", function () {
         POOLVR.textGeomLogger.log("HELLO.  WELCOME TO POOLVR.");
-    });
-
-    POOLVR.synthSpeaker.speak("Please wave a stick-like object in front of your Leap Motion controller.", function () {
-        POOLVR.textGeomLogger.log("PLEASE WAVE A STICK-LIKE OBJECT IN FRONT OF YOUR");
-        POOLVR.textGeomLogger.log("LEAP MOTION CONTROLLER.");
     });
 
     POOLVR.synthSpeaker.speak("Keep the stick within the interaction box when you want to make contact with.  A ball.", function () {

@@ -11,23 +11,6 @@
   color: #ffffff;
   background-color: rgba(20, 20, 50, 0.9);
 }
-#leapAddress {
-  font-family: monospace;
-  font-size: 9pt;
-  margin-top: 2vh;
-}
-#leapIndicator {
-  font-size: 9pt;
-  text-align: center;
-  margin-left: 0.4em;
-  margin-bottom: 0.75vh;
-  padding: 1vh;
-  box-sizing: border-box;
-  color: #b5e853;
-  background-color: rgba(60, 20, 0, 0.6);
-/*  align-content: center;
-  justify-content: center;*/
-}
 #vrDisplayIndicator, #vrGamepadIndicator {
   font-size: 9pt;
   text-align: center;

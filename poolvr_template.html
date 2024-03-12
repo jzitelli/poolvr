@@ -64,13 +64,6 @@
             <label><input type="checkbox" id="useShadowMap"/>Shadow maps</label>
         </div>
 
-        <div class="panel" id="leapPanel">
-            <h3>Leap Motion:</h3>
-            <span id="leapIndicator">disconnected</span>
-            <br>
-            <label>Websocket address:<input id="leapAddress" type="text" maxlength="18"/></label>
-        </div>
-
       </div>
 {{ extra_overlay_content if extra_overlay_content else "" }}
     </div>
@@ -86,8 +79,6 @@
     <script src="node_modules/three/examples/js/loaders/OBJLoader.js"></script>
 
     <script src="node_modules/stats.js/build/stats.min.js"></script>
-
-    <script src="node_modules/leapjs/leap-0.6.4.min.js"></script>
 
     <script src="node_modules/webvr-polyfill/build/webvr-polyfill.js"></script>
 
