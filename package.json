@@ -21,7 +21,7 @@
     "eslint": "^3.2.2",
     "browserify": "^13.1.0",
     "watchify": "^3.7.0",
-    "uglify-js": "^2.7.0",
+    "uglify-js": "^3.17.0",
     "mkdirp": "^0.5.1"
   },
   "files": [
