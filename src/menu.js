@@ -122,21 +122,25 @@ POOLVR.setupMenu = function () {
 
     var vrButton = document.getElementById('vrButton');
     var _firstTime = true;
+
+    // WebXR VR button handler
     vrButton.addEventListener('click', function () {
-        if (!POOLVR.app.vrDisplay.isPresenting) {
-            window.cancelAnimationFrame(POOLVR.requestID);
-            POOLVR.app.vrEffect.requestPresent().then( function () {
+        if (!POOLVR.app.isPresenting) {
+            // Start VR session
+            POOLVR.app.startXRSession().then(function () {
                 if (_firstTime) {
                     _firstTime = false;
                     POOLVR.synthSpeaker.speak("Hello. Welcome. To. Pool-ver.");
                 }
-                POOLVR.app.vrEffect.requestAnimationFrame(POOLVR.animate);
-            } );
+                vrButton.textContent = 'exit VR';
+            }).catch(function (err) {
+                console.error('Failed to start XR session:', err);
+            });
         } else {
-            POOLVR.app.vrEffect.cancelAnimationFrame(POOLVR.requestID);
-            POOLVR.app.vrEffect.exitPresent().then( function () {
-                window.requestAnimationFrame(POOLVR.animate);
-            } );
+            // End VR session
+            POOLVR.app.endXRSession().then(function () {
+                vrButton.textContent = 'toggle VR';
+            });
         }
         vrButton.blur();
     }, false);
@@ -146,43 +150,25 @@ POOLVR.setupMenu = function () {
         POOLVR.app.toggleFullscreen();
     }, false);
 
-    var vrDisplay = null;
-
-    if (!navigator.getVRDisplays) {
-
+    // Check WebXR support and update UI
+    if (!navigator.xr) {
         vrButton.style.display = 'none';
         vrButton.disabled = true;
-        console.warn('navigator does not provide getVRDisplays');
-
+        console.warn('WebXR API is not available');
     } else {
-
-        navigator.getVRDisplays().then( function (vrDisplays) {
-
-            for (var i = 0; i < vrDisplays.length; i++) {
-                console.log(vrDisplays[i]);
-                if (vrDisplays[i].capabilities && vrDisplays[i].capabilities.canPresent) {
-                    vrDisplay = vrDisplays[i];
-                    break;
-                }
-            }
-            if (!vrDisplay) {
-
+        navigator.xr.isSessionSupported('immersive-vr').then(function (supported) {
+            if (!supported) {
                 vrButton.style.display = 'none';
                 vrButton.disabled = true;
-
+                console.warn('WebXR immersive-vr not supported');
             } else {
-
-                POOLVR.vrDisplayIndicator.textContent = vrDisplay.displayName + ' available';
+                POOLVR.vrDisplayIndicator.textContent = 'WebXR available';
                 POOLVR.vrDisplayIndicator.style['background-color'] = 'rgba(20, 160, 20, 0.8)';
-
             }
-
-        } ).catch( function (err) {
-
+        }).catch(function (err) {
             vrButton.style.display = 'none';
             vrButton.disabled = true;
             console.error(err);
-
-        } );
+        });
     }
 };

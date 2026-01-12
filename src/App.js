@@ -29,37 +29,41 @@ module.exports = function (scene, config, rendererOptions) {
         domElement.id = 'webgl-canvas';
     }
 
-    this.renderer.setPixelRatio(window.devicePixelRadio);
+    this.renderer.setPixelRatio(window.devicePixelRatio);
     this.renderer.setSize(window.innerWidth, window.innerHeight);
 
     this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
     this.camera.matrixAutoUpdate = true;
 
-    this.vrEffect = new THREE.VREffect(this.renderer, function(error) { throw new Error(error); });
+    // WebXR setup
+    this.renderer.xr.enabled = true;
 
-    this.vrControls = new THREE.VRControls(this.camera, function(error) { throw new Error(error); });
-    this.vrControlsEnabled = true;
+    // XR session and reference space
+    this.xrSession = null;
+    this.xrReferenceSpace = null;
+    this.xrControllers = [];
 
     this.stage = new THREE.Object3D();
     this.stage.matrixAutoUpdate = false;
 
     this.scene.add(this.stage);
 
+    // Track VR state
+    this.isPresenting = false;
+
     // public methods:
 
     this.render = function () {
-        if (this.vrControlsEnabled) this.vrControls.update();
-        this.vrEffect.render(this.scene, this.camera);
+        this.renderer.render(this.scene, this.camera);
     }.bind(this);
 
     this.toggleVRControls = function () {
-        if (this.vrControlsEnabled) {
-            this.vrControlsEnabled = false;
+        // In WebXR, camera tracking is automatic when in XR session
+        // This function now just resets the camera position when not in VR
+        if (!this.isPresenting) {
             this.camera.position.set(0, 0, 0);
             this.camera.quaternion.set(0, 0, 0, 1);
             this.camera.updateMatrixWorld();
-        } else {
-            this.vrControlsEnabled = true;
         }
     }.bind(this);
 
@@ -68,21 +72,17 @@ module.exports = function (scene, config, rendererOptions) {
         var euler = new THREE.Euler(0, 0, 0, 'YXZ');
         var onResetVRSensor = config.onResetVRSensor;
         return function () {
-            if (this.vrControlsEnabled) {
-                this.vrControls.update(true);
+            if (this.isPresenting && this.xrReferenceSpace) {
                 lastPosition.copy(this.camera.position);
                 var lastRotation = this.camera.rotation.y;
-                this.vrControls.resetPose();
-                this.vrControls.update(true);
 
-                // maintain correspondence between virtual / physical poses of stage objects:
+                // In WebXR, we can request a new reference space to reset the pose
+                // For now, we maintain stage object positions relative to new camera pose
                 this.stage.children.forEach( function (object) {
-                    // maintain rotation of object (relative heading of object w.r.t. HMD):
                     if (object === this.camera) return;
                     euler.setFromQuaternion(object.quaternion);
                     euler.y -= lastRotation;
                     object.quaternion.setFromEuler(euler);
-                    // maintain position of object w.r.t. HMD:
                     object.position.sub(lastPosition);
                     object.position.applyAxisAngle(THREE.Object3D.DefaultUp, -lastRotation);
                     object.position.add(this.camera.position);
@@ -90,16 +90,6 @@ module.exports = function (scene, config, rendererOptions) {
                 }.bind(this) );
 
                 this.stage.updateMatrixWorld(true);
-
-                // this.stage.children.forEach( function (child) {
-                //     euler.setFromQuaternion(child.quaternion);
-                //     euler.y -= lastRotation;
-                //     child.quaternion.setFromAxisAngle(THREE.Object3D.DefaultUp, euler.y);
-                //     child.position.sub(lastPosition);
-                //     child.position.applyAxisAngle(THREE.Object3D.DefaultUp, -lastRotation);
-                //     child.position.add(this.camera.position);
-                //     child.updateMatrix();
-                // } );
 
                 if (onResetVRSensor) {
                     onResetVRSensor(lastRotation, lastPosition);
@@ -111,10 +101,8 @@ module.exports = function (scene, config, rendererOptions) {
     this.toggleFullscreen = function (options) {
         if (!isFullscreen()) {
             requestFullscreen(options);
-            // requestPointerLock();
         } else {
             exitFullscreen();
-            // releasePointerLock();
         }
     };
 
@@ -140,29 +128,108 @@ module.exports = function (scene, config, rendererOptions) {
         };
     } )().bind(this);
 
-    this.vrDisplay = null;
+    // WebXR session management
+    this.startXRSession = function () {
+        var self = this;
+        if (!navigator.xr) {
+            console.error('WebXR not supported');
+            return Promise.reject(new Error('WebXR not supported'));
+        }
 
-    // WebVR setup:
+        return navigator.xr.requestSession('immersive-vr', {
+            optionalFeatures: ['local-floor', 'bounded-floor', 'hand-tracking']
+        }).then(function (session) {
+            self.xrSession = session;
+            self.isPresenting = true;
 
-    if (navigator.getVRDisplays) {
-        navigator.getVRDisplays().then( function (displays) {
-            if (displays.length > 0) {
-                this.vrDisplay = displays[0];
-                if (this.vrDisplay.stageParameters && this.vrDisplay.stageParameters.sittingToStandingTransform) {
-                    this.stage.matrix.fromArray(this.vrDisplay.stageParameters.sittingToStandingTransform);
-                    this.stage.matrix.decompose(this.stage.position, this.stage.quaternion, this.stage.scale);
-                    this.stage.matrixWorldNeedsUpdate = true;
+            // Set up the session with the renderer
+            self.renderer.xr.setSession(session);
+
+            // Get reference space
+            session.requestReferenceSpace('local-floor').then(function (refSpace) {
+                self.xrReferenceSpace = refSpace;
+                if (config.onXRSessionStarted) {
+                    config.onXRSessionStarted(session, refSpace);
                 }
-                if (config.onGotVRDisplay) {
-                    config.onGotVRDisplay(this.vrDisplay);
-                }
-            }
-        }.bind(this) );
-    } else {
-        console.error('WebVR API is not supported');
-    }
+            }).catch(function () {
+                // Fallback to 'local' if 'local-floor' not available
+                session.requestReferenceSpace('local').then(function (refSpace) {
+                    self.xrReferenceSpace = refSpace;
+                    if (config.onXRSessionStarted) {
+                        config.onXRSessionStarted(session, refSpace);
+                    }
+                });
+            });
 
-    // resize, fullscreen/VR listener functions and other useful functions:
+            session.addEventListener('end', function () {
+                self.xrSession = null;
+                self.xrReferenceSpace = null;
+                self.isPresenting = false;
+                if (config.onXRSessionEnded) {
+                    config.onXRSessionEnded();
+                }
+            });
+
+            return session;
+        });
+    }.bind(this);
+
+    this.endXRSession = function () {
+        if (this.xrSession) {
+            return this.xrSession.end();
+        }
+        return Promise.resolve();
+    }.bind(this);
+
+    // Toggle VR on/off (for keyboard/gamepad commands)
+    this.toggleVR = function () {
+        if (!this.isPresenting) {
+            this.startXRSession().catch(function (err) {
+                console.error('Failed to start XR session:', err);
+            });
+        } else {
+            this.endXRSession();
+        }
+    }.bind(this);
+
+    // Setup XR controllers
+    this.setupXRControllers = function () {
+        var self = this;
+
+        // Create controller objects
+        for (var i = 0; i < 2; i++) {
+            var controller = this.renderer.xr.getController(i);
+            controller.addEventListener('connected', function (event) {
+                var inputSource = event.data;
+                console.log('XR controller connected:', inputSource.handedness);
+                if (config.onXRControllerConnected) {
+                    config.onXRControllerConnected(inputSource, this);
+                }
+            });
+            controller.addEventListener('disconnected', function () {
+                console.log('XR controller disconnected');
+                if (config.onXRControllerDisconnected) {
+                    config.onXRControllerDisconnected(this);
+                }
+            });
+            this.stage.add(controller);
+            this.xrControllers.push(controller);
+
+            // Also get grip space for controller models
+            var grip = this.renderer.xr.getControllerGrip(i);
+            this.stage.add(grip);
+        }
+    }.bind(this);
+
+    // Check for WebXR support
+    this.checkXRSupport = function () {
+        if (!navigator.xr) {
+            return Promise.resolve(false);
+        }
+        return navigator.xr.isSessionSupported('immersive-vr');
+    };
+
+    // resize, fullscreen listener functions:
 
     var onResize = function () {
         this.camera.aspect = window.innerWidth / window.innerHeight;
@@ -204,37 +271,19 @@ module.exports = function (scene, config, rendererOptions) {
         }
     }
 
-    // function requestPointerLock() {
-    //     if (domElement.requestPointerLock) {
-    //         domElement.requestPointerLock();
-    //     } else if (domElement.mozRequestPointerLock) {
-    //         domElement.mozRequestPointerLock();
-    //     } else if (domElement.webkitRequestPointerLock) {
-    //         domElement.webkitRequestPointerLock();
-    //     }
-    // }
-
-    // function releasePointerLock() {
-    //     if (document.exitPointerLock) {
-    //         document.exitPointerLock();
-    //     } else if (document.mozExitPointerLock) {
-    //         document.mozExitPointerLock();
-    //     } else if (document.webkitExitPointerLock) {
-    //         document.webkitExitPointerLock();
-    //     }
-    // }
-
     var beforeUnload = function () {
-        // stop VR presenting when exiting the app
-        if (this.vrDisplay && this.vrDisplay.isPresenting) {
-            this.vrEffect.exitPresent();
+        // End XR session when exiting the app
+        if (this.isPresenting) {
+            this.endXRSession();
         }
     }.bind(this);
 
     // add standard event listeners
-
     window.addEventListener('resize', onResize, false);
     document.addEventListener(domElement.mozRequestFullScreen ? 'mozfullscreenchange' : 'webkitfullscreenchange',
         onFullscreenChange, false);
     window.addEventListener("beforeunload", beforeUnload, false);
+
+    // Initialize XR controllers
+    this.setupXRControllers();
 };

@@ -14,9 +14,8 @@
     "cannon": "git://github.com/jzitelli/cannon.js.git",
     "leapjs": "0.6.4",
     "stats.js": "^0.16.0",
-    "three": "git://github.com/jzitelli/three.js.git#dev",
-    "three.py": "git://github.com/jzitelli/three.py.git#dev",
-    "webvr-polyfill": "git://github.com/jzitelli/webvr-polyfill.git"
+    "three": "^0.160.0",
+    "three.py": "git://github.com/jzitelli/three.py.git#dev"
   },
   "devDependencies": {
     "eslint": "^3.2.2",

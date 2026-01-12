@@ -28,9 +28,10 @@ module.exports = ( function () {
         numSegments: 10,
         offset: undefined
     };
+
     function makeTool(options) {
         options = Utils.combineObjects(DEFAULT_OPTIONS, options || {});
-        console.log('OpenVR tool options:');
+        console.log('VR tool options:');
         console.log(options);
         var toolGeom = new THREE.CylinderBufferGeometry(options.toolRadius, options.toolRadius, options.toolLength, options.numSegments, 1, false);
         toolGeom.rotateX(-0.5 * Math.PI);
@@ -59,16 +60,44 @@ module.exports = ( function () {
         }
 
         var vrGamepad;
+        var xrController = null; // WebXR controller reference
+
         function setGamepad(gamepad) {
             vrGamepad = gamepad;
         }
+
+        // Set WebXR controller (THREE.Group from renderer.xr.getController)
+        function setXRController(controller) {
+            xrController = controller;
+        }
+
         var velocity = new THREE.Vector3();
         var worldPosition = new THREE.Vector3();
         var worldQuaternion = new THREE.Quaternion();
         var worldScale = new THREE.Vector3();
         var lastPosition = new THREE.Vector3();
+
         function update(dt) {
-            if (vrGamepad && vrGamepad.pose && vrGamepad.pose.position) {
+            // WebXR controller - position is automatically updated by Three.js
+            if (xrController && xrController.visible) {
+                toolMesh.position.copy(xrController.position);
+                toolMesh.quaternion.copy(xrController.quaternion);
+                toolMesh.updateMatrix();
+                toolMesh.updateMatrixWorld();
+                toolMesh.matrixWorld.decompose(worldPosition, worldQuaternion, worldScale);
+                toolBody.position.copy(worldPosition);
+                velocity.subVectors(worldPosition, lastPosition);
+                velocity.multiplyScalar(1 / dt);
+                toolBody.velocity.copy(velocity);
+                toolBody.quaternion.copy(worldQuaternion);
+                lastPosition.copy(worldPosition);
+                if (toolShadowMesh) {
+                    toolShadowMesh.updateMatrix();
+                    toolShadowMesh.updateMatrixWorld();
+                }
+            }
+            // Legacy WebVR gamepad pose (fallback)
+            else if (vrGamepad && vrGamepad.pose && vrGamepad.pose.position) {
                 toolMesh.position.fromArray(vrGamepad.pose.position);
                 toolMesh.quaternion.fromArray(vrGamepad.pose.orientation);
                 toolMesh.updateMatrix();
@@ -86,12 +115,14 @@ module.exports = ( function () {
                 }
             }
         }
+
         return {
             body: toolBody,
             mesh: toolMesh,
             shadowMesh: toolShadowMesh,
             update: update,
-            setGamepad: setGamepad
+            setGamepad: setGamepad,
+            setXRController: setXRController
         };
     }
 
@@ -113,7 +144,8 @@ module.exports = ( function () {
             if (!gamepad || !gamepad.id) continue;
             if (buttonsPresseds[i] === undefined) {
                 console.log('new gamepad: %s - %d buttons - %d axes', gamepad.id, gamepad.buttons.length, gamepad.axes.length);
-                if (/openvr/i.test(gamepad.id)) {
+                // Check for XR-standard gamepad (WebXR controllers)
+                if (gamepad.mapping === 'xr-standard' || /openvr/i.test(gamepad.id) || /oculus/i.test(gamepad.id)) {
                     vrGamepads.push(gamepad);
                 } else if (/xbox/i.test(gamepad.id) || /xinput/i.test(gamepad.id)) {
                     xboxGamepads.push(gamepad);
@@ -139,8 +171,10 @@ module.exports = ( function () {
     function onGamepadDisconnected(e) {
         console.log("Gamepad disconnected from index %d: %s", e.gamepad.index, e.gamepad.id);
         var i = e.gamepad.index;
-        for (var j = 0; j < buttonsPresseds[i].length; j++) {
-            buttonsPresseds[i][j] = false;
+        if (buttonsPresseds[i]) {
+            for (var j = 0; j < buttonsPresseds[i].length; j++) {
+                buttonsPresseds[i][j] = false;
+            }
         }
         if (_onGamepadDisconnected) _onGamepadDisconnected(e);
     }
@@ -225,6 +259,15 @@ module.exports = ( function () {
             down: 13,
             left: 14,
             right: 15
+        },
+        // WebXR standard mapping buttons
+        XR_BUTTONS: {
+            trigger: 0,
+            squeeze: 1,
+            touchpad: 2,
+            thumbstick: 3,
+            buttonA: 4,
+            buttonB: 5
         },
         AXES: {
             LSX: 0,

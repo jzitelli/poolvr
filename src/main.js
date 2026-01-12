@@ -75,7 +75,6 @@ POOLVR.onLoad = function () {
             leapIndicator.innerHTML = 'connected, streaming';
             leapIndicator.style['background-color'] = 'rgba(20, 160, 20, 0.8)';
             POOLVR.leapTool.toolRoot.visible = true;
-            POOLVR.app.vrControls.update();
             POOLVR.leapTool.toolRoot.position.y = POOLVR.app.camera.position.y - 2*INCH2METERS;
             POOLVR.leapTool.toolRoot.updateMatrix();
             POOLVR.leapTool.toolRoot.updateMatrixWorld();
@@ -107,17 +106,43 @@ POOLVR.onLoad = function () {
     POOLVR.openVRTool.mesh.visible = false;
     if (POOLVR.openVRTool.shadowMesh) POOLVR.openVRTool.shadowMesh.visible = false;
     POOLVR.app.stage.add(POOLVR.openVRTool.mesh);
+
+    // WebXR controller setup - use the controllers from App.js
+    var xrControllerConnected = false;
+    if (POOLVR.app.xrControllers && POOLVR.app.xrControllers.length > 0) {
+        var xrController = POOLVR.app.xrControllers[0];
+        xrController.addEventListener('connected', function (event) {
+            console.log('WebXR controller connected:', event.data.handedness);
+            POOLVR.vrGamepadIndicator.textContent = 'WebXR controller available';
+            POOLVR.vrGamepadIndicator.style['background-color'] = 'rgba(20, 160, 20, 0.8)';
+            POOLVR.openVRTool.setXRController(xrController);
+            POOLVR.openVRTool.mesh.visible = true;
+            if (POOLVR.openVRTool.shadowMesh) POOLVR.openVRTool.shadowMesh.visible = true;
+            if (!xrControllerConnected) {
+                POOLVR.world.addBody(POOLVR.openVRTool.body);
+                xrControllerConnected = true;
+            }
+        });
+        xrController.addEventListener('disconnected', function () {
+            console.log('WebXR controller disconnected');
+            POOLVR.openVRTool.mesh.visible = false;
+            if (POOLVR.openVRTool.shadowMesh) POOLVR.openVRTool.shadowMesh.visible = false;
+        });
+    }
+
+    // Legacy gamepad support (Xbox, etc.)
     var gamepadA;
     Gamepads.setOnGamepadConnected(onGamepadConnected);
     function onGamepadConnected(e) {
         var gamepad = e.gamepad;
         if (!gamepad) return;
-        if (/openvr/i.test(gamepad.id)) {
+        // Check for XR-standard mapping (WebXR) or OpenVR/Oculus controllers
+        if (gamepad.mapping === 'xr-standard' || /openvr/i.test(gamepad.id) || /oculus/i.test(gamepad.id)) {
             if (gamepadA) {
-                console.log('OpenVR controller B connected');
+                console.log('VR controller B connected');
                 Gamepads.setGamepadCommands(gamepad.index, POOLVR.vrGamepadBCommands);
             } else {
-                console.log('OpenVR controller A connected');
+                console.log('VR controller A connected');
                 POOLVR.vrGamepadIndicator.textContent = gamepad.id + ' available';
                 POOLVR.vrGamepadIndicator.style['background-color'] = 'rgba(20, 160, 20, 0.8)';
                 gamepadA = gamepad;
@@ -125,7 +150,9 @@ POOLVR.onLoad = function () {
                 POOLVR.openVRTool.mesh.visible = true;
                 if (POOLVR.openVRTool.shadowMesh) POOLVR.openVRTool.shadowMesh.visible = true;
                 POOLVR.openVRTool.setGamepad(gamepad);
-                POOLVR.world.addBody(POOLVR.openVRTool.body);
+                if (!xrControllerConnected) {
+                    POOLVR.world.addBody(POOLVR.openVRTool.body);
+                }
             }
         } else if (/xbox/i.test(gamepad.id) || /xinput/i.test(gamepad.id)) {
             Gamepads.setGamepadCommands(gamepad.index, POOLVR.xboxGamepadCommands);
@@ -255,36 +282,28 @@ POOLVR.onLoad = function () {
             POOLVR.app.scene.background = texture;
         });
 
-        navigator.getVRDisplays().then( function (vrDisplays) {
-            var vrDisplay = vrDisplays[0];
-            var isVive = /vive/i.test(vrDisplay.displayName);
-            if (!(vrDisplay.stageParameters && vrDisplay.stageParameters.sittingToStandingTransform)) {
-                POOLVR.app.vrControls.update();
-                POOLVR.leapTool.toolRoot.position.y = POOLVR.app.camera.position.y - 2*INCH2METERS;
-                POOLVR.leapTool.toolRoot.updateMatrix();
-                POOLVR.app.stage.position.y = 45.5 * INCH2METERS;
-                POOLVR.app.stage.position.z = 0.5 * POOLVR.config.L_table + 12 * INCH2METERS;
-                POOLVR.app.stage.updateMatrix();
-                POOLVR.app.stage.updateMatrixWorld();
-                // POOLVR.app.vrControls.standing = false;
+        // WebXR stage setup - set default stage position
+        // In WebXR, floor-level tracking is handled by the 'local-floor' reference space
+        POOLVR.leapTool.toolRoot.position.y = POOLVR.app.camera.position.y - 2*INCH2METERS;
+        POOLVR.leapTool.toolRoot.updateMatrix();
+        POOLVR.app.stage.position.y = 45.5 * INCH2METERS;
+        POOLVR.app.stage.position.z = 0.5 * POOLVR.config.L_table + 12 * INCH2METERS;
+        POOLVR.app.stage.updateMatrix();
+        POOLVR.app.stage.updateMatrixWorld();
+
+        // Check for WebXR support and update UI
+        var isVive = false;
+        POOLVR.app.checkXRSupport().then(function (supported) {
+            if (supported) {
+                console.log('WebXR immersive-vr supported');
+                POOLVR.vrDisplayIndicator.textContent = 'WebXR available';
+                POOLVR.vrDisplayIndicator.style['background-color'] = 'rgba(20, 160, 20, 0.8)';
             } else {
-                var sizeX = vrDisplay.stageParameters.sizeX;
-                var sizeZ = vrDisplay.stageParameters.sizeZ;
-                POOLVR.floorMesh.scale.x = sizeX;
-                POOLVR.floorMesh.scale.y = sizeZ;
-                POOLVR.floorMesh.updateMatrix();
-                // rotate the room if it better fits the stage / play area:
-                if (sizeX && sizeZ && sizeX > sizeZ) {
-                    var rotation = (new THREE.Matrix4()).makeRotationY(Math.PI / 2);
-                    POOLVR.app.scene.children.forEach( function (child) {
-                        if (child !== POOLVR.app.stage) {
-                            child.matrix.multiplyMatrices(rotation, child.matrix);
-                            child.matrix.decompose(child.position, child.quaternion, child.scale);
-                            child.updateMatrixWorld(true);
-                        }
-                    } );
-                }
+                console.log('WebXR immersive-vr not supported');
             }
+        });
+
+        {
 
             THREE.py.CANNONize(scene, POOLVR.world);
 
@@ -430,32 +449,11 @@ POOLVR.onLoad = function () {
                 };
             }
 
-            if (isVive) {
-                var loader = new THREE.OBJLoader();
-                loader.setPath( 'node_modules/three/examples/models/obj/vive-controller/' );
-                loader.load( 'vr_controller_vive_1_5.obj', function ( object ) {
-                    var loader = new THREE.TextureLoader();
-                    loader.setPath('node_modules/three/examples/models/obj/vive-controller/');
-                    var viveDiffuseMap = loader.load('onepointfive_texture.png');
-                    var viveSpecularMap = loader.load('onepointfive_spec.png');
-                    var controller = object.children[ 0 ];
-                    controller.material.map = viveDiffuseMap;
-                    controller.material.specularMap = viveSpecularMap;
-                    var controllerMesh = object.clone();
-                    POOLVR.openVRTool.mesh.add(controllerMesh);
-                    setTimeout( function () {
-                        POOLVR.openVRTool.mesh.remove(controllerMesh);
-                    }, 14000);
-                    POOLVR.startAnimateLoop();
-                } );
-            } else {
-                if (Utils.isMobile()) {
-                    scene.remove(floorMesh);
-                }
-                POOLVR.startAnimateLoop();
+            if (Utils.isMobile()) {
+                scene.remove(floorMesh);
             }
-
-        } );
+            POOLVR.startAnimateLoop();
+        }
     } );
 
 };
@@ -517,15 +515,11 @@ POOLVR.startAnimateLoop = function () {
     POOLVR.animate = animate;
     function animate(t) {
         stats.begin();
-        t = window.performance.now();
+        t = t || window.performance.now();
         var dt = (t - lt) * 0.001;
         lt = t;
         if (POOLVR.textGeomLogger) POOLVR.textGeomLogger.update(dt);
         leapTool.updateTool(dt);
-        if (POOLVR.app.vrDisplay.isPresenting)
-            POOLVR.requestID = POOLVR.app.vrEffect.requestAnimationFrame(animate);
-        else
-            POOLVR.requestID = window.requestAnimationFrame(animate);
         var gamepadValues = Gamepads.update();
         openVRTool.update(dt);
         world.step(Math.min(1/60, dt), dt, 10);
@@ -541,6 +535,8 @@ POOLVR.startAnimateLoop = function () {
 
     console.log('starting animation loop...');
 
-    POOLVR.requestID = window.requestAnimationFrame(animate);
+    // Use setAnimationLoop for WebXR compatibility
+    // This automatically handles both VR and non-VR rendering
+    POOLVR.app.renderer.setAnimationLoop(animate);
 
 };
